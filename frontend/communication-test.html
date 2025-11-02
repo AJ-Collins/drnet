@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrNet Communication System Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">🧪 DrNet Communication System Test</h1>
+        
+        <!-- User Simulation Controls -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">👤 User Simulation</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Current User Role</label>
+                    <select id="userRole" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="admin">CTIO Admin</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="technician">Technician</option>
+                        <option value="customer_care">Customer Care</option>
+                        <option value="admin_assistant">Admin Assistant</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">User Name</label>
+                    <input type="text" id="userName" class="w-full p-2 border border-gray-300 rounded-md" value="Test User">
+                </div>
+                <div>
+                    <button onclick="setCurrentUser()" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md mt-6">
+                        Set Current User
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Create Test Assignment -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">📋 Create Test Assignment</h3>
+                <div class="space-y-3">
+                    <input type="text" id="testAssignmentTitle" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Assignment Title" value="Router Installation - Main Office">
+                    <select id="testAssignmentType" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="installation">Installation</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="support">Support</option>
+                        <option value="inspection">Inspection</option>
+                    </select>
+                    <textarea id="testAssignmentDesc" class="w-full p-2 border border-gray-300 rounded-md" rows="2" placeholder="Description">Install and configure new router at main office location</textarea>
+                    <select id="testAssignTo" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="John Smith">John Smith (Technician)</option>
+                        <option value="Sarah Johnson">Sarah Johnson (Lead Tech)</option>
+                        <option value="all_staff">All Staff</option>
+                    </select>
+                    <button onclick="createTestAssignment()" class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
+                        Create Assignment
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Send Test Message -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">💬 Send Test Message</h3>
+                <div class="space-y-3">
+                    <input type="text" id="testMessageSubject" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Message Subject" value="Urgent: Network Issue Resolved">
+                    <textarea id="testMessageContent" class="w-full p-2 border border-gray-300 rounded-md" rows="2" placeholder="Message Content">The network connectivity issue at Building A has been resolved. All systems are now operational.</textarea>
+                    <select id="testMessageTo" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="John Smith">John Smith</option>
+                        <option value="Sarah Johnson">Sarah Johnson</option>
+                        <option value="technician">All Technicians</option>
+                        <option value="all_staff">All Staff</option>
+                    </select>
+                    <select id="testMessagePriority" class="w-full p-2 border border-gray-300 rounded-md">
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                        <option value="critical">Critical Priority</option>
+                    </select>
+                    <button onclick="sendTestMessage()" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                        Send Message
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Management -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">🗄️ Data Management</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <button onclick="viewStoredData()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md">
+                    View Stored Data
+                </button>
+                <button onclick="clearAllData()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
+                    Clear All Data
+                </button>
+                <button onclick="loadSampleData()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">
+                    Load Sample Data
+                </button>
+                <button onclick="exportData()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md">
+                    Export Data
+                </button>
+            </div>
+        </div>
+        
+        <!-- Live Notifications Area -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">🔔 Live Notifications</h3>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">Current User: <span id="currentUserDisplay">Not Set</span></span>
+                    <div class="relative">
+                        <button id="notificationBell" onclick="toggleNotificationPanel()" 
+                                class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span id="notificationBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="testResults" class="text-sm text-gray-600">
+                Ready for testing. Set a user and create assignments/messages to see the notification system in action.
+            </div>
+        </div>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script>
+        // Test functions
+        function setCurrentUser() {
+            const role = document.getElementById('userRole').value;
+            const name = document.getElementById('userName').value;
+            
+            const user = { role, name };
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            document.getElementById('currentUserDisplay').textContent = `${name} (${role})`;
+            document.getElementById('testResults').innerHTML = `✅ Current user set to: <strong>${name}</strong> with role: <strong>${role}</strong>`;
+            
+            // Reinitialize notifications for new user
+            if (typeof initNotifications === 'function') {
+                initNotifications();
+            }
+        }
+        
+        function createTestAssignment() {
+            const title = document.getElementById('testAssignmentTitle').value;
+            const type = document.getElementById('testAssignmentType').value;
+            const description = document.getElementById('testAssignmentDesc').value;
+            const assignedTo = document.getElementById('testAssignTo').value;
+            
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            const assignment = {
+                id: Date.now(),
+                title: title,
+                type: type,
+                description: description,
+                assignedTo: assignedTo,
+                priority: 'medium',
+                dueDate: dayjs().add(3, 'days').format('YYYY-MM-DD'),
+                location: 'Main Office',
+                status: 'pending',
+                createdBy: currentUser.name || 'Test User',
+                createdAt: new Date().toISOString(),
+                notifyRoles: ['technician', 'supervisor']
+            };
+            
+            // Save assignment
+            let assignments = JSON.parse(localStorage.getItem('assignments') || '[]');
+            assignments.unshift(assignment);
+            localStorage.setItem('assignments', JSON.stringify(assignments));
+            
+            // Create notifications
+            createTestAssignmentNotifications(assignment);
+            
+            document.getElementById('testResults').innerHTML = `✅ Assignment created: <strong>${title}</strong><br>📋 Assigned to: <strong>${assignedTo}</strong><br>🔔 Notifications sent to technicians and supervisors`;
+            
+            Swal.fire('Success', 'Test assignment created successfully!', 'success');
+        }
+        
+        function createTestAssignmentNotifications(assignment) {
+            let notifications = JSON.parse(localStorage.getItem('staffNotifications') || '[]');
+            
+            // Notify assigned person
+            if (assignment.assignedTo && assignment.assignedTo !== 'all_staff') {
+                const assignmentNotification = {
+                    id: Date.now() + Math.random(),
+                    targetUser: assignment.assignedTo,
+                    from: assignment.createdBy,
+                    fromRole: 'CTIO',
+                    subject: `New Assignment: ${assignment.title}`,
+                    content: `You have been assigned a new ${assignment.type} task. Priority: ${assignment.priority}. Due: ${dayjs(assignment.dueDate).format('MMM DD, YYYY')}`,
+                    priority: assignment.priority,
+                    timestamp: new Date().toISOString(),
+                    isRead: false,
+                    type: 'assignment',
+                    assignmentId: assignment.id
+                };
+                
+                notifications.unshift(assignmentNotification);
+            }
+            
+            // Notify selected roles
+            assignment.notifyRoles.forEach(role => {
+                const roleNotification = {
+                    id: Date.now() + Math.random() + Math.random(),
+                    targetRole: role,
+                    from: assignment.createdBy,
+                    fromRole: 'CTIO',
+                    subject: `New Assignment Alert: ${assignment.title}`,
+                    content: `A new ${assignment.type} assignment has been created. Assigned to: ${assignment.assignedTo || 'All Staff'}. Priority: ${assignment.priority}.`,
+                    priority: assignment.priority,
+                    timestamp: new Date().toISOString(),
+                    isRead: false,
+                    type: 'assignment_alert',
+                    assignmentId: assignment.id
+                };
+                
+                notifications.unshift(roleNotification);
+            });
+            
+            localStorage.setItem('staffNotifications', JSON.stringify(notifications));
+        }
+        
+        function sendTestMessage() {
+            const subject = document.getElementById('testMessageSubject').value;
+            const content = document.getElementById('testMessageContent').value;
+            const to = document.getElementById('testMessageTo').value;
+            const priority = document.getElementById('testMessagePriority').value;
+            
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            // Create targeted notification
+            let notifications = JSON.parse(localStorage.getItem('staffNotifications') || '[]');
+            
+            const notification = {
+                id: Date.now() + Math.random(),
+                targetUser: to.includes('_') ? null : to,
+                targetRole: to.includes('_') ? to : null,
+                from: currentUser.name || 'Test User',
+                fromRole: currentUser.role || 'admin',
+                subject: subject,
+                content: content,
+                priority: priority,
+                timestamp: new Date().toISOString(),
+                isRead: false,
+                type: 'targeted_message'
+            };
+            
+            notifications.unshift(notification);
+            localStorage.setItem('staffNotifications', JSON.stringify(notifications));
+            
+            document.getElementById('testResults').innerHTML = `✅ Message sent: <strong>${subject}</strong><br>📧 To: <strong>${to}</strong><br>⚡ Priority: <strong>${priority}</strong><br>🔔 Notification created`;
+            
+            Swal.fire('Success', 'Test message sent successfully!', 'success');
+        }
+        
+        function viewStoredData() {
+            const assignments = JSON.parse(localStorage.getItem('assignments') || '[]');
+            const notifications = JSON.parse(localStorage.getItem('staffNotifications') || '[]');
+            const messages = JSON.parse(localStorage.getItem('teamMessages') || '[]');
+            
+            Swal.fire({
+                title: 'Stored Data',
+                html: `
+                    <div class="text-left space-y-4">
+                        <div>
+                            <h4 class="font-semibold">📋 Assignments: ${assignments.length}</h4>
+                            <p class="text-sm text-gray-600">${assignments.slice(0, 3).map(a => `• ${a.title} (${a.status})`).join('<br>')}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">🔔 Notifications: ${notifications.length}</h4>
+                            <p class="text-sm text-gray-600">${notifications.slice(0, 3).map(n => `• ${n.subject} (${n.type})`).join('<br>')}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">💬 Messages: ${messages.length}</h4>
+                            <p class="text-sm text-gray-600">${messages.slice(0, 3).map(m => `• ${m.subject} (${m.priority})`).join('<br>')}</p>
+                        </div>
+                    </div>
+                `,
+                width: 600
+            });
+        }
+        
+        function clearAllData() {
+            Swal.fire({
+                title: 'Clear All Data?',
+                text: 'This will remove all assignments, notifications, and messages.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, clear all!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('assignments');
+                    localStorage.removeItem('staffNotifications');
+                    localStorage.removeItem('teamMessages');
+                    localStorage.removeItem('dailyReports');
+                    
+                    document.getElementById('testResults').innerHTML = '🗑️ All data cleared successfully';
+                    Swal.fire('Cleared!', 'All data has been removed.', 'success');
+                }
+            });
+        }
+        
+        function loadSampleData() {
+            // Create sample assignments
+            const sampleAssignments = [
+                {
+                    id: Date.now() + 1,
+                    title: 'Network Maintenance - Building A',
+                    type: 'maintenance',
+                    description: 'Perform routine maintenance on network equipment',
+                    assignedTo: 'John Smith',
+                    priority: 'medium',
+                    dueDate: dayjs().add(1, 'day').format('YYYY-MM-DD'),
+                    location: 'Building A',
+                    status: 'pending',
+                    createdBy: 'CTIO Admin',
+                    createdAt: new Date().toISOString(),
+                    notifyRoles: ['technician']
+                },
+                {
+                    id: Date.now() + 2,
+                    title: 'Client Setup - Premium Package',
+                    type: 'installation',
+                    description: 'Install premium internet package for new client',
+                    assignedTo: 'Sarah Johnson',
+                    priority: 'high',
+                    dueDate: dayjs().add(2, 'days').format('YYYY-MM-DD'),
+                    location: 'Client Site',
+                    status: 'in_progress',
+                    createdBy: 'CTIO Admin',
+                    createdAt: dayjs().subtract(1, 'hour').toISOString(),
+                    notifyRoles: ['supervisor']
+                }
+            ];
+            
+            localStorage.setItem('assignments', JSON.stringify(sampleAssignments));
+            
+            // Create sample notifications
+            const sampleNotifications = [
+                {
+                    id: Date.now() + 10,
+                    targetUser: 'John Smith',
+                    from: 'CTIO Admin',
+                    fromRole: 'admin',
+                    subject: 'Maintenance Assignment',
+                    content: 'You have been assigned network maintenance for Building A',
+                    priority: 'medium',
+                    timestamp: new Date().toISOString(),
+                    isRead: false,
+                    type: 'assignment'
+                },
+                {
+                    id: Date.now() + 11,
+                    targetRole: 'technician',
+                    from: 'System',
+                    fromRole: 'system',
+                    subject: 'Daily Reminder',
+                    content: 'Please check your assigned tasks for today',
+                    priority: 'low',
+                    timestamp: dayjs().subtract(30, 'minutes').toISOString(),
+                    isRead: false,
+                    type: 'broadcast'
+                }
+            ];
+            
+            localStorage.setItem('staffNotifications', JSON.stringify(sampleNotifications));
+            
+            document.getElementById('testResults').innerHTML = '📊 Sample data loaded successfully - 2 assignments and 2 notifications created';
+            Swal.fire('Loaded!', 'Sample data has been created.', 'success');
+        }
+        
+        function exportData() {
+            const data = {
+                assignments: JSON.parse(localStorage.getItem('assignments') || '[]'),
+                notifications: JSON.parse(localStorage.getItem('staffNotifications') || '[]'),
+                messages: JSON.parse(localStorage.getItem('teamMessages') || '[]'),
+                reports: JSON.parse(localStorage.getItem('dailyReports') || '[]'),
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `drnet-communication-data-${dayjs().format('YYYY-MM-DD-HHmm')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            document.getElementById('testResults').innerHTML = '💾 Data exported successfully to JSON file';
+        }
+        
+        // Initialize dayjs with relative time
+        if (typeof dayjs !== 'undefined' && dayjs.extend && typeof dayjs_plugin_relativeTime !== 'undefined') {
+            dayjs.extend(dayjs_plugin_relativeTime);
+        }
+        
+        // Set initial user
+        setTimeout(() => {
+            document.getElementById('userRole').value = 'technician';
+            document.getElementById('userName').value = 'John Smith';
+            setCurrentUser();
+        }, 500);
+    </script>
+</body>
+</html>

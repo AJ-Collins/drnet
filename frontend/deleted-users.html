@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deleted Users - Dr.Net Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/ctio-gradients.css" />
+
+    <style>
+      /* Modern CTIO Design System */
+      /* Professional CTIO Styling */
+      .ctio-professional {
+        background: #1e293b;
+      }
+
+      /* Sidebar Styles */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 280px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 60;
+        backdrop-filter: blur(20px);
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+        transition: margin-left 0.3s ease-in-out;
+      }
+
+      /* Desktop styles */
+      @media (min-width: 1024px) {
+        .sidebar {
+          transform: translateX(0);
+          position: fixed;
+        }
+
+        .main-content {
+          margin-left: 280px;
+        }
+
+        .mobile-toggle {
+          display: none !important;
+        }
+      }
+
+      /* Mobile responsive */
+      @media (max-width: 1023px) {
+        .main-content {
+          margin-left: 0 !important;
+        }
+
+        .sidebar {
+          z-index: 60;
+        }
+      }
+
+      /* Hover effects */
+      .nav-item:hover {
+        transform: translateX(8px);
+        background: rgba(255, 255, 255, 0.15);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Mobile backdrop -->
+    <div
+      id="sidebarBackdrop"
+      class="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden hidden transition-opacity duration-300"
+    ></div>
+
+    <!-- Modern Sidebar -->
+    <aside
+      id="sidebar"
+      class="sidebar ctio-professional shadow-2xl flex flex-col text-white"
+    >
+      <!-- Sidebar Header -->
+      <div class="p-6 border-b border-white/20">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-lg"
+            >
+              <i class="fas fa-network-wired text-xl text-white"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold">DR.NET CTIO</h2>
+              <p class="text-white/80 text-sm">Julius Ojwang - CTO</p>
+            </div>
+          </div>
+          <button
+            id="closeSidebar"
+            class="mobile-toggle text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+        <a
+          href="dashboard.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-chart-pie text-lg"></i>
+          </div>
+          <span class="font-medium">Dashboard</span>
+        </a>
+
+        <a
+          href="register-user.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-user-plus text-lg"></i>
+          </div>
+          <span class="font-medium">Register User</span>
+        </a>
+
+        <a
+          href="manage-users.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-users text-lg"></i>
+          </div>
+          <span class="font-medium">Manage Users</span>
+        </a>
+
+        <a
+          href="deleted-users.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl bg-white/20 text-white transition-all duration-300"
+        >
+          <div
+            class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mr-4 transition-all duration-300"
+          >
+            <i class="fas fa-trash text-lg"></i>
+          </div>
+          <span class="font-medium">Deleted Users</span>
+        </a>
+
+        <a
+          href="service-assignments.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-tools text-lg"></i>
+          </div>
+          <span class="font-medium">Service Assignments</span>
+        </a>
+
+        <a
+          href="support-tickets.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-ticket-alt text-lg"></i>
+          </div>
+          <span class="font-medium">Support Tickets</span>
+        </a>
+
+        <a
+          href="renewals.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-sync-alt text-lg"></i>
+          </div>
+          <span class="font-medium">Renewals</span>
+        </a>
+
+        <a
+          href="invoice-generator.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-file-invoice-dollar text-lg"></i>
+          </div>
+          <span class="font-medium">Finance and Reports</span>
+        </a>
+
+        <a
+          href="website-bookings.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-globe text-lg"></i>
+          </div>
+          <span class="font-medium">Website Bookings</span>
+        </a>
+
+        <a
+          href="team-communication.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-comments text-lg"></i>
+          </div>
+          <span class="font-medium">Team Communication</span>
+        </a>
+
+        <a
+          href="settings.html"
+          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
+        >
+          <div
+            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
+          >
+            <i class="fas fa-cog text-lg"></i>
+          </div>
+          <span class="font-medium">Settings</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+      <!-- Top Navigation -->
+      <nav
+        class="bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-200 px-6 py-4"
+      >
+        <div class="flex items-center justify-between">
+          <h1 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-trash mr-2"></i> Deleted Users
+          </h1>
+          <div class="flex items-center space-x-4">
+          </div>
+        </div>
+      </nav>
+
+      <!-- Content Area -->
+      <div class="p-8">
+        <div class="max-w-7xl mx-auto">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-8">
+            <div>
+              <h3 class="text-2xl font-bold text-gray-800">
+                Deleted Users Management
+              </h3>
+              <p class="text-gray-600 mt-1">
+                Recover or permanently delete users from the system
+              </p>
+            </div>
+            <div class="flex space-x-4">
+              <button
+                onclick="refreshDeletedUsers()"
+                class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
+              >
+                <i class="fas fa-sync-alt mr-2"></i> Refresh
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab Navigation -->
+          <div class="mb-8">
+            <div class="flex space-x-1 bg-gradient-to-r from-blue-100 to-purple-100 p-1 rounded-lg w-fit">
+              <button
+                id="deletedClientsTab"
+                class="tab-button px-6 py-3 rounded-md font-medium transition-all duration-200 bg-white text-blue-600 shadow-sm active"
+                onclick="switchDeletedTab('clients')"
+              >
+                👥 Deleted Clients
+              </button>
+              <button
+                id="deletedStaffTab"
+                class="tab-button px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-purple-600"
+                onclick="switchDeletedTab('staff')"
+              >
+                👨‍💼 Deleted Staff
+              </button>
+            </div>
+          </div>
+
+          <!-- Statistics Cards -->
+          <div class="mb-8">
+            <!-- Clients Stats -->
+            <div id="clientsStatsSection" class="stats-section">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div
+                  class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-xl p-6 border-l-4 border-blue-500"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-gray-600 text-sm font-medium">
+                        Recently Deleted
+                      </p>
+                      <p
+                        id="recentlyDeletedClientsCount"
+                        class="text-3xl font-bold text-blue-600"
+                      >
+                        0
+                      </p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                      <svg
+                        class="w-6 h-6 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl shadow-xl p-6 border-l-4 border-slate-500"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-gray-600 text-sm font-medium">
+                        Total Deleted Clients
+                      </p>
+                      <p
+                        id="deletedClientsCount"
+                        class="text-3xl font-bold text-slate-600"
+                      >
+                        0
+                      </p>
+                    </div>
+                    <div class="bg-slate-100 p-3 rounded-full">
+                      <svg
+                        class="w-6 h-6 text-slate-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Staff Stats -->
+            <div id="staffStatsSection" class="stats-section hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div
+                  class="bg-gradient-to-br from-purple-50 to-violet-100 rounded-2xl shadow-xl p-6 border-l-4 border-purple-500"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-gray-600 text-sm font-medium">
+                        Recently Deleted
+                      </p>
+                      <p
+                        id="recentlyDeletedStaffCount"
+                        class="text-3xl font-bold text-purple-600"
+                      >
+                        0
+                      </p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-full">
+                      <svg
+                        class="w-6 h-6 text-purple-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-2xl shadow-xl p-6 border-l-4 border-emerald-500"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-gray-600 text-sm font-medium">Total Deleted Staff</p>
+                      <p
+                        id="deletedStaffCount"
+                        class="text-3xl font-bold text-emerald-600"
+                      >
+                        0
+                      </p>
+                    </div>
+                    <div class="bg-emerald-100 p-3 rounded-full">
+                      <svg
+                        class="w-6 h-6 text-emerald-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deleted Clients Section -->
+          <div id="deletedClientsSection" class="tab-content active">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                  <i class="fas fa-users mr-3"></i> Deleted Clients
+                </h2>
+                <p class="text-blue-100 mt-2">
+                  Clients that have been deleted from the system
+                </p>
+              </div>
+
+              <div class="p-8">
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="border-b-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <th
+                          class="text-left py-4 px-6 font-semibold text-blue-800"
+                        >
+                          Client Info
+                        </th>
+                        <th
+                          class="text-left py-4 px-6 font-semibold text-blue-800"
+                        >
+                          Package
+                        </th>
+                        <th
+                          class="text-left py-4 px-6 font-semibold text-blue-800"
+                        >
+                          Deleted Date
+                        </th>
+                        <th
+                          class="text-left py-4 px-6 font-semibold text-blue-800"
+                        >
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody id="deletedClientsTableBody">
+                      <!-- Deleted clients will be populated here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deleted Staff Section -->
+          <div id="deletedStaffSection" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div class="bg-gradient-to-r from-purple-600 to-emerald-600 px-8 py-6">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                  <i class="fas fa-user-tie mr-3"></i> Deleted Staff
+                </h2>
+                <p class="text-purple-100 mt-2">
+                  Staff members that have been deleted from the system
+                </p>
+              </div>
+
+              <div class="p-8">
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="border-b-2 border-purple-200 bg-gradient-to-r from-purple-50 to-emerald-50">
+                        <th
+                          class="text-left py-4 px-6 font-semibold text-purple-800"
+                        >
+                          Staff Info
+                        </th>
+                        <th
+                          class="text-left py-4 px-6 font-semibold text-purple-800"
+                        >
+                          Role & Department
+                        </th>
+                        <th
+                          class="text-left py-4 px-6 font-semibold text-purple-800"
+                        >
+                          Deleted Date
+                        </th>
+                        <th
+                          class="text-left py-4 px-6 font-semibold text-purple-800"
+                        >
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody id="deletedStaffTableBody">
+                      <!-- Deleted staff will be populated here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay for mobile -->
+    <div
+      id="overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden"
+    ></div>
+
+    <script src="js/common.js"></script>
+    <script src="js/config.js"></script>
+
+    <script>
+      // Load deleted users from localStorage and combine with mock data
+      function loadDeletedUsersData() {
+        const savedDeletedUsers = JSON.parse(
+          localStorage.getItem("deletedUsers") || "[]"
+        );
+        
+        // Get permanently deleted mock data IDs
+        const permanentlyDeletedClients = JSON.parse(
+          localStorage.getItem("permanentlyDeletedClients") || "[]"
+        );
+        const permanentlyDeletedStaff = JSON.parse(
+          localStorage.getItem("permanentlyDeletedStaff") || "[]"
+        );
+
+        // Separate by user type
+        const deletedClients = savedDeletedUsers.filter(
+          (u) => u.user_type === "client"
+        );
+        const deletedStaff = savedDeletedUsers.filter(
+          (u) => u.user_type === "staff"
+        );
+
+        // All mock data for demonstration
+        const allMockClients = [
+          {
+            id: "DEL_CLIENT_001",
+            name: "Sarah Johnson",
+            email: "sarah.johnson@email.com",
+            phone: "+1234567890",
+            package: "Premium Internet",
+            location: "Downtown",
+            deletedDate: "2025-10-15",
+            originalId: "client_001",
+            user_type: "client",
+          },
+          {
+            id: "DEL_CLIENT_002",
+            name: "Michael Brown",
+            email: "michael.brown@email.com",
+            phone: "+1234567891",
+            package: "Standard WiFi",
+            location: "Suburb Area",
+            deletedDate: "2025-10-12",
+            originalId: "client_002",
+            user_type: "client",
+          },
+        ];
+
+        const allMockStaff = [
+          {
+            id: "DEL_STAFF_001",
+            name: "Emily Davis",
+            email: "emily.davis@drnet.com",
+            phone: "+1234567892",
+            role: "Customer Care",
+            department: "Support",
+            contractDuration: "2 years",
+            idNumber: "EMP003",
+            deletedDate: "2025-10-10",
+            originalId: "staff_003",
+            user_type: "staff",
+          },
+        ];
+
+        // Filter out permanently deleted mock data
+        const mockClients = deletedClients.length === 0 
+          ? allMockClients.filter(client => !permanentlyDeletedClients.includes(client.id))
+          : [];
+          
+        const mockStaff = deletedStaff.length === 0 
+          ? allMockStaff.filter(staff => !permanentlyDeletedStaff.includes(staff.id))
+          : [];
+
+        return {
+          clients: [...deletedClients, ...mockClients],
+          staff: [...deletedStaff, ...mockStaff],
+        };
+      }
+
+      let mockDeletedData = loadDeletedUsersData();
+
+      let currentTab = "clients";
+
+      // Initialize page
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("Page initialized");
+        console.log("Mock deleted data loaded:", mockDeletedData);
+        console.log("Clients count:", mockDeletedData.clients.length);
+        console.log("Staff count:", mockDeletedData.staff.length);
+        
+        setupEventListeners();
+        // Set initial tab to clients
+        currentTab = "clients";
+        switchDeletedTab("clients");
+        updateStatistics();
+      });
+
+      function setupEventListeners() {
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById("mobileMenuButton");
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
+        const closeSidebar = document.getElementById("closeSidebar");
+
+        mobileMenuButton?.addEventListener("click", () => {
+          sidebar.classList.remove("-translate-x-full");
+          overlay.classList.remove("hidden");
+        });
+
+        closeSidebar?.addEventListener("click", () => {
+          sidebar.classList.add("-translate-x-full");
+          overlay.classList.add("hidden");
+        });
+
+        overlay?.addEventListener("click", () => {
+          sidebar.classList.add("-translate-x-full");
+          overlay.classList.add("hidden");
+        });
+      }
+
+      function switchDeletedTab(tab) {
+        currentTab = tab;
+
+        // Update tab buttons
+        document.querySelectorAll(".tab-button").forEach((btn) => {
+          btn.classList.remove(
+            "active",
+            "bg-white",
+            "text-blue-600",
+            "text-purple-600",
+            "shadow-sm"
+          );
+          btn.classList.add("text-gray-600");
+        });
+
+        const activeTab =
+          tab === "clients" ? "deletedClientsTab" : "deletedStaffTab";
+        const activeButton = document.getElementById(activeTab);
+        
+        if (tab === "clients") {
+          activeButton.classList.add(
+            "active",
+            "bg-white",
+            "text-blue-600",
+            "shadow-sm"
+          );
+          activeButton.classList.remove("text-gray-600");
+        } else {
+          activeButton.classList.add(
+            "active",
+            "bg-white",
+            "text-purple-600",
+            "shadow-sm"
+          );
+          activeButton.classList.remove("text-gray-600");
+        }
+
+        // Show/hide statistics sections
+        document.querySelectorAll(".stats-section").forEach((section) => {
+          section.classList.add("hidden");
+        });
+
+        const activeStatsSection =
+          tab === "clients" ? "clientsStatsSection" : "staffStatsSection";
+        document.getElementById(activeStatsSection).classList.remove("hidden");
+
+        // Show/hide content sections
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.classList.add("hidden");
+          content.classList.remove("active");
+        });
+
+        const activeSection =
+          tab === "clients" ? "deletedClientsSection" : "deletedStaffSection";
+        const activeElement = document.getElementById(activeSection);
+        activeElement.classList.remove("hidden");
+        activeElement.classList.add("active");
+
+        loadDeletedUsers();
+        updateStatistics();
+      }
+
+      function updateStatistics() {
+        // Update total counts
+        document.getElementById("deletedClientsCount").textContent =
+          mockDeletedData.clients.length;
+        document.getElementById("deletedStaffCount").textContent =
+          mockDeletedData.staff.length;
+
+        // Calculate recently deleted (last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const recentlyDeletedClients = mockDeletedData.clients.filter(client => {
+          const deletedDate = new Date(client.deletedDate);
+          return deletedDate >= sevenDaysAgo;
+        }).length;
+
+        const recentlyDeletedStaff = mockDeletedData.staff.filter(staff => {
+          const deletedDate = new Date(staff.deletedDate);
+          return deletedDate >= sevenDaysAgo;
+        }).length;
+
+        // Update recently deleted counts
+        document.getElementById("recentlyDeletedClientsCount").textContent =
+          recentlyDeletedClients;
+        document.getElementById("recentlyDeletedStaffCount").textContent =
+          recentlyDeletedStaff;
+      }
+
+      function loadDeletedUsers() {
+        if (currentTab === "clients") {
+          loadDeletedClients();
+        } else {
+          loadDeletedStaff();
+        }
+      }
+
+      function loadDeletedClients() {
+        const tableBody = document.getElementById("deletedClientsTableBody");
+
+        if (mockDeletedData.clients.length === 0) {
+          tableBody.innerHTML =
+            '<tr><td colspan="4" class="text-center py-8 text-gray-500">No deleted clients found</td></tr>';
+          return;
+        }
+
+        tableBody.innerHTML = mockDeletedData.clients
+          .map(
+            (client) => `
+          <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="py-4 px-6">
+              <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <span class="text-red-600 font-bold text-lg">${client.name.charAt(
+                    0
+                  )}</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900">${client.name}</p>
+                  <p class="text-sm text-gray-600">${client.email}</p>
+                  <p class="text-sm text-gray-500">${client.phone}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-4 px-6">
+              <div>
+                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  ${client.package}
+                </span>
+                <p class="text-sm text-gray-600 mt-1">${client.location}</p>
+              </div>
+            </td>
+            <td class="py-4 px-6">
+              <span class="text-sm text-gray-600">${dayjs(
+                client.deletedDate
+              ).format("MMM D, YYYY")}</span>
+            </td>
+            <td class="py-4 px-6">
+              <div class="flex space-x-2">
+                <button 
+                  onclick="recoverClient('${client.id}')"
+                  class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center"
+                >
+                  <span class="mr-1">↩️</span> Recover
+                </button>
+                <button 
+                  onclick="permanentDeleteClient('${client.id}')"
+                  class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center"
+                >
+                  <span class="mr-1">🗑️</span> Delete Forever
+                </button>
+              </div>
+            </td>
+          </tr>
+        `
+          )
+          .join("");
+      }
+
+      function loadDeletedStaff() {
+        const tableBody = document.getElementById("deletedStaffTableBody");
+
+        if (mockDeletedData.staff.length === 0) {
+          tableBody.innerHTML =
+            '<tr><td colspan="4" class="text-center py-8 text-gray-500">No deleted staff found</td></tr>';
+          return;
+        }
+
+        tableBody.innerHTML = mockDeletedData.staff
+          .map(
+            (staff) => `
+          <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="py-4 px-6">
+              <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <span class="text-orange-600 font-bold text-lg">${staff.name.charAt(
+                    0
+                  )}</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900">${staff.name}</p>
+                  <p class="text-sm text-gray-600">${staff.email}</p>
+                  <p class="text-sm text-gray-500">${staff.phone}</p>
+                  <p class="text-sm text-gray-500">ID: ${staff.idNumber}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-4 px-6">
+              <div>
+                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                  ${staff.role}
+                </span>
+                <p class="text-sm text-gray-600 mt-1">${staff.department}</p>
+                <p class="text-sm text-gray-500">Contract: ${
+                  staff.contractDuration
+                }</p>
+              </div>
+            </td>
+            <td class="py-4 px-6">
+              <span class="text-sm text-gray-600">${dayjs(
+                staff.deletedDate
+              ).format("MMM D, YYYY")}</span>
+            </td>
+            <td class="py-4 px-6">
+              <div class="flex space-x-2">
+                <button 
+                  onclick="recoverStaff('${staff.id}')"
+                  class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center"
+                >
+                  <span class="mr-1">↩️</span> Recover
+                </button>
+                <button 
+                  onclick="permanentDeleteStaff('${staff.id}')"
+                  class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center"
+                >
+                  <span class="mr-1">🗑️</span> Delete Forever
+                </button>
+              </div>
+            </td>
+          </tr>
+        `
+          )
+          .join("");
+      }
+
+      function recoverClient(clientId) {
+        Swal.fire({
+          title: "Recover Client?",
+          text: "This client will be restored to the active users list.",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#10B981",
+          cancelButtonColor: "#6B7280",
+          confirmButtonText: "Yes, Recover Client",
+          cancelButtonText: "Cancel",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Find the client
+            const clientIndex = mockDeletedData.clients.findIndex(
+              (c) => c.id === clientId
+            );
+            if (clientIndex !== -1) {
+              const client = mockDeletedData.clients[clientIndex];
+
+              // Remove from deleted list
+              mockDeletedData.clients.splice(clientIndex, 1);
+
+              // Remove from localStorage deleted users
+              const savedDeletedUsers = JSON.parse(
+                localStorage.getItem("deletedUsers") || "[]"
+              );
+              const updatedDeletedUsers = savedDeletedUsers.filter(
+                (u) => !(u.id === clientId && u.user_type === "client")
+              );
+              localStorage.setItem(
+                "deletedUsers",
+                JSON.stringify(updatedDeletedUsers)
+              );
+
+              // Handle mock data recovery differently
+              if (clientId.startsWith('DEL_CLIENT_')) {
+                // For mock data, we need to create a new user entry in the main users data
+                const mainUsers = JSON.parse(localStorage.getItem("users") || "[]");
+                const recoveredUser = {
+                  id: client.originalId || clientId, // Use originalId if available
+                  name: client.name,
+                  email: client.email,
+                  phone: client.phone,
+                  location: client.location,
+                  package: client.package,
+                  subscription_amount: 50, // Default amount
+                  router_cost: 100, // Default cost
+                  payment_date: new Date().toISOString(),
+                  subscription_status: 'active',
+                  is_deleted: 0,
+                  deleted_date: null,
+                  created_at: new Date().toISOString()
+                };
+                
+                // Check if user already exists
+                const existingUser = mainUsers.find(u => u.id === recoveredUser.id);
+                if (!existingUser) {
+                  mainUsers.push(recoveredUser);
+                  localStorage.setItem("users", JSON.stringify(mainUsers));
+                } else {
+                  // Update existing user
+                  existingUser.is_deleted = 0;
+                  existingUser.deleted_date = null;
+                  localStorage.setItem("users", JSON.stringify(mainUsers));
+                }
+              } else {
+                // For real data, restore normally
+                const mainUsers = JSON.parse(localStorage.getItem("users") || "[]");
+                const existingUser = mainUsers.find(u => u.id === clientId);
+                if (!existingUser) {
+                  // Add the recovered client back to main users data
+                  const recoveredUser = {
+                    ...client,
+                    is_deleted: 0, // Mark as not deleted
+                    deleted_date: null // Clear deletion date
+                  };
+                  mainUsers.push(recoveredUser);
+                  localStorage.setItem("users", JSON.stringify(mainUsers));
+                } else {
+                  // Update existing user to mark as not deleted
+                  existingUser.is_deleted = 0;
+                  existingUser.deleted_date = null;
+                  localStorage.setItem("users", JSON.stringify(mainUsers));
+                }
+              }
+
+              // Also update the main mock data to ensure consistency
+              if (typeof window !== 'undefined' && window.users) {
+                const mockUserIndex = window.users.findIndex(u => u.id === clientId);
+                if (mockUserIndex !== -1) {
+                  window.users[mockUserIndex].is_deleted = 0;
+                  window.users[mockUserIndex].deleted_date = null;
+                }
+              }
+
+              // In production, this would make an API call to recover:
+              // fetch(`${window.BASE_URL}/api/clients/${clientId}/recover`, { method: 'PUT' });
+
+              Swal.fire({
+                title: "Client Recovered!",
+                text: `${client.name} has been restored to the active users list.`,
+                icon: "success",
+                confirmButtonColor: "#10B981",
+                showCancelButton: true,
+                cancelButtonText: "Stay Here",
+                confirmButtonText: "Go to Manage Users"
+              }).then((result) => {
+                // Refresh the display
+                loadDeletedUsers();
+                updateStatistics();
+                
+                // If user clicks "Go to Manage Users", redirect to clients tab
+                if (result.isConfirmed) {
+                  window.location.href = "manage-users.html#clients";
+                }
+              });
+            }
+          }
+        });
+      }
+
+      function recoverStaff(staffId) {
+        Swal.fire({
+          title: "Recover Staff Member?",
+          text: "This staff member will be restored to the active users list.",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#10B981",
+          cancelButtonColor: "#6B7280",
+          confirmButtonText: "Yes, Recover Staff",
+          cancelButtonText: "Cancel",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Find the staff member
+            const staffIndex = mockDeletedData.staff.findIndex(
+              (s) => s.id === staffId
+            );
+            if (staffIndex !== -1) {
+              const staff = mockDeletedData.staff[staffIndex];
+
+              // Remove from deleted list
+              mockDeletedData.staff.splice(staffIndex, 1);
+
+              // Remove from localStorage deleted users
+              const savedDeletedUsers = JSON.parse(
+                localStorage.getItem("deletedUsers") || "[]"
+              );
+              const updatedDeletedUsers = savedDeletedUsers.filter(
+                (u) => !(u.id === staffId && u.user_type === "staff")
+              );
+              localStorage.setItem(
+                "deletedUsers",
+                JSON.stringify(updatedDeletedUsers)
+              );
+
+              // Handle mock data recovery differently
+              if (staffId.startsWith('DEL_STAFF_')) {
+                // For mock data, we need to create a new staff entry in the main staff data
+                const mainStaff = JSON.parse(localStorage.getItem("staff") || "[]");
+                const recoveredStaff = {
+                  id: staff.originalId || staffId, // Use originalId if available
+                  name: staff.name,
+                  email: staff.email,
+                  phone: staff.phone,
+                  role: staff.role,
+                  department: staff.department,
+                  employee_id: staff.idNumber || `EMP${Date.now()}`,
+                  status: 'active',
+                  is_deleted: 0,
+                  deleted_date: null,
+                  created_at: new Date().toISOString()
+                };
+                
+                // Check if staff already exists
+                const existingStaff = mainStaff.find(s => s.id === recoveredStaff.id);
+                if (!existingStaff) {
+                  mainStaff.push(recoveredStaff);
+                  localStorage.setItem("staff", JSON.stringify(mainStaff));
+                } else {
+                  // Update existing staff
+                  existingStaff.is_deleted = 0;
+                  existingStaff.deleted_date = null;
+                  localStorage.setItem("staff", JSON.stringify(mainStaff));
+                }
+              } else {
+                // For real data, restore normally
+                const mainStaff = JSON.parse(localStorage.getItem("staff") || "[]");
+                const existingStaff = mainStaff.find(s => s.id === staffId);
+                if (!existingStaff) {
+                  // Add the recovered staff back to main staff data
+                  const recoveredStaff = {
+                    ...staff,
+                    is_deleted: 0, // Mark as not deleted
+                    deleted_date: null // Clear deletion date
+                  };
+                  mainStaff.push(recoveredStaff);
+                  localStorage.setItem("staff", JSON.stringify(mainStaff));
+                } else {
+                  // Update existing staff to mark as not deleted
+                  existingStaff.is_deleted = 0;
+                  existingStaff.deleted_date = null;
+                  localStorage.setItem("staff", JSON.stringify(mainStaff));
+                }
+              }
+
+              // Also update the main mock data to ensure consistency
+              if (typeof window !== 'undefined' && window.staff) {
+                const mockStaffIndex = window.staff.findIndex(s => s.id === staffId);
+                if (mockStaffIndex !== -1) {
+                  window.staff[mockStaffIndex].is_deleted = 0;
+                  window.staff[mockStaffIndex].deleted_date = null;
+                }
+              }
+
+              // In production, this would make an API call to recover:
+              // fetch(`${window.BASE_URL}/api/staff/${staffId}/recover`, { method: 'PUT' });
+
+              Swal.fire({
+                title: "Staff Recovered!",
+                text: `${staff.name} has been restored to the active users list.`,
+                icon: "success",
+                confirmButtonColor: "#10B981",
+                showCancelButton: true,
+                cancelButtonText: "Stay Here",
+                confirmButtonText: "Go to Manage Users"
+              }).then((result) => {
+                // Refresh the display
+                loadDeletedUsers();
+                updateStatistics();
+                
+                // If user clicks "Go to Manage Users", redirect to staff tab
+                if (result.isConfirmed) {
+                  window.location.href = "manage-users.html#staff";
+                }
+              });
+            }
+          }
+        });
+      }
+
+      function permanentDeleteClient(clientId) {
+        console.log("permanentDeleteClient called with ID:", clientId);
+        
+        if (typeof Swal === 'undefined') {
+          alert("SweetAlert2 library not loaded. Using basic confirmation instead.");
+          if (confirm("Permanently delete this client? This action cannot be undone.")) {
+            processPermanentClientDeletion(clientId);
+          }
+          return;
+        }
+        
+        Swal.fire({
+          title: "Permanently Delete Client?",
+          text: "This action cannot be undone. The client will be permanently removed from the system.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#EF4444",
+          cancelButtonColor: "#6B7280",
+          confirmButtonText: "Yes, Delete Forever",
+          cancelButtonText: "Cancel",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            processPermanentClientDeletion(clientId);
+          }
+        });
+      }
+
+      function processPermanentClientDeletion(clientId) {
+        console.log("Processing permanent deletion for client:", clientId);
+        
+        // Find and remove the client
+        const clientIndex = mockDeletedData.clients.findIndex(
+          (c) => c.id === clientId
+        );
+        
+        if (clientIndex !== -1) {
+          const client = mockDeletedData.clients[clientIndex];
+          console.log("Found client to delete:", client);
+          
+          mockDeletedData.clients.splice(clientIndex, 1);
+
+          // Remove from localStorage deleted users
+          const savedDeletedUsers = JSON.parse(
+            localStorage.getItem("deletedUsers") || "[]"
+          );
+          const updatedDeletedUsers = savedDeletedUsers.filter(
+            (u) => !(u.id === clientId && u.user_type === "client")
+          );
+          localStorage.setItem(
+            "deletedUsers",
+            JSON.stringify(updatedDeletedUsers)
+          );
+
+          // Also remove from main users data if it exists
+          // This ensures the user is completely removed from the system
+          const mainUsers = JSON.parse(localStorage.getItem("users") || "[]");
+          const updatedMainUsers = mainUsers.filter(u => u.id !== clientId);
+          localStorage.setItem("users", JSON.stringify(updatedMainUsers));
+
+          // Also remove from main mock data to ensure consistency
+          if (typeof window !== 'undefined' && window.users) {
+            const mockUserIndex = window.users.findIndex(u => u.id === clientId);
+            if (mockUserIndex !== -1) {
+              window.users.splice(mockUserIndex, 1);
+            }
+          }
+
+          // Track permanently deleted mock data
+          if (clientId.startsWith('DEL_CLIENT_')) {
+            const permanentlyDeletedClients = JSON.parse(
+              localStorage.getItem("permanentlyDeletedClients") || "[]"
+            );
+            if (!permanentlyDeletedClients.includes(clientId)) {
+              permanentlyDeletedClients.push(clientId);
+              localStorage.setItem("permanentlyDeletedClients", JSON.stringify(permanentlyDeletedClients));
+            }
+          }
+
+          // In production, this would make an API call to permanently delete:
+          // fetch(`${window.BASE_URL}/api/clients/${clientId}/permanent`, { method: 'DELETE' });
+
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: "Client Permanently Deleted!",
+              text: `${client.name} has been permanently removed from the system.`,
+              icon: "success",
+              confirmButtonColor: "#EF4444",
+            });
+          } else {
+            alert(`Client ${client.name} has been permanently deleted!`);
+          }
+
+          // Refresh the display
+          loadDeletedUsers();
+          updateStatistics();
+        } else {
+          console.error("Client not found with ID:", clientId);
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: "Error",
+              text: "Client not found!",
+              icon: "error",
+            });
+          } else {
+            alert("Error: Client not found!");
+          }
+        }
+      }
+
+      function permanentDeleteStaff(staffId) {
+        console.log("permanentDeleteStaff called with ID:", staffId);
+        
+        if (typeof Swal === 'undefined') {
+          alert("SweetAlert2 library not loaded. Using basic confirmation instead.");
+          if (confirm("Permanently delete this staff member? This action cannot be undone.")) {
+            processPermanentStaffDeletion(staffId);
+          }
+          return;
+        }
+        
+        Swal.fire({
+          title: "Permanently Delete Staff Member?",
+          text: "This action cannot be undone. The staff member will be permanently removed from the system.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#EF4444",
+          cancelButtonColor: "#6B7280",
+          confirmButtonText: "Yes, Delete Forever",
+          cancelButtonText: "Cancel",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            processPermanentStaffDeletion(staffId);
+          }
+        });
+      }
+
+      function processPermanentStaffDeletion(staffId) {
+        console.log("Processing permanent deletion for staff:", staffId);
+        
+        // Find and remove the staff member
+        const staffIndex = mockDeletedData.staff.findIndex(
+          (s) => s.id === staffId
+        );
+        
+        if (staffIndex !== -1) {
+          const staff = mockDeletedData.staff[staffIndex];
+          console.log("Found staff to delete:", staff);
+          
+          mockDeletedData.staff.splice(staffIndex, 1);
+
+          // Remove from localStorage deleted users
+          const savedDeletedUsers = JSON.parse(
+            localStorage.getItem("deletedUsers") || "[]"
+          );
+          const updatedDeletedUsers = savedDeletedUsers.filter(
+            (u) => !(u.id === staffId && u.user_type === "staff")
+          );
+          localStorage.setItem(
+            "deletedUsers",
+            JSON.stringify(updatedDeletedUsers)
+          );
+
+          // Also remove from main staff data if it exists
+          // This ensures the staff member is completely removed from the system
+          const mainStaff = JSON.parse(localStorage.getItem("staff") || "[]");
+          const updatedMainStaff = mainStaff.filter(s => s.id !== staffId);
+          localStorage.setItem("staff", JSON.stringify(updatedMainStaff));
+
+          // Also remove from main mock data to ensure consistency
+          if (typeof window !== 'undefined' && window.staff) {
+            const mockStaffIndex = window.staff.findIndex(s => s.id === staffId);
+            if (mockStaffIndex !== -1) {
+              window.staff.splice(mockStaffIndex, 1);
+            }
+          }
+
+          // Track permanently deleted mock data
+          if (staffId.startsWith('DEL_STAFF_')) {
+            const permanentlyDeletedStaff = JSON.parse(
+              localStorage.getItem("permanentlyDeletedStaff") || "[]"
+            );
+            if (!permanentlyDeletedStaff.includes(staffId)) {
+              permanentlyDeletedStaff.push(staffId);
+              localStorage.setItem("permanentlyDeletedStaff", JSON.stringify(permanentlyDeletedStaff));
+            }
+          }
+
+          // In production, this would make an API call to permanently delete:
+          // fetch(`${window.BASE_URL}/api/staff/${staffId}/permanent`, { method: 'DELETE' });
+
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: "Staff Permanently Deleted!",
+              text: `${staff.name} has been permanently removed from the system.`,
+              icon: "success",
+              confirmButtonColor: "#EF4444",
+            });
+          } else {
+            alert(`Staff member ${staff.name} has been permanently deleted!`);
+          }
+
+          // Refresh the display
+          loadDeletedUsers();
+          updateStatistics();
+        } else {
+          console.error("Staff member not found with ID:", staffId);
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: "Error",
+              text: "Staff member not found!",
+              icon: "error",
+            });
+          } else {
+            alert("Error: Staff member not found!");
+          }
+        }
+      }
+
+      function refreshDeletedUsers() {
+        // Add a loading animation
+        Swal.fire({
+          title: "Refreshing...",
+          text: "Loading deleted users data",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        // Simulate API call and reload data from localStorage
+        setTimeout(() => {
+          mockDeletedData = loadDeletedUsersData();
+          loadDeletedUsers();
+          updateStatistics();
+
+          Swal.fire({
+            title: "Refreshed!",
+            text: "Deleted users data has been updated.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+        }, 1000);
+      }
+
+      function logout() {
+        Swal.fire({
+          title: "Logout?",
+          text: "Are you sure you want to logout?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#EF4444",
+          cancelButtonColor: "#6B7280",
+          confirmButtonText: "Yes, Logout",
+          cancelButtonText: "Cancel",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "admin-login.html";
+          }
+        });
+      }
+
+      // Debug function to test the delete buttons
+      function testDeleteButtons() {
+        console.log("Testing Delete Forever buttons...");
+        console.log("Current mock data:", mockDeletedData);
+        
+        if (mockDeletedData.clients.length > 0) {
+          console.log("Testing client deletion with ID:", mockDeletedData.clients[0].id);
+          permanentDeleteClient(mockDeletedData.clients[0].id);
+        } else {
+          console.log("No clients to test deletion");
+        }
+      }
+
+      // Make functions globally available for debugging
+      window.testDeleteButtons = testDeleteButtons;
+      window.permanentDeleteClient = permanentDeleteClient;
+      window.permanentDeleteStaff = permanentDeleteStaff;
+    </script>
+  </body>
+</html>

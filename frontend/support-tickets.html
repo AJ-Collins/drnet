@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Tickets - DR.NET Technology Labs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ticket-card {
+            transition: all 0.3s ease;
+        }
+        
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .priority-high { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .priority-medium { background: linear-gradient(135deg, #feca57, #ff9ff3); }
+        .priority-low { background: linear-gradient(135deg, #48dbfb, #0abde3); }
+        .priority-critical { background: linear-gradient(135deg, #ff3838, #c44569); }
+        
+        .status-pending { background: linear-gradient(135deg, #ffa726, #ff9800); }
+        .status-in-progress { background: linear-gradient(135deg, #42a5f5, #2196f3); }
+        .status-resolved { background: linear-gradient(135deg, #66bb6a, #4caf50); }
+        .status-completed { background: linear-gradient(135deg, #66bb6a, #4caf50); }
+        .status-cancelled { background: linear-gradient(135deg, #bdbdbd, #9e9e9e); }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="bg-white/10 backdrop-blur-lg border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-ticket-alt text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Support Tickets</h1>
+                        <p class="text-white/80">Manage and track support requests</p>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <button onclick="createNewTicket()" class="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 flex items-center space-x-2">
+                        <i class="fas fa-plus"></i>
+                        <span>New Ticket</span>
+                    </button>
+                    <button onclick="refreshTickets()" class="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 flex items-center space-x-2">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glass-card rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-sm">Total Tickets</p>
+                        <p class="text-3xl font-bold" id="totalTickets">0</p>
+                    </div>
+                    <i class="fas fa-ticket-alt text-3xl text-white/60"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-sm">Open Tickets</p>
+                        <p class="text-3xl font-bold text-yellow-300" id="openTickets">0</p>
+                    </div>
+                    <i class="fas fa-exclamation-circle text-3xl text-yellow-300/60"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-sm">In Progress</p>
+                        <p class="text-3xl font-bold text-blue-300" id="inProgressTickets">0</p>
+                    </div>
+                    <i class="fas fa-clock text-3xl text-blue-300/60"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-sm">Resolved</p>
+                        <p class="text-3xl font-bold text-green-300" id="resolvedTickets">0</p>
+                    </div>
+                    <i class="fas fa-check-circle text-3xl text-green-300/60"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="glass-card rounded-xl p-6 mb-8">
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex space-x-2">
+                    <button onclick="filterTickets('all')" class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 filter-btn active" data-filter="all">
+                        All
+                    </button>
+                    <button onclick="filterTickets('pending')" class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 filter-btn" data-filter="pending">
+                        Pending
+                    </button>
+                    <button onclick="filterTickets('in-progress')" class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 filter-btn" data-filter="in-progress">
+                        In Progress
+                    </button>
+                    <button onclick="filterTickets('resolved')" class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 filter-btn" data-filter="resolved">
+                        Resolved
+                    </button>
+                    <button onclick="filterTickets('completed')" class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 filter-btn" data-filter="completed">
+                        Completed
+                    </button>
+                </div>
+                <div class="flex-1">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search tickets..." class="w-full px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50">
+                        <i class="fas fa-search absolute right-3 top-3 text-white/60"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets List -->
+        <div class="space-y-4" id="ticketsList">
+            <!-- Tickets will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-12 hidden">
+            <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-ticket-alt text-4xl text-white/60"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-white mb-2">No tickets found</h3>
+            <p class="text-white/80 mb-6">Create your first support ticket to get started</p>
+            <button onclick="createNewTicket()" class="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300">
+                Create New Ticket
+            </button>
+        </div>
+    </div>
+
+    <!-- Create Ticket Modal -->
+    <div id="createTicketModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-ticket-alt text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">Create Support Ticket</h3>
+                            <p class="text-blue-100 text-sm">Create a new support ticket</p>
+                        </div>
+                    </div>
+                    <button onclick="closeCreateModal()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-all duration-300">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="ticketForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tag mr-2 text-blue-600"></i>Issue Type
+                        </label>
+                        <select id="issueType" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300" required>
+                            <option value="">Select issue type...</option>
+                            <option value="Network Issue">Network Issue</option>
+                            <option value="Hardware Problem">Hardware Problem</option>
+                            <option value="Software Bug">Software Bug</option>
+                            <option value="Installation Request">Installation Request</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Repair">Repair</option>
+                            <option value="Inspection">Inspection</option>
+                            <option value="Asset Recovery">Asset Recovery</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2 text-green-600"></i>Client
+                        </label>
+                        <input type="text" id="clientName" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300" placeholder="Enter client name..." required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-exclamation-triangle mr-2 text-orange-600"></i>Priority
+                        </label>
+                        <select id="priority" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300" required>
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-heading mr-2 text-purple-600"></i>Subject
+                        </label>
+                        <input type="text" id="subject" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300" placeholder="Brief description of the issue..." required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-align-left mr-2 text-indigo-600"></i>Description
+                        </label>
+                        <textarea id="description" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 resize-none" placeholder="Detailed description of the issue..." required></textarea>
+                    </div>
+
+                    <div class="flex space-x-4 pt-4">
+                        <button type="button" onclick="closeCreateModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-300 font-medium">
+                            <i class="fas fa-times mr-2"></i>Cancel
+                        </button>
+                        <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium transform hover:scale-105">
+                            <i class="fas fa-plus mr-2"></i>Create Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allTickets = [];
+        let filteredTickets = [];
+        let currentFilter = 'all';
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTickets();
+            updateStats();
+            displayTickets();
+            
+            // Add search functionality
+            document.getElementById('searchInput').addEventListener('input', function() {
+                filterTickets(currentFilter);
+            });
+            
+            // Add form submission handler
+            document.getElementById('ticketForm').addEventListener('submit', handleTicketSubmission);
+        });
+
+        // Load tickets from localStorage
+        function loadTickets() {
+            allTickets = JSON.parse(localStorage.getItem('supportTickets') || '[]');
+            filteredTickets = [...allTickets];
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = allTickets.length;
+            const pending = allTickets.filter(t => t.status === 'Pending').length;
+            const inProgress = allTickets.filter(t => t.status === 'In Progress').length;
+            const resolved = allTickets.filter(t => t.status === 'Resolved' || t.status === 'Completed').length;
+
+            document.getElementById('totalTickets').textContent = total;
+            document.getElementById('openTickets').textContent = pending;
+            document.getElementById('inProgressTickets').textContent = inProgress;
+            document.getElementById('resolvedTickets').textContent = resolved;
+        }
+
+        // Display tickets
+        function displayTickets() {
+            const ticketsList = document.getElementById('ticketsList');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (filteredTickets.length === 0) {
+                ticketsList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            ticketsList.innerHTML = filteredTickets.map(ticket => `
+                <div class="ticket-card glass-card rounded-xl p-6 text-white">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium priority-${ticket.priority.toLowerCase()}">
+                                    ${ticket.priority}
+                                </span>
+                                <span class="px-3 py-1 rounded-full text-xs font-medium status-${ticket.status.toLowerCase().replace(' ', '-')}">
+                                    ${ticket.status}
+                                </span>
+                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white">
+                                    <i class="fas fa-user mr-1"></i>
+                                    ${ticket.createdBy || 'Unknown'}
+                                </span>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">${ticket.issueType || ticket.subject}</h3>
+                            <p class="text-white/80 text-sm mb-3">${ticket.description}</p>
+                            <div class="flex items-center space-x-4 text-xs text-white/60">
+                                <span><i class="fas fa-user mr-1"></i>${ticket.client}</span>
+                                <span><i class="fas fa-calendar mr-1"></i>${new Date(ticket.createdAt).toLocaleDateString()}</span>
+                                <span><i class="fas fa-hashtag mr-1"></i>${ticket.id}</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2 ml-4">
+                            <button onclick="viewTicketDetails('${ticket.id}')" class="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs transition-all duration-300">
+                                <i class="fas fa-eye mr-1"></i>View
+                            </button>
+                            <button onclick="updateTicketStatus('${ticket.id}')" class="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs transition-all duration-300">
+                                <i class="fas fa-edit mr-1"></i>Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter tickets
+        function filterTickets(filter) {
+            currentFilter = filter;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-white/30');
+                btn.classList.add('bg-white/20');
+            });
+            document.querySelector(`[data-filter="${filter}"]`).classList.add('active', 'bg-white/30');
+            
+            // Filter tickets
+            filteredTickets = allTickets.filter(ticket => {
+                const matchesFilter = filter === 'all' || ticket.status.toLowerCase().replace(' ', '-') === filter;
+                const matchesSearch = searchTerm === '' || 
+                    ticket.issueType?.toLowerCase().includes(searchTerm) ||
+                    ticket.subject?.toLowerCase().includes(searchTerm) ||
+                    ticket.description?.toLowerCase().includes(searchTerm) ||
+                    ticket.client?.toLowerCase().includes(searchTerm);
+                
+                return matchesFilter && matchesSearch;
+            });
+            
+            displayTickets();
+        }
+
+        // Create new ticket
+        function createNewTicket() {
+            const modal = document.getElementById('createTicketModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Close create modal
+        function closeCreateModal() {
+            const modal = document.getElementById('createTicketModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('ticketForm').reset();
+        }
+
+        // Handle ticket form submission
+        function handleTicketSubmission(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const ticketData = {
+                issueType: document.getElementById('issueType').value,
+                client: document.getElementById('clientName').value,
+                priority: document.getElementById('priority').value,
+                subject: document.getElementById('subject').value,
+                description: document.getElementById('description').value
+            };
+            
+            // Generate unique ticket ID
+            const ticketId = 'TKT' + Date.now().toString().substr(-6) + Math.random().toString(36).substr(2, 3).toUpperCase();
+            
+            // Create ticket object
+            const newTicket = {
+                id: ticketId,
+                issueType: ticketData.issueType,
+                client: ticketData.client,
+                priority: ticketData.priority,
+                subject: ticketData.subject,
+                description: ticketData.description,
+                status: 'Pending',
+                createdBy: 'Support Team',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                lastUpdatedBy: 'Support Team',
+                notes: '',
+                statusHistory: [{
+                    status: 'Pending',
+                    notes: 'Ticket created',
+                    updatedBy: 'Support Team',
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            // Save to localStorage
+            allTickets.unshift(newTicket);
+            localStorage.setItem('supportTickets', JSON.stringify(allTickets));
+            
+            // Refresh display
+            loadTickets();
+            updateStats();
+            filterTickets(currentFilter);
+            
+            // Close modal
+            closeCreateModal();
+            
+            // Show success message
+            Swal.fire({
+                title: 'Ticket Created!',
+                text: `Support ticket #${ticketId} has been created successfully`,
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+
+        // View ticket details
+        function viewTicketDetails(ticketId) {
+            const ticket = allTickets.find(t => t.id === ticketId);
+            if (!ticket) return;
+            
+            Swal.fire({
+                title: `Ticket #${ticket.id}`,
+                html: `
+                    <div class="text-left space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Issue Type</p>
+                                <p class="font-semibold">${ticket.issueType}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Priority</p>
+                                <span class="px-2 py-1 rounded text-xs font-medium priority-${ticket.priority.toLowerCase()}">${ticket.priority}</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Status</p>
+                                <span class="px-2 py-1 rounded text-xs font-medium status-${ticket.status.toLowerCase().replace(' ', '-')}">${ticket.status}</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Client</p>
+                                <p class="font-semibold">${ticket.client}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Description</p>
+                            <p class="font-semibold">${ticket.description}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Created</p>
+                            <p class="font-semibold">${new Date(ticket.createdAt).toLocaleString()}</p>
+                        </div>
+                    </div>
+                `,
+                width: '600px',
+                showConfirmButton: true,
+                confirmButtonText: 'Close'
+            });
+        }
+
+        // Update ticket status
+        function updateTicketStatus(ticketId) {
+            const ticket = allTickets.find(t => t.id === ticketId);
+            if (!ticket) return;
+            
+            Swal.fire({
+                title: 'Update Ticket Status',
+                html: `
+                    <div class="text-left space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Current Status: <strong>${ticket.status}</strong></label>
+                            <select id="newStatus" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="Pending" ${ticket.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="In Progress" ${ticket.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Resolved" ${ticket.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                                <option value="Completed" ${ticket.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Cancelled" ${ticket.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Notes (optional):</label>
+                            <textarea id="statusNotes" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Add any notes about this status update..."></textarea>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Update Status',
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    const newStatus = document.getElementById('newStatus').value;
+                    const notes = document.getElementById('statusNotes').value;
+                    
+                    // Update the ticket
+                    ticket.status = newStatus;
+                    ticket.updatedAt = new Date().toISOString();
+                    ticket.lastUpdatedBy = 'Support Team';
+                    
+                    // Add to status history
+                    if (!ticket.statusHistory) {
+                        ticket.statusHistory = [];
+                    }
+                    ticket.statusHistory.push({
+                        status: newStatus,
+                        notes: notes,
+                        updatedBy: 'Support Team',
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    if (notes) {
+                        ticket.statusNotes = notes;
+                    }
+                    
+                    // Save back to localStorage
+                    localStorage.setItem('supportTickets', JSON.stringify(allTickets));
+                    
+                    return { newStatus, notes };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    loadTickets();
+                    updateStats();
+                    filterTickets(currentFilter);
+                    Swal.fire('Updated!', `Ticket status changed to ${result.value.newStatus}`, 'success');
+                }
+            });
+        }
+
+        // Refresh tickets
+        function refreshTickets() {
+            loadTickets();
+            updateStats();
+            filterTickets(currentFilter);
+            
+            Swal.fire({
+                title: 'Refreshed!',
+                text: 'Tickets have been updated',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    </script>
+</body>
+</html>
+
+

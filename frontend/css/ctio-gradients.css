@@ -1,0 +1,213 @@
+/* CTIO Portal - Unified Rich Professional Gradients & Styling */
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Universal Font System */
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Rich Professional Gradient System */
+.ctio-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.ctio-gradient-alt {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.ctio-gradient-accent {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.ctio-gradient-success {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.ctio-gradient-warning {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.ctio-gradient-secondary {
+  background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+}
+
+/* Rich Dashboard Card Gradients */
+.dashboard-card-gradient-1 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dashboard-card-gradient-2 {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.dashboard-card-gradient-3 {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.dashboard-card-gradient-4 {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.dashboard-card-gradient-5 {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.dashboard-card-gradient-6 {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.dashboard-card-gradient-7 {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+}
+
+.dashboard-card-gradient-8 {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+/* System-Wide Rich Animated Background Gradient */
+.system-bg-gradient {
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 20%, 
+    #f093fb 40%, 
+    #4facfe 60%, 
+    #43e97b 80%, 
+    #fa709a 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Alternative Professional Gradients for Variety */
+.gradient-royal {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+}
+
+.gradient-sunset {
+  background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);
+}
+
+.gradient-ocean {
+  background: linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%);
+}
+
+.gradient-forest {
+  background: linear-gradient(135deg, #134E5E 0%, #71B280 100%);
+}
+
+.gradient-purple-dream {
+  background: linear-gradient(135deg, #c471f5 0%, #fa71cd 100%);
+}
+
+.gradient-blue-sky {
+  background: linear-gradient(135deg, #56CCF2 0%, #2F80ED 100%);
+}
+
+/* Glass Morphism Effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-effect-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Text Contrast Utilities */
+.text-on-gradient {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.text-on-gradient-light {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.text-on-gradient-dark {
+  color: rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Hover Effects for Gradient Elements */
+.gradient-hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gradient-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Sidebar Gradients */
+.sidebar-gradient-purple {
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+}
+
+.sidebar-gradient-blue {
+  background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.sidebar-gradient-pink {
+  background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
+}
+
+.sidebar-gradient-green {
+  background: linear-gradient(180deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* Professional Header Gradients */
+.header-gradient {
+  background: linear-gradient(90deg, 
+    rgba(102, 126, 234, 0.1) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Card Hover Effects */
+.card-gradient-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-gradient-hover:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(102, 126, 234, 0.3);
+}
+
+/* Smooth Transitions */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Rich Shadow System */
+.shadow-gradient-sm {
+  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.1);
+}
+
+.shadow-gradient-md {
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+}
+
+.shadow-gradient-lg {
+  box-shadow: 0 16px 32px rgba(102, 126, 234, 0.2);
+}
+
+.shadow-gradient-xl {
+  box-shadow: 0 24px 48px rgba(102, 126, 234, 0.25);
+}
+
+

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body style="padding: 20px; font-family: Arial, sans-serif;">
+    <h1>PDF Generation Test</h1>
+    
+    <div style="margin: 20px 0;">
+        <button onclick="testPDF()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Test PDF Generation
+        </button>
+    </div>
+    
+    <div id="status" style="margin: 20px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+        Status: Ready to test
+    </div>
+    
+    <script>
+        function updateStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = 'Status: ' + message;
+            status.style.background = isError ? '#f8d7da' : '#d4edda';
+            status.style.color = isError ? '#721c24' : '#155724';
+            console.log(message);
+        }
+        
+        function testPDF() {
+            updateStatus('Testing PDF generation...');
+            
+            try {
+                // Check if jsPDF is available
+                console.log('Checking jsPDF availability...');
+                console.log('typeof jsPDF:', typeof jsPDF);
+                console.log('typeof window.jsPDF:', typeof window.jsPDF);
+                
+                let jsPDFConstructor = null;
+                
+                if (typeof jsPDF !== 'undefined') {
+                    console.log('✅ jsPDF found globally');
+                    jsPDFConstructor = jsPDF;
+                } else if (typeof window.jsPDF !== 'undefined') {
+                    console.log('✅ window.jsPDF found');
+                    jsPDFConstructor = window.jsPDF;
+                } else {
+                    console.error('❌ jsPDF not found');
+                    updateStatus('ERROR: jsPDF library not loaded', true);
+                    return;
+                }
+                
+                updateStatus('Creating PDF document...');
+                
+                // Create PDF
+                const doc = new jsPDFConstructor();
+                
+                // Add content
+                doc.text('Test PDF Generation', 20, 20);
+                doc.text('This is a test PDF created with jsPDF', 20, 30);
+                doc.text('Date: ' + new Date().toLocaleString(), 20, 40);
+                
+                updateStatus('Saving PDF...');
+                
+                // Save PDF
+                doc.save('test-receipt.pdf');
+                
+                updateStatus('✅ PDF generated successfully!');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus('ERROR: ' + error.message, true);
+            }
+        }
+        
+        // Check library availability on load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, checking jsPDF...');
+            console.log('typeof jsPDF:', typeof jsPDF);
+            console.log('typeof window.jsPDF:', typeof window.jsPDF);
+            
+            if (typeof jsPDF !== 'undefined' || typeof window.jsPDF !== 'undefined') {
+                updateStatus('✅ jsPDF library loaded successfully');
+            } else {
+                updateStatus('❌ jsPDF library not loaded', true);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-100">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Dr.Net Admin Assistant - Inventory Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body
+    onload="initAdminAssistantDashboard()"
+    class="flex min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-indigo-100"
+  >
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="sidebar-mobile md:sidebar-desktop fixed inset-y-0 left-0 w-80 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none h-screen bg-gradient-to-b from-indigo-900 via-purple-800 to-blue-900 shadow-2xl flex flex-col text-white transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-50"
+    >
+      <div
+        class="p-6 border-b border-gray-700 flex justify-between items-center"
+      >
+        <div>
+          <h2 class="text-2xl font-extrabold tracking-wide">
+            📋 Inventory Manager
+          </h2>
+          <p id="staffName" class="text-sm text-gray-300 mt-1">
+            Admin Assistant
+          </p>
+        </div>
+        <button
+          id="closeSidebar"
+          class="mobile-menu-button md:hidden text-white focus:outline-none hover:bg-white/20 p-2 rounded-lg transition-colors"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="p-4 space-y-2 flex-1">
+        <a
+          href="#dashboard"
+          onclick="showSection('dashboard')"
+          class="nav-item active w-full text-left py-3 px-4 rounded-lg bg-white/20 shadow-lg block"
+        >
+          📊 <span class="ml-3 font-medium">Dashboard Overview</span>
+        </a>
+        <a
+          href="#inventory"
+          onclick="showSection('inventory')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          📦 <span class="ml-3 font-medium">View Inventory</span>
+        </a>
+        <a
+          href="#add-items"
+          onclick="showSection('add-items')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          ➕ <span class="ml-3 font-medium">Add New Items</span>
+        </a>
+        <a
+          href="#stock-update"
+          onclick="showSection('stock-update')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          🔄 <span class="ml-3 font-medium">Update Stock</span>
+        </a>
+        <a
+          href="#movements"
+          onclick="showSection('movements')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          📋 <span class="ml-3 font-medium">Stock Movements</span>
+        </a>
+        <a
+          href="#reports"
+          onclick="showSection('reports')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          📊 <span class="ml-3 font-medium">Generate Reports</span>
+        </a>
+        <a
+          href="#team-communication"
+          onclick="showAdminAssistantCommunication()"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          💬 <span class="ml-3 font-medium">Team Communication</span>
+        </a>
+        <a
+          href="#reorders"
+          onclick="showSection('reorders')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          🔔 <span class="ml-3 font-medium">Reorder Requests</span>
+        </a>
+        <a
+          href="#notifications"
+          onclick="showSection('notifications')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          🔔 <span class="ml-3 font-medium">Notifications</span>
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-gray-700">
+        <button
+          onclick="logout()"
+          class="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex items-center justify-center"
+        >
+          🚪 <span class="ml-2">Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div
+      id="overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden hidden"
+    ></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-80 transition-all duration-300 ease-in-out">
+      <!-- Top Header -->
+      <header class="bg-white shadow-md p-4 flex justify-between items-center">
+        <div class="flex items-center">
+          <button
+            id="openSidebar"
+            class="mobile-menu-button md:hidden mr-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-colors"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            </svg>
+          </button>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800">
+              Inventory Management System
+            </h1>
+            <p class="text-sm text-indigo-600 font-medium">
+              Admin Assistant Portal
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div
+            class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium"
+          >
+            <span id="alertCount">3</span> Low Stock Alerts
+          </div>
+          <!-- Notification Bell -->
+          <div class="relative">
+            <button
+              id="notificationBell"
+              onclick="toggleNotificationPanel()"
+              class="relative p-2 text-gray-600 hover:text-indigo-600 transition-colors"
+            >
+              <i class="fas fa-bell text-lg"></i>
+              <span
+                id="notificationBadge"
+                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                >0</span
+              >
+            </button>
+          </div>
+          <span class="text-sm text-gray-600" id="currentTime"></span>
+          <div
+            class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold"
+          >
+            <span id="userInitial">A</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div class="p-6">
+        <!-- Dashboard Overview Section -->
+        <div id="dashboard" class="content-section">
+          <!-- Quick Stats -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          >
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-500"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Total Items</p>
+                  <p id="totalItems" class="text-2xl font-bold text-gray-900">
+                    1,247
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-2xl">📦</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-yellow-500"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">
+                    Low Stock Items
+                  </p>
+                  <p
+                    id="lowStockItems"
+                    class="text-2xl font-bold text-gray-900"
+                  >
+                    23
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-2xl">⚠️</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">
+                    Items Issued Today
+                  </p>
+                  <p id="itemsIssued" class="text-2xl font-bold text-gray-900">
+                    47
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-2xl">📤</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">
+                    Pending Reorders
+                  </p>
+                  <p
+                    id="pendingReorders"
+                    class="text-2xl font-bold text-gray-900"
+                  >
+                    8
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-2xl">🔄</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activities & Stock Chart -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Recent Activities -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">
+                📋 Recent Activities
+              </h3>
+              <div id="recentActivities" class="space-y-3">
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                  <p class="font-medium text-gray-800">
+                    Added 50x Ethernet Cables
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    Cat6 - 2 meters - 10:30 AM
+                  </p>
+                </div>
+                <div class="border-l-4 border-blue-500 pl-4 py-2">
+                  <p class="font-medium text-gray-800">
+                    Issued 5x Wireless Routers
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    To Technical Department - 9:45 AM
+                  </p>
+                </div>
+                <div class="border-l-4 border-yellow-500 pl-4 py-2">
+                  <p class="font-medium text-gray-800">
+                    Low Stock Alert: Fiber Modems
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    Only 8 units remaining - 8:30 AM
+                  </p>
+                </div>
+                <div class="border-l-4 border-purple-500 pl-4 py-2">
+                  <p class="font-medium text-gray-800">
+                    Reorder Request Approved
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    100x Network Switches - Yesterday
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stock Level Chart -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">
+                📊 Stock Levels by Category
+              </h3>
+              <div class="h-64">
+                <canvas id="stockChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+              ⚡ Quick Actions
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <button
+                onclick="showSection('add-items')"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex flex-col items-center"
+              >
+                <span class="text-2xl mb-2">➕</span>
+                <span class="text-sm">Add Items</span>
+              </button>
+              <button
+                onclick="showSection('stock-update')"
+                class="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex flex-col items-center"
+              >
+                <span class="text-2xl mb-2">🔄</span>
+                <span class="text-sm">Update Stock</span>
+              </button>
+              <button
+                onclick="showSection('reports')"
+                class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex flex-col items-center"
+              >
+                <span class="text-2xl mb-2">📊</span>
+                <span class="text-sm">Generate Report</span>
+              </button>
+              <button
+                onclick="showSection('reorders')"
+                class="bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex flex-col items-center"
+              >
+                <span class="text-2xl mb-2">🔔</span>
+                <span class="text-sm">Reorder Request</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory Section -->
+        <div id="inventory" class="content-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-800">
+                📦 Current Inventory
+              </h2>
+              <div class="flex space-x-4">
+                <input
+                  type="text"
+                  id="searchInventory"
+                  placeholder="Search items..."
+                  class="px-4 py-2 border rounded-lg"
+                />
+                <select id="categoryFilter" class="px-4 py-2 border rounded-lg">
+                  <option value="">All Categories</option>
+                  <option value="routers">Routers</option>
+                  <option value="cables">Cables</option>
+                  <option value="modems">Modems</option>
+                  <option value="switches">Switches</option>
+                  <option value="accessories">Accessories</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full table-auto">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Item Name
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Category
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Model/Serial
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Quantity
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Location
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryTableBody" class="divide-y divide-gray-200">
+                  <!-- Dynamic content will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Items Section -->
+        <div id="add-items" class="content-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+              ➕ Add New Inventory Items
+            </h2>
+
+            <form id="addItemForm" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Item Name *</label
+                  >
+                  <input
+                    type="text"
+                    id="itemName"
+                    required
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Category *</label
+                  >
+                  <select
+                    id="itemCategory"
+                    required
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="routers">Wireless Routers</option>
+                    <option value="cables">Network Cables</option>
+                    <option value="modems">Modems</option>
+                    <option value="switches">Network Switches</option>
+                    <option value="accessories">Accessories</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Model Number</label
+                  >
+                  <input
+                    type="text"
+                    id="itemModel"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Serial Number</label
+                  >
+                  <input
+                    type="text"
+                    id="itemSerial"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Quantity *</label
+                  >
+                  <input
+                    type="number"
+                    id="itemQuantity"
+                    required
+                    min="1"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Supplier</label
+                  >
+                  <input
+                    type="text"
+                    id="itemSupplier"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Storage Location</label
+                  >
+                  <select
+                    id="itemLocation"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">Select Location</option>
+                    <option value="warehouse-a">Warehouse A</option>
+                    <option value="warehouse-b">Warehouse B</option>
+                    <option value="office-storage">Office Storage</option>
+                    <option value="server-room">Server Room</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Minimum Stock Level</label
+                  >
+                  <input
+                    type="number"
+                    id="minStock"
+                    min="0"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Description/Notes</label
+                >
+                <textarea
+                  id="itemDescription"
+                  rows="3"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                ></textarea>
+              </div>
+
+              <div class="flex space-x-4">
+                <button
+                  type="submit"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-lg font-medium transition duration-200"
+                >
+                  ➕ Add Item to Inventory
+                </button>
+                <button
+                  type="reset"
+                  class="bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-medium transition duration-200"
+                >
+                  🔄 Clear Form
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Stock Update Section -->
+        <div id="stock-update" class="content-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+              🔄 Update Stock Records
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Issue Items -->
+              <div class="border rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                  📤 Issue Items
+                </h3>
+                <form id="issueItemForm" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Select Item</label
+                    >
+                    <select
+                      id="issueItem"
+                      class="w-full px-4 py-2 border rounded-lg"
+                    >
+                      <option value="">Choose item to issue</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Quantity to Issue</label
+                    >
+                    <input
+                      type="number"
+                      id="issueQuantity"
+                      min="1"
+                      class="w-full px-4 py-2 border rounded-lg"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Issued To</label
+                    >
+                    <select
+                      id="issuedTo"
+                      class="w-full px-4 py-2 border rounded-lg"
+                    >
+                      <option value="">Select Department/User</option>
+                      <option value="technical">Technical Department</option>
+                      <option value="customer-care">Customer Care</option>
+                      <option value="field-team">Field Team</option>
+                      <option value="maintenance">Maintenance</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Purpose</label
+                    >
+                    <textarea
+                      id="issuePurpose"
+                      rows="2"
+                      placeholder="Reason for issuing..."
+                      class="w-full px-4 py-2 border rounded-lg"
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium"
+                  >
+                    📤 Issue Items
+                  </button>
+                </form>
+              </div>
+
+              <!-- Return Items -->
+              <div class="border rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                  📥 Return Items
+                </h3>
+                <form id="returnItemForm" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Select Item</label
+                    >
+                    <select
+                      id="returnItem"
+                      class="w-full px-4 py-2 border rounded-lg"
+                    >
+                      <option value="">Choose item to return</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Quantity Returned</label
+                    >
+                    <input
+                      type="number"
+                      id="returnQuantity"
+                      min="1"
+                      class="w-full px-4 py-2 border rounded-lg"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Returned By</label
+                    >
+                    <input
+                      type="text"
+                      id="returnedBy"
+                      placeholder="Name/Department"
+                      class="w-full px-4 py-2 border rounded-lg"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Condition</label
+                    >
+                    <select
+                      id="itemCondition"
+                      class="w-full px-4 py-2 border rounded-lg"
+                    >
+                      <option value="good">Good Condition</option>
+                      <option value="damaged">Damaged</option>
+                      <option value="defective">Defective</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Notes</label
+                    >
+                    <textarea
+                      id="returnNotes"
+                      rows="2"
+                      placeholder="Additional notes..."
+                      class="w-full px-4 py-2 border rounded-lg"
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium"
+                  >
+                    📥 Return Items
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional sections will continue... -->
+      </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="/staff/js/admin-assistant-dashboard.js"></script>
+  </body>
+</html>

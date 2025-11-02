@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-100">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Dr.Net Customer Care Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body
+    onload="initCustomerCareDashboard()"
+    class="flex min-h-screen bg-gradient-to-br from-green-100 via-blue-50 to-teal-100"
+  >
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="fixed inset-y-0 left-0 w-80 h-screen bg-gradient-to-b from-teal-900 via-blue-800 to-green-900 shadow-2xl flex flex-col text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50"
+    >
+      <div
+        class="p-6 border-b border-gray-700 flex justify-between items-center"
+      >
+        <div>
+          <h2 class="text-2xl font-extrabold tracking-wide">
+            📞 Customer Care
+          </h2>
+          <p id="staffName" class="text-sm text-gray-300 mt-1">Support Agent</p>
+        </div>
+        <button
+          id="closeSidebar"
+          class="lg:hidden text-white focus:outline-none"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="p-4 space-y-2 flex-1">
+        <a
+          href="#dashboard"
+          onclick="showSection('dashboard')"
+          class="nav-item active w-full text-left py-3 px-4 rounded-lg bg-white/20 shadow-lg block"
+        >
+          📊 <span class="ml-3 font-medium">Dashboard Overview</span>
+        </a>
+        <a
+          href="#customers"
+          onclick="showSection('customers')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          👥 <span class="ml-3 font-medium">Customer Profiles</span>
+        </a>
+        <a
+          href="#tickets"
+          onclick="showSection('tickets')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          🎫 <span class="ml-3 font-medium">Support Tickets</span>
+        </a>
+        <a
+          href="#new-ticket"
+          onclick="showSection('new-ticket')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          ➕ <span class="ml-3 font-medium">Create Ticket</span>
+        </a>
+        <a
+          href="#knowledge-base"
+          onclick="showSection('knowledge-base')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          📚 <span class="ml-3 font-medium">Knowledge Base</span>
+        </a>
+        <a
+          href="#inventory-view"
+          onclick="showSection('inventory-view')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          📦 <span class="ml-3 font-medium">Service Availability</span>
+        </a>
+        <a
+          href="#reports"
+          onclick="showSection('reports')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          📈 <span class="ml-3 font-medium">Service Reports</span>
+        </a>
+        <a
+          href="#escalations"
+          onclick="showSection('escalations')"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          🚨 <span class="ml-3 font-medium">Escalations</span>
+        </a>
+        <a
+          href="#team-communication"
+          onclick="showCustomerCareCommunication()"
+          class="nav-item w-full text-left py-3 px-4 rounded-lg hover:bg-white/20 block"
+        >
+          💬 <span class="ml-3 font-medium">Team Communication</span>
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-gray-700">
+        <button
+          onclick="logout()"
+          class="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex items-center justify-center"
+        >
+          🚪 <span class="ml-2">Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div
+      id="overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"
+    ></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 lg:ml-80">
+      <!-- Top Header -->
+      <header class="bg-white shadow-md p-4 flex justify-between items-center">
+        <div class="flex items-center">
+          <button
+            id="openSidebar"
+            class="lg:hidden mr-4 text-gray-600 hover:text-gray-900"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            </svg>
+          </button>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800">
+              Customer Care Portal
+            </h1>
+            <p class="text-sm text-teal-600 font-medium">
+              Support & Service Management
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div
+            class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium"
+          >
+            <span id="urgentTickets">5</span> Urgent Tickets
+          </div>
+          <div
+            class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+          >
+            <span id="activeChats">3</span> Active Chats
+          </div>
+          <!-- Notification Bell -->
+          <div class="relative">
+            <button id="notificationBell" onclick="toggleNotificationPanel()" 
+                    class="relative p-2 text-gray-600 hover:text-teal-600 transition-colors">
+              <i class="fas fa-bell text-lg"></i>
+              <span id="notificationBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+          </div>
+          <span class="text-sm text-gray-600" id="currentTime"></span>
+          <div
+            class="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center text-white font-bold"
+          >
+            <span id="userInitial">C</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div class="p-6">
+        <!-- Dashboard Overview Section -->
+        <div id="dashboard" class="content-section">
+          <!-- Quick Stats -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          >
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-500"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">
+                    Active Tickets
+                  </p>
+                  <p
+                    id="activeTicketsCount"
+                    class="text-2xl font-bold text-gray-900"
+                  >
+                    24
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-2xl">🎫</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">
+                    Resolved Today
+                  </p>
+                  <p
+                    id="resolvedToday"
+                    class="text-2xl font-bold text-gray-900"
+                  >
+                    18
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-2xl">✅</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-yellow-500"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">
+                    Avg Response Time
+                  </p>
+                  <p
+                    id="avgResponseTime"
+                    class="text-2xl font-bold text-gray-900"
+                  >
+                    15m
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-2xl">⏱️</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">
+                    Customer Rating
+                  </p>
+                  <p
+                    id="customerRating"
+                    class="text-2xl font-bold text-gray-900"
+                  >
+                    4.8★
+                  </p>
+                </div>
+                <div
+                  class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+                >
+                  <span class="text-2xl">⭐</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Tickets & Performance Chart -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Recent Tickets -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">
+                🎫 Recent Tickets
+              </h3>
+              <div id="recentTickets" class="space-y-3">
+                <div class="border-l-4 border-red-500 pl-4 py-2 bg-red-50">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <p class="font-medium text-gray-800">
+                        #TCK-1001 - Internet Outage
+                      </p>
+                      <p class="text-sm text-gray-600">
+                        John Smith • High Priority • 2 hours ago
+                      </p>
+                    </div>
+                    <button
+                      onclick="viewTicket('TCK-1001')"
+                      class="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="border-l-4 border-yellow-500 pl-4 py-2 bg-yellow-50"
+                >
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <p class="font-medium text-gray-800">
+                        #TCK-1002 - Slow Connection
+                      </p>
+                      <p class="text-sm text-gray-600">
+                        Sarah Davis • Medium Priority • 4 hours ago
+                      </p>
+                    </div>
+                    <button
+                      onclick="viewTicket('TCK-1002')"
+                      class="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div class="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <p class="font-medium text-gray-800">
+                        #TCK-1003 - Billing Inquiry
+                      </p>
+                      <p class="text-sm text-gray-600">
+                        Mike Johnson • Low Priority • 1 day ago
+                      </p>
+                    </div>
+                    <button
+                      onclick="viewTicket('TCK-1003')"
+                      class="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4">
+                <button
+                  onclick="showSection('tickets')"
+                  class="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-lg font-medium"
+                >
+                  View All Tickets
+                </button>
+              </div>
+            </div>
+
+            <!-- Ticket Resolution Chart -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">
+                📊 Daily Ticket Resolution
+              </h3>
+              <div class="h-64">
+                <canvas id="ticketChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+              ⚡ Quick Actions
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <button
+                onclick="showSection('new-ticket')"
+                class="bg-teal-600 hover:bg-teal-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex flex-col items-center"
+              >
+                <span class="text-2xl mb-2">🎫</span>
+                <span class="text-sm">New Ticket</span>
+              </button>
+              <button
+                onclick="searchCustomer()"
+                class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex flex-col items-center"
+              >
+                <span class="text-2xl mb-2">🔍</span>
+                <span class="text-sm">Find Customer</span>
+              </button>
+              <button
+                onclick="showSection('knowledge-base')"
+                class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex flex-col items-center"
+              >
+                <span class="text-2xl mb-2">📚</span>
+                <span class="text-sm">Knowledge Base</span>
+              </button>
+              <button
+                onclick="escalateIssue()"
+                class="bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 flex flex-col items-center"
+              >
+                <span class="text-2xl mb-2">🚨</span>
+                <span class="text-sm">Escalate</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Profiles Section -->
+        <div id="customers" class="content-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-800">
+                👥 Customer Profiles
+              </h2>
+              <div class="flex space-x-4">
+                <input
+                  type="text"
+                  id="searchCustomers"
+                  placeholder="Search customers..."
+                  class="px-4 py-2 border rounded-lg"
+                />
+                <button
+                  onclick="refreshCustomers()"
+                  class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg"
+                >
+                  🔄 Refresh
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full table-auto">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Customer
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Contact
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Package
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Last Contact
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="customersTableBody" class="divide-y divide-gray-200">
+                  <!-- Dynamic content will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Support Tickets Section -->
+        <div id="tickets" class="content-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-800">
+                🎫 Support Tickets
+              </h2>
+              <div class="flex space-x-4">
+                <select id="ticketFilter" class="px-4 py-2 border rounded-lg">
+                  <option value="all">All Tickets</option>
+                  <option value="open">Open</option>
+                  <option value="pending">Pending</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="high">High Priority</option>
+                </select>
+                <button
+                  onclick="showSection('new-ticket')"
+                  class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg"
+                >
+                  ➕ New Ticket
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full table-auto">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Ticket ID
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Customer
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Issue Type
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Priority
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Created
+                    </th>
+                    <th
+                      class="px-4 py-3 text-left text-sm font-medium text-gray-900"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="ticketsTableBody" class="divide-y divide-gray-200">
+                  <!-- Dynamic content will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Create New Ticket Section -->
+        <div id="new-ticket" class="content-section hidden">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+              ➕ Create Support Ticket
+            </h2>
+
+            <form id="newTicketForm" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Customer *</label
+                  >
+                  <select
+                    id="ticketCustomer"
+                    required
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="">Select Customer</option>
+                    <option value="1">John Smith - +1-234-567-1001</option>
+                    <option value="2">Sarah Davis - +1-234-567-1002</option>
+                    <option value="3">Mike Johnson - +1-234-567-1003</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Issue Category *</label
+                  >
+                  <select
+                    id="issueCategory"
+                    required
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="connectivity">Connectivity Issues</option>
+                    <option value="speed">Speed/Performance</option>
+                    <option value="equipment">Equipment Problems</option>
+                    <option value="billing">Billing Questions</option>
+                    <option value="installation">Installation/Setup</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Priority Level *</label
+                  >
+                  <select
+                    id="priorityLevel"
+                    required
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="">Select Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Contact Method</label
+                  >
+                  <select
+                    id="contactMethod"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="phone">Phone Call</option>
+                    <option value="email">Email</option>
+                    <option value="chat">Live Chat</option>
+                    <option value="visit">Office Visit</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Issue Subject *</label
+                >
+                <input
+                  type="text"
+                  id="issueSubject"
+                  required
+                  placeholder="Brief description of the issue"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Detailed Description *</label
+                >
+                <textarea
+                  id="issueDescription"
+                  required
+                  rows="4"
+                  placeholder="Provide detailed information about the customer's issue..."
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                ></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Expected Resolution Time</label
+                  >
+                  <select
+                    id="expectedResolution"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="1">Within 1 hour</option>
+                    <option value="4">Within 4 hours</option>
+                    <option value="24">Within 24 hours</option>
+                    <option value="72">Within 72 hours</option>
+                    <option value="168">Within 1 week</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Assign To</label
+                  >
+                  <select
+                    id="assignTicket"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value="">Auto-assign</option>
+                    <option value="tech1">
+                      Technical Team - Alex Rodriguez
+                    </option>
+                    <option value="tech2">
+                      Field Support - Sarah Mitchell
+                    </option>
+                    <option value="billing">Billing Department</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex space-x-4">
+                <button
+                  type="submit"
+                  class="bg-teal-600 hover:bg-teal-700 text-white py-3 px-6 rounded-lg font-medium transition duration-200"
+                >
+                  🎫 Create Ticket
+                </button>
+                <button
+                  type="reset"
+                  class="bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-medium transition duration-200"
+                >
+                  🔄 Clear Form
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Additional sections continue... -->
+      </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="/staff/js/customer-care-dashboard.js"></script>
+  </body>
+</html>
