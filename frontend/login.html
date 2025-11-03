@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login - Dr.Net Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body
+    class="flex items-center justify-center min-h-screen bg-gradient-to-br from-white via-teal-50 to-teal-100"
+  >
+    <div class="absolute top-4 left-4">
+      <a
+        href="/"
+        class="bg-white/80 hover:bg-white text-teal-700 font-semibold px-4 py-2 rounded-lg transition duration-200 flex items-center"
+      >
+        ← Back to Home
+      </a>
+    </div>
+
+    <form
+      id="loginForm"
+      autocomplete="off"
+      class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm"
+    >
+      <div class="text-center mb-6">
+        <div class="w-30 h-20 mx-auto mb-4">
+          <img
+            src="assets/images/logo_image_1.jpg"
+            alt="Dr.Net Logo"
+            class="w-full h-full object-contain rounded-full"
+          />
+        </div>
+
+        <h2 class="text-3xl font-bold text-teal-700">Login</h2>
+        <p class="text-gray-600 text-base mt-3">Welcome to Dr.Net Technology Labs</p>
+      </div>
+
+      <div class="mb-4">
+        <label
+          for="identifier"
+          class="block text-sm font-semibold text-gray-700 mb-1"
+        >
+          Username / Email / Phone / ID
+        </label>
+        <input
+          type="text"
+          id="identifier"
+          placeholder="Enter your Username, Email, Phone, or ID"
+          required
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label
+          for="password"
+          class="block text-sm font-semibold text-gray-700 mb-1"
+        >
+          Password
+        </label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter password"
+          required
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+        />
+      </div>
+
+      <div class="mb-4 flex items-center justify-between">
+        <label class="flex items-center">
+          <input type="checkbox" id="remember" class="mr-2" />
+          <span class="text-sm text-gray-600">Remember me</span>
+        </label>
+        <a
+          href="/forgot_password"
+          onclick="forgotPassword()"
+          class="text-sm text-teal-600 hover:text-teal-800"
+          >Forgot Password?</a
+        >
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-teal-600 text-white py-2 rounded-lg font-bold hover:bg-teal-700 transition duration-200"
+      >
+        Login
+      </button>
+
+      <p id="error" class="text-red-500 text-sm mt-4 text-center hidden">
+        Invalid credentials. Please try again.
+      </p>
+
+      <div class="mt-4 text-center">
+        <p class="text-sm text-gray-600">
+          Don't have an account?
+          <a
+            href="/register"
+            class="text-teal-600 hover:text-teal-800 font-semibold"
+          >
+            Register Here
+          </a>
+        </p>
+      </div>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600">
+          Need help?
+          <a
+            href="#"
+            onclick="showContactInfo()"
+            class="text-teal-600 hover:text-teal-800"
+            >Contact Support</a
+          >
+        </p>
+      </div>
+    </form>
+
+    <script src="assets/js/config.js"></script>
+    <!-- <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const identifier = document.getElementById("identifier").value.trim();
+          const password = document.getElementById("password").value;
+
+          try {
+            const res = await fetch(`${window.BASE_URL}/api/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ identifier, password }),
+            });
+
+            const data = await res.json();
+
+            console.log("Login response:", res.status, data);
+
+            if (res.ok && data.success) {
+              alert("Login successful! Redirecting...");
+              window.location.href = data.redirect || "/";
+            } else {
+              alert("Login failed: " + (data.error || "Unknown error"));
+              document.getElementById("error").classList.remove("hidden");
+            }
+          } catch (err) {
+            console.error("Login error:", err);
+            alert("Network error: " + err.message);
+            document.getElementById("error").classList.remove("hidden");
+          }
+        });
+
+      function forgotPassword() {
+        alert(
+          "Forgot Password\n\nPlease contact customer support to reset your password:\n\nPhone: +1-234-567-8900\nEmail: support@drnet.com"
+        );
+      }
+
+      function showContactInfo() {
+        alert(
+          "Customer Support\n\nPhone: +1-234-567-8900\nEmail: support@drnet.com\nHours: Mon-Fri 9AM-6PM\nEmergency: 24/7 Available"
+        );
+      }
+    </script> -->
+  </body>
+</html>

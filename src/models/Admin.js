@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../config/db');
 
 async function findAdminByUsername(username) {
   const [rows] = await db.execute("SELECT * FROM admins WHERE username = ?", [username]);

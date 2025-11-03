@@ -1,0 +1,356 @@
+
+    
+    <style>
+        /* Custom animations and styles */
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #0f766e 50%, #115e59 100%);
+        }
+        .pulse-ring {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(13, 148, 136, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
+        }
+    </style>
+        <div class="flex flex-1">
+            <!-- Main Content -->
+            <main id="mainContent" class="flex-1 p-4 lg:p-6 lg:ml-0 transition-all duration-300">
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <h1 id="pageTitle" class="text-3xl font-bold text-teal-800">Dashboard</h1>
+                    <p id="pageSubtitle" class="text-teal-600">Welcome to Dr.Net Technology Labs Management System</p>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div id="pageContent">
+                    <!-- Quick Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Active Users Card -->
+                      <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                          <h3 class="text-teal-600 text-sm font-bold mb-4 flex items-center justify-between">
+                              <span>Users Overview</span>
+                              <i class="fas fa-users text-teal-600 ml-2"></i>
+                            </h3>
+                          <div class="flex justify-between space-x-4">
+                              <!-- Active Users -->
+                              <div class="flex-1 bg-teal-100 rounded-lg p-4 cursor-pointer hover:bg-teal-200 transition duration-200"
+                                  onclick="window.location.href='/users/active'">
+                                  <p class="text-teal-700 text-sm font-bold">Active Users</p>
+                                  <h2 class="text-2xl font-bold text-gray-800 mt-1">142</h2>
+                                  <p class="text-green-500 text-sm flex items-center mt-1">
+                                      <i class="fas fa-arrow-up mr-1"></i>12% increase
+                                  </p>
+                              </div>
+
+                              <!-- Expired Users -->
+                              <div class="flex-1 bg-red-100 rounded-lg p-4 cursor-pointer hover:bg-red-200 transition duration-200"
+                                  onclick="window.location.href='/users/expired'">
+                                  <p class="text-red-600 text-sm font-bold">Expired Users</p>
+                                  <h2 class="text-2xl font-bold text-gray-800 mt-1">28</h2>
+                                  <p class="text-red-500 text-sm flex items-center mt-1">
+                                      <i class="fas fa-arrow-down mr-1"></i>5% decrease
+                                  </p>
+                              </div>
+                          </div>
+                      </div>
+
+                        <!-- Monthly Revenue Card -->
+                        <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-green-600 text-sm font-bold">Monthly Income</p>
+                                    <h3 class="text-3xl font-bold text-gray-800 mt-2">Ksh 45,230</h3>
+                                    <p class="text-green-500 text-sm mt-1">
+                                        <i class="fas fa-arrow-up mr-1"></i>8% increase
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Support Tickets Card -->
+                        <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-orange-600 text-sm font-bold">Accessory Revenue</p>
+                                    <h3 class="text-3xl font-bold text-gray-800 mt-2">Ksh 8,000</h3>
+                                    <p class="text-red-500 text-sm mt-1">
+                                        Hardware & accessories
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-box text-orange-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bookings & Website Inquiries Card -->
+                        <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <h3 class="text-teal-600 text-sm font-bold mb-4 flex items-center justify-between">
+                              <span>Requests Overview</span>
+                              <i class="fas fa-calendar-alt text-teal-600 ml-2"></i>
+                            </h3>
+
+                            <div class="flex justify-between space-x-4">
+                                <!-- Bookings -->
+                                <div class="flex-1 bg-blue-100 rounded-lg p-4 cursor-pointer hover:bg-blue-200 transition duration-200"
+                                    onclick="window.location.href='/bookings'">
+                                    <p class="text-blue-600 text-sm font-bold">Bookings</p>
+                                    <h2 class="text-2xl font-bold text-gray-800 mt-1">90</h2>
+                                    <p class="text-green-500 text-sm flex items-center mt-1">
+                                        <i class="fas fa-clock mr-1"></i>Pending bookings
+                                    </p>
+                                </div>
+
+                                <!-- Website Inquiries -->
+                                <div class="flex-1 bg-purple-100 rounded-lg p-4 cursor-pointer hover:bg-purple-200 transition duration-200"
+                                    onclick="window.location.href='/inquiries'">
+                                    <p class="text-purple-600 text-sm font-bold">Website Inquiries</p>
+                                    <h2 class="text-2xl font-bold text-gray-800 mt-1">24</h2>
+                                    <p class="text-purple-500 text-sm flex items-center mt-1">
+                                        <i class="fas fa-envelope mr-1"></i>Pending responses
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts and Analytics Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Revenue Chart -->
+                        <div class="bg-white shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800">Income Trend (Monthly)</h3>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 bg-teal-100 text-teal-700 rounded-lg text-sm font-medium">Monthly</button>
+                                    <button class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium">Quarterly</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Staff List Card -->
+                        <div class="bg-white shadow-lg p-6">
+                          <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800">My Staff</h3>
+                            <a
+                              href="#"
+                              class="inline-flex items-center px-4 py-2 bg-teal-100 text-teal-700 font-semibold text-sm rounded-lg hover:bg-teal-200 transition duration-200"
+                            >
+                              View more
+                              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                              </svg>
+                            </a>
+                          </div>
+
+                          <div class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- Example User Row -->
+                            <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                                <!-- <img src="https://via.placeholder.com/40" alt="User Avatar" class="w-10 h-10 rounded-full object-cover"> -->
+                                <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
+                                  <i class="fas fa-user text-lg"></i>
+                                </div>
+                                <div>
+                                  <p class="font-medium text-gray-800">John Doe</p>
+                                  <p class="text-gray-500 text-sm">Customer Care / Support Dept.</p>
+                                </div>
+                              </div>
+                              <div class="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-gray-600">
+                                <span>johndoe@example.com</span>
+                                <span>+254 712 345 678</span>
+                                <span class="text-green-600 font-semibold">Active</span>
+                              </div>
+                            </div>
+
+                            <!-- Another User Row -->
+                            <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                                <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
+                                  <i class="fas fa-user text-lg"></i>
+                                </div>
+                                <div>
+                                  <p class="font-medium text-gray-800">Jane Smith</p>
+                                  <p class="text-gray-500 text-sm">Admin Assistant / Admin Dept.</p>
+                                </div>
+                              </div>
+                              <div class="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-gray-600">
+                                <span>janesmith@example.com</span>
+                                <span>+254 711 234 567</span>
+                                <span class="text-red-500 font-semibold">Inactive</span>
+                              </div>
+                            </div>
+
+                            <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                                <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
+                                  <i class="fas fa-user text-lg"></i>
+                                </div>
+                                <div>
+                                  <p class="font-medium text-gray-800">Jane Smith</p>
+                                  <p class="text-gray-500 text-sm">Admin Assistant / Admin Dept.</p>
+                                </div>
+                              </div>
+                              <div class="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-gray-600">
+                                <span>janesmith@example.com</span>
+                                <span>+254 711 234 567</span>
+                                <span class="text-red-500 font-semibold">Inactive</span>
+                              </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                                <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
+                                  <i class="fas fa-user text-lg"></i>
+                                </div>
+                                <div>
+                                  <p class="font-medium text-gray-800">Jane Smith</p>
+                                  <p class="text-gray-500 text-sm">Admin Assistant / Admin Dept.</p>
+                                </div>
+                              </div>
+                              <div class="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-gray-600">
+                                <span>janesmith@example.com</span>
+                                <span>+254 711 234 567</span>
+                                <span class="text-red-500 font-semibold">Inactive</span>
+                              </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                                <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
+                                  <i class="fas fa-user text-lg"></i>
+                                </div>
+                                <div>
+                                  <p class="font-medium text-gray-800">Jane Smith</p>
+                                  <p class="text-gray-500 text-sm">Admin Assistant / Admin Dept.</p>
+                                </div>
+                              </div>
+                              <div class="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-gray-600">
+                                <span>janesmith@example.com</span>
+                                <span>+254 711 234 567</span>
+                                <span class="text-red-500 font-semibold">Inactive</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity and Quick Actions -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Recent Activity -->
+                        <div class="lg:col-span-2 bg-white shadow-lg p-6">
+                          <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Recent Activity</h3>
+                            <a href="#" class="inline-flex items-center px-4 py-2 bg-teal-100 text-teal-700 font-semibold text-sm rounded-lg hover:bg-teal-200 transition duration-200">
+                              View more
+                              <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                              </svg>
+                            </a>
+                          </div>                            
+                            <div class="space-y-4">
+                                <div class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-150 rounded-lg transition-colors">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user-plus text-green-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">New user registration</p>
+                                        <p class="text-gray-600 text-sm">John Doe registered as a new client</p>
+                                    </div>
+                                    <span class="text-gray-500 text-sm">2 min ago</span>
+                                </div>
+
+                                <div class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-150 rounded-lg transition-colors">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-ticket-alt text-blue-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">Support ticket created</p>
+                                        <p class="text-gray-600 text-sm">Network connectivity issue reported</p>
+                                    </div>
+                                    <span class="text-gray-500 text-sm">15 min ago</span>
+                                </div>
+
+                                <div class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-150 rounded-lg transition-colors">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-dollar-sign text-purple-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">Payment received</p>
+                                        <p class="text-gray-600 text-sm">Ksh 5,000 from Jane Smith</p>
+                                    </div>
+                                    <span class="text-gray-500 text-sm">1 hour ago</span>
+                                </div>
+
+                                <div class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-150 rounded-lg transition-colors">
+                                    <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-tools text-orange-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">Service completed</p>
+                                        <p class="text-gray-600 text-sm">Router installation at Business Center</p>
+                                    </div>
+                                    <span class="text-gray-500 text-sm">2 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="bg-white shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <a href="register-user.html" class="bg-teal-50 hover:bg-teal-100 rounded-lg p-4 text-center transition-colors group">
+                                    <div class="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-teal-600 transition-colors">
+                                        <i class="fas fa-user-plus text-white text-xl"></i>
+                                    </div>
+                                    <p class="font-medium text-teal-700">Add User</p>
+                                </a>
+
+                                <a href="support-tickets.html" class="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 text-center transition-colors group">
+                                    <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition-colors">
+                                        <i class="fas fa-ticket-alt text-white text-xl"></i>
+                                    </div>
+                                    <p class="font-medium text-blue-700">Create Ticket</p>
+                                </a>
+
+                                <a href="finance.html" class="bg-green-50 hover:bg-green-100 rounded-lg p-4 text-center transition-colors group">
+                                    <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-green-600 transition-colors">
+                                        <i class="fas fa-file-invoice text-white text-xl"></i>
+                                    </div>
+                                    <p class="font-medium text-green-700">Generate Invoice</p>
+                                </a>
+
+                                <a href="reports.html" class="bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-colors group">
+                                    <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-600 transition-colors">
+                                        <i class="fas fa-chart-bar text-white text-xl"></i>
+                                    </div>
+                                    <p class="font-medium text-purple-700">View Reports</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+  <script>
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [{label:'Income (Ksh)',data:[12000,19000,30000,25000,22000,45230],borderColor:'#0d9488',tension:0.3}]
+      },
+      options:{responsive:true,maintainAspectRatio:false}
+    });
+  </script>

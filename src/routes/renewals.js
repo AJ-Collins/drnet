@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createRenewal, getAllRenewals } = require('../models/Renewal');
 const { getUserById, updateUser } = require('../models/User');
-const db = require('../db');
+const db = require('../config/db');
 
 router.get('/', async (req, res) => {
   try {
