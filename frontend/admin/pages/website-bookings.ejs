@@ -1,0 +1,310 @@
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">
+      Website Bookings
+    </h3>
+    <p class="text-teal-600 mt-1">
+      Online Booking Management
+    </p>
+  </div>
+  <button onclick="addNewBooking()"
+    class="bg-teal-500 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
+    <i class="fas fa-plus"></i>
+    <span class="mr-2">New Booking</span>
+  </button>
+</div>
+
+<div class="bg-white shadow-md border border-gray-200 overflow-hidden slide-in">
+  <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-teal-100 border-b border-teal-200">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold text-teal-800"><i class="fas fa-list mr-2"></i>Bookings</h3>
+      <button onclick="refreshBookings()"
+        class="bg-teal-500 hover:bg-teal-700 text-white px-2 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
+        <i class="fas fa-sync animate-spin-slow"></i>
+        <span class="mr-2">Refresh</span>
+      </button>
+    </div>
+    </div>
+    <div id="allRenewalList" class="space-y-4">
+      <p class="text-center text-gray-500 py-8">Loading bookings...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add New Booking Modal -->
+<div id="addBookingModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40">
+    <div class="bg-white w-full max-w-3xl shadow-xl border border-teal-200 overflow-y-auto max-h-[90vh]">
+        <div class="bg-teal-600 text-white p-6 flex justify-between items-center">
+            <h3 id="modalTitle" class="text-2xl font-bold tracking-wide">Add New Booking</h3>
+            <button onclick="closeBookingModal()" class="text-white/90 hover:text-white">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-8 space-y-6 text-gray-700">
+            <form id="bookingForm" onsubmit="createBooking(event)" class="space-y-6">
+                <input type="hidden" id="bookingId">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block font-semibold mb-2">Full Name *</label>
+                        <input required type="text" id="fullName" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"/>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2">Phone Number *</label>
+                        <input required type="text" id="phoneNumber" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"/>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2">Email Address</label>
+                        <input type="email" id="email" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"/>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2">Location *</label>
+                        <input required type="text" id="location" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"/>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2">Exact Location *</label>
+                        <input required type="text" id="exactLocation" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"/>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2">Package *</label>
+                        <select id="package" required class="w-full bg-white p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                            <option value="" disabled selected hidden>Select package...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2">Status</label>
+                        <select id="status" class="w-full bg-white p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                            <option value="Pending">Pending</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Processed">Processed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2">Installation Date</label>
+                        <input type="date" id="installationDate" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"/>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2">Message</label>
+                    <textarea id="message" rows="3" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="p-6 border-t border-gray-200 flex justify-end space-x-4">
+            <button id="addBtn" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-semibold shadow-md flex items-center gap-2 transition">
+                <i class="fas fa-plus"></i> Add
+            </button>
+            <button onclick="closeBookingModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+  // Mock data
+  let bookings = [
+    { id: 1, fullName:'John Doe', phone:'0701001000', location:'Mombasa', exactLocation:'Nyali', email:'john@gmail.com', amount:1500, renewal_date:'2025-11-01', expiry_date:'2025-12-01', status:'Pending', package: 'Basic - KSH 1500' },
+    { id: 2, fullName:'Bob Wilson', phone:'0702002000', location:'Nairobi', exactLocation:'Westlands', email:'bob@gmail.com', amount:1800, renewal_date:'2025-11-03', expiry_date:'2025-12-03', status:'Contacted', package: 'Standard - KSH 2500' },
+    { id: 3, fullName:'Jane Smith', phone:'0703003000', location:'Thika', exactLocation:'Makongeni', email:'jane@gmail.com', amount:2000, renewal_date:'2025-10-15', expiry_date:'2025-11-15', status:'Processed', package: 'Premium - KSH 4000' }
+  ];
+
+  // Packages
+  const packages = [
+    {value: 'Basic - KSH 1500', amount:1500},
+    {value: 'Standard - KSH 2500', amount:2500},
+    {value: 'Premium - KSH 4000', amount:4000}
+  ];
+
+  // Helper
+  const $ = id => document.getElementById(id);
+
+  // Render bookings (no reload)
+  async function fetchBookings() {
+    return bookings.filter(x => !x.is_deleted);
+  }
+
+  async function renderBookings() {
+    const container = $('allRenewalList');
+    const list = await fetchBookings();
+
+    if (!list.length) {
+      container.innerHTML = `<p class="text-center text-gray-500 py-8">No bookings found</p>`;
+      return;
+    }
+
+    let html = '';
+    list.forEach(r => {
+      const isActive = dayjs().isBefore(dayjs(r.expiry_date));
+      const expiry = dayjs(r.expiry_date);
+      const renewed = dayjs(r.renewal_date);
+      const pkgName = r.package?.split(' - ')[0] || 'Basic';
+
+      const statusOptions = ['Pending','Contacted','Processed'].map(st => `
+        <option value="${st}" ${r.status===st?'selected':''}>${st}</option>
+      `).join('');
+
+      html += `
+        <div class="bg-gray-50 p-5 border hover:border-teal-300 hover:bg-teal-50 transition-all mb-3">
+          <div class="grid grid-cols-1 sm:grid-cols-7 gap-3 items-center">
+
+            <div class="flex items-center space-x-2 overflow-hidden">
+              <span class="font-semibold text-gray-800 truncate">${r.fullName}</span>
+              <span class="px-2 py-0.5 rounded text-xs font-medium ${
+                r.status === 'Processed' ? 'bg-green-100 text-green-700' :
+                r.status === 'Contacted' ? 'bg-blue-100 text-blue-700' :
+                'bg-yellow-100 text-yellow-700'
+              }">${r.status}</span>
+            </div>
+
+            <div class="text-sm text-gray-700">${r.phone}</div>
+            <div class="text-sm text-gray-700 truncate">${r.location}</div>
+
+            <div class="text-sm text-gray-700 whitespace-nowrap">Booked on: ${renewed.format('MMM D, YYYY')}</div>
+
+            <div class="flex flex-col text-right whitespace-nowrap">
+              <span class="text-xs text-gray-500">Pkg: ${pkgName} <strong>KES ${Number(r.amount).toLocaleString()}</strong></span>
+            </div>
+
+            <div class="flex justify-end space-x-2 sm:col-start-7 sm:justify-end ml-auto">
+              <div class="inline-flex shadow-sm border border-gray-300 bg-white overflow-hidden" role="group">
+                <select onchange="updateStatus(${r.id}, this.value)" class="text-xs font-medium px-3 py-1.5 bg-transparent border-0 focus:outline-none cursor-pointer hover:bg-gray-50 transition
+                  ${r.status === 'Processed' ? 'text-green-700' : 
+                  r.status === 'Contacted' ? 'text-blue-700' : 
+                  'text-amber-700'}">
+                  ${statusOptions}
+                </select>
+                <button onclick="editBooking(${r.id})" class="px-2.5 py-1.5 text-blue-600 hover:bg-blue-50 transition border-l border-gray-300" title="Edit">
+                  <i class="fas fa-edit text-sm"></i>
+                </button>
+                <button onclick="deleteBooking(${r.id})" class="px-2.5 py-1.5 text-red-600 hover:bg-red-50 transition border-l border-gray-300" title="Delete">
+                  <i class="fas fa-trash text-sm"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+  }
+
+  // Refresh
+  function refreshBookings() {
+    renderBookings();
+  }
+
+  // Modal: Open / Close
+  function addNewBooking() {
+    clearModal();
+    $('modalTitle').textContent = 'Add New Booking';
+    $('addBtn').innerHTML = '<i class="fas fa-plus"></i> Add';
+    $('addBookingModal').classList.remove('hidden');
+  }
+
+  function closeBookingModal() {
+    $('addBookingModal').classList.add('hidden');
+  }
+
+  function clearModal() {
+    $('bookingForm').reset();
+    $('bookingId').value = '';
+  }
+
+  // Populate package dropdown
+  function initPackageSelect() {
+    const sel = $('package');
+    while (sel.options.length > 1) {
+      sel.remove(1);
+    }
+
+    packages.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.value;
+      opt.textContent = p.value;
+      if (p.amount) opt.dataset.amount = p.amount;
+      sel.appendChild(opt);
+    });
+  }
+
+  // Edit booking
+  function editBooking(id) {
+    const bk = bookings.find(x => x.id == id);
+    if (!bk) return;
+
+    $('bookingId').value = bk.id;
+    $('fullName').value = bk.fullName;
+    $('phoneNumber').value = bk.phone;
+    $('email').value = bk.email || '';
+    $('location').value = bk.location;
+    $('exactLocation').value = bk.exactLocation;
+    $('package').value = bk.package || '';
+    $('status').value = bk.status;
+    $('installationDate').value = bk.installationDate || '';
+    $('message').value = bk.message || '';
+
+    $('modalTitle').textContent = 'Edit Booking';
+    $('addBtn').innerHTML = '<i class="fas fa-save"></i> Update';
+
+    $('addBookingModal').classList.remove('hidden');
+  }
+
+  // Save (Add or Update)
+  function saveBooking() {
+    const form = $('bookingForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const pkg = $('package').value;
+    const amount = $('package').selectedOptions[0]?.dataset.amount || 1500;
+    const id = $('bookingId').value;
+
+    const data = {
+      fullName: $('fullName').value.trim(),
+      phone: $('phoneNumber').value.trim(),
+      email: $('email').value.trim(),
+      location: $('location').value.trim(),
+      exactLocation: $('exactLocation').value.trim(),
+      package: pkg,
+      amount: Number(amount),
+      status: $('status').value,
+      installationDate: $('installationDate').value,
+      message: $('message').value.trim()
+    };
+
+    if (id) {
+      const idx = bookings.findIndex(x => x.id == id);
+      if (idx > -1) bookings[idx] = { ...bookings[idx], ...data };
+    } else {
+      data.id = Date.now();
+      data.renewal_date = dayjs().format('YYYY-MM-DD');
+      data.expiry_date = dayjs().add(30, 'day').format('YYYY-MM-DD');
+      bookings.push(data);
+    }
+
+    closeBookingModal();
+    renderBookings();
+  }
+
+  // Update status (cycle)
+  function updateStatus(id, newStatus) {
+    const bk = bookings.find(x => x.id == id);
+    if (bk) {
+      bk.status = newStatus;
+      renderBookings();
+    }
+  }
+
+  // Delete (soft)
+  function deleteBooking(id) {
+    if (!confirm('Delete this booking?')) return;
+    const bk = bookings.find(x => x.id == id);
+    if (bk) bk.is_deleted = true;
+    renderBookings();
+  }
+  window.onload = () => {
+    initPackageSelect();
+    $('addBtn').onclick = saveBooking;
+    renderBookings();
+  };
+</script>

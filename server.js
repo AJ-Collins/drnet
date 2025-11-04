@@ -83,7 +83,10 @@ const validPages = [
   'support-tickets', 'finance', 'reports', 'settings',
   'register-user', 'profile', 'renewals', 'website-bookings',
   'invoice-generator', 'service-assignments', 'equipment-inventory',
-  'admin-assistant-dashboard', 'supervisor-dashboard', 'deleted-users'
+  'admin-assistant-dashboard', 'supervisor-dashboard', 'deleted-users',
+  'attendance', 
+  'team-communication',
+  'equipments'
 ];
 
 app.get('/admin/:page', (req, res) => {

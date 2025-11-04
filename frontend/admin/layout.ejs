@@ -13,19 +13,20 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     body { font-family: 'Inter', sans-serif; }
+    html, body { height: 100%; overflow: hidden; }
   </style>
 </head>
-<body class="bg-gradient-to-br from-white via-teal-50 to-teal-100 min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-white via-teal-50 to-teal-100">
 
   <!-- Main Layout Container -->
-  <div class="flex flex-1 overflow-hidden">
+  <div class="flex h-screen overflow-hidden">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="w-64 bg-gradient-to-b from-teal-700 to-teal-800 text-white transition-all duration-300 ease-in-out flex-shrink-0 lg:relative fixed inset-y-0 left-0 z-40">
-      <div class="flex flex-col h-full overflow-y-auto">
+    <aside id="sidebar" class="w-64 bg-gradient-to-b from-teal-700 to-teal-800 text-white transition-all duration-300 ease-in-out flex-shrink-0 lg:relative fixed inset-y-0 left-0 z-50">
+      <div class="flex flex-col h-full">
         
         <!-- Logo & Brand -->
-        <div class="p-6 border-b border-teal-600">
+        <div class="p-6 border-b border-teal-600 flex-shrink-0">
           <div class="flex items-center space-x-3">
             <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
               <i class="fas fa-network-wired text-white text-xl"></i>
@@ -36,16 +37,20 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Navigation -->
-        <nav class="flex-1 p-4 space-y-2">
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
           <% const pages = [
               {slug:'dashboard',          name:'Dashboard'},
               {slug:'manage-users',       name:'User Management'},
               {slug:'service-management', name:'Service Management'},
+              {slug:'attendance', name:'Staff Attendance'},
               {slug:'support-tickets',    name:'Support Tickets'},
-              {slug:'finance',            name:'Finance'},
-              {slug:'reports',            name:'Reports & Analytics'},
+              {slug:'finance',            name:'Finance & Reports'},
+              {slug:'renewals',           name:'Renewals'},
+              {slug:'website-bookings',   name:'Website Bookings'},
+              {slug:'team-communication', name:'Team Communication'},
+              {slug:'equipments', name:'Equipments & Tools'},
               {slug:'settings',           name:'Settings'}
             ]; %>
           <% pages.forEach(p => { %>
@@ -55,7 +60,19 @@
                     ? 'bg-teal-900/50 text-white font-medium' 
                     : 'text-teal-100 font-medium' %>
                 transition-all duration-200 hover:bg-teal-900/50 hover:text-white hover:translate-x-1">
-              <i class="fas <%= p.slug==='dashboard'?'fa-chart-pie':p.slug.includes('users')?'fa-users':p.slug.includes('service')?'fa-tools':p.slug.includes('ticket')?'fa-ticket-alt':p.slug.includes('finance')?'fa-dollar-sign':p.slug.includes('reports')?'fa-chart-bar':'fa-cog' %> w-6 text-lg"></i>
+              <i class="fas <%= 
+                  p.slug==='dashboard' ? 'fa-chart-pie' :
+                  p.slug.includes('users') ? 'fa-users' :
+                  p.slug.includes('service') ? 'fa-tools' :
+                  p.slug.includes('attendance') ? 'fa-cog' :
+                  p.slug.includes('ticket') ? 'fa-ticket-alt' :
+                  p.slug.includes('finance') ? 'fa-dollar-sign' :
+                  p.slug.includes('renewals') ? 'fa-sync-alt' :
+                  p.slug.includes('booking') ? 'fa-globe' :
+                  p.slug.includes('communication') ? 'fa-comments' :
+                  p.slug.includes('equipments') ? 'fa-tools' :
+                  'fa-cog' 
+              %> w-6 text-lg"></i>
               <span><%= p.name %></span>
             </a>
           <% }); %>
@@ -67,10 +84,10 @@
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden"></div>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
       <!-- Header -->
-      <header class="bg-white shadow-md border-b border-teal-100">
+      <header class="bg-white shadow-md border-b border-teal-100 flex-shrink-0 z-40">
         <div class="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <!-- Menu Toggle (All Screens) -->
@@ -164,18 +181,21 @@
       </header>
 
       <!-- Page Content Container -->
-      <main class="flex-1 p-2 sm:p-2 lg:p-6">
-        <div id="pageContent" class="p-2 min-h-full">
-           <%- include(`pages/${currentPage}`) %>
-        </div>
-      </main>
+      <div class="flex-1 overflow-y-auto flex flex-col">
+        <!-- Page Content Container -->
+        <main class="p-2 sm:p-2 lg:p-6 flex-1">
+          <div id="pageContent" class="p-2">
+            <%- include(`pages/${currentPage}`) %>
+          </div>
+        </main>
 
-      <!-- Footer -->
-      <footer class="bg-gray-700 text-white py-4 mt-auto">
-        <div class="container mx-auto px-4 text-center text-sm">
-          <p>&copy; 2025 Dr.Net Technology Labs. All rights reserved.</p>
-        </div>
-      </footer>
+        <!-- Footer -->
+        <footer class="bg-gray-700 text-white py-4">
+          <div class="container mx-auto px-4 text-center text-sm">
+            <p>&copy; 2025 Dr.Net Technology Labs. All rights reserved.</p>
+          </div>
+        </footer>
+      </div>
     </div>
   </div>
 

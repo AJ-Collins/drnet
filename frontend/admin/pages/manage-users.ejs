@@ -1,394 +1,696 @@
-<!DOCTYPE html>
-<html lang="en" class="bg-gray-100">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Cache-Control"
-      content="no-cache, no-store, must-revalidate"
-    />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>Dr.Net Admin Portal - Manage Users</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="css/styles.css" />
+<style>
+  .stat-card { transition: all 0.3s ease; }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+  .pulse-ring { animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(13, 148, 136, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide-in { animation: slideIn 0.4s ease-out; }
+  .user-row:hover { background: linear-gradient(to right, #f0fdfa, #ccfbf1); }
+</style>
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">
+      User Management
+    </h3>
+      <p class="text-teal-600 mt-1">
+        Manage all clients and staff members efficiently
+      </p>
+  </div>
+  <div class="flex gap-3">
+    <button id="addClientBtn" onclick="openAddUserModal('client')" class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
+      <i class="fas fa-user-plus group-hover:scale-110 transition-transform"></i>
+      <span>Add Client</span>
+    </button>
+    <button id="addStaffBtn" onclick="openAddUserModal('staff')" class="hidden bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
+      <i class="fas fa-user-tie group-hover:scale-110 transition-transform"></i>
+      <span>Add Staff</span>
+    </button>
+  </div>
+</div>
 
-    <style>
-      /* Professional CTIO Styling */
-      .ctio-professional {
-        background: #1e293b;
-      }
+<!-- Tabs Navigation -->
+<div class="mb-6 slide-in px-6">
+  <div class="bg-white rounded-xl shadow-md p-2 inline-flex border border-gray-200">
+    <button id="clientsTab" onclick="switchTab('clients')" class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md">
+      <i class="fas fa-users mr-2"></i>Clients (<span id="clientCount">0</span>)
+    </button>
+    <button id="staffTab" onclick="switchTab('staff')" class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-gray-600 hover:bg-gray-50">
+      <i class="fas fa-user-tie mr-2"></i>Staff (<span id="staffCount">0</span>)
+    </button>
+  </div>
+</div>
 
-      /* Sidebar styling */
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 280px;
-        z-index: 50;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-      }
+<!-- Clients Section -->
+<div id="clientsSection" class="space-y-6 px-6">
+  <!-- Search & Filters -->
+  <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+        <input type="text" id="clientSearch" placeholder="Search name, email, phone..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Subscriptions</label>
+        <select id="clientSubFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+          <option value="">All Subscriptions</option>
+          <option>Paid</option>
+          <option>Unpaid</option>
+          <option>Overdue</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <select id="clientStatusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+          <option value="">All Status</option>
+          <option>Active</option>
+          <option>Expired</option>
+          <option>Suspended</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Plans</label>
+        <select id="clientPlanFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+          <option value="">All Plans</option>
+          <option>Premium 50Mbps</option>
+          <option>Standard 20Mbps</option>
+          <option>Basic 10Mbps</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-      @media (min-width: 1024px) {
-        .sidebar {
-          transform: translateX(0);
-        }
-        .main-content {
-          margin-left: 280px;
-        }
-      }
-
-      /* Mobile toggle */
-      .mobile-toggle {
-        display: block;
-      }
-
-      @media (min-width: 1024px) {
-        .mobile-toggle {
-          display: none;
-        }
-      }
-
-      /* Hover effects */
-      .nav-item:hover {
-        transform: translateX(8px);
-        background: rgba(255, 255, 255, 0.15);
-      }
-    </style>
-  </head>
-  <body class="bg-gray-50 min-h-screen">
-    <!-- Mobile backdrop -->
-    <div
-      id="sidebarBackdrop"
-      class="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden hidden transition-opacity duration-300"
-    ></div>
-
-    <!-- Modern Sidebar -->
-    <aside
-      id="sidebar"
-      class="sidebar ctio-professional shadow-2xl flex flex-col text-white"
-    >
-      <!-- Sidebar Header -->
-      <div class="p-6 border-b border-white/20">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <div
-              class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-lg"
-            >
-              <i class="fas fa-network-wired text-xl text-white"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold">DR.NET CTIO</h2>
-              <p class="text-white/80 text-sm">Julius Ojwang - CTO</p>
-            </div>
-          </div>
-          <button
-            id="closeSidebar"
-            class="mobile-toggle text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
-          >
-            <i class="fas fa-times text-lg"></i>
-          </button>
+  <!-- Clients Table -->
+  <div class="bg-white shadow-md border border-gray-200 overflow-hidden slide-in">
+    <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-teal-100 border-b border-teal-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-teal-800"><i class="fas fa-list mr-2"></i>Client Directory</h3>
+        <div class="flex items-center space-x-2">
+          <button onclick="exportData('clients')" class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-50 rounded-lg transition-all"><i class="fas fa-download mr-1"></i>Export</button>
         </div>
       </div>
-      <nav class="p-4 space-y-2 flex-1 overflow-y-auto">
-        <a
-          href="dashboard.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-chart-pie text-lg"></i>
-          </div>
-          <span class="font-medium">Dashboard</span>
-        </a>
-        <a
-          href="register-user.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-user-plus text-lg"></i>
-          </div>
-          <span class="font-medium">Register User</span>
-        </a>
-        <a
-          href="manage-users.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl bg-white/20 text-white transition-all duration-300"
-        >
-          <div
-            class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center mr-4 transition-all duration-300"
-          >
-            <i class="fas fa-users text-lg"></i>
-          </div>
-          <span class="font-medium">Manage Users</span>
-        </a>
-        <a
-          href="deleted-users.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-trash text-lg"></i>
-          </div>
-          <span class="font-medium">Deleted Users</span>
-        </a>
-        <a
-          href="service-assignments.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-tools text-lg"></i>
-          </div>
-          <span class="font-medium">Service Assignments</span>
-        </a>
-        <a
-          href="support-tickets.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-ticket-alt text-lg"></i>
-          </div>
-          <span class="font-medium">Support Tickets</span>
-        </a>
-        <a
-          href="renewals.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-sync-alt text-lg"></i>
-          </div>
-          <span class="font-medium">Renewals</span>
-        </a>
-        <a
-          href="invoice-generator.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-file-invoice-dollar text-lg"></i>
-          </div>
-          <span class="font-medium">Finance and Reports</span>
-        </a>
-        <a
-          href="website-bookings.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-globe text-lg"></i>
-          </div>
-          <span class="font-medium">Website Bookings</span>
-        </a>
-        <a
-          href="team-communication.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-comments text-lg"></i>
-          </div>
-          <span class="font-medium">Team Communication</span>
-        </a>
-        <a
-          href="settings.html"
-          class="nav-item group flex items-center px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/15 text-white/90 hover:text-white"
-        >
-          <div
-            class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-white/20 transition-all duration-300"
-          >
-            <i class="fas fa-cog text-lg"></i>
-          </div>
-          <span class="font-medium">Settings</span>
-        </a>
-      </nav>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full" id="clientsTable">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">
+              <input type="checkbox" id="selectAllClients" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">
+              User
+            </th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Contact Info</th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Service Plan</th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Status</th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Last Payment</th>
+            <th class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="clientsTableBody" class="divide-y divide-gray-100"></tbody>
+      </table>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-sm text-gray-600">Showing <span id="clientRange">0-0</span> of <span id="totalClients">0</span> clients</p>
+        <div class="flex items-center space-x-2" id="clientPagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-      <!-- User Profile Section -->
-      <div class="p-4 border-t border-white/20">
-        <div class="flex items-center space-x-3 mb-4">
-          <div
-            class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center"
-          >
-            <span class="text-white font-bold text-lg">JO</span>
-          </div>
-          <div>
-            <p class="text-sm font-medium">Julius Ojwang</p>
-            <p class="text-white/70 text-xs">Chief Technology Officer</p>
-          </div>
+<!-- Staff Section -->
+<div id="staffSection" class="hidden space-y-6 px-6">
+  <!-- Search & Filters -->
+  <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 slide-in">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-filter text-teal-600 mr-2"></i>Staff Filters</h3>
+      <button onclick="resetFilters('staff')" class="text-teal-600 hover:text-teal-700 text-sm font-medium"><i class="fas fa-redo mr-1"></i>Reset</button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        <input type="text" id="staffSearch" placeholder="Search staff members..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+      </div>
+      <select id="staffDeptFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white">
+        <option value="">All Departments</option>
+        <option>Technical</option>
+        <option>Support</option>
+        <option>Sales</option>
+        <option>Management</option>
+      </select>
+      <select id="staffRoleFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white">
+        <option value="">All Roles</option>
+        <option>Network Engineer</option>
+        <option>Support Agent</option>
+        <option>Sales Rep</option>
+        <option>Manager</option>
+      </select>
+      <select id="staffStatusFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white">
+        <option value="">All Status</option>
+        <option>Active</option>
+        <option>On Leave</option>
+        <option>Inactive</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Staff Table -->
+  <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden slide-in">
+    <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-teal-100 border-b border-teal-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-purple-800"><i class="fas fa-users-cog mr-2"></i>Staff Directory</h3>
+        <button onclick="exportData('staff')" class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-50 rounded-lg transition-all"><i class="fas fa-download mr-1"></i>Export</button>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full" id="staffTable">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">
+              <input type="checkbox" id="selectAllStaff" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">
+              Staff Member
+            </th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Role & Department</th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Contact</th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Status</th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Joined</th>
+            <th class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="staffTableBody" class="divide-y divide-gray-100"></tbody>
+      </table>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-sm text-gray-600">Showing <span id="staffRange">0-0</span> of <span id="totalStaff">0</span> staff members</p>
+        <div class="flex items-center space-x-2" id="staffPagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add User -->
+<div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="text-2xl font-bold text-teal-800 flex items-center">
+          <i class="fas fa-user-plus mr-3 text-teal-600"></i><span id="modalTitle">Add New User</span>
+        </h3>
+        <p class="text-gray-600 text-sm mt-1">Fill in the details to create a new account</p>
+      </div>
+      <button onclick="closeAddUserModal()" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <form id="addUserForm" class="space-y-5">
+      <input type="hidden" id="editUserId" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-user text-gray-400 mr-2"></i>Full Name *</label>
+          <input type="text" id="fullName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
         </div>
-        <button
-          onclick="logout()"
-          class="w-full bg-red-600/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
-        >
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Log Out</span>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-envelope text-gray-400 mr-2"></i>Email Address *</label>
+          <input type="email" id="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-phone text-gray-400 mr-2"></i>Phone Number *</label>
+          <input type="tel" id="phone" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-id-card text-gray-400 mr-2"></i>ID Number</label>
+          <input type="text" id="idNumber" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-map-marker-alt text-gray-400 mr-2"></i>Address</label>
+        <input type="text" id="address" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div id="planContainer">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-wifi text-gray-400 mr-2"></i>Service Plan *</label>
+          <select id="plan" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white">
+            <option value="">Select plan</option>
+            <option>Premium 50Mbps</option>
+            <option>Standard 20Mbps</option>
+            <option>Basic 10Mbps</option>
+          </select>
+        </div>
+        <div id="roleContainer" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-briefcase text-gray-400 mr-2"></i>Role *</label>
+          <select id="role" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white">
+            <option value="">Select role</option>
+            <option>Network Engineer</option>
+            <option>Support Agent</option>
+            <option>Sales Rep</option>
+            <option>Manager</option>
+          </select>
+        </div>
+        <div id="departmentContainer" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-building text-gray-400 mr-2"></i>Department *</label>
+          <select id="department" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white">
+            <option value="">Select department</option>
+            <option>Technical</option>
+            <option>Support</option>
+            <option>Sales</option>
+            <option>Management</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+        <p class="text-sm text-teal-800"><i class="fas fa-info-circle mr-2"></i><strong>Note:</strong> Login credentials will be sent via email.</p>
+      </div>
+
+      <div class="flex space-x-3 pt-4">
+        <button type="button" onclick="closeAddUserModal()" class="flex-1 py-3 px-6 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-all">
+          <i class="fas fa-times mr-2"></i>Cancel
+        </button>
+        <button type="submit" class="flex-1 py-3 px-6 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-semibold hover:from-teal-700 hover:to-teal-800 shadow-lg hover:shadow-xl transition-all">
+          <i class="fas fa-check mr-2"></i><span id="submitBtnText">Create User</span>
         </button>
       </div>
-    </aside>
+    </form>
+  </div>
+</div>
 
-    <!-- Mobile Menu Toggle -->
-    <button
-      id="toggleSidebar"
-      class="mobile-toggle fixed top-6 left-6 z-50 bg-white/20 backdrop-blur-lg text-white p-3 rounded-xl shadow-lg hover:bg-white/30 transition-all duration-300"
-    >
-      <i class="fas fa-bars text-lg"></i>
-    </button>
+<script>
+  // Data Storage
+  let clients = JSON.parse(localStorage.getItem('clients')) || [];
+  let staff = JSON.parse(localStorage.getItem('staff')) || [];
+  let currentUserType = 'client';
+  let currentPage = { clients: 1, staff: 1 };
+  const itemsPerPage = 10;
 
-    <!-- Main Content -->
-    <main
-      class="main-content p-2 md:p-4 overflow-y-auto transition-all duration-300 ease-in-out"
-    >
-      <section id="manage-users" class="mt-6 space-y-8">
-        <div class="flex justify-between items-center">
-          <h3 class="text-2xl font-bold text-gray-800">Manage Users</h3>
-          <button
-            id="exportButton"
-            onclick="exportToCSV()"
-            class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
-          >
-            <i class="fas fa-download mr-2"></i> Export Clients to CSV
-          </button>
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    loadSampleData();
+    renderTables();
+    setupEventListeners();
+  });
+
+  function loadSampleData() {
+    if (clients.length === 0) {
+      clients = [
+        { id: 'CLT-001', name: 'John Doe', email: 'john.doe@example.com', phone: '+254 712 345 678', idNumber: '12345678', address: 'Nairobi', plan: 'Premium 50Mbps', status: 'Active', lastPayment: 'Ksh 5,000 - 3 days ago', paymentDate: Date.now() - 3*24*60*60*1000 },
+        { id: 'CLT-002', name: 'Jane Smith', email: 'jane.smith@client.com', phone: '+254 711 234 567', idNumber: '87654321', address: 'Mombasa', plan: 'Basic 10Mbps', status: 'Expired', lastPayment: 'Ksh 1,500 - 15 days overdue', paymentDate: Date.now() - 18*24*60*60*1000 },
+        { id: 'CLT-003', name: 'Robert Wilson', email: 'robert.w@business.com', phone: '+254 720 111 222', idNumber: '11223344', address: 'Kisumu', plan: 'Standard 20Mbps', status: 'Active', lastPayment: 'Ksh 3,000 - 1 week ago', paymentDate: Date.now() - 7*24*60*60*1000 }
+      ];
+    }
+    if (staff.length === 0) {
+      staff = [
+        { id: 'STF-101', name: 'Mike Kamau', email: 'mike.kamau@drnet.co', phone: '+254 722 333 444', idNumber: '22334455', address: 'HQ', role: 'Network Engineer', department: 'Technical', status: 'Active', joined: 'Jan 15, 2023' },
+        { id: 'STF-102', name: 'Sarah Akinyi', email: 'sarah.a@drnet.co', phone: '+254 733 555 666', idNumber: '33445566', address: 'Nairobi', role: 'Support Agent', department: 'Support', status: 'Active', joined: 'Mar 10, 2024' },
+        { id: 'STF-103', name: 'David Mwangi', email: 'david.m@drnet.co', phone: '+254 744 777 888', idNumber: '44556677', address: 'HQ', role: 'Sales Manager', department: 'Sales', status: 'On Leave', joined: 'Jun 20, 2022' }
+      ];
+    }
+    saveData();
+  }
+
+  function saveData() {
+    localStorage.setItem('clients', JSON.stringify(clients));
+    localStorage.setItem('staff', JSON.stringify(staff));
+  }
+
+  function setupEventListeners() {
+    document.getElementById('clientSearch').addEventListener('input', () => filterAndRender('clients'));
+    document.getElementById('staffSearch').addEventListener('input', () => filterAndRender('staff'));
+    ['clientSubFilter', 'clientStatusFilter', 'clientPlanFilter', 'staffDeptFilter', 'staffRoleFilter', 'staffStatusFilter'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', () => filterAndRender(id.includes('client') ? 'clients' : 'staff'));
+    });
+    document.getElementById('selectAllClients').addEventListener('change', toggleSelectAll);
+    document.getElementById('selectAllStaff').addEventListener('change', toggleSelectAll);
+    document.getElementById('addUserForm').addEventListener('submit', handleFormSubmit);
+  }
+
+  function switchTab(tab) {
+    document.getElementById('clientsSection').classList.toggle('hidden', tab !== 'clients');
+    document.getElementById('staffSection').classList.toggle('hidden', tab !== 'staff');
+    document.getElementById('clientsTab').classList.toggle('bg-gradient-to-r', tab === 'clients');
+    document.getElementById('clientsTab').classList.toggle('from-teal-600', tab === 'clients');
+    document.getElementById('clientsTab').classList.toggle('to-teal-700', tab === 'clients');
+    document.getElementById('clientsTab').classList.toggle('text-white', tab === 'clients');
+    document.getElementById('clientsTab').classList.toggle('shadow-md', tab === 'clients');
+    document.getElementById('clientsTab').classList.toggle('text-gray-600', tab !== 'clients');
+    document.getElementById('clientsTab').classList.toggle('hover:bg-gray-50', tab !== 'clients');
+
+    const staffTab = document.getElementById('staffTab');
+    staffTab.classList.toggle('bg-gradient-to-r', tab === 'staff');
+    staffTab.classList.toggle('from-teal-600', tab === 'staff');
+    staffTab.classList.toggle('to-teal-700', tab === 'staff');
+    staffTab.classList.toggle('text-white', tab === 'staff');
+    staffTab.classList.toggle('shadow-md', tab === 'staff');
+    staffTab.classList.toggle('text-gray-600', tab !== 'staff');
+    staffTab.classList.toggle('hover:bg-gray-50', tab !== 'staff');
+
+    document.getElementById('addClientBtn').classList.toggle('hidden', tab !== 'clients');
+    document.getElementById('addStaffBtn').classList.toggle('hidden', tab !== 'staff');
+
+    renderTables();
+  }
+
+  function openAddUserModal(type, user = null) {
+    currentUserType = type;
+    const modal = document.getElementById('addUserModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.querySelector('div').classList.replace('scale-95', 'scale-100'), 10);
+
+    document.getElementById('modalTitle').textContent = user ? `Edit ${type === 'client' ? 'Client' : 'Staff'}` : `Add New ${type === 'client' ? 'Client' : 'Staff'}`;
+    document.getElementById('submitBtnText').textContent = user ? 'Update' : 'Create';
+
+    document.getElementById('planContainer').classList.toggle('hidden', type !== 'client');
+    document.getElementById('roleContainer').classList.toggle('hidden', type !== 'staff');
+    document.getElementById('departmentContainer').classList.toggle('hidden', type !== 'staff');
+
+    if (user) {
+      document.getElementById('editUserId').value = user.id;
+      document.getElementById('fullName').value = user.name;
+      document.getElementById('email').value = user.email;
+      document.getElementById('phone').value = user.phone;
+      document.getElementById('idNumber').value = user.idNumber || '';
+      document.getElementById('address').value = user.address || '';
+      if (type === 'client') document.getElementById('plan').value = user.plan;
+      if (type === 'staff') {
+        document.getElementById('role').value = user.role;
+        document.getElementById('department').value = user.department;
+      }
+    } else {
+      document.getElementById('addUserForm').reset();
+      document.getElementById('editUserId').value = '';
+    }
+  }
+
+  function closeAddUserModal() {
+    const modal = document.getElementById('addUserModal');
+    modal.querySelector('div').classList.replace('scale-100', 'scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 200);
+  }
+
+  function handleFormSubmit(e) {
+    e.preventDefault();
+    const formData = {
+      name: document.getElementById('fullName').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      idNumber: document.getElementById('idNumber').value.trim(),
+      address: document.getElementById('address').value.trim(),
+    };
+
+    const editId = document.getElementById('editUserId').value;
+    if (currentUserType === 'client') {
+      formData.plan = document.getElementById('plan').value;
+      formData.status = editId ? getUserById('clients', editId).status : 'Active';
+      formData.lastPayment = editId ? getUserById('clients', editId).lastPayment : 'Ksh 0 - Never';
+      formData.paymentDate = editId ? getUserById('clients', editId).paymentDate : Date.now();
+    } else {
+      formData.role = document.getElementById('role').value;
+      formData.department = document.getElementById('department').value;
+      formData.status = editId ? getUserById('staff', editId).status : 'Active';
+      formData.joined = editId ? getUserById('staff', editId).joined : new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    if (editId) {
+      const index = (currentUserType === 'client' ? clients : staff).findIndex(u => u.id === editId);
+      if (index > -1) (currentUserType === 'client' ? clients : staff)[index] = { ...formData, id: editId };
+      Swal.fire('Updated!', `${currentUserType === 'client' ? 'Client' : 'Staff'} updated successfully.`, 'success');
+    } else {
+      const newId = `${currentUserType === 'client' ? 'CLT' : 'STF'}-${String((currentUserType === 'client' ? clients : staff).length + 1).padStart(3, '0')}`;
+      (currentUserType === 'client' ? clients : staff).push({ ...formData, id: newId });
+      Swal.fire('Created!', `${currentUserType === 'client' ? 'Client' : 'Staff'} added successfully.`, 'success');
+    }
+
+    saveData();
+    closeAddUserModal();
+    renderTables();
+  }
+
+  function getUserById(type, id) {
+    return (type === 'clients' ? clients : staff).find(u => u.id === id);
+  }
+
+  function viewUser(id) {
+    const user = getUserById(currentUserType, id);
+    if (!user) return;
+    const isClient = currentUserType === 'clients';
+    Swal.fire({
+      title: `${isClient ? 'Client' : 'Staff'} Details`,
+      html: `
+        <div class="text-left space-y-2">
+          <p><strong>Name:</strong> ${user.name}</p>
+          <p><strong>Email:</strong> ${user.email}</p>
+          <p><strong>Phone:</strong> ${user.phone}</p>
+          ${user.idNumber ? `<p><strong>ID:</strong> ${user.idNumber}</p>` : ''}
+          ${user.address ? `<p><strong>Address:</strong> ${user.address}</p>` : ''}
+          ${isClient ? `<p><strong>Plan:</strong> ${user.plan}</p>` : `<p><strong>Role:</strong> ${user.role} - ${user.department}</p>`}
+          <p><strong>Status:</strong> <span class="${user.status === 'Active' ? 'text-green-600' : user.status === 'Expired' ? 'text-red-600' : 'text-yellow-600'}">${user.status}</span></p>
+          ${isClient ? `<p><strong>Last Payment:</strong> ${user.lastPayment}</p>` : `<p><strong>Joined:</strong> ${user.joined}</p>`}
         </div>
+      `,
+      icon: 'info',
+      confirmButtonColor: '#0d9488'
+    });
+  }
 
-        <!-- Tab Navigation -->
-        <div class="mb-8">
-          <div class="flex space-x-1 bg-gray-200 p-1 rounded-lg w-fit">
-            <button
-              id="clientsTab"
-              class="tab-button px-6 py-3 rounded-md font-medium transition-all duration-200 bg-white text-blue-600 shadow-sm active"
-              onclick="switchUserTab('clients')"
-            >
-              <i class="fas fa-users mr-2"></i> Clients
-            </button>
-            <button
-              id="staffTab"
-              class="tab-button px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-600"
-              onclick="switchUserTab('staff')"
-            >
-              <i class="fas fa-user-tie mr-2"></i> Staff
-            </button>
-            <button
-              id="attendanceTab"
-              class="tab-button px-6 py-3 rounded-md font-medium transition-all duration-200 text-gray-600 hover:text-blue-600"
-              onclick="switchUserTab('attendance')"
-            >
-              <i class="fas fa-user-check mr-2"></i> Attendance
-            </button>
+  function editUser(id) {
+    const user = getUserById(currentUserType, id);
+    if (user) openAddUserModal(currentUserType, user);
+  }
+
+  function messageUser(id) {
+    const user = getUserById(currentUserType, id);
+    Swal.fire({
+      title: `Message ${user.name}`,
+      input: 'textarea',
+      inputLabel: 'Your Message',
+      showCancelButton: true,
+      confirmButtonText: 'Send',
+      cancelButtonText: 'Cancel'
+    }).then(result => {
+      if (result.isConfirmed && result.value) {
+        Swal.fire('Sent!', 'Your message has been delivered.', 'success');
+      }
+    });
+  }
+
+  function deleteUser(id) {
+    Swal.fire({
+      title: 'Delete User?',
+      text: 'This action cannot be undone!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete!'
+    }).then(result => {
+      if (result.isConfirmed) {
+        if (currentUserType === 'clients') clients = clients.filter(u => u.id !== id);
+        else staff = staff.filter(u => u.id !== id);
+        saveData();
+        renderTables();
+        Swal.fire('Deleted!', 'User removed successfully.', 'success');
+      }
+    });
+  }
+
+  function renderTables() {
+    renderTable('clients');
+    renderTable('staff');
+    updateCounts();
+  }
+
+  function renderTable(type) {
+    const data = type === 'clients' ? clients : staff;
+    const filtered = applyFilters(type, data);
+    const paginated = paginate(filtered, currentPage[type], itemsPerPage);
+    const tbody = document.getElementById(type + 'TableBody');
+    const isClient = type === 'clients';
+
+    tbody.innerHTML = paginated.map(user => `
+      <tr class="user-row transition-all duration-200 cursor-pointer">
+        <td class="p-4">
+          <div class="flex items-center space-x-3">
+            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" value="${user.id}">
+            <div class="w-11 h-11 bg-gradient-to-br ${isClient ? getPlanColor(user.plan) : getRoleColor(user.role)} rounded-full flex items-center justify-center shadow-md">
+              <span class="text-white font-bold text-sm">${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</span>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-900">${user.name}</p>
+              <p class="text-xs text-gray-500">ID: #${user.id}</p>
+            </div>
           </div>
-        </div>
-        <!-- Clients Section -->
-        <div
-          id="clientsSection"
-          class="bg-white p-8 rounded-xl shadow-lg border border-gray-200"
-        >
-          <!-- Search and Filter Controls for Clients -->
-          <div class="mb-6 flex flex-col md:flex-row md:items-center gap-4">
-            <div class="flex-1">
-              <input
-                id="clientSearchInput"
-                type="text"
-                placeholder="Search by name, phone, or location..."
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-              />
-            </div>
-            <div class="flex gap-4">
-              <select
-                id="subscriptionFilter"
-                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-              >
-                <option value="all">All Subscriptions</option>
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
-              </select>
-              <select
-                id="statusFilter"
-                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-              >
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="expired">Expired</option>
-              </select>
-            </div>
+        </td>
+        <td class="p-4">
+          <div class="space-y-1">
+            <p class="text-gray-700 text-sm flex items-center"><i class="fas fa-envelope text-gray-400 mr-2 text-xs"></i>${user.email}</p>
+            <p class="text-gray-600 text-sm flex items-center"><i class="fas fa-phone text-gray-400 mr-2 text-xs"></i>${user.phone}</p>
           </div>
-          <div id="clientListContent" class="space-y-4"></div>
-        </div>
-
-        <!-- Staff Section -->
-        <div
-          id="staffSection"
-          class="hidden bg-white p-8 rounded-xl shadow-lg border border-gray-200"
-        >
-          <!-- Search and Filter Controls for Staff -->
-          <div class="mb-6 flex flex-col md:flex-row md:items-center gap-4">
-            <div class="flex-1">
-              <input
-                id="staffSearchInput"
-                type="text"
-                placeholder="Search by name, employee ID, position, or department..."
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
-              />
-            </div>
-            <div class="flex gap-4">
-              <select
-                id="departmentFilter"
-                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
-              >
-                <option value="all">All Departments</option>
-                <option value="Technical">Technical</option>
-                <option value="Customer Service">Customer Service</option>
-                <option value="Sales">Sales</option>
-                <option value="Operations">Operations</option>
-                <option value="Administration">Administration</option>
-                <option value="Finance">Finance</option>
-                <option value="Marketing">Marketing</option>
-              </select>
-              <select
-                id="staffStatusFilter"
-                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
-              >
-                <option value="all">All Staff</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
+        </td>
+        ${isClient ? `
+        <td class="p-4">
+          <span class="px-3 py-1.5 ${getPlanBadge(user.plan)} rounded-lg text-sm font-semibold">
+            <i class="fas fa-wifi mr-1"></i>${user.plan}
+          </span>
+        </td>
+        ` : `
+        <td class="p-4">
+          <p class="font-semibold text-gray-800">${user.role}</p>
+          <p class="text-sm text-gray-500"><i class="fas fa-building text-gray-400 mr-1"></i>${user.department}</p>
+        </td>
+        `}
+        <td class="p-4">
+          <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(user.status)} rounded-lg text-sm font-semibold">
+            ${user.status === 'Active' ? '<span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>' : ''}
+            ${user.status === 'On Leave' ? '<span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>' : ''}
+            ${user.status}
+          </span>
+        </td>
+        <td class="p-4">
+          <div class="text-sm">
+            <p class="text-gray-700 font-medium">${isClient ? user.lastPayment.split(' - ')[0] : user.joined.split(', ')[0]}</p>
+            <p class="text-gray-500 text-xs">${isClient ? user.lastPayment.split(' - ')[1] : user.joined.split(', ')[1]}</p>
           </div>
-          <div id="staffListContent" class="space-y-4"></div>
-        </div>
+        </td>
+        <td class="p-4">
+          <div class="flex items-center justify-end space-x-2">
+            <button onclick="viewUser('${user.id}')" class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="View"><i class="fas fa-eye"></i></button>
+            <button onclick="editUser('${user.id}')" class="w-9 h-9 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit"><i class="fas fa-edit"></i></button>
+            <button onclick="messageUser('${user.id}')" class="w-9 h-9 flex items-center justify-center text-purple-600 hover:bg-purple-50 rounded-lg transition-all" title="Message"><i class="fas fa-comment"></i></button>
+            <button onclick="deleteUser('${user.id}')" class="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
 
-      </section>
-      <!-- View User Modal -->
-      <div
-        id="viewUserModal"
-        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      >
-        <div
-          id="viewUserModalContent"
-          class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        ></div>
-      </div>
-    </main>
-    <script src="js/config.js"></script>
-    <script src="js/common.js"></script>
-    <script src="js/sidebar-responsive.js"></script>
-    <script src="js/manage-users.js"></script>
-  </body>
-</html>
+    renderPagination(type, filtered.length);
+    updateRange(type, filtered.length);
+  }
+
+  function applyFilters(type, data) {
+    let filtered = [...data];
+    const search = document.getElementById(type + 'Search').value.toLowerCase();
+    if (search) {
+      filtered = filtered.filter(u => 
+        u.name.toLowerCase().includes(search) || 
+        u.email.toLowerCase().includes(search) || 
+        u.phone.includes(search)
+      );
+    }
+
+    if (type === 'clients') {
+      const sub = document.getElementById('clientSubFilter').value;
+      const status = document.getElementById('clientStatusFilter').value;
+      const plan = document.getElementById('clientPlanFilter').value;
+      if (sub) filtered = filtered.filter(u => sub === 'Overdue' ? u.lastPayment.includes('overdue') : sub === 'Paid' ? !u.lastPayment.includes('overdue') : true);
+      if (status) filtered = filtered.filter(u => u.status === status);
+      if (plan) filtered = filtered.filter(u => u.plan === plan);
+    } else {
+      const dept = document.getElementById('staffDeptFilter').value;
+      const role = document.getElementById('staffRoleFilter').value;
+      const status = document.getElementById('staffStatusFilter').value;
+      if (dept) filtered = filtered.filter(u => u.department === dept);
+      if (role) filtered = filtered.filter(u => u.role === role);
+      if (status) filtered = filtered.filter(u => u.status === status);
+    }
+    return filtered;
+  }
+
+  function paginate(array, page, size) {
+    const start = (page - 1) * size;
+    return array.slice(start, start + size);
+  }
+
+  function renderPagination(type, total) {
+    const pages = Math.ceil(total / itemsPerPage);
+    const container = document.getElementById(type + 'Pagination');
+    container.innerHTML = '';
+    if (pages <= 1) return;
+
+    const prev = `<button ${currentPage[type] === 1 ? 'disabled' : ''} onclick="changePage('${type}', ${currentPage[type] - 1})" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"><i class="fas fa-chevron-left mr-1"></i>Previous</button>`;
+    container.innerHTML += prev;
+
+    for (let i = 1; i <= pages; i++) {
+      container.innerHTML += `<button ${i === currentPage[type] ? 'class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium"' : 'class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"'} onclick="changePage('${type}', ${i})">${i}</button>`;
+    }
+
+    const next = `<button ${currentPage[type] === pages ? 'disabled' : ''} onclick="changePage('${type}', ${currentPage[type] + 1})" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">Next<i class="fas fa-chevron-right ml-1"></i></button>`;
+    container.innerHTML += next;
+  }
+
+  function changePage(type, page) {
+    currentPage[type] = page;
+    renderTable(type);
+  }
+
+  function updateRange(type, total) {
+    const start = (currentPage[type] - 1) * itemsPerPage + 1;
+    const end = Math.min(currentPage[type] * itemsPerPage, total);
+    document.getElementById(type + 'Range').textContent = total ? `${start}-${end}` : '0-0';
+    document.getElementById(`total${type === 'clients' ? 'Clients' : 'Staff'}`).textContent = total;
+  }
+
+  function updateCounts() {
+    document.getElementById('clientCount').textContent = clients.length;
+    document.getElementById('staffCount').textContent = staff.length;
+  }
+
+  function resetFilters(type) {
+    document.getElementById(type + 'Search').value = '';
+    const filters = type === 'clients' ? ['clientSubFilter', 'clientStatusFilter', 'clientPlanFilter'] : ['staffDeptFilter', 'staffRoleFilter', 'staffStatusFilter'];
+    filters.forEach(id => document.getElementById(id).value = '');
+    currentPage[type] = 1;
+    renderTable(type);
+  }
+
+  function toggleSelectAll(e) {
+    const checkboxes = document.querySelectorAll(`#${e.target.id.replace('selectAll', '').toLowerCase()}TableBody input[type="checkbox"]`);
+    checkboxes.forEach(cb => cb.checked = e.target.checked);
+  }
+
+  function exportData(type) {
+    const data = type === 'clients' ? clients : staff;
+    const csv = [
+      Object.keys(data[0]).join(','),
+      ...data.map(row => Object.values(row).join(','))
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${type}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  }
+
+  function getPlanColor(plan) {
+    const colors = { 'Premium 50Mbps': 'from-teal-400 to-teal-600', 'Standard 20Mbps': 'from-blue-400 to-blue-600', 'Basic 10Mbps': 'from-pink-400 to-red-500' };
+    return colors[plan] || 'from-gray-400 to-gray-600';
+  }
+
+  function getRoleColor(role) {
+    const colors = { 'Network Engineer': 'from-purple-400 to-purple-600', 'Support Agent': 'from-green-400 to-green-600', 'Sales Rep': 'from-orange-400 to-orange-600', 'Manager': 'from-indigo-400 to-indigo-600' };
+    return colors[role] || 'from-gray-400 to-gray-600';
+  }
+
+  function getPlanBadge(plan) {
+    const badges = { 'Premium 50Mbps': 'bg-blue-100 text-blue-700', 'Standard 20Mbps': 'bg-purple-100 text-purple-700', 'Basic 10Mbps': 'bg-yellow-100 text-yellow-700' };
+    return badges[plan] || 'bg-gray-100 text-gray-700';
+  }
+
+  function getStatusBadge(status) {
+    const badges = { 'Active': 'bg-green-100 text-green-700', 'Expired': 'bg-red-100 text-red-700', 'Suspended': 'bg-orange-100 text-orange-700', 'On Leave': 'bg-yellow-100 text-yellow-700', 'Inactive': 'bg-gray-100 text-gray-700' };
+    return badges[status] || 'bg-gray-100 text-gray-700';
+  }
+
+  function filterAndRender(type) {
+    currentPage[type] = 1;
+    renderTable(type);
+  }
+</script>

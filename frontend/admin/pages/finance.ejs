@@ -1,0 +1,1765 @@
+<style>
+        .tab-button.active {
+            background: linear-gradient(to right, #0d9488, #0f766e);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .tab-button:not(.active):hover {
+            background-color: #f0fdfa;
+            color: #0f766e;
+        }
+        .receipt-modal {
+            transition: all 0.3s ease;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h3 class="text-2xl font-bold text-teal-800">
+              Finance & Reports
+            </h3>
+            <p class="text-teal-600 mt-1">
+              Manage invoices, receipts, payslips, expenses, and generate reports
+            </p>
+          </div>
+        </div>
+        <!-- Tab Navigation -->
+        <div class="w-full mt-6 mb-8">
+          <div class="flex flex-wrap w-full gap-2 bg-white/60 backdrop-blur border border-gray-200 p-2 shadow-sm">
+              
+              <button id="invoicesTab"
+                  class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 bg-white text-gray-700 active"
+                  onclick="showTab('invoices')">
+                  <i data-lucide="scroll-text" class="w-5 h-5"></i> Client Invoices
+              </button>
+
+              <button id="receiptsTab"
+                  class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+                  onclick="showTab('receipts')">
+                  <i data-lucide="receipt" class="w-5 h-5"></i> Payment Receipts
+              </button>
+
+              <button id="payslipsTab"
+                  class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+                  onclick="showTab('payslips')">
+                  <i data-lucide="wallet" class="w-5 h-5"></i> Staff Payslips
+              </button>
+
+              <button id="expensesTab"
+                  class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+                  onclick="showTab('expenses')">
+                  <i data-lucide="credit-card" class="w-5 h-5"></i> Expenses
+              </button>
+
+              <button id="salesTab"
+                  class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+                  onclick="showTab('sales')">
+                  <i data-lucide="trending-up" class="w-5 h-5"></i> Sales
+              </button>
+
+              <button id="dailyReportsTab"
+                  class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+                  onclick="showTab('dailyReports')">
+                  <i data-lucide="file-text" class="w-5 h-5"></i> Reports
+              </button>
+
+              <button id="analyticsTab"
+                  class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+                  onclick="showTab('analytics')">
+                  <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Analytics
+              </button>
+
+          </div>
+      </div>
+
+        <!-- Tab Content Sections -->
+        <section id="reports-finance" class="space-y-8 pb-20">
+            <!-- Invoices Section -->
+            <div id="invoicesSection" class="tab-content space-y-8">
+                <h3 class="text-2xl font-bold text-teal-600 mb-8">
+                    Client Invoices & Communication
+                </h3>
+                
+                <!-- Invoice Generation -->
+                <div class="bg-white/90 backdrop-blur-sm p-8 border border-teal-100">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-6 border-b pb-2">
+                        Generate Client Invoice
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                      <!-- Select Client -->
+                      <div>
+                          <label class="block text-sm font-semibold text-gray-700 mb-2">Select Client</label>
+                          <select id="invoiceUser" class="w-full bg-white p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                              <option value="">Choose a client...</option>
+                          </select>
+                      </div>
+
+                      <!-- Buttons Right Side -->
+                      <div class="flex justify-end space-x-3">
+                          <button onclick="addInvoiceItem()" class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                              Add Item
+                          </button>
+
+                          <button onclick="generateInvoice()" class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                              Generate Invoice PDF
+                          </button>
+                      </div>
+                  </div>
+                    
+                    <div id="invoiceItemsContainer" class="mt-6 space-y-4">
+                        <div class="p-4 bg-teal-50 border border-teal-200 text-sm text-teal-800">
+                            No items added yet. Click "Add Item" to start building the invoice.
+                        </div>
+                    </div>
+
+                    <div id="invoicePreview" class="hidden mt-8 p-6 bg-teal-50 border border-teal-300 shadow-inner">
+                        <h5 class="text-lg font-bold text-teal-800 mb-3">Invoice Preview:</h5>
+                        <pre id="invoicePreviewContent" class="font-mono text-sm text-gray-700 whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- SMS Templates -->
+                <div class="bg-white/90 backdrop-blur-sm p-8 border border-teal-100">
+                    <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+                        Client Communication Templates (SMS/Email)
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <button onclick="generateSMSTemplate('invoice')" class="p-5 bg-teal-50 border-2 border-teal-200 hover:border-teal-400 transition-all duration-200 transform hover:-translate-y-1 shadow-md">
+                            <div class="text-3xl mb-2 text-teal-600">📧</div>
+                            <div class="font-semibold text-teal-800">New Invoice SMS</div>
+                            <div class="text-sm text-teal-600">Send invoice notification</div>
+                        </button>
+                        <button onclick="generateSMSTemplate('reminder')" class="p-6 bg-orange-50 border-2 border-orange-200 hover:border-orange-400 transition-all duration-200 transform hover:-translate-y-1 shadow-md">
+                            <div class="text-3xl mb-2 text-orange-600">⏰</div>
+                            <div class="font-semibold text-orange-800">Payment Reminder SMS</div>
+                            <div class="text-sm text-orange-600">Send overdue reminder</div>
+                        </button>
+                        <button onclick="generateSMSTemplate('confirmation')" class="p-6 bg-green-50 border-2 border-green-200 hover:border-green-400 transition-all duration-200 transform hover:-translate-y-1 shadow-md">
+                            <div class="text-3xl mb-2 text-green-600">✅</div>
+                            <div class="font-semibold text-green-800">Payment Confirmation</div>
+                            <div class="text-sm text-green-600">Confirm payment received</div>
+                        </button>
+                    </div>
+                    <div id="smsPreview" class="hidden mt-6 p-6 bg-gray-50 rounded-xl border border-gray-300">
+                        <h5 class="text-lg font-bold text-gray-800 mb-3">SMS Preview:</h5>
+                        <pre id="smsPreviewContent" class="font-mono text-sm text-gray-700 whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipts Section -->
+            <div id="receiptsSection" class="tab-content hidden space-y-8">
+                <h3 class="text-2xl font-bold text-teal-600 mb-8">
+                    Payment Receipts
+                </h3>
+                
+                <!-- Receipt Generation -->
+                <div class="bg-white/90 backdrop-blur-sm p-8 border border-teal-100">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-6 border-b pb-2">
+                        Generate Payment Receipt
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Select Client</label>
+                            <select id="receiptClient" class="w-full p-4 rounded-xl bg-white border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                                <option value="">Choose a client...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Amount Paid (KES)</label>
+                            <input type="number" id="receiptAmount" placeholder="e.g. 5500" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100" />
+                        </div>
+                        <div class="flex items-end justify-end">
+                            <button onclick="generateReceipt()" class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
+                              Generate Receipt
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Receipts -->
+                <div class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100">
+                    <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+                        Recent Receipts
+                    </h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-teal-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Receipt ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Client</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receiptsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Receipts will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payslips Section -->
+            <div id="payslipsSection" class="tab-content hidden space-y-8">
+                <h3 class="text-2xl font-bold text-teal-600 mb-8">
+                    Staff Payslips Management
+                </h3>
+                
+                <!-- Individual Payslip Generation -->
+                <div class="bg-white/90 backdrop-blur-sm p-8 border border-teal-100">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-6 border-b pb-2">
+                        Generate Staff Payslip (Individual)
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end whitespace-nowrap">
+                      <div>
+                          <label class="block text-sm font-semibold text-gray-700 mb-2">Select Staff Member</label>
+                          <select id="payslipStaff" onchange="checkPayslipFormCompletion()" class="w-full bg-white p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                              <option value="">Choose a staff member...</option>
+                          </select>
+                      </div>
+
+                      <div>
+                          <label class="block text-sm font-semibold text-gray-700 mb-2">Pay Period</label>
+                          <input type="month" id="payPeriod" onchange="checkPayslipFormCompletion()" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100" value="2025-10" />
+                      </div>
+
+                      <div></div>
+
+                      <div class="flex items-end justify-end space-x-3 flex-nowrap">
+                          <button onclick="generatePayslip()" class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
+                              Generate Payslip
+                          </button>
+
+                          <button id="payslipActionButton" onclick="handlePayslipAction()" class="bg-gray-500 hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group" disabled>
+                              Send Payslip
+                          </button>
+                      </div>
+                  </div>
+
+                    <div id="payslipPreview" class="hidden mt-8 p-6 bg-teal-50 border border-teal-300 shadow-inner">
+                        <h5 class="text-lg font-bold text-teal-800 mb-3">Payslip Preview:</h5>
+                        <pre id="payslipPreviewContent" class="font-mono text-sm text-gray-700 whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Bulk Payslip Actions -->
+                <div class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100">
+                    <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+                        Bulk Actions
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end whitespace-nowrap">
+                      <div>
+                          <label class="block text-sm font-semibold text-gray-700 mb-2">Department</label>
+                          <select id="bulkDepartment" class="w-full bg-white p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                              <option value="all">All Departments</option>
+                              <option value="Technical">Technical</option>
+                              <option value="Customer Service">Customer Service</option>
+                              <option value="Sales">Sales</option>
+                              <option value="Operations">Operations</option>
+                              <option value="Administration">Administration</option>
+                              <option value="Finance">Finance</option>
+                          </select>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-semibold text-gray-700 mb-2">Month</label>
+                          <input type="month" id="bulkMonth" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100" value="2025-10" />
+                      </div>
+                      <div></div>
+                      <div class="flex items-end justify-end space-x-3 flex-nowrap">
+                          <button onclick="generateBulkPayslips()" class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
+                              Generate All PDFs
+                          </button>
+
+                          <button onclick="generateBulkPayslipSMS()" class="bg-teal-600 hover:bg-teal-900 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
+                              Send All SMS
+                          </button>
+                      </div>
+                  </div>
+                    <div id="bulkPayslipResult" class="mt-6 p-4 bg-gray-50 hidden"></div>
+                </div>
+            </div>
+
+            <!-- Daily Reports Section -->
+            <div id="dailyReportsSection" class="tab-content hidden space-y-8">
+                <div class="flex items-center justify-between mb-8">
+                      <h3 class="text-2xl font-bold text-teal-600">Daily & Operational Reports </h3>
+
+                      <!-- <button onclick="" 
+                          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300">
+                          + New Sale
+                      </button> -->
+                  </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                              <div>
+                                <h3 class="text-teal-600 text-sm font-bold mb-1">Today's Reports</h3>
+                                <h2 id="monthlyExpenses" class="text-2xl font-bold text-gray-800">0</h2>
+                              </div>
+
+                              <!-- <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+                              </div> -->
+                            </div>
+                          </div>
+                          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                              <div>
+                                <h3 class="text-teal-600 text-sm font-bold mb-1">This Week</h3>
+                                <h2 id="yearlyExpenses" class="text-2xl font-bold text-gray-800">0</h2>
+                              </div>
+
+                              <!-- <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+                              </div> -->
+                            </div>
+                          </div>
+                          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                              <div>
+                                <h3 class="text-teal-600 text-sm font-bold mb-1">High Priority</h3>
+                                <h2 id="largestExpense" class="text-2xl font-bold text-gray-800">0</h2>
+                              </div>
+
+                              <!-- <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-money-bill-wave text-blue-600 text-xl"></i>
+                              </div> -->
+                            </div>
+                          </div>
+                          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                              <div>
+                                <h3 class="text-teal-600 text-sm font-bold mb-1">Urgent Issues</h3>
+                                <h2 id="totalExpenses" class="text-2xl font-bold text-gray-800">0</h2>
+                              </div>
+
+                              <!-- <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-coins text-blue-600 text-xl"></i>
+                              </div> -->
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100">
+                          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-2 flex-1">
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                                <input id="searchInput" type="text" placeholder="Client, tech, ID…" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"/>
+                              </div>
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                                <select id="serviceTypeFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                                  <option value="">All Types</option>
+                                  <option value="daily-operations">Daily Operations</option>
+                                  <option value="equipment-status">Equipment Status</option>
+                                  <option value="team-performance">Team Performance</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                                <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                                  <option value="">All Priorities</option>
+                                  <option value="normal">Normal</option>
+                                  <option value="high">High</option>
+                                  <option value="urgent">Urgent</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                                <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                                  <option value="">All Priorities</option>
+                                  <option value="normal">Normal</option>
+                                  <option value="high">High</option>
+                                  <option value="urgent">Urgent</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div class="flex-shrink-0 pb-3">
+                                <button id="fetchNewReports" class="w-full md:w-auto px-6 py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition shadow-md flex items-center gap-2 justify-center">
+                                    <i class="fas fa-sync animate-spin-slow"></i>
+                                    Refresh
+                                </button>
+                            </div>
+                          </div>
+                          <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+                              Reports List 
+                          </h4>
+                          <div class="overflow-x-auto">
+                              <table class="min-w-full divide-y divide-gray-200">
+                                  <thead class="bg-teal-50">
+                                      <tr>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Report Name</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Type</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Priority</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Date</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Status</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Actions</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody id="reportsTableBody" class="bg-white divide-y divide-gray-200">
+                                      <!-- Reports will be populated here -->
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+            </div>
+            
+            <!-- Analytics Section -->
+            <div id="analyticsSection" class="tab-content hidden space-y-8">
+                <h3 class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 bg-clip-text text-transparent mb-8">
+                    📊 Advanced Analytics Reports
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Financial Reports -->
+                    <div class="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-teal-100">
+                        <h5 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                            💹 Financial Reports
+                        </h5>
+                        <div class="space-y-3">
+                            <button onclick="generateAnalyticsReport('revenue')" class="w-full p-3 bg-teal-50 rounded-lg border border-teal-200 hover:bg-teal-100 transition text-left shadow-sm">
+                                <div class="font-medium text-teal-800">Revenue Report</div>
+                                <div class="text-sm text-teal-600">Monthly/yearly revenue analysis</div>
+                            </button>
+                            <button onclick="generateAnalyticsReport('outstanding')" class="w-full p-3 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition text-left shadow-sm">
+                                <div class="font-medium text-red-800">Outstanding Payments</div>
+                                <div class="text-sm text-red-600">Unpaid invoices and overdue analysis</div>
+                            </button>
+                            <button onclick="generateAnalyticsReport('expenses')" class="w-full p-3 bg-orange-50 rounded-lg border border-orange-200 hover:bg-orange-100 transition text-left shadow-sm">
+                                <div class="font-medium text-orange-800">Expenditure Breakdown</div>
+                                <div class="text-sm text-orange-600">Categorized monthly expenses</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Client Reports -->
+                    <div class="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-teal-100">
+                        <h5 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                            👥 Client Reports
+                        </h5>
+                        <div class="space-y-3">
+                            <button onclick="generateAnalyticsReport('clients')" class="w-full p-3 bg-cyan-50 rounded-lg border border-cyan-200 hover:bg-cyan-100 transition text-left shadow-sm">
+                                <div class="font-medium text-cyan-800">Client Summary</div>
+                                <div class="text-sm text-cyan-600">Active/inactive client statistics</div>
+                            </button>
+                            <button onclick="generateAnalyticsReport('packages')" class="w-full p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition text-left shadow-sm">
+                                <div class="font-medium text-blue-800">Package Adoption</div>
+                                <div class="text-sm text-blue-600">Most popular package analysis</div>
+                            </button>
+                            <button onclick="generateAnalyticsReport('retention')" class="w-full p-3 bg-purple-50 rounded-lg border border-purple-200 hover:bg-purple-100 transition text-left shadow-sm">
+                                <div class="font-medium text-purple-800">Client Retention</div>
+                                <div class="text-sm text-purple-600">Churn and retention rates over time</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Staff Reports -->
+                    <div class="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-teal-100">
+                        <h5 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                            👨‍💼 Staff & HR Reports
+                        </h5>
+                        <div class="space-y-3">
+                            <button onclick="generateAnalyticsReport('staffSummary')" class="w-full p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition text-left shadow-sm">
+                                <div class="font-medium text-green-800">Staff Headcount</div>
+                                <div class="text-sm text-green-600">Headcount by department and location</div>
+                            </button>
+                            <button onclick="generateAnalyticsReport('performance')" class="w-full p-3 bg-yellow-50 rounded-lg border border-yellow-200 hover:bg-yellow-100 transition text-left shadow-sm">
+                                <div class="font-medium text-yellow-800">Performance Metrics</div>
+                                <div class="text-sm text-yellow-600">Staff productivity and efficiency</div>
+                            </button>
+                            <button onclick="generateAnalyticsReport('payroll')" class="w-full p-3 bg-rose-50 rounded-lg border border-rose-200 hover:bg-rose-100 transition text-left shadow-sm">
+                                <div class="font-medium text-rose-800">Payroll Cost Analysis</div>
+                                <div class="text-sm text-rose-600">Total payroll expense trends</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Report Preview -->
+                <div id="analyticsReportPreview" class="hidden mt-8 p-6 bg-gray-50 rounded-xl border border-gray-300 shadow-inner">
+                    <h5 class="text-lg font-bold text-gray-800 mb-3">Report Result: <span id="reportTypeHeader" class="text-teal-600"></span></h5>
+                    <pre id="analyticsReportContent" class="font-mono text-sm text-gray-700 whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+            
+            <!-- Sales Section -->
+            <div id="salesSection" class="tab-content hidden">
+                  <div class="flex items-center justify-between mb-8">
+                      <h3 class="text-2xl font-bold text-teal-600">Sales Management </h3>
+
+                      <button onclick="openSalesModal()" 
+                          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300">
+                          + New Sale
+                      </button>
+                  </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                              <div>
+                                <h3 class="text-teal-600 text-sm font-bold mb-1"> Today's Sales</h3>
+                                <h2 id="monthlyExpenses" class="text-2xl font-bold text-gray-800">KES 0</h2>
+                              </div>
+
+                              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                              <div>
+                                <h3 class="text-teal-600 text-sm font-bold mb-1">This Month</h3>
+                                <h2 id="yearlyExpenses" class="text-2xl font-bold text-gray-800">KES 0</h2>
+                              </div>
+
+                              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                              <div>
+                                <h3 class="text-teal-600 text-sm font-bold mb-1">This Year</h3>
+                                <h2 id="largestExpense" class="text-2xl font-bold text-gray-800">KES 0</h2>
+                              </div>
+
+                              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-money-bill-wave text-blue-600 text-xl"></i>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                            <div class="flex items-center justify-between">
+                              <div>
+                                <h3 class="text-teal-600 text-sm font-bold mb-1">Total Sales</h3>
+                                <h2 id="totalExpenses" class="text-2xl font-bold text-gray-800">KES 0</h2>
+                              </div>
+
+                              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-coins text-blue-600 text-xl"></i>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100">
+                          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-2 flex-1">
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                                <input id="searchInput" type="text" placeholder="Client, tech, ID…" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"/>
+                              </div>
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Types</label>
+                                <select id="serviceTypeFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                                  <option value="all">All Types</option>
+                                  <option value="router">Router</option>
+                                  <option value="cable">Cable</option>
+                                  <option value="adapter">Adapter</option>
+                                  <option value="switch">Switch</option>
+                                  <option value="modem">Modem</option>
+                                  <option value="antenna">Antenna</option>
+                                  <option value="connector">Connector</option>
+                                  <option value="splitter">Splitter</option>
+                                  <option value="extender">WiFi Extender</option>
+                                  <option value="other">Other</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Month</label>
+                                <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                                  <option value="">All Months</option>
+                                  <option value="january">January</option>
+                                  <option value="february">February</option>
+                                  <option value="march">March</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div class="flex-shrink-0 pb-1">
+                                <button id="saleExportBtn" class="w-full md:w-auto px-6 py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition shadow-md">
+                                    Export
+                                </button>
+                            </div>
+                          </div>
+                          <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+                              Expenses
+                          </h4>
+                          <div class="overflow-x-auto">
+                              <table class="min-w-full divide-y divide-gray-200">
+                                  <thead class="bg-teal-50">
+                                      <tr>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Date</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Type</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Customer</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Quantity</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Description</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Amount</th>
+                                          <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Actions</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody id="salesTableBody" class="bg-white divide-y divide-gray-200">
+                                      <!-- Receipts will be populated here -->
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+            </div>
+            
+            <!-- Expenses Section -->
+            <div id="expensesSection" class="tab-content hidden">
+              <div class="flex items-center justify-between mb-8">
+                  <h3 class="text-2xl font-bold text-teal-600">Expenses Tracking</h3>
+
+                  <button onclick="openExpenseModal()" 
+                      class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300">
+                      + Record New
+                  </button>
+              </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                      <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <h3 class="text-teal-600 text-sm font-bold mb-1">This Month</h3>
+                            <h2 id="monthlyExpenses" class="text-2xl font-bold text-gray-800">KES 0</h2>
+                          </div>
+
+                          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <h3 class="text-teal-600 text-sm font-bold mb-1">This Year</h3>
+                            <h2 id="yearlyExpenses" class="text-2xl font-bold text-gray-800">KES 0</h2>
+                          </div>
+
+                          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <h3 class="text-teal-600 text-sm font-bold mb-1">Largest Expense</h3>
+                            <h2 id="largestExpense" class="text-2xl font-bold text-gray-800">KES 0</h2>
+                          </div>
+
+                          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-money-bill-wave text-blue-600 text-xl"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <h3 class="text-teal-600 text-sm font-bold mb-1">Total Expenses</h3>
+                            <h2 id="totalExpenses" class="text-2xl font-bold text-gray-800">KES 0</h2>
+                          </div>
+
+                          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-coins text-blue-600 text-xl"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100">
+                      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-2 flex-1">
+                          <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                            <input id="searchInput" type="text" placeholder="Client, tech, ID…" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"/>
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                            <select id="serviceTypeFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                              <option value="all">All Categories</option>
+                              <option value="bills">Bills & Utilities</option>
+                              <option value="salaries">Staff Salaries</option>
+                              <option value="petty_cash">Petty Cash</option>
+                              <option value="equipment">Equipment</option>
+                              <option value="office_supplies">Office Supplies</option>
+                              <option value="maintenance">Maintenance</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vendor</label>
+                            <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                              <option value="">All Vendors</option>
+                              <option value="assigned">KPLC</option>
+                              <option value="in_progress">KRA</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="flex-shrink-0 pb-1">
+                            <button id="exportBtn" class="w-full md:w-auto px-6 py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition shadow-md">
+                                Export
+                            </button>
+                        </div>
+                      </div>
+                      <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+                          Expenses
+                      </h4>
+                      <div class="overflow-x-auto">
+                          <table class="min-w-full divide-y divide-gray-200">
+                              <thead class="bg-teal-50">
+                                  <tr>
+                                      <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Date</th>
+                                      <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Category</th>
+                                      <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Vendor/Payee</th>
+                                      <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Description</th>
+                                      <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Amount</th>
+                                      <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Actions</th>
+                                  </tr>
+                              </thead>
+                              <tbody id="expensesTableBody" class="bg-white divide-y divide-gray-200">
+                                  <!-- Receipts will be populated here -->
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Receipt View Modal -->
+    <div id="receiptViewModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white w-full max-w-2xl border border-gray-200 overflow-hidden">
+            
+            <!-- HEADER -->
+            <div class="bg-teal-600 text-white p-6">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-2xl font-bold tracking-wide">Payment Receipt</h3>
+                    <button onclick="closeReceiptModal()" class="text-white/90 hover:text-white">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="p-8 space-y-6">
+                <div class="space-y-4 text-gray-700 text-base">
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Receipt #:</span>
+                        <span id="modalReceiptNumber" class="font-bold text-gray-800">---</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Client:</span>
+                        <span id="modalClientName" class="font-bold text-gray-800">---</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Amount:</span>
+                        <span id="modalAmount" class="font-bold text-teal-600 text-lg">---</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Date:</span>
+                        <span id="modalReceiptDate" class="font-medium">---</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-semibold">Payment Method:</span>
+                        <span id="modalPaymentMethod" class="font-medium">---</span>
+                    </div>
+                </div>
+
+                <!-- FOOTER BUTTONS -->
+                <div class="pt-6 border-t border-gray-200 flex justify-end space-x-4">
+                    <button onclick="printReceiptFromModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition flex items-center">
+                        <i class="fas fa-print mr-2"></i> Print
+                    </button>
+                    <button onclick="closeReceiptModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!--Expense Modal-->
+    <div id="addExpenseModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl shadow-2xl border border-gray-200 overflow-hidden max-h-[90vh] flex flex-col">
+            
+            <!-- HEADER -->
+            <div class="bg-teal-600 text-white px-8 py-6 flex items-center justify-between flex-shrink-0">
+                <h3 class="text-3xl font-bold">Record New Expense</h3>
+                <button onclick="closeExpenseModal()" class="hover:text-white/70">
+                    <i class="fas fa-times text-3xl"></i>
+                </button>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="px-6 md:px-10 py-6 md:py-10 overflow-y-auto flex-1">
+              <form id="expenseForm" onsubmit="recordExpense(event)" class="px-10 py-10 space-y-8 text-gray-700 text-base">
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Expense Category</label>
+                          <select id="expenseCategory" required class="w-full bg-white p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600">
+                              <option value="">Select category...</option>
+                              <option value="bills">Bills & Utilities</option>
+                              <option value="salaries">Staff Salaries</option>
+                              <option value="petty_cash">Petty Cash</option>
+                              <option value="equipment">Equipment & Hardware</option>
+                              <option value="office_supplies">Office Supplies</option>
+                              <option value="maintenance">Maintenance & Repairs</option>
+                              <option value="transportation">Transportation</option>
+                              <option value="marketing">Marketing & Advertising</option>
+                              <option value="insurance">Insurance</option>
+                              <option value="rent">Rent & Property</option>
+                              <option value="software">Software & Licenses</option>
+                              <option value="training">Training & Development</option>
+                              <option value="other">Other</option>
+                          </select>
+                      </div>
+
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Amount (KES)</label>
+                          <input type="number" id="expenseAmount" min="0" step="0.01" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="0.00" />
+                      </div>
+
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Date</label>
+                          <input type="date" id="expenseDate" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" />
+                      </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Vendor / Payee</label>
+                          <input type="text" id="expenseVendor" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="e.g., KPLC, John Doe, Safaricom" />
+                      </div>
+
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Payment Method</label>
+                          <select id="paymentMethod" required class="w-full bg-white p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600">
+                              <option value="">Select method...</option>
+                              <option value="cash">Cash</option>
+                              <option value="bank_transfer">Bank Transfer</option>
+                              <option value="mpesa">M-Pesa</option>
+                              <option value="cheque">Cheque</option>
+                              <option value="card">Debit/Credit Card</option>
+                              <option value="other">Other</option>
+                          </select>
+                      </div>
+                  </div>
+
+                  <div>
+                      <label class="font-semibold text-sm mb-1 block">Description</label>
+                      <textarea id="expenseDescription" rows="3" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="Detailed description of the expense..."></textarea>
+                  </div>
+
+                  <div>
+                      <label class="font-semibold text-sm mb-1 block">Receipt / Reference Number (Optional)</label>
+                      <input type="text" id="expenseReference" class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="Receipt / Invoice number" />
+                  </div>
+              </form>
+
+              <!-- FOOTER -->
+              <div class="px-8 py-6 bg-gray-50 flex justify-end gap-4 border-t">
+                  <button onclick="" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md">Save</button>
+                  <button onclick="closeExpenseModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md">Close</button>
+              </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!--Sales Modal-->
+    <div id="addSalesModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl shadow-2xl border border-gray-200 overflow-hidden max-h-[90vh] flex flex-col">
+            
+            <!-- HEADER -->
+            <div class="bg-teal-600 text-white px-8 py-6 flex items-center justify-between flex-shrink-0">
+                <h3 class="text-3xl font-bold">Record New Sale</h3>
+                <button onclick="closeSalesModal()" class="hover:text-white/70">
+                    <i class="fas fa-times text-3xl"></i>
+                </button>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="px-6 md:px-10 py-6 md:py-10 overflow-y-auto flex-1">
+              <form id="expenseForm" onsubmit="recordSale(event)" class="px-10 py-10 space-y-8 text-gray-700 text-base">
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Accessory Type *</label>
+                          <select id="expenseCategory" required class="w-full bg-white p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600">
+                              <option value="">Select accessory type...</option>
+                              <option value="router">Router</option>
+                              <option value="cable">Cable</option>
+                              <option value="adapter">Adapter</option>
+                              <option value="switch">Switch</option>
+                              <option value="modem">Modem</option>
+                              <option value="antenna">Antenna</option>
+                              <option value="connector">Connector</option>
+                              <option value="splitter">Splitter</option>
+                              <option value="extender">WiFi Extender</option>
+                              <option value="other">Other</option>
+                          </select>
+                      </div>
+
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Sale Amount (KES) *</label>
+                          <input type="number" id="expenseAmount" min="0" step="0.01" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="0.00" />
+                      </div>
+
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Sale Date *</label>
+                          <input type="date" id="expenseDate" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" />
+                      </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Customer Name *</label>
+                          <input type="text" id="expenseVendor" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="e.g., KPLC, John Doe, Safaricom" />
+                      </div>
+                      <div>
+                          <label class="font-semibold text-sm mb-1 block">Quantity *</label>
+                          <input type="number" id="expenseAmount" min="0" step="0.01" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="0.00" />
+                      </div>
+                  </div>
+
+                  <div>
+                      <label class="font-semibold text-sm mb-1 block">Item Description *</label>
+                      <input type="text" id="expenseReference" class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="Receipt / Invoice number" />
+                  </div>
+
+                  <div>
+                      <label class="font-semibold text-sm mb-1 block">Sale Notes</label>
+                      <textarea id="expenseDescription" rows="3" required class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600" placeholder="Detailed description of the expense..."></textarea>
+                  </div>
+              </form>
+
+              <!-- FOOTER -->
+              <div class="px-8 py-6 bg-gray-50 flex justify-end gap-4 border-t">
+                  <button onclick="" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md">Save</button>
+                  <button onclick="closeSalesModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md">Close</button>
+              </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- MOCK DATA ---
+        const MOCK_CLIENTS = [
+            { id: 'C001', name: 'Acme Corp', phone: '254701234567', email: 'acme@corp.com', location: 'Nairobi', status: 'Active' },
+            { id: 'C002', name: 'Tech Solutions Ltd', phone: '254712345678', email: 'tech@sol.com', location: 'Mombasa', status: 'Active' },
+            { id: 'C003', name: 'Global Ventures', phone: '254723456789', email: 'global@vent.com', location: 'Kisumu', status: 'Inactive' },
+        ];
+
+        const MOCK_STAFF = [
+            { id: 'S001', name: 'John Doe', department: 'Technical', phone: '254734567890', salary: 50000 },
+            { id: 'S002', name: 'Jane Smith', department: 'Finance', phone: '254745678901', salary: 65000 },
+            { id: 'S003', name: 'Peter Jones', department: 'Customer Service', phone: '254756789012', salary: 45000 },
+            { id: 'S004', name: 'Mary Wanjiku', department: 'Technical', phone: '254767890123', salary: 52000 },
+        ];
+
+        const MOCK_RECEIPTS = [
+            { id: 'R001', client: 'Acme Corp', amount: 15000.00, date: '2025-10-28', status: 'Paid', paymentMethod: 'M-Pesa' },
+            { id: 'R002', client: 'Tech Solutions Ltd', amount: 5500.00, date: '2025-10-30', status: 'Paid', paymentMethod: 'Bank Transfer' },
+            { id: 'R003', client: 'Global Ventures', amount: 8000.00, date: '2025-09-15', status: 'Paid Late', paymentMethod: 'Cash' },
+        ];
+
+        const MOCK_REPORTS = [
+            { id: 'DR001', name: 'October 2025 Financial Summary', type: 'Monthly Financial', date: '2025-11-01' },
+            { id: 'WR002', name: 'Week 43 Operational Report', type: 'Weekly Operational', date: '2025-10-27' },
+            { id: 'DR003', name: 'Daily Service Report 2025-11-03', type: 'Daily Summary', date: '2025-11-03' },
+        ];
+
+        // --- GLOBAL STATE ---
+        let currentActiveTab = 'invoices';
+        let invoiceItems = [];
+        let payslipPreviewData = null;
+        let currentModalReceiptId = null;
+
+        // --- UTILITY FUNCTIONS ---
+        function formatKES(amount) {
+            return `KES ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        }
+
+        // --- TAB CONTROL ---
+        function showTab(tabId) {
+            // Hide all tab content sections
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+                button.classList.remove('bg-gradient-to-r', 'from-teal-600', 'to-teal-700', 'text-white');
+                button.classList.add('bg-white/80', 'text-gray-700');
+            });
+
+            // Show the selected tab content
+            const selectedSection = document.getElementById(tabId + 'Section');
+            if (selectedSection) {
+                selectedSection.classList.remove('hidden');
+            }
+
+            // Activate the selected tab button
+            const selectedButton = document.getElementById(tabId + 'Tab');
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+                selectedButton.classList.remove('bg-white/80', 'text-gray-700');
+                selectedButton.classList.add('bg-gradient-to-r', 'from-teal-600', 'to-teal-700', 'text-white');
+            }
+            
+            currentActiveTab = tabId;
+            
+            // Re-run setup function for the newly active tab
+            if (tabId === 'invoices') setupInvoicesTab();
+            if (tabId === 'receipts') setupReceiptsTab();
+            if (tabId === 'payslips') setupPayslipsTab();
+            if (tabId === 'dailyReports') setupDailyReportsTab();
+            if (tabId === 'expenses') setupExpenseTab();
+            if (tabId === 'sales') setupSalesTab();
+            if (tabId === 'dailyReportsTab') setupDailyReportsTab();
+        }
+
+        // --- INVOICES TAB FUNCTIONS ---
+        function populateClientSelect(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            select.innerHTML = '<option value="">Choose a client...</option>';
+            MOCK_CLIENTS.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id;
+                option.textContent = `${client.name} (${client.id})`;
+                select.appendChild(option);
+            });
+        }
+        
+        function updateClientDetails() {
+            // Placeholder for real logic to fetch client data when selected
+            document.getElementById('smsPreview').classList.add('hidden');
+            document.getElementById('invoicePreview').classList.add('hidden');
+        }
+
+        function addInvoiceItem() {
+            const item = {
+                id: Date.now(),
+                description: `Service Item ${invoiceItems.length + 1}`,
+                quantity: 1,
+                unitPrice: (Math.floor(Math.random() * 5) + 1) * 1000
+            };
+            invoiceItems.push(item);
+            renderInvoiceItems();
+        }
+
+        function removeInvoiceItem(itemId) {
+            invoiceItems = invoiceItems.filter(item => item.id !== itemId);
+            renderInvoiceItems();
+        }
+
+        function updateInvoiceItem(itemId, field, value) {
+            const item = invoiceItems.find(item => item.id === itemId);
+            if (item) {
+                if (field === 'quantity' || field === 'unitPrice') {
+                    item[field] = parseFloat(value) || 0;
+                } else {
+                    item[field] = value;
+                }
+            }
+            renderInvoiceItems(); // Re-render to update total
+        }
+
+        function renderInvoiceItems() {
+            const container = document.getElementById('invoiceItemsContainer');
+            container.innerHTML = '';
+
+            if (invoiceItems.length === 0) {
+                container.innerHTML = `<div class="p-4 bg-teal-50 border border-teal-200 text-sm text-teal-800">
+                    No items added yet. Click "Add Item" to start building the invoice.
+                </div>`;
+                return;
+            }
+
+            let subtotal = 0;
+
+            invoiceItems.forEach(item => {
+                const total = item.quantity * item.unitPrice;
+                subtotal += total;
+
+                const itemHtml = `
+                    <div class="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-gray-50 border border-gray-200 items-center">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Description</label>
+                            <input type="text" value="${item.description}" 
+                                onchange="updateInvoiceItem(${item.id}, 'description', this.value)"
+                                class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-teal-500 focus:border-teal-500"/>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Qty</label>
+                            <input type="number" value="${item.quantity}" min="1" 
+                                onchange="updateInvoiceItem(${item.id}, 'quantity', this.value)"
+                                class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-teal-500 focus:border-teal-500"/>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Unit Price</label>
+                            <input type="number" value="${item.unitPrice}" min="0" 
+                                onchange="updateInvoiceItem(${item.id}, 'unitPrice', this.value)"
+                                class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-teal-500 focus:border-teal-500"/>
+                        </div>
+                        <div class="text-right">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Total</label>
+                            <p class="font-bold text-gray-800">${formatKES(total)}</p>
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <button onclick="removeInvoiceItem(${item.id})" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', itemHtml);
+            });
+
+            // Total section
+            const taxRate = 0.16; // 16% VAT
+            const tax = subtotal * taxRate;
+            const grandTotal = subtotal + tax;
+
+            const totalHtml = `
+                <div class="grid grid-cols-6 gap-4 p-4 mt-4 bg-white border-2 border-teal-300 shadow-md">
+                    <div class="md:col-span-4"></div>
+                    <div class="md:col-span-2 space-y-2">
+                        <div class="flex justify-between font-medium text-gray-700">
+                            <span>Subtotal:</span>
+                            <span>${formatKES(subtotal)}</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>VAT (16%):</span>
+                            <span>${formatKES(tax)}</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-xl text-teal-700 pt-2 border-t border-gray-200">
+                            <span>GRAND TOTAL:</span>
+                            <span>${formatKES(grandTotal)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', totalHtml);
+        }
+        
+        function generateInvoice() {
+            const clientId = document.getElementById('invoiceUser').value;
+            const client = MOCK_CLIENTS.find(c => c.id === clientId);
+
+            if (!client) {
+                alert('Please select a client.');
+                return;
+            }
+            if (invoiceItems.length === 0) {
+                alert('Please add at least one item to the invoice.');
+                return;
+            }
+
+            let subtotal = 0;
+            const itemsList = invoiceItems.map(item => {
+                const total = item.quantity * item.unitPrice;
+                subtotal += total;
+                return ` - ${item.description}: ${item.quantity} x ${formatKES(item.unitPrice)} = ${formatKES(total)}`;
+            }).join('\n');
+
+            const taxRate = 0.16;
+            const tax = subtotal * taxRate;
+            const grandTotal = subtotal + tax;
+
+            const preview = `
+*** OFFICIAL INVOICE - ${client.id} ***
+Client: ${client.name}
+Phone: ${client.phone}
+Email: ${client.email}
+Invoice Date: ${new Date().toLocaleDateString()}
+Due Date: ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+
+--- ITEMS ---
+${itemsList}
+
+--- SUMMARY ---
+Subtotal:    ${formatKES(subtotal)}
+VAT (16%):   ${formatKES(tax)}
+GRAND TOTAL: ${formatKES(grandTotal)}
+
+Please remit payment by the due date. Thank you!
+`;
+            
+            document.getElementById('invoicePreviewContent').textContent = preview;
+            document.getElementById('invoicePreview').classList.remove('hidden');
+            alert(`Invoice PDF generated successfully for ${client.name}! (See preview below)`);
+        }
+
+        function generateSMSTemplate(type) {
+            const clientId = document.getElementById('invoiceUser').value;
+            const client = MOCK_CLIENTS.find(c => c.id === clientId);
+
+            if (!client) {
+                alert('Please select a client before generating an SMS template.');
+                return;
+            }
+            
+            let message = '';
+            let total = 0;
+            if (invoiceItems.length > 0) {
+                 total = invoiceItems.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0) * 1.16;
+            }
+
+            switch (type) {
+                case 'invoice':
+                    message = `Hi ${client.name}, your invoice (INV-202510-${client.id}) for ${formatKES(total)} is ready. Due on ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}. View/Pay: [Link]`;
+                    break;
+                case 'reminder':
+                    message = `Friendly reminder, ${client.name}: Your payment of ${formatKES(total)} for invoice INV-202510-${client.id} is overdue. Please settle immediately. Thank you!`;
+                    break;
+                case 'confirmation':
+                    message = `Payment confirmed! Thank you ${client.name}. We have received ${formatKES(total)} for your recent invoice. Receipt: [Link]`;
+                    break;
+            }
+
+            document.getElementById('smsPreviewContent').textContent = message;
+            document.getElementById('smsPreview').classList.remove('hidden');
+        }
+
+        function setupInvoicesTab() {
+            populateClientSelect('invoiceUser');
+            renderInvoiceItems();
+        }
+
+        // --- RECEIPTS TAB FUNCTIONS ---
+        function generateReceipt() {
+            const clientId = document.getElementById('receiptClient').value;
+            const amount = parseFloat(document.getElementById('receiptAmount').value);
+            const client = MOCK_CLIENTS.find(c => c.id === clientId);
+
+            if (!client || !amount || amount <= 0) {
+                alert('Please select a client and enter a valid amount.');
+                return;
+            }
+
+            // Add to mock receipts for demonstration
+            const newReceipt = {
+                id: 'R' + Date.now().toString().slice(-4),
+                client: client.name,
+                amount: amount,
+                date: new Date().toISOString().slice(0, 10),
+                status: 'New',
+                paymentMethod: 'M-Pesa'
+            };
+            MOCK_RECEIPTS.unshift(newReceipt);
+            
+            // Show the receipt in modal
+            viewReceiptModal(newReceipt.id);
+            
+            renderReceiptsTable();
+        }
+
+        function renderReceiptsTable() {
+            const tableBody = document.getElementById('receiptsTableBody');
+            tableBody.innerHTML = '';
+            
+            MOCK_RECEIPTS.slice(0, 5).forEach(receipt => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const statusClass = receipt.status.includes('Paid') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${receipt.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${receipt.client}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-semibold">${formatKES(receipt.amount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${receipt.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                            ${receipt.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewReceiptModal('${receipt.id}')" class="text-teal-600 hover:text-teal-900 mr-3">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="deleteReceipt('${receipt.id}')" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderExpenseTable() {
+            const tableBody = document.getElementById('expensesTableBody');
+            tableBody.innerHTML = '';
+            
+            MOCK_RECEIPTS.slice(0, 5).forEach(receipt => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const statusClass = receipt.status.includes('Paid') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${receipt.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${receipt.client}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-semibold">${formatKES(receipt.amount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${receipt.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                            ${receipt.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewReceiptModal('${receipt.id}')" class="text-teal-600 hover:text-teal-900 mr-3">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="deleteReceipt('${receipt.id}')" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderSalesTable() {
+            const tableBody = document.getElementById('salesTableBody');
+            tableBody.innerHTML = '';
+            
+            MOCK_RECEIPTS.slice(0, 5).forEach(receipt => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const statusClass = receipt.status.includes('Paid') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${receipt.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${receipt.client}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-semibold">${formatKES(receipt.amount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${receipt.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">New Product</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                            ${receipt.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewReceiptModal('${receipt.id}')" class="text-teal-600 hover:text-teal-900 mr-3">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="deleteReceipt('${receipt.id}')" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function viewReceiptModal(receiptId) {
+            const receipt = MOCK_RECEIPTS.find(r => r.id === receiptId);
+            
+            if (!receipt) {
+                alert('Receipt not found');
+                return;
+            }
+
+            // Populate modal with receipt data
+            document.getElementById('modalReceiptNumber').textContent = receipt.id;
+            document.getElementById('modalClientName').textContent = receipt.client;
+            document.getElementById('modalAmount').textContent = formatKES(receipt.amount);
+            document.getElementById('modalReceiptDate').textContent = receipt.date;
+            document.getElementById('modalPaymentMethod').textContent = receipt.paymentMethod;
+
+            // Store current receipt ID for modal actions
+            currentModalReceiptId = receiptId;
+
+            // Show modal
+            document.getElementById('receiptViewModal').classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receiptViewModal').classList.add('hidden');
+            currentModalReceiptId = null;
+        }
+
+        function openExpenseModal(receiptId) {
+            document.getElementById('addExpenseModal').classList.remove('hidden');
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('addExpenseModal').classList.add('hidden');
+            currentModalReceiptId = null;
+        }
+
+        function openSalesModal(receiptId) {
+            document.getElementById('addSalesModal').classList.remove('hidden');
+        }
+
+        function closeSalesModal() {
+            document.getElementById('addSalesModal').classList.add('hidden');
+            currentModalReceiptId = null;
+        }
+
+        function printReceiptFromModal() {
+            if (currentModalReceiptId) {
+                alert(`Printing receipt ${currentModalReceiptId}...`);
+                // In a real application, this would trigger the browser's print dialog
+            } else {
+                alert('Error: No receipt selected');
+            }
+        }
+
+        function deleteReceipt(receiptId) {
+            if (confirm(`Are you sure you want to delete receipt ${receiptId}?`)) {
+                const index = MOCK_RECEIPTS.findIndex(r => r.id === receiptId);
+                if (index !== -1) {
+                    MOCK_RECEIPTS.splice(index, 1);
+                    renderReceiptsTable();
+                    alert(`Receipt ${receiptId} deleted.`);
+                }
+            }
+        }
+
+        function setupReceiptsTab() {
+            populateClientSelect('receiptClient');
+            renderReceiptsTable();
+        }
+
+        function setupExpenseTab() {
+          renderExpenseTable();
+        }
+
+        function setupSalesTab() {
+          renderSalesTable();
+        }
+
+        // --- PAYSLIPS TAB FUNCTIONS ---
+        function populateStaffSelect(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            select.innerHTML = '<option value="">Choose a staff member...</option>';
+            MOCK_STAFF.forEach(staff => {
+                const option = document.createElement('option');
+                option.value = staff.id;
+                option.textContent = `${staff.name} (${staff.department})`;
+                select.appendChild(option);
+            });
+        }
+        
+        function checkPayslipFormCompletion() {
+            const staffId = document.getElementById('payslipStaff').value;
+            const payPeriod = document.getElementById('payPeriod').value;
+            const actionButton = document.getElementById('payslipActionButton');
+            
+            if (staffId && payPeriod) {
+                actionButton.disabled = false;
+                actionButton.classList.remove('bg-gradient-to-r', 'from-gray-400', 'to-gray-500', 'cursor-not-allowed');
+                actionButton.classList.add('bg-gradient-to-r', 'from-teal-500', 'to-teal-600', 'hover:from-teal-600', 'hover:to-teal-700');
+            } else {
+                actionButton.disabled = true;
+                actionButton.classList.add('bg-gradient-to-r', 'from-gray-400', 'to-gray-500', 'cursor-not-allowed');
+                actionButton.classList.remove('from-teal-500', 'to-teal-600', 'hover:from-teal-600', 'hover:to-teal-700');
+            }
+            
+            document.getElementById('payslipPreview').classList.add('hidden');
+            payslipPreviewData = null; // Clear previous data
+        }
+
+        function generatePayslip() {
+            const staffId = document.getElementById('payslipStaff').value;
+            const payPeriod = document.getElementById('payPeriod').value;
+            const staff = MOCK_STAFF.find(s => s.id === staffId);
+
+            if (!staff) {
+                alert('Please select a staff member.');
+                return;
+            }
+
+            // Mock calculations
+            const grossSalary = staff.salary;
+            const allowances = 5000;
+            const deductions = 0.3 * grossSalary; // Mock tax/deduction
+            const netPay = grossSalary + allowances - deductions;
+
+            payslipPreviewData = {
+                staffName: staff.name,
+                payPeriod: payPeriod,
+                netPay: netPay,
+                grossSalary: grossSalary
+            };
+
+            const preview = `
+*** PAYSLIP - ${payPeriod} ***
+Employee: ${staff.name} (${staff.id})
+Department: ${staff.department}
+
+--- EARNINGS ---
+Basic Salary: ${formatKES(grossSalary)}
+Allowances:   ${formatKES(allowances)}
+GROSS PAY:    ${formatKES(grossSalary + allowances)}
+
+--- DEDUCTIONS ---
+Taxes/Statutory: ${formatKES(deductions)}
+TOTAL DEDUCTIONS: ${formatKES(deductions)}
+
+--- NET PAY ---
+NET SALARY: ${formatKES(netPay)}
+(Paid to Bank/M-Pesa on: ${new Date().toLocaleDateString()})
+`;
+            
+            document.getElementById('payslipPreviewContent').textContent = preview;
+            document.getElementById('payslipPreview').classList.remove('hidden');
+            alert(`Payslip PDF generated for ${staff.name} for ${payPeriod}! (See preview below)`);
+        }
+
+        function handlePayslipAction() {
+            if (!payslipPreviewData) {
+                alert('Please generate the payslip first.');
+                return;
+            }
+            
+            const staffId = document.getElementById('payslipStaff').value;
+            const staff = MOCK_STAFF.find(s => s.id === staffId);
+
+            const message = `Hi ${staff.name}, your payslip for the period ending ${payslipPreviewData.payPeriod} is ready. Your Net Pay is ${formatKES(payslipPreviewData.netPay)}. Check your email for the PDF.`;
+            
+            alert(`Sending SMS/Email to ${staff.name} on ${staff.phone}...\n\nMessage: "${message}"`);
+        }
+
+        function generateBulkPayslips() {
+            const dept = document.getElementById('bulkDepartment').value;
+            const month = document.getElementById('bulkMonth').value;
+            
+            const filteredStaff = MOCK_STAFF.filter(staff => dept === 'all' || staff.department === dept);
+
+            const resultDiv = document.getElementById('bulkPayslipResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.classList.remove('bg-gray-50');
+            resultDiv.classList.add('bg-teal-100', 'border', 'border-teal-300');
+            resultDiv.innerHTML = `
+                <h5 class="font-bold text-teal-800 mb-2">Bulk Generation Status:</h5>
+                <p class="text-teal-700">Attempting to generate payslips for ${filteredStaff.length} staff in ${dept === 'all' ? 'All Departments' : dept} for ${month}...</p>
+                <ul class="list-disc list-inside mt-2 text-sm text-teal-700">
+                    ${filteredStaff.map(s => `<li>Payslip generated for ${s.name} (${s.id})</li>`).join('')}
+                </ul>
+                <p class="mt-2 font-semibold text-teal-800">${filteredStaff.length} PDFs prepared successfully!</p>
+            `;
+        }
+
+        function generateBulkPayslipSMS() {
+            const dept = document.getElementById('bulkDepartment').value;
+            const month = document.getElementById('bulkMonth').value;
+            
+            const filteredStaff = MOCK_STAFF.filter(staff => dept === 'all' || staff.department === dept);
+
+            const resultDiv = document.getElementById('bulkPayslipResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.classList.remove('bg-gray-50');
+            resultDiv.classList.add('bg-orange-100', 'border', 'border-orange-300');
+            resultDiv.innerHTML = `
+                <h5 class="font-bold text-orange-800 mb-2">Bulk SMS Generation Status:</h5>
+                <p class="text-orange-700">Preparing to send SMS to ${filteredStaff.length} staff in ${dept === 'all' ? 'All Departments' : dept} for ${month}...</p>
+                <ul class="list-disc list-inside mt-2 text-sm text-orange-700">
+                    ${filteredStaff.map(s => `<li>SMS template generated for ${s.name} (${s.phone})</li>`).join('')}
+                </ul>
+                <p class="mt-2 font-semibold text-orange-800">Please connect SMS gateway to send ${filteredStaff.length} messages!</p>
+            `;
+        }
+        
+        function setupPayslipsTab() {
+            populateStaffSelect('payslipStaff');
+            checkPayslipFormCompletion(); // Initialize button state
+        }
+
+        // --- DAILY REPORTS TAB FUNCTIONS ---
+        function renderReportsTable() {
+            const tableBody = document.getElementById('reportsTableBody');
+            tableBody.innerHTML = '';
+            
+            if (MOCK_REPORTS.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">No reports found for the selected criteria.</td></tr>`;
+                return;
+            }
+
+            MOCK_REPORTS.forEach(report => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                let typeClass = 'bg-gray-100 text-gray-800';
+                if (report.type.includes('Financial')) typeClass = 'bg-green-100 text-green-800';
+                if (report.type.includes('Operational')) typeClass = 'bg-blue-100 text-blue-800';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${report.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${typeClass}">
+                            ${report.type}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${report.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${report.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${report.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewReport('${report.id}')" class="text-teal-600 hover:text-teal-900 mr-3">View</button>
+                        <button onclick="deleteReport('${report.id}')" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function fetchReports() {
+            alert('Fetching reports based on filters... (Using mock data for display)');
+            // In a real application, you would make an API call here.
+            renderReportsTable();
+        }
+
+        function viewReport(reportId) {
+            const report = MOCK_REPORTS.find(r => r.id === reportId);
+            alert(`Viewing Report ${report.id}:\nName: ${report.name}\nType: ${report.type}\n(Not implemented: Full report view)`);
+        }
+        
+        function deleteReport(reportId) {
+            if (confirm(`Are you sure you want to delete report ${reportId}?`)) {
+                MOCK_REPORTS.splice(MOCK_REPORTS.findIndex(r => r.id === reportId), 1);
+                renderReportsTable();
+                alert(`Report ${reportId} deleted.`);
+            }
+        }
+        
+        function exportSelectedReports() {
+            alert('Exporting selected reports... (All mock reports exported to CSV)');
+        }
+
+        function setupDailyReportsTab() {
+            // // Set default date range for demo
+            // const today = new Date().toISOString().slice(0, 10);
+            // document.getElementById('reportEndDate').value = today;
+            
+            // const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+            // document.getElementById('reportStartDate').value = sevenDaysAgo;
+            
+            renderReportsTable();
+        }
+        
+        // --- ANALYTICS TAB FUNCTIONS ---
+        function generateAnalyticsReport(reportKey) {
+            let reportName = '';
+            let reportContent = '';
+
+            switch (reportKey) {
+                case 'revenue':
+                    reportName = 'Monthly Revenue Analysis';
+                    reportContent = `
+Q3 2025 Revenue: ${formatKES(4500000.00)}
+Monthly Avg: ${formatKES(1500000.00)}
+YoY Growth: +12%
+Top Earning Client: Acme Corp
+`;
+                    break;
+                case 'outstanding':
+                    reportName = 'Outstanding Payments Summary';
+                    reportContent = `
+Total Outstanding: ${formatKES(850000.00)}
+Overdue (>30 days): ${formatKES(210000.00)}
+Highest Overdue: Client ABC - ${formatKES(110000.00)}
+`;
+                    break;
+                case 'expenses':
+                    reportName = 'Expenditure Breakdown';
+                    reportContent = `
+Total Expenses (Oct): ${formatKES(950000.00)}
+Category Breakdown:
+ - Payroll: ${formatKES(480000.00)}
+ - Operations: ${formatKES(220000.00)}
+ - Marketing: ${formatKES(150000.00)}
+`;
+                    break;
+                case 'clients':
+                    reportName = 'Client Activity Summary';
+                    reportContent = `
+Total Clients: 125
+Active Clients: 110 (88%)
+New Clients (Last Month): 5
+Churn Rate: 1.5%
+`;
+                    break;
+                case 'packages':
+                    reportName = 'Package Adoption Analysis';
+                    reportContent = `
+Most Popular: Premium Package (55 clients)
+Highest ARPU: Custom Enterprise (Avg ${formatKES(35000)}/month)
+Least Popular: Basic (8 clients)
+`;
+                    break;
+                case 'retention':
+                    reportName = 'Client Retention Rate';
+                    reportContent = `
+Q3 Retention: 95%
+M-o-M Trend: Stable
+Key Churn Factor: Price sensitivity (3 clients in Basic package)
+`;
+                    break;
+                case 'staffSummary':
+                    reportName = 'Staff Headcount by Department';
+                    reportContent = `
+Total Staff: ${MOCK_STAFF.length}
+Technical: 3
+Finance: 1
+Customer Service: 1
+Sales: 2
+Operations: 1
+`;
+                    break;
+                case 'performance':
+                    reportName = 'Staff Performance Metrics';
+                    reportContent = `
+Average Service Completion Time: 2.5 hours
+Top Performer (Tech): John Doe (98% completion rate)
+Top Performer (CS): Jane Smith (4.9/5 satisfaction rating)
+`;
+                    break;
+                case 'payroll':
+                    reportName = 'Payroll Cost Analysis';
+                    reportContent = `
+Total Monthly Payroll: ${formatKES(MOCK_STAFF.reduce((sum, s) => sum + s.salary, 0) + MOCK_STAFF.length * 5000)} (Gross)
+Avg Salary: ${formatKES(MOCK_STAFF.reduce((sum, s) => sum + s.salary, 0) / MOCK_STAFF.length)}
+Benefit Costs: ${formatKES(120000)}
+`;
+                    break;
+                default:
+                    reportName = 'Error';
+                    reportContent = 'Report not found.';
+            }
+
+            document.getElementById('reportTypeHeader').textContent = reportName;
+            document.getElementById('analyticsReportContent').textContent = reportContent;
+            document.getElementById('analyticsReportPreview').classList.remove('hidden');
+            
+            // Scroll to the preview area
+            document.getElementById('analyticsReportPreview').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- INITIALIZATION ---
+        function initDashboard() {
+            // Set the first tab as active by default
+            showTab('invoices');
+        }
+
+        // Run initialization when the page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
