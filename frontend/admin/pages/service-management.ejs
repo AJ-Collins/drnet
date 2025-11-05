@@ -1,549 +1,845 @@
-  <style>
-    .ctio-professional { background:#1e293b; }
-    .ctio-professional-secondary { background:#0f172a; }
-    .sidebar-width { width:280px; }
-    .glass-effect { background:rgba(255,255,255,.25); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.18); }
-    .nav-item.active { background:rgba(255,255,255,.2); }
-    .priority-low    { @apply text-green-600; }
-    .priority-medium { @apply text-yellow-600; }
-    .priority-high   { @apply text-orange-600; }
-    .priority-urgent { @apply text-red-600; }
-  </style>
-        <!-- Header + CTA -->
-        <div class="flex items-center justify-between mb-8">
-          <div>
-            <h3 class="text-2xl font-bold text-teal-800">
-              Service Assignment Management
-            </h3>
-            <p class="text-teal-600 mt-1">
-              Assign installations, maintenance, and asset recovery tasks to technicians
-            </p>
-          </div>
+<style>
+  .slide-in {
+    animation: slideIn 0.4s ease-out;
+  }
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+<!-- ==================== HEADER ==================== -->
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">
+      Service Assignment Management
+    </h3>
+    <p class="text-teal-600 mt-1">
+      Assign installations, maintenance, and asset recovery tasks to technicians
+    </p>
+  </div>
+  <button
+    onclick="openCreateModal()"
+    class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
+  >
+    <i class="fas fa-user-plus"></i> <span>New Assignment</span>
+  </button>
+</div>
 
-          <button onclick="showCreateAssignmentModal()"
-            class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
-            <i class="fas fa-user-plus group-hover:scale-110 transition-transform"></i>
-            <span class="mr-2">New Assignment</span>
-          </button>
-        </div>
-
-        <!-- Stats cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <!-- Total Assignments -->
-          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
-            <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-teal-600 text-sm font-bold mb-1">Total Assignments</h3>
-                  <h2 id="totalAssignments" class="text-3xl font-bold text-gray-800">0</h2>
-                </div>
-
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
-                </div>
-            </div>
-          </div>
-
-          <!-- Active Assignments -->
-          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
-            <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-teal-600 text-sm font-bold mb-4 flex items-center justify-between">Active Assignments</h3>
-                  <h2 id="activeAssignments" class="text-3xl font-bold text-gray-800">0</h2>
-                </div>
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <i class="fas fa-hourglass-half text-green-600 text-xl"></i>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pending Review -->
-          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
-            <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-teal-600 text-sm font-bold mb-4 flex items-center justify-between">Pending Review</h3>
-                  <h2 id="pendingAssignments" class="text-3xl font-bold text-gray-800">0</h2>
-                </div>          
-                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <i class="fas fa-eye text-orange-600 text-xl"></i>
-                </div>
-            </div>
-          </div>
-
-          <!-- Completed Today -->
-          <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
-            <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-teal-600 text-sm font-bold mb-4 flex items-center justify-between">Completed Today</h3>
-                  <h2 id="completedToday" class="text-3xl font-bold text-gray-800">0</h2>
-                </div>
-              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-check-circle text-purple-600 text-xl"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="bg-white shadow-xl p-6 mb-8">
-          <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                <input id="searchInput" type="text" placeholder="Client, tech, ID…" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"/>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Service Type</label>
-                <select id="serviceTypeFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                  <option value="">All Types</option>
-                  <option value="installation">Installation</option>
-                  <option value="maintenance">Maintenance</option>
-                  <option value="asset_recovery">Asset Recovery</option>
-                  <option value="repair">Repair</option>
-                  <option value="inspection">Inspection</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                  <option value="">All Status</option>
-                  <option value="assigned">Assigned</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="pending_review">Pending Review</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Technician</label>
-                <select id="technicianFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                  <option value="">All Technicians</option>
-                  <!-- filled by JS -->
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Assignments list -->
-        <div class="bg-white shadow-md border border-gray-200 overflow-hidden slide-in">
-          <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-teal-100 border-b border-teal-200">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-bold text-teal-800"><i class="fas fa-list mr-2"></i>Assignments</h3>
-            </div>
-          </div>
-
-          <div class="p-8">
-            <div id="assignmentsContainer" class="space-y-4">
-              <!-- JS injects cards here -->
-            </div>
-
-            <!-- Pagination -->
-            <div class="flex justify-center mt-8 space-x-2" id="pagination"></div>
-          </div>
-        </div>
-
-  <!-- ==== CREATE / EDIT MODAL ==== -->
-  <div id="createAssignmentModal"
-       class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-      <div class="bg-gradient-to-r from-green-600 to-teal-600 px-8 py-6">
-        <h2 class="text-2xl font-bold text-white flex items-center"><span class="mr-3">Create Service Assignment</span></h2>
-        <p class="text-green-100 mt-2">Assign a new service task to a technician</p>
+<!-- ==================== STATS CARDS ==================== -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Total Assignments</h3>
+        <h2 id="totalAssignments" class="text-3xl font-bold text-gray-800">
+          0
+        </h2>
       </div>
-
-      <div class="p-8">
-        <form id="assignmentForm" class="space-y-6">
-          <input type="hidden" id="editId"/>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Left column -->
-            <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Assignment Details</h3>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Service Type *</label>
-                <select id="serviceType" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                  <option value="">Select…</option>
-                  <option value="installation">Installation</option>
-                  <option value="maintenance">Maintenance</option>
-                  <option value="asset_recovery">Asset Recovery</option>
-                  <option value="repair">Repair</option>
-                  <option value="inspection">Inspection</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
-                <select id="priority" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                  <option value="">Select…</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Scheduled Date *</label>
-                <input id="scheduledDate" type="datetime-local" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"/>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Duration (hrs) *</label>
-                <input id="estimatedDuration" type="number" min="0.5" step="0.5" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"/>
-              </div>
-            </div>
-
-            <!-- Right column -->
-            <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Client & Technician</h3>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Client Name *</label>
-                <input id="clientName" type="text" required placeholder="John Doe / ABC Ltd" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"/>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Client Contact (optional)</label>
-                <input id="clientContact" type="text" placeholder="Phone / Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"/>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Service Address *</label>
-                <textarea id="serviceAddress" rows="3" required placeholder="Full address…" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Technician *</label>
-                <select id="technicianId" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                  <option value="">Select…</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Supervisor *</label>
-                <select id="supervisorId" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                  <option value="">Select…</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-            <textarea id="description" rows="4" required placeholder="Detailed description…" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Required Equipment / Assets</label>
-            <textarea id="requiredEquipment" rows="3" placeholder="List items…" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
-          </div>
-
-          <div class="flex justify-end space-x-4 pt-6 border-t">
-            <button type="button" onclick="closeCreateAssignmentModal()"
-                    class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
-              Cancel
-            </button>
-            <button type="submit"
-                    class="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition">
-              <span id="submitBtnText">Create Assignment</span>
-            </button>
-          </div>
-        </form>
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
       </div>
     </div>
   </div>
 
-  <!-- ==== JS ==== -->
-  <script>
-    /* ---------- DATA ---------- */
-    const STORAGE_KEY = 'drnet_assignments';
-    const TECH_KEY    = 'drnet_technicians';
-    const SUP_KEY     = 'drnet_supervisors';
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Active Assignments</h3>
+        <h2 id="activeAssignments" class="text-3xl font-bold text-gray-800">
+          0
+        </h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-hourglass-half text-green-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
 
-    let assignments = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let technicians = JSON.parse(localStorage.getItem(TECH_KEY)) || [
-      {id:'tech1', name:'Mike Kamau'},
-      {id:'tech2', name:'Sarah Akinyi'},
-      {id:'tech3', name:'David Mwangi'}
-    ];
-    let supervisors = JSON.parse(localStorage.getItem(SUP_KEY)) || [
-      {id:'sup1', name:'James Omondi'},
-      {id:'sup2', name:'Grace Wanjiku'}
-    ];
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Pending Review</h3>
+        <h2 id="pendingAssignments" class="text-3xl font-bold text-gray-800">
+          0
+        </h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-eye text-orange-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
 
-    const itemsPerPage = 8;
-    let currentPage = 1;
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Completed Today</h3>
+        <h2 id="completedToday" class="text-3xl font-bold text-gray-800">0</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-check-circle text-purple-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
 
-    /* ---------- HELPERS ---------- */
-    const $ = id => document.getElementById(id);
-    const save = () => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(assignments));
-      localStorage.setItem(TECH_KEY, JSON.stringify(technicians));
-      localStorage.setItem(SUP_KEY, JSON.stringify(supervisors));
-    };
+<!-- ==================== FILTERS ==================== -->
+<div class="bg-white shadow-xl p-6 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Client, tech, ID…"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+      />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2"
+        >Service Type</label
+      >
+      <select
+        id="serviceTypeFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Types</option>
+        <option value="installation">Installation</option>
+        <option value="maintenance">Maintenance</option>
+        <option value="asset_recovery">Asset Recovery</option>
+        <option value="repair">Repair</option>
+        <option value="inspection">Inspection</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+      <select
+        id="statusFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Status</option>
+        <option value="assigned">Assigned</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+        <option value="pending_review">Pending Review</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2"
+        >Technician</label
+      >
+      <select
+        id="technicianFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Technicians</option>
+      </select>
+    </div>
+  </div>
 
-    const generateId = () => 'ASGN-' + Date.now().toString(36).toUpperCase();
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-bold text-teal-800">
+      <i class="fas fa-list mr-2"></i>Assignments
+    </h3>
+  </div>
 
-    const formatDate = d => dayjs(d).format('DD MMM YYYY, HH:mm');
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-teal-50">
+        <tr>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            ID
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Client
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Service
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Tech
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Date
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Status
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody
+        id="assignmentsTableBody"
+        class="bg-white divide-y divide-gray-200"
+      ></tbody>
+    </table>
+  </div>
+</div>
 
-    const priorityBadge = p => {
-      const map = {low:'bg-green-100 text-green-700', medium:'bg-yellow-100 text-yellow-700',
-                   high:'bg-orange-100 text-orange-700', urgent:'bg-red-100 text-red-700'};
-      return map[p] || 'bg-gray-100 text-gray-700';
-    };
+<!-- ==================== CREATE / EDIT MODAL ==================== -->
+<div
+  id="createAssignmentModal"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="bg-white shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+  >
+    <div class="bg-teal-700 px-8 py-6">
+      <h2 id="modalTitle" class="text-2xl font-bold text-white">
+        Create Service Assignment
+      </h2>
+      <p class="text-teal-100 mt-1">
+        Assign a new service task to a technician
+      </p>
+    </div>
 
-    const statusBadge = s => {
-      const map = {assigned:'bg-blue-100 text-blue-700', in_progress:'bg-indigo-100 text-indigo-700',
-                   completed:'bg-green-100 text-green-700', pending_review:'bg-orange-100 text-orange-700'};
-      return map[s] || 'bg-gray-100 text-gray-700';
-    };
+    <div class="p-8">
+      <form id="assignmentForm" class="space-y-6">
+        <input type="hidden" id="editId" />
 
-    /* ---------- POPULATE SELECTS ---------- */
-    const fillSelect = (selId, arr, valueKey, labelKey) => {
-      const sel = $(selId);
-      sel.innerHTML = '<option value="">Select…</option>';
-      arr.forEach(o => {
-        const opt = document.createElement('option');
-        opt.value = o[valueKey];
-        opt.textContent = o[labelKey];
-        sel.appendChild(opt);
-      });
-    };
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- LEFT -->
+          <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
+              Assignment Details
+            </h3>
 
-    const refreshSelects = () => {
-      fillSelect('technicianId', technicians, 'id', 'name');
-      fillSelect('supervisorId', supervisors, 'id', 'name');
-      fillSelect('technicianFilter', [{id:'',name:'All Technicians'}].concat(technicians), 'id', 'name');
-    };
-
-    /* ---------- RENDER ---------- */
-    const renderAssignments = () => {
-      const container = $('assignmentsContainer');
-      const filtered = applyFilters();
-      const total = filtered.length;
-      const start = (currentPage-1)*itemsPerPage;
-      const end   = Math.min(start+itemsPerPage, total);
-      const pageItems = filtered.slice(start, end);
-
-      container.innerHTML = pageItems.map(a => `
-        <div class="bg-gray-50 rounded-xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer"
-             onclick="viewAssignment('${a.id}')">
-          <div class="flex justify-between items-start">
-            <div class="flex-1">
-              <div class="flex items-center space-x-2 mb-2">
-                <span class="text-lg font-semibold text-gray-800">#${a.id}</span>
-                <span class="px-2 py-0.5 rounded text-xs font-medium ${priorityBadge(a.priority)}">
-                  ${a.priority.toUpperCase()}
-                </span>
-                <span class="px-2 py-0.5 rounded text-xs font-medium ${statusBadge(a.status)}">
-                  ${a.status.replace('_',' ').toUpperCase()}
-                </span>
-              </div>
-              <p class="font-medium text-gray-900">${a.clientName}</p>
-              <p class="text-sm text-gray-600">${a.serviceType.replace('_',' ')} – ${formatDate(a.scheduledDate)}</p>
-              <p class="text-sm text-gray-500">Technician: ${technicians.find(t=>t.id===a.technicianId)?.name || ''}</p>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Service Type *</label
+              >
+              <select
+                id="serviceType"
+                required
+                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">Select…</option>
+                <option value="installation">Installation</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="asset_recovery">Asset Recovery</option>
+                <option value="repair">Repair</option>
+                <option value="inspection">Inspection</option>
+              </select>
             </div>
-            <div class="flex space-x-2">
-              <button onclick="editAssignment(event,'${a.id}')" class="text-blue-600 hover:bg-blue-50 p-2 rounded"><i class="fas fa-edit"></i></button>
-              <button onclick="deleteAssignment(event,'${a.id}')" class="text-red-600 hover:bg-red-50 p-2 rounded"><i class="fas fa-trash"></i></button>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Priority *</label
+              >
+              <select
+                id="priority"
+                required
+                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">Select…</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Scheduled Date *</label
+              >
+              <input
+                id="scheduledDate"
+                type="datetime-local"
+                required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Estimated Duration (hrs) *</label
+              >
+              <input
+                id="estimatedDuration"
+                type="number"
+                min="0.5"
+                step="0.5"
+                required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
+              Client & Technician
+            </h3>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Client Name *</label
+              >
+              <input
+                id="clientName"
+                type="text"
+                required
+                placeholder="John Doe / ABC Ltd"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Client Contact (optional)</label
+              >
+              <input
+                id="clientContact"
+                type="text"
+                placeholder="Phone / Email"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Service Address *</label
+              >
+              <textarea
+                id="serviceAddress"
+                rows="3"
+                required
+                placeholder="Full address…"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Technician *</label
+              >
+              <select
+                id="technicianId"
+                required
+                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">Select…</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Supervisor *</label
+              >
+              <select
+                id="supervisorId"
+                required
+                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">Select…</option>
+              </select>
             </div>
           </div>
         </div>
-      `).join('') || '<p class="text-center text-gray-500">No assignments match the filters.</p>';
 
-      renderPagination(total);
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Description *</label
+          >
+          <textarea
+            id="description"
+            rows="4"
+            required
+            placeholder="Detailed description…"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Required Equipment / Assets</label
+          >
+          <textarea
+            id="requiredEquipment"
+            rows="3"
+            placeholder="List items…"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+          ></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-4 pt-6 border-t">
+          <button
+            type="button"
+            onclick="closeCreateModal()"
+            class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            id="submitBtn"
+            class="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+          >
+            Create Assignment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+  /* ==================== MOCK DATA ==================== */
+  let assignments = [
+    {
+      id: "ASGN-ABC123",
+      serviceType: "installation",
+      priority: "high",
+      scheduledDate: "2025-11-10T09:00",
+      estimatedDuration: 2.5,
+      clientName: "Acme Corp",
+      clientContact: "0712345678",
+      serviceAddress: "123 Main St, Nairobi",
+      technicianId: "tech1",
+      supervisorId: "sup1",
+      description: "Install new fiber line",
+      requiredEquipment: "Router, 50m fiber cable",
+      status: "in_progress",
+      createdAt: "2025-11-01T10:00:00Z",
+      completedAt: null,
+    },
+    {
+      id: "ASGN-XYZ789",
+      serviceType: "maintenance",
+      priority: "medium",
+      scheduledDate: "2025-11-12T14:00",
+      estimatedDuration: 1,
+      clientName: "Jane Smith",
+      clientContact: "",
+      serviceAddress: "456 Westlands, Nairobi",
+      technicianId: "tech2",
+      supervisorId: "sup2",
+      description: "Routine check",
+      requiredEquipment: "Toolkit",
+      status: "assigned",
+      createdAt: "2025-11-02T08:30:00Z",
+      completedAt: null,
+    },
+  ];
+
+  const technicians = [
+    { id: "tech1", name: "Mike Kamau" },
+    { id: "tech2", name: "Sarah Akinyi" },
+    { id: "tech3", name: "David Mwangi" },
+  ];
+
+  const supervisors = [
+    { id: "sup1", name: "James Omondi" },
+    { id: "sup2", name: "Grace Wanjiku" },
+  ];
+
+  const itemsPerPage = 8;
+  let currentPage = 1;
+
+  /* ==================== HELPERS ==================== */
+  const $ = (id) => document.getElementById(id);
+  const generateId = () => "ASGN-" + Date.now().toString(36).toUpperCase();
+  const formatDate = (d) => dayjs(d).format("DD MMM YYYY, HH:mm");
+
+  const priorityBadge = (p) => {
+    const map = {
+      low: "bg-green-100 text-green-700",
+      medium: "bg-yellow-100 text-yellow-700",
+      high: "bg-orange-100 text-orange-700",
+      urgent: "bg-red-100 text-red-700",
+    };
+    return map[p] || "bg-gray-100 text-gray-700";
+  };
+
+  const statusBadge = (s) => {
+    const map = {
+      assigned: "bg-blue-100 text-blue-700",
+      in_progress: "bg-indigo-100 text-indigo-700",
+      completed: "bg-green-100 text-green-700",
+      pending_review: "bg-orange-100 text-orange-700",
+    };
+    return map[s] || "bg-gray-100 text-gray-700";
+  };
+
+  /* ==================== SELECT POPULATION ==================== */
+  const populateSelect = (id, items, valueKey, labelKey, empty = "Select…") => {
+    const sel = $(id);
+    sel.innerHTML = `<option value="">${empty}</option>`;
+    items.forEach((i) => {
+      const opt = document.createElement("option");
+      opt.value = i[valueKey];
+      opt.textContent = i[labelKey];
+      sel.appendChild(opt);
+    });
+  };
+
+  const refreshSelects = () => {
+    populateSelect("technicianId", technicians, "id", "name");
+    populateSelect("supervisorId", supervisors, "id", "name");
+    populateSelect(
+      "technicianFilter",
+      [{ id: "", name: "All Technicians" }].concat(technicians),
+      "id",
+      "name"
+    );
+  };
+
+  /* ==================== FILTERS & PAGINATION ==================== */
+  const applyFilters = () => {
+    let list = [...assignments];
+    const q = $("searchInput").value.toLowerCase();
+    const type = $("serviceTypeFilter").value;
+    const status = $("statusFilter").value;
+    const tech = $("technicianFilter").value;
+
+    if (q) {
+      list = list.filter(
+        (a) =>
+          a.id.toLowerCase().includes(q) ||
+          a.clientName.toLowerCase().includes(q) ||
+          technicians
+            .find((t) => t.id === a.technicianId)
+            ?.name.toLowerCase()
+            .includes(q)
+      );
+    }
+    if (type) list = list.filter((a) => a.serviceType === type);
+    if (status) list = list.filter((a) => a.status === status);
+    if (tech) list = list.filter((a) => a.technicianId === tech);
+    return list;
+  };
+
+  const renderPagination = (total) => {
+    const pages = Math.ceil(total / itemsPerPage);
+    const nav = $("pagination");
+    nav.innerHTML = "";
+    if (pages <= 1) return;
+
+    const btn = (text, page, disabled = false) => {
+      const b = document.createElement("button");
+      b.textContent = text;
+      b.disabled = disabled;
+      b.className = `px-4 py-2 border rounded text-sm ${
+        disabled ? "opacity-50" : "hover:bg-gray-100"
+      }`;
+      if (!disabled)
+        b.onclick = () => {
+          currentPage = page;
+          renderAssignments();
+        };
+      return b;
+    };
+
+    nav.appendChild(btn("Prev", currentPage - 1, currentPage === 1));
+    for (let i = 1; i <= pages; i++) {
+      const b = btn(i, i);
+      if (i === currentPage) b.className += " bg-teal-600 text-white";
+      nav.appendChild(b);
+    }
+    nav.appendChild(btn("Next", currentPage + 1, currentPage === pages));
+  };
+
+  /* ==================== STATS ==================== */
+  const updateStats = () => {
+    const all = assignments;
+    const today = dayjs().startOf("day");
+
+    $("totalAssignments").textContent = all.length;
+    $("activeAssignments").textContent = all.filter((a) =>
+      ["assigned", "in_progress"].includes(a.status)
+    ).length;
+    $("pendingAssignments").textContent = all.filter(
+      (a) => a.status === "pending_review"
+    ).length;
+    $("completedToday").textContent = all.filter(
+      (a) =>
+        a.status === "completed" &&
+        a.completedAt &&
+        dayjs(a.completedAt).isSame(today, "day")
+    ).length;
+  };
+
+  /*  RENDER ASSIGNMENTS */
+  const renderAssignments = () => {
+    const filtered = applyFilters();
+    const start = (currentPage - 1) * itemsPerPage;
+    const pageItems = filtered.slice(start, start + itemsPerPage);
+
+    const container = $("assignmentsTableBody");
+    if (!pageItems.length) {
+      container.innerHTML = `<p class="text-center text-gray-500">No assignments match the filters.</p>`;
+      renderPagination(0);
       updateStats();
+      return;
+    }
+
+    const statusOptions = (current) =>
+      ["assigned", "in_progress", "completed", "pending_review"]
+        .map(
+          (s) =>
+            `<option value="${s}" ${
+              s === current ? "selected" : ""
+            }>${s.replace("_", " ")}</option>`
+        )
+        .join("");
+
+    container.innerHTML = pageItems
+      .map((a) => {
+        const techName =
+          technicians.find((t) => t.id === a.technicianId)?.name || "—";
+        const supName =
+          supervisors.find((s) => s.id === a.supervisorId)?.name || "—";
+
+        return `
+      <tr>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${
+          a.id
+        }</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+          a.clientName
+        }</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${a.serviceType.replace(
+          "_",
+          " "
+        )}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${techName}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(
+          a.scheduledDate
+        )}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge(
+            a.status
+          )}">
+            ${a.status.replace("_", " ").toUpperCase()}
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <button onclick="viewAssignment('${
+            a.id
+          }')" class="text-teal-600 hover:text-teal-900 mr-3">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button onclick="openEditModal('${
+            a.id
+          }')" class="text-blue-600 hover:text-blue-900 mr-3">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteAssignment('${
+            a.id
+          }')" class="text-red-600 hover:text-red-900">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+      })
+      .join("");
+
+    renderPagination(filtered.length);
+    updateStats();
+  };
+
+  /* ==================== MODAL ==================== */
+  const openCreateModal = () => {
+    $("modalTitle").textContent = "Create Service Assignment";
+    $("submitBtn").textContent = "Create Assignment";
+    $("assignmentForm").reset();
+    $("editId").value = "";
+    $("createAssignmentModal").classList.remove("hidden");
+  };
+
+  const openEditModal = (id) => {
+    const a = assignments.find((x) => x.id === id);
+    if (!a) return;
+
+    $("modalTitle").textContent = "Edit Assignment";
+    $("submitBtn").textContent = "Update Assignment";
+    $("editId").value = a.id;
+    $("serviceType").value = a.serviceType;
+    $("priority").value = a.priority;
+    $("scheduledDate").value = a.scheduledDate.slice(0, 16);
+    $("estimatedDuration").value = a.estimatedDuration;
+    $("clientName").value = a.clientName;
+    $("clientContact").value = a.clientContact || "";
+    $("serviceAddress").value = a.serviceAddress;
+    $("technicianId").value = a.technicianId;
+    $("supervisorId").value = a.supervisorId;
+    $("description").value = a.description;
+    $("requiredEquipment").value = a.requiredEquipment || "";
+    $("createAssignmentModal").classList.remove("hidden");
+  };
+
+  const closeCreateModal = () => {
+    $("createAssignmentModal").classList.add("hidden");
+  };
+
+  /* ==================== CRUD ==================== */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const form = $("assignmentForm");
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const data = {
+      id: $("editId").value || generateId(),
+      serviceType: $("serviceType").value,
+      priority: $("priority").value,
+      scheduledDate: $("scheduledDate").value,
+      estimatedDuration: parseFloat($("estimatedDuration").value),
+      clientName: $("clientName").value.trim(),
+      clientContact: $("clientContact").value.trim(),
+      serviceAddress: $("serviceAddress").value.trim(),
+      technicianId: $("technicianId").value,
+      supervisorId: $("supervisorId").value,
+      description: $("description").value.trim(),
+      requiredEquipment: $("requiredEquipment").value.trim(),
+      status: $("editId").value
+        ? assignments.find((a) => a.id === $("editId").value).status
+        : "assigned",
+      createdAt: $("editId").value
+        ? assignments.find((a) => a.id === $("editId").value).createdAt
+        : new Date().toISOString(),
+      completedAt: null,
     };
 
-    const renderPagination = total => {
-      const pages = Math.ceil(total / itemsPerPage);
-      const nav = $('pagination');
-      nav.innerHTML = '';
-      if (pages <= 1) return;
+    if ($("editId").value) {
+      const idx = assignments.findIndex((a) => a.id === data.id);
+      assignments[idx] = data;
+      Swal.fire("Updated!", "Assignment updated.", "success");
+    } else {
+      assignments.push(data);
+      Swal.fire("Created!", "New assignment created.", "success");
+    }
 
-      const prev = `<button ${currentPage===1?'disabled':''} onclick="changePage(${currentPage-1})"
-                     class="px-4 py-2 border rounded text-sm ${currentPage===1?'opacity-50':''}">Prev</button>`;
-      nav.innerHTML += prev;
+    closeCreateModal();
+    currentPage = 1;
+    renderAssignments();
+  };
 
-      for (let i=1;i<=pages;i++) {
-        nav.innerHTML += `<button ${i===currentPage?'class="px-4 py-2 bg-indigo-600 text-white rounded text-sm"':'class="px-4 py-2 border rounded text-sm"'}
-                          onclick="changePage(${i})">${i}</button>`;
+  const viewAssignment = (id) => {
+    const a = assignments.find((x) => x.id === id);
+    if (!a) return;
+    const tech = technicians.find((t) => t.id === a.technicianId)?.name || "—";
+    const sup = supervisors.find((s) => s.id === a.supervisorId)?.name || "—";
+
+    Swal.fire({
+      title: `#${a.id} – ${a.clientName}`,
+      html: `
+        <div class="text-left space-y-2">
+          <p><strong>Service:</strong> ${a.serviceType.replace("_", " ")}</p>
+          <p><strong>Priority:</strong> <span class="${priorityBadge(
+            a.priority
+          )} px-2 py-0.5 rounded text-xs">${a.priority}</span></p>
+          <p><strong>Status:</strong> <span class="${statusBadge(
+            a.status
+          )} px-2 py-0.5 rounded text-xs">${a.status.replace(
+        "_",
+        " "
+      )}</span></p>
+          <p><strong>Scheduled:</strong> ${formatDate(a.scheduledDate)}</p>
+          <p><strong>Duration:</strong> ${a.estimatedDuration} h</p>
+          <p><strong>Address:</strong> ${a.serviceAddress}</p>
+          <p><strong>Tech:</strong> ${tech}</p>
+          <p><strong>Supervisor:</strong> ${sup}</p>
+          <p><strong>Description:</strong> ${a.description}</p>
+          ${
+            a.requiredEquipment
+              ? `<p><strong>Equipment:</strong> ${a.requiredEquipment}</p>`
+              : ""
+          }
+        </div>`,
+      icon: "info",
+      confirmButtonColor: "#0d9488",
+    });
+  };
+
+  const deleteAssignment = (id) => {
+    Swal.fire({
+      title: "Delete?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+    }).then((res) => {
+      if (res.isConfirmed) {
+        assignments = assignments.filter((a) => a.id !== id);
+        renderAssignments();
+        Swal.fire("Deleted!", "", "success");
       }
+    });
+  };
 
-      const next = `<button ${currentPage===pages?'disabled':''} onclick="changePage(${currentPage+1})"
-                     class="px-4 py-2 border rounded text-sm ${currentPage===pages?'opacity-50':''}">Next</button>`;
-      nav.innerHTML += next;
-    };
+  const updateStatus = (id, newStatus) => {
+    const a = assignments.find((x) => x.id === id);
+    if (!a) return;
+    a.status = newStatus;
+    if (newStatus === "completed") a.completedAt = new Date().toISOString();
+    renderAssignments();
+  };
 
-    const changePage = p => { currentPage = p; renderAssignments(); };
+  /* ==================== EVENT LISTENERS ==================== */
+  document.addEventListener("DOMContentLoaded", () => {
+    refreshSelects();
+    renderAssignments();
 
-    const applyFilters = () => {
-      let list = [...assignments];
-      const search = $('searchInput').value.toLowerCase();
-      const type   = $('serviceTypeFilter').value;
-      const status = $('statusFilter').value;
-      const tech   = $('technicianFilter').value;
-
-      if (search) {
-        list = list.filter(a =>
-          a.id.toLowerCase().includes(search) ||
-          a.clientName.toLowerCase().includes(search) ||
-          (technicians.find(t=>t.id===a.technicianId)?.name?.toLowerCase().includes(search))
-        );
-      }
-      if (type)   list = list.filter(a => a.serviceType === type);
-      if (status) list = list.filter(a => a.status === status);
-      if (tech)   list = list.filter(a => a.technicianId === tech);
-      return list;
-    };
-
-    const updateStats = () => {
-      const all = assignments;
-      $('totalAssignments').textContent   = all.length;
-      $('activeAssignments').textContent  = all.filter(a=>['assigned','in_progress'].includes(a.status)).length;
-      $('pendingAssignments').textContent = all.filter(a=>a.status==='pending_review').length;
-      const today = dayjs().startOf('day');
-      $('completedToday').textContent = all.filter(a=>a.status==='completed' && dayjs(a.completedAt).isSame(today,'day')).length;
-    };
-
-    /* ---------- MODAL ---------- */
-    const showCreateAssignmentModal = (id = null) => {
-      const modal = $('createAssignmentModal');
-      modal.classList.remove('hidden');
-      $('assignmentForm').reset();
-      $('editId').value = '';
-      $('submitBtnText').textContent = 'Create Assignment';
-
-      if (id) {
-        const a = assignments.find(x=>x.id===id);
-        if (!a) return;
-        $('editId').value = a.id;
-        $('serviceType').value = a.serviceType;
-        $('priority').value = a.priority;
-        $('scheduledDate').value = a.scheduledDate.slice(0,16);
-        $('estimatedDuration').value = a.estimatedDuration;
-        $('clientName').value = a.clientName;
-        $('clientContact').value = a.clientContact || '';
-        $('serviceAddress').value = a.serviceAddress;
-        $('technicianId').value = a.technicianId;
-        $('supervisorId').value = a.supervisorId;
-        $('description').value = a.description;
-        $('requiredEquipment').value = a.requiredEquipment || '';
-        $('submitBtnText').textContent = 'Update Assignment';
-      }
-    };
-
-    const closeCreateAssignmentModal = () => {
-      $('createAssignmentModal').classList.add('hidden');
-    };
-
-    /* ---------- CRUD ---------- */
-    const handleSubmit = e => {
-      e.preventDefault();
-      const data = {
-        id: $('editId').value || generateId(),
-        serviceType: $('serviceType').value,
-        priority: $('priority').value,
-        scheduledDate: $('scheduledDate').value,
-        estimatedDuration: parseFloat($('estimatedDuration').value),
-        clientName: $('clientName').value.trim(),
-        clientContact: $('clientContact').value.trim(),
-        serviceAddress: $('serviceAddress').value.trim(),
-        technicianId: $('technicianId').value,
-        supervisorId: $('supervisorId').value,
-        description: $('description').value.trim(),
-        requiredEquipment: $('requiredEquipment').value.trim(),
-        status: $('editId').value ? assignments.find(a=>a.id=== $('editId').value).status : 'assigned',
-        createdAt: $('editId').value ? assignments.find(a=>a.id=== $('editId').value).createdAt : new Date().toISOString()
-      };
-
-      if ($('editId').value) {
-        const idx = assignments.findIndex(a=>a.id===data.id);
-        assignments[idx] = data;
-        Swal.fire('Updated!', 'Assignment updated.', 'success');
-      } else {
-        assignments.push(data);
-        Swal.fire('Created!', 'New assignment created.', 'success');
-      }
-      save();
-      closeCreateAssignmentModal();
-      currentPage = 1;
-      renderAssignments();
-    };
-
-    const viewAssignment = id => {
-      const a = assignments.find(x=>x.id===id);
-      if (!a) return;
-      const tech = technicians.find(t=>t.id===a.technicianId)?.name || '—';
-      const sup  = supervisors.find(s=>s.id===a.supervisorId)?.name || '—';
-      Swal.fire({
-        title: `#${a.id} – ${a.clientName}`,
-        html: `
-          <div class="text-left space-y-2">
-            <p><strong>Service:</strong> ${a.serviceType.replace('_',' ')}</p>
-            <p><strong>Priority:</strong> <span class="${priorityBadge(a.priority)}">${a.priority}</span></p>
-            <p><strong>Status:</strong> <span class="${statusBadge(a.status)}">${a.status.replace('_',' ')}</span></p>
-            <p><strong>Scheduled:</strong> ${formatDate(a.scheduledDate)}</p>
-            <p><strong>Duration:</strong> ${a.estimatedDuration} h</p>
-            <p><strong>Address:</strong> ${a.serviceAddress}</p>
-            <p><strong>Technician:</strong> ${tech}</p>
-            <p><strong>Supervisor:</strong> ${sup}</p>
-            <p><strong>Description:</strong> ${a.description}</p>
-            ${a.requiredEquipment?`<p><strong>Equipment:</strong> ${a.requiredEquipment}</p>`:''}
-          </div>`,
-        icon:'info',
-        confirmButtonColor:'#0d9488'
+    // Filters
+    [
+      "searchInput",
+      "serviceTypeFilter",
+      "statusFilter",
+      "technicianFilter",
+    ].forEach((id) => {
+      $(id).addEventListener("input", () => {
+        currentPage = 1;
+        renderAssignments();
       });
-    };
-
-    const editAssignment = (e,id) => { e.stopPropagation(); showCreateAssignmentModal(id); };
-    const deleteAssignment = (e,id) => {
-      e.stopPropagation();
-      Swal.fire({
-        title:'Delete?', text:'This cannot be undone.', icon:'warning',
-        showCancelButton:true, confirmButtonColor:'#dc2626'
-      }).then(res=>{
-        if(res.isConfirmed){
-          assignments = assignments.filter(a=>a.id!==id);
-          save(); renderAssignments();
-          Swal.fire('Deleted!','','success');
-        }
+      $(id).addEventListener("change", () => {
+        currentPage = 1;
+        renderAssignments();
       });
-    };
-
-    const updateStatus = (id,newStatus) => {
-      const a = assignments.find(x=>x.id===id);
-      if(!a) return;
-      a.status = newStatus;
-      if(newStatus==='completed') a.completedAt = new Date().toISOString();
-      save(); renderAssignments();
-    };
-
-    /* ---------- EVENT LISTENERS ---------- */
-    document.addEventListener('DOMContentLoaded', () => {
-      refreshSelects();
-      renderAssignments();
-
-      // filters
-      ['searchInput','serviceTypeFilter','statusFilter','technicianFilter'].forEach(id=>{
-        $(id).addEventListener('input',()=>{ currentPage=1; renderAssignments(); });
-        $(id).addEventListener('change',()=>{ currentPage=1; renderAssignments(); });
-      });
-
-      $('assignmentForm').addEventListener('submit', handleSubmit);
     });
 
-    /* ---------- SIDEBAR TOGGLE (mobile) ---------- */
-    const sidebar = $('sidebar');
-    const backdrop = $('sidebarBackdrop');
-    const closeBtn = $('closeSidebar');
-
-    const closeSidebar = () => {
-      sidebar.classList.add('-translate-x-full');
-      backdrop.classList.add('hidden');
-      document.body.style.overflow = '';
-    };
-    closeBtn?.addEventListener('click', closeSidebar);
-    backdrop?.addEventListener('click', closeSidebar);
-    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
-  </script>
+    $("assignmentForm").addEventListener("submit", handleSubmit);
+  });
+</script>

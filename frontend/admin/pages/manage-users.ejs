@@ -1,64 +1,121 @@
 <style>
-  .stat-card { transition: all 0.3s ease; }
-  .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
-  .pulse-ring { animation: pulse 2s infinite; }
+  .stat-card {
+    transition: all 0.3s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  }
+  .pulse-ring {
+    animation: pulse 2s infinite;
+  }
   @keyframes pulse {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(13, 148, 136, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7);
+    }
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 10px rgba(13, 148, 136, 0);
+    }
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(13, 148, 136, 0);
+    }
   }
   @keyframes slideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-  .slide-in { animation: slideIn 0.4s ease-out; }
-  .user-row:hover { background: linear-gradient(to right, #f0fdfa, #ccfbf1); }
+  .slide-in {
+    animation: slideIn 0.4s ease-out;
+  }
+  .user-row:hover {
+    background: linear-gradient(to right, #f0fdfa, #ccfbf1);
+  }
 </style>
-<div class="flex items-center justify-between mb-8">
+<!-- ==================== HEADER ==================== -->
+<div class="flex items-center justify-between mb-8 px-6">
   <div>
-    <h3 class="text-2xl font-bold text-teal-800">
-      User Management
-    </h3>
-      <p class="text-teal-600 mt-1">
-        Manage all clients and staff members efficiently
-      </p>
+    <h3 class="text-2xl font-bold text-teal-800">User Management</h3>
+    <p class="text-teal-600 mt-1">
+      Manage all clients and staff members efficiently
+    </p>
   </div>
   <div class="flex gap-3">
-    <button id="addClientBtn" onclick="openAddUserModal('client')" class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
-      <i class="fas fa-user-plus group-hover:scale-110 transition-transform"></i>
+    <button
+      id="addClientBtn"
+      onclick="openAddUserModal('client')"
+      class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
+    >
+      <i
+        class="fas fa-user-plus group-hover:scale-110 transition-transform"
+      ></i>
       <span>Add Client</span>
     </button>
-    <button id="addStaffBtn" onclick="openAddUserModal('staff')" class="hidden bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
+    <button
+      id="addStaffBtn"
+      onclick="openAddUserModal('staff')"
+      class="hidden bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
+    >
       <i class="fas fa-user-tie group-hover:scale-110 transition-transform"></i>
       <span>Add Staff</span>
     </button>
   </div>
 </div>
 
-<!-- Tabs Navigation -->
+<!-- ==================== TABS ==================== -->
 <div class="mb-6 slide-in px-6">
-  <div class="bg-white rounded-xl shadow-md p-2 inline-flex border border-gray-200">
-    <button id="clientsTab" onclick="switchTab('clients')" class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md">
+  <div
+    class="bg-white rounded-xl shadow-md p-2 inline-flex border border-gray-200"
+  >
+    <button
+      id="clientsTab"
+      onclick="switchTab('clients')"
+      class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md"
+    >
       <i class="fas fa-users mr-2"></i>Clients (<span id="clientCount">0</span>)
     </button>
-    <button id="staffTab" onclick="switchTab('staff')" class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-gray-600 hover:bg-gray-50">
+    <button
+      id="staffTab"
+      onclick="switchTab('staff')"
+      class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-gray-600 hover:bg-gray-50"
+    >
       <i class="fas fa-user-tie mr-2"></i>Staff (<span id="staffCount">0</span>)
     </button>
   </div>
 </div>
 
-<!-- Clients Section -->
+<!-- ==================== CLIENTS SECTION ==================== -->
 <div id="clientsSection" class="space-y-6 px-6">
-  <!-- Search & Filters -->
+  <!-- Filters -->
   <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-        <input type="text" id="clientSearch" placeholder="Search name, email, phone..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Search</label
+        >
+        <input
+          type="text"
+          id="clientsSearch"
+          placeholder="Search name, email, phone..."
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+        />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Subscriptions</label>
-        <select id="clientSubFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Subscriptions</label
+        >
+        <select
+          id="clientSubFilter"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
           <option value="">All Subscriptions</option>
           <option>Paid</option>
           <option>Unpaid</option>
@@ -66,8 +123,13 @@
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-        <select id="clientStatusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Status</label
+        >
+        <select
+          id="clientStatusFilter"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
           <option value="">All Status</option>
           <option>Active</option>
           <option>Expired</option>
@@ -75,8 +137,13 @@
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Plans</label>
-        <select id="clientPlanFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Plans</label
+        >
+        <select
+          id="clientPlanFilter"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
           <option value="">All Plans</option>
           <option>Premium 50Mbps</option>
           <option>Standard 20Mbps</option>
@@ -84,31 +151,60 @@
         </select>
       </div>
     </div>
-  </div>
 
-  <!-- Clients Table -->
-  <div class="bg-white shadow-md border border-gray-200 overflow-hidden slide-in">
-    <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-teal-100 border-b border-teal-200">
+    <!-- Clients Table -->
+    <div class="px-6 py-4 border-b border-teal-200">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold text-teal-800"><i class="fas fa-list mr-2"></i>Client Directory</h3>
-        <div class="flex items-center space-x-2">
-          <button onclick="exportData('clients')" class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-50 rounded-lg transition-all"><i class="fas fa-download mr-1"></i>Export</button>
-        </div>
+        <h3 class="text-lg font-bold text-teal-800">
+          <i class="fas fa-list mr-2"></i>Client Directory
+        </h3>
+        <button
+          onclick="exportData('clients')"
+          class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-100 rounded-lg transition-all"
+        >
+          <i class="fas fa-download mr-1"></i>Export
+        </button>
       </div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full" id="clientsTable">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">
-              <input type="checkbox" id="selectAllClients" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              <input
+                type="checkbox"
+                id="selectAllClients"
+                class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2"
+              />
               User
             </th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Contact Info</th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Service Plan</th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Status</th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Last Payment</th>
-            <th class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th>
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Contact Info
+            </th>
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Service Plan
+            </th>
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Status
+            </th>
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Last Payment
+            </th>
+            <th
+              class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody id="clientsTableBody" class="divide-y divide-gray-100"></tbody>
@@ -116,70 +212,127 @@
     </div>
     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-sm text-gray-600">Showing <span id="clientRange">0-0</span> of <span id="totalClients">0</span> clients</p>
-        <div class="flex items-center space-x-2" id="clientPagination"></div>
+        <p class="text-sm text-gray-600">
+          Showing <span id="clientsRange">0-0</span> of
+          <span id="totalClients">0</span> clients
+        </p>
+        <div class="flex items-center space-x-2" id="clientsPagination"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Staff Section -->
+<!-- ==================== STAFF SECTION ==================== -->
 <div id="staffSection" class="hidden space-y-6 px-6">
-  <!-- Search & Filters -->
-  <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200 slide-in">
+  <!-- Filters -->
+  <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-filter text-teal-600 mr-2"></i>Staff Filters</h3>
-      <button onclick="resetFilters('staff')" class="text-teal-600 hover:text-teal-700 text-sm font-medium"><i class="fas fa-redo mr-1"></i>Reset</button>
+      <h3 class="text-lg font-bold text-gray-800">
+        <i class="fas fa-filter text-teal-600 mr-2"></i>Staff Filters
+      </h3>
+      <button
+        onclick="resetFilters('staff')"
+        class="text-teal-600 hover:text-teal-700 text-sm font-medium"
+      >
+        <i class="fas fa-redo mr-1"></i>Reset
+      </button>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
       <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-        <input type="text" id="staffSearch" placeholder="Search staff members..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+        <i
+          class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+        ></i>
+        <input
+          type="text"
+          id="staffSearch"
+          placeholder="Search staff members..."
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+        />
       </div>
-      <select id="staffDeptFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white">
+      <select
+        id="staffDeptFilter"
+        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white"
+      >
         <option value="">All Departments</option>
         <option>Technical</option>
         <option>Support</option>
         <option>Sales</option>
         <option>Management</option>
       </select>
-      <select id="staffRoleFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white">
+      <select
+        id="staffRoleFilter"
+        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white"
+      >
         <option value="">All Roles</option>
         <option>Network Engineer</option>
         <option>Support Agent</option>
         <option>Sales Rep</option>
         <option>Manager</option>
       </select>
-      <select id="staffStatusFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white">
+      <select
+        id="staffStatusFilter"
+        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white"
+      >
         <option value="">All Status</option>
         <option>Active</option>
         <option>On Leave</option>
         <option>Inactive</option>
       </select>
     </div>
-  </div>
 
-  <!-- Staff Table -->
-  <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden slide-in">
-    <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-teal-100 border-b border-teal-200">
+    <!-- Staff Table -->
+    <div class="px-6 py-4 border-b border-teal-200">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold text-purple-800"><i class="fas fa-users-cog mr-2"></i>Staff Directory</h3>
-        <button onclick="exportData('staff')" class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-50 rounded-lg transition-all"><i class="fas fa-download mr-1"></i>Export</button>
+        <h3 class="text-lg font-bold text-teal-800">
+          <i class="fas fa-list mr-2"></i>Staff Directory
+        </h3>
+        <button
+          onclick="exportData('staff')"
+          class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-100 rounded-lg transition-all"
+        >
+          <i class="fas fa-download mr-1"></i>Export
+        </button>
       </div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full" id="staffTable">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">
-              <input type="checkbox" id="selectAllStaff" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              <input
+                type="checkbox"
+                id="selectAllStaff"
+                class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2"
+              />
               Staff Member
             </th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Role & Department</th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Contact</th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Status</th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Joined</th>
-            <th class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th>
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Role & Department
+            </th>
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Contact
+            </th>
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Status
+            </th>
+            <th
+              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Joined
+            </th>
+            <th
+              class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            >
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody id="staffTableBody" class="divide-y divide-gray-100"></tbody>
@@ -187,24 +340,38 @@
     </div>
     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-sm text-gray-600">Showing <span id="staffRange">0-0</span> of <span id="totalStaff">0</span> staff members</p>
+        <p class="text-sm text-gray-600">
+          Showing <span id="staffRange">0-0</span> of
+          <span id="totalStaff">0</span> staff members
+        </p>
         <div class="flex items-center space-x-2" id="staffPagination"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal: Add User -->
-<div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-  <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95">
+<!-- ==================== MODAL ==================== -->
+<div
+  id="addUserModal"
+  class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm"
+>
+  <div
+    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
+  >
     <div class="flex items-center justify-between mb-6">
       <div>
         <h3 class="text-2xl font-bold text-teal-800 flex items-center">
-          <i class="fas fa-user-plus mr-3 text-teal-600"></i><span id="modalTitle">Add New User</span>
+          <i class="fas fa-user-plus mr-3 text-teal-600"></i
+          ><span id="modalTitle">Add New User</span>
         </h3>
-        <p class="text-gray-600 text-sm mt-1">Fill in the details to create a new account</p>
+        <p class="text-gray-600 text-sm mt-1">
+          Fill in the details to create a new account
+        </p>
       </div>
-      <button onclick="closeAddUserModal()" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+      <button
+        onclick="closeAddUserModal()"
+        class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+      >
         <i class="fas fa-times text-xl"></i>
       </button>
     </div>
@@ -213,32 +380,71 @@
       <input type="hidden" id="editUserId" />
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-user text-gray-400 mr-2"></i>Full Name *</label>
-          <input type="text" id="fullName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Full Name *</label
+          >
+          <input
+            type="text"
+            id="fullName"
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          />
         </div>
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-envelope text-gray-400 mr-2"></i>Email Address *</label>
-          <input type="email" id="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Email Address *</label
+          >
+          <input
+            type="email"
+            id="email"
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          />
         </div>
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-phone text-gray-400 mr-2"></i>Phone Number *</label>
-          <input type="tel" id="phone" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Phone Number *</label
+          >
+          <input
+            type="tel"
+            id="phone"
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          />
         </div>
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-id-card text-gray-400 mr-2"></i>ID Number</label>
-          <input type="text" id="idNumber" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >ID Number</label
+          >
+          <input
+            type="text"
+            id="idNumber"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          />
         </div>
       </div>
 
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-map-marker-alt text-gray-400 mr-2"></i>Address</label>
-        <input type="text" id="address" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+        <label class="block text-sm font-semibold text-gray-700 mb-2"
+          >Address</label
+        >
+        <input
+          type="text"
+          id="address"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+        />
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div id="planContainer">
-          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-wifi text-gray-400 mr-2"></i>Service Plan *</label>
-          <select id="plan" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Service Plan *</label
+          >
+          <select
+            id="plan"
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
+          >
             <option value="">Select plan</option>
             <option>Premium 50Mbps</option>
             <option>Standard 20Mbps</option>
@@ -246,8 +452,13 @@
           </select>
         </div>
         <div id="roleContainer" class="hidden">
-          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-briefcase text-gray-400 mr-2"></i>Role *</label>
-          <select id="role" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Role *</label
+          >
+          <select
+            id="role"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
+          >
             <option value="">Select role</option>
             <option>Network Engineer</option>
             <option>Support Agent</option>
@@ -256,8 +467,13 @@
           </select>
         </div>
         <div id="departmentContainer" class="hidden">
-          <label class="block text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-building text-gray-400 mr-2"></i>Department *</label>
-          <select id="department" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Department *</label
+          >
+          <select
+            id="department"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
+          >
             <option value="">Select department</option>
             <option>Technical</option>
             <option>Support</option>
@@ -268,259 +484,391 @@
       </div>
 
       <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
-        <p class="text-sm text-teal-800"><i class="fas fa-info-circle mr-2"></i><strong>Note:</strong> Login credentials will be sent via email.</p>
+        <p class="text-sm text-teal-800">
+          <strong>Note:</strong> Login credentials will be sent via email.
+        </p>
       </div>
 
       <div class="flex space-x-3 pt-4">
-        <button type="button" onclick="closeAddUserModal()" class="flex-1 py-3 px-6 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-all">
-          <i class="fas fa-times mr-2"></i>Cancel
+        <button
+          type="button"
+          onclick="closeAddUserModal()"
+          class="flex-1 py-3 px-6 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-all"
+        >
+          Cancel
         </button>
-        <button type="submit" class="flex-1 py-3 px-6 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-semibold hover:from-teal-700 hover:to-teal-800 shadow-lg hover:shadow-xl transition-all">
-          <i class="fas fa-check mr-2"></i><span id="submitBtnText">Create User</span>
+        <button
+          type="submit"
+          class="flex-1 py-3 px-6 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-semibold hover:from-teal-700 hover:to-teal-800 shadow-lg hover:shadow-xl transition-all"
+        >
+          <span id="submitBtnText">Create User</span>
         </button>
       </div>
     </form>
   </div>
 </div>
 
+<!-- ==================== JAVASCRIPT ==================== -->
 <script>
-  // Data Storage
-  let clients = JSON.parse(localStorage.getItem('clients')) || [];
-  let staff = JSON.parse(localStorage.getItem('staff')) || [];
-  let currentUserType = 'client';
+  /* ==================== MOCK DATA ==================== */
+  let clients = [
+    {
+      id: "CLT-001",
+      name: "John Doe",
+      email: "john.doe@example.com",
+      phone: "+254 712 345 678",
+      idNumber: "12345678",
+      address: "Nairobi",
+      plan: "Premium 50Mbps",
+      status: "Active",
+      lastPayment: "Ksh 5,000 - 3 days ago",
+      paymentDate: Date.now() - 3 * 24 * 60 * 60 * 1000,
+    },
+    {
+      id: "CLT-002",
+      name: "Jane Smith",
+      email: "jane.smith@client.com",
+      phone: "+254 711 234 567",
+      idNumber: "87654321",
+      address: "Mombasa",
+      plan: "Basic 10Mbps",
+      status: "Expired",
+      lastPayment: "Ksh 1,500 - 15 days overdue",
+      paymentDate: Date.now() - 18 * 24 * 60 * 60 * 1000,
+    },
+    {
+      id: "CLT-003",
+      name: "Robert Wilson",
+      email: "robert.w@business.com",
+      phone: "+254 720 111 222",
+      idNumber: "11223344",
+      address: "Kisumu",
+      plan: "Standard 20Mbps",
+      status: "Active",
+      lastPayment: "Ksh 3,000 - 1 week ago",
+      paymentDate: Date.now() - 7 * 24 * 60 * 60 * 1000,
+    },
+  ];
+
+  let staff = [
+    {
+      id: "STF-101",
+      name: "Mike Kamau",
+      email: "mike.kamau@drnet.co",
+      phone: "+254 722 333 444",
+      idNumber: "22334455",
+      address: "HQ",
+      role: "Network Engineer",
+      department: "Technical",
+      status: "Active",
+      joined: "15 Jan 2023",
+    },
+    {
+      id: "STF-102",
+      name: "Sarah Akinyi",
+      email: "sarah.a@drnet.co",
+      phone: "+254 733 555 666",
+      idNumber: "33445566",
+      address: "Nairobi",
+      role: "Support Agent",
+      department: "Support",
+      status: "Active",
+      joined: "10 Mar 2024",
+    },
+    {
+      id: "STF-103",
+      name: "David Mwangi",
+      email: "david.m@drnet.co",
+      phone: "+254 744 777 888",
+      idNumber: "44556677",
+      address: "HQ",
+      role: "Sales Manager",
+      department: "Sales",
+      status: "On Leave",
+      joined: "20 Jun 2022",
+    },
+  ];
+
+  let currentUserType = "clients";
   let currentPage = { clients: 1, staff: 1 };
   const itemsPerPage = 10;
 
-  // Initialize
-  document.addEventListener('DOMContentLoaded', () => {
-    loadSampleData();
-    renderTables();
-    setupEventListeners();
-  });
+  /* ==================== HELPERS ==================== */
+  const $ = (id) => {
+    const el = document.getElementById(id);
+    if (!el) console.error(`Element with ID '${id}' not found.`);
+    return el;
+  };
 
-  function loadSampleData() {
-    if (clients.length === 0) {
-      clients = [
-        { id: 'CLT-001', name: 'John Doe', email: 'john.doe@example.com', phone: '+254 712 345 678', idNumber: '12345678', address: 'Nairobi', plan: 'Premium 50Mbps', status: 'Active', lastPayment: 'Ksh 5,000 - 3 days ago', paymentDate: Date.now() - 3*24*60*60*1000 },
-        { id: 'CLT-002', name: 'Jane Smith', email: 'jane.smith@client.com', phone: '+254 711 234 567', idNumber: '87654321', address: 'Mombasa', plan: 'Basic 10Mbps', status: 'Expired', lastPayment: 'Ksh 1,500 - 15 days overdue', paymentDate: Date.now() - 18*24*60*60*1000 },
-        { id: 'CLT-003', name: 'Robert Wilson', email: 'robert.w@business.com', phone: '+254 720 111 222', idNumber: '11223344', address: 'Kisumu', plan: 'Standard 20Mbps', status: 'Active', lastPayment: 'Ksh 3,000 - 1 week ago', paymentDate: Date.now() - 7*24*60*60*1000 }
-      ];
-    }
-    if (staff.length === 0) {
-      staff = [
-        { id: 'STF-101', name: 'Mike Kamau', email: 'mike.kamau@drnet.co', phone: '+254 722 333 444', idNumber: '22334455', address: 'HQ', role: 'Network Engineer', department: 'Technical', status: 'Active', joined: 'Jan 15, 2023' },
-        { id: 'STF-102', name: 'Sarah Akinyi', email: 'sarah.a@drnet.co', phone: '+254 733 555 666', idNumber: '33445566', address: 'Nairobi', role: 'Support Agent', department: 'Support', status: 'Active', joined: 'Mar 10, 2024' },
-        { id: 'STF-103', name: 'David Mwangi', email: 'david.m@drnet.co', phone: '+254 744 777 888', idNumber: '44556677', address: 'HQ', role: 'Sales Manager', department: 'Sales', status: 'On Leave', joined: 'Jun 20, 2022' }
-      ];
-    }
-    saveData();
-  }
+  const saveData = () => {
+    localStorage.setItem("clients", JSON.stringify(clients));
+    localStorage.setItem("staff", JSON.stringify(staff));
+  };
 
-  function saveData() {
-    localStorage.setItem('clients', JSON.stringify(clients));
-    localStorage.setItem('staff', JSON.stringify(staff));
-  }
+  const generateId = (type) => {
+    const list = type === "clients" ? clients : staff;
+    return `${type === "clients" ? "CLT" : "STF"}-${String(
+      list.length + 1
+    ).padStart(3, "0")}`;
+  };
 
-  function setupEventListeners() {
-    document.getElementById('clientSearch').addEventListener('input', () => filterAndRender('clients'));
-    document.getElementById('staffSearch').addEventListener('input', () => filterAndRender('staff'));
-    ['clientSubFilter', 'clientStatusFilter', 'clientPlanFilter', 'staffDeptFilter', 'staffRoleFilter', 'staffStatusFilter'].forEach(id => {
-      document.getElementById(id)?.addEventListener('change', () => filterAndRender(id.includes('client') ? 'clients' : 'staff'));
-    });
-    document.getElementById('selectAllClients').addEventListener('change', toggleSelectAll);
-    document.getElementById('selectAllStaff').addEventListener('change', toggleSelectAll);
-    document.getElementById('addUserForm').addEventListener('submit', handleFormSubmit);
-  }
+  const getPlanColor = (plan) =>
+    ({
+      "Premium 50Mbps": "from-teal-400 to-teal-600",
+      "Standard 20Mbps": "from-blue-400 to-blue-600",
+      "Basic 10Mbps": "from-pink-400 to-red-500",
+    }[plan] || "from-gray-400 to-gray-600");
+  const getRoleColor = (role) =>
+    ({
+      "Network Engineer": "from-purple-400 to-purple-600",
+      "Support Agent": "from-green-400 to-green-600",
+      "Sales Rep": "from-orange-400 to-orange-600",
+      Manager: "from-indigo-400 to-indigo-600",
+    }[role] || "from-gray-400 to-gray-600");
+  const getPlanBadge = (plan) =>
+    ({
+      "Premium 50Mbps": "bg-blue-100 text-blue-700",
+      "Standard 20Mbps": "bg-purple-100 text-purple-700",
+      "Basic 10Mbps": "bg-yellow-100 text-yellow-700",
+    }[plan] || "bg-gray-100 text-gray-700");
+  const getStatusBadge = (status) =>
+    ({
+      Active: "bg-green-100 text-green-700",
+      Expired: "bg-red-100 text-red-700",
+      Suspended: "bg-orange-100 text-orange-700",
+      "On Leave": "bg-yellow-100 text-yellow-700",
+      Inactive: "bg-gray-100 text-gray-700",
+    }[status] || "bg-gray-100 text-gray-700");
 
-  function switchTab(tab) {
-    document.getElementById('clientsSection').classList.toggle('hidden', tab !== 'clients');
-    document.getElementById('staffSection').classList.toggle('hidden', tab !== 'staff');
-    document.getElementById('clientsTab').classList.toggle('bg-gradient-to-r', tab === 'clients');
-    document.getElementById('clientsTab').classList.toggle('from-teal-600', tab === 'clients');
-    document.getElementById('clientsTab').classList.toggle('to-teal-700', tab === 'clients');
-    document.getElementById('clientsTab').classList.toggle('text-white', tab === 'clients');
-    document.getElementById('clientsTab').classList.toggle('shadow-md', tab === 'clients');
-    document.getElementById('clientsTab').classList.toggle('text-gray-600', tab !== 'clients');
-    document.getElementById('clientsTab').classList.toggle('hover:bg-gray-50', tab !== 'clients');
+  /* ==================== TAB SWITCHING ==================== */
+  const switchTab = (tab) => {
+    currentUserType = tab;
+    $("clientsSection").classList.toggle("hidden", tab !== "clients");
+    $("staffSection").classList.toggle("hidden", tab !== "staff");
 
-    const staffTab = document.getElementById('staffTab');
-    staffTab.classList.toggle('bg-gradient-to-r', tab === 'staff');
-    staffTab.classList.toggle('from-teal-600', tab === 'staff');
-    staffTab.classList.toggle('to-teal-700', tab === 'staff');
-    staffTab.classList.toggle('text-white', tab === 'staff');
-    staffTab.classList.toggle('shadow-md', tab === 'staff');
-    staffTab.classList.toggle('text-gray-600', tab !== 'staff');
-    staffTab.classList.toggle('hover:bg-gray-50', tab !== 'staff');
+    const activeTab = tab === "clients" ? "clientsTab" : "staffTab";
+    const inactiveTab = tab === "clients" ? "staffTab" : "clientsTab";
 
-    document.getElementById('addClientBtn').classList.toggle('hidden', tab !== 'clients');
-    document.getElementById('addStaffBtn').classList.toggle('hidden', tab !== 'staff');
+    $(activeTab).className =
+      "tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md";
+    $(inactiveTab).className =
+      "tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-gray-600 hover:bg-gray-50";
 
-    renderTables();
-  }
+    $("addClientBtn").classList.toggle("hidden", tab !== "clients");
+    $("addStaffBtn").classList.toggle("hidden", tab !== "staff");
 
-  function openAddUserModal(type, user = null) {
+    renderTable(tab);
+    updateCounts();
+  };
+
+  /* ==================== MODAL ==================== */
+  const openAddUserModal = (type, user = null) => {
     currentUserType = type;
-    const modal = document.getElementById('addUserModal');
-    modal.classList.remove('hidden');
-    setTimeout(() => modal.querySelector('div').classList.replace('scale-95', 'scale-100'), 10);
+    const modal = $("addUserModal");
+    modal.classList.remove("hidden");
+    setTimeout(
+      () =>
+        modal.querySelector("div").classList.replace("scale-95", "scale-100"),
+      10
+    );
 
-    document.getElementById('modalTitle').textContent = user ? `Edit ${type === 'client' ? 'Client' : 'Staff'}` : `Add New ${type === 'client' ? 'Client' : 'Staff'}`;
-    document.getElementById('submitBtnText').textContent = user ? 'Update' : 'Create';
+    $("modalTitle").textContent = user
+      ? `Edit ${type === "clients" ? "Client" : "Staff"}`
+      : `Add New ${type === "clients" ? "Client" : "Staff"}`;
+    $("submitBtnText").textContent = user ? "Update" : "Create";
 
-    document.getElementById('planContainer').classList.toggle('hidden', type !== 'client');
-    document.getElementById('roleContainer').classList.toggle('hidden', type !== 'staff');
-    document.getElementById('departmentContainer').classList.toggle('hidden', type !== 'staff');
+    $("planContainer").classList.toggle("hidden", type !== "clients");
+    $("roleContainer").classList.toggle("hidden", type !== "staff");
+    $("departmentContainer").classList.toggle("hidden", type !== "staff");
 
     if (user) {
-      document.getElementById('editUserId').value = user.id;
-      document.getElementById('fullName').value = user.name;
-      document.getElementById('email').value = user.email;
-      document.getElementById('phone').value = user.phone;
-      document.getElementById('idNumber').value = user.idNumber || '';
-      document.getElementById('address').value = user.address || '';
-      if (type === 'client') document.getElementById('plan').value = user.plan;
-      if (type === 'staff') {
-        document.getElementById('role').value = user.role;
-        document.getElementById('department').value = user.department;
+      $("editUserId").value = user.id;
+      $("fullName").value = user.name;
+      $("email").value = user.email;
+      $("phone").value = user.phone;
+      $("idNumber").value = user.idNumber || "";
+      $("address").value = user.address || "";
+      if (type === "clients") $("plan").value = user.plan;
+      if (type === "staff") {
+        $("role").value = user.role;
+        $("department").value = user.department;
       }
     } else {
-      document.getElementById('addUserForm').reset();
-      document.getElementById('editUserId').value = '';
+      $("addUserForm").reset();
+      $("editUserId").value = "";
     }
-  }
+  };
 
-  function closeAddUserModal() {
-    const modal = document.getElementById('addUserModal');
-    modal.querySelector('div').classList.replace('scale-100', 'scale-95');
-    setTimeout(() => modal.classList.add('hidden'), 200);
-  }
+  const closeAddUserModal = () => {
+    const modal = $("addUserModal");
+    modal.querySelector("div").classList.replace("scale-100", "scale-95");
+    setTimeout(() => modal.classList.add("hidden"), 200);
+  };
 
-  function handleFormSubmit(e) {
+  /* ==================== FORM SUBMIT ==================== */
+  const handleFormSubmit = (e) => {
     e.preventDefault();
     const formData = {
-      name: document.getElementById('fullName').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
-      idNumber: document.getElementById('idNumber').value.trim(),
-      address: document.getElementById('address').value.trim(),
+      name: $("fullName").value.trim(),
+      email: $("email").value.trim(),
+      phone: $("phone").value.trim(),
+      idNumber: $("idNumber").value.trim(),
+      address: $("address").value.trim(),
     };
 
-    const editId = document.getElementById('editUserId').value;
-    if (currentUserType === 'client') {
-      formData.plan = document.getElementById('plan').value;
-      formData.status = editId ? getUserById('clients', editId).status : 'Active';
-      formData.lastPayment = editId ? getUserById('clients', editId).lastPayment : 'Ksh 0 - Never';
-      formData.paymentDate = editId ? getUserById('clients', editId).paymentDate : Date.now();
+    const editId = $("editUserId").value;
+    if (currentUserType === "clients") {
+      formData.plan = $("plan").value;
+      formData.status = editId
+        ? getUserById("clients", editId).status
+        : "Active";
+      formData.lastPayment = editId
+        ? getUserById("clients", editId).lastPayment
+        : "Ksh 0 - Never";
+      formData.paymentDate = editId
+        ? getUserById("clients", editId).paymentDate
+        : Date.now();
     } else {
-      formData.role = document.getElementById('role').value;
-      formData.department = document.getElementById('department').value;
-      formData.status = editId ? getUserById('staff', editId).status : 'Active';
-      formData.joined = editId ? getUserById('staff', editId).joined : new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      formData.role = $("role").value;
+      formData.department = $("department").value;
+      formData.status = editId ? getUserById("staff", editId).status : "Active";
+      formData.joined = editId
+        ? getUserById("staff", editId).joined
+        : dayjs().format("DD MMM YYYY");
     }
 
     if (editId) {
-      const index = (currentUserType === 'client' ? clients : staff).findIndex(u => u.id === editId);
-      if (index > -1) (currentUserType === 'client' ? clients : staff)[index] = { ...formData, id: editId };
-      Swal.fire('Updated!', `${currentUserType === 'client' ? 'Client' : 'Staff'} updated successfully.`, 'success');
+      const list = currentUserType === "clients" ? clients : staff;
+      const index = list.findIndex((u) => u.id === editId);
+      if (index > -1) list[index] = { ...formData, id: editId };
+      Swal.fire(
+        "Updated!",
+        `${currentUserType === "clients" ? "Client" : "Staff"} updated.`,
+        "success"
+      );
     } else {
-      const newId = `${currentUserType === 'client' ? 'CLT' : 'STF'}-${String((currentUserType === 'client' ? clients : staff).length + 1).padStart(3, '0')}`;
-      (currentUserType === 'client' ? clients : staff).push({ ...formData, id: newId });
-      Swal.fire('Created!', `${currentUserType === 'client' ? 'Client' : 'Staff'} added successfully.`, 'success');
+      const newId = generateId(currentUserType);
+      (currentUserType === "clients" ? clients : staff).push({
+        ...formData,
+        id: newId,
+      });
+      Swal.fire(
+        "Created!",
+        `${currentUserType === "clients" ? "Client" : "Staff"} added.`,
+        "success"
+      );
     }
 
     saveData();
     closeAddUserModal();
-    renderTables();
-  }
+    renderTable(currentUserType);
+    updateCounts();
+  };
 
-  function getUserById(type, id) {
-    return (type === 'clients' ? clients : staff).find(u => u.id === id);
-  }
+  /* ==================== CRUD ACTIONS ==================== */
+  const getUserById = (type, id) =>
+    (type === "clients" ? clients : staff).find((u) => u.id === id);
 
-  function viewUser(id) {
+  const viewUser = (id) => {
     const user = getUserById(currentUserType, id);
     if (!user) return;
-    const isClient = currentUserType === 'clients';
+    const isClient = currentUserType === "clients";
     Swal.fire({
-      title: `${isClient ? 'Client' : 'Staff'} Details`,
+      title: `${isClient ? "Client" : "Staff"} Details`,
       html: `
         <div class="text-left space-y-2">
           <p><strong>Name:</strong> ${user.name}</p>
           <p><strong>Email:</strong> ${user.email}</p>
           <p><strong>Phone:</strong> ${user.phone}</p>
-          ${user.idNumber ? `<p><strong>ID:</strong> ${user.idNumber}</p>` : ''}
-          ${user.address ? `<p><strong>Address:</strong> ${user.address}</p>` : ''}
-          ${isClient ? `<p><strong>Plan:</strong> ${user.plan}</p>` : `<p><strong>Role:</strong> ${user.role} - ${user.department}</p>`}
-          <p><strong>Status:</strong> <span class="${user.status === 'Active' ? 'text-green-600' : user.status === 'Expired' ? 'text-red-600' : 'text-yellow-600'}">${user.status}</span></p>
-          ${isClient ? `<p><strong>Last Payment:</strong> ${user.lastPayment}</p>` : `<p><strong>Joined:</strong> ${user.joined}</p>`}
+          ${user.idNumber ? `<p><strong>ID:</strong> ${user.idNumber}</p>` : ""}
+          ${
+            user.address
+              ? `<p><strong>Address:</strong> ${user.address}</p>`
+              : ""
+          }
+          ${
+            isClient
+              ? `<p><strong>Plan:</strong> ${user.plan}</p>`
+              : `<p><strong>Role:</strong> ${user.role} - ${user.department}</p>`
+          }
+          <p><strong>Status:</strong> <span class="px-2 py-1 rounded text-xs ${
+            getStatusBadge(user.status).split(" ")[1]
+          }">${user.status}</span></p>
+          ${
+            isClient
+              ? `<p><strong>Last Payment:</strong> ${user.lastPayment}</p>`
+              : `<p><strong>Joined:</strong> ${user.joined}</p>`
+          }
         </div>
       `,
-      icon: 'info',
-      confirmButtonColor: '#0d9488'
+      icon: "info",
+      confirmButtonColor: "#0d9488",
     });
-  }
+  };
 
-  function editUser(id) {
+  const editUser = (id) =>
+    openAddUserModal(currentUserType, getUserById(currentUserType, id));
+
+  const messageUser = (id) => {
     const user = getUserById(currentUserType, id);
-    if (user) openAddUserModal(currentUserType, user);
-  }
+    if (!user) return;
+    // Redirect to messaging page with user data
+    const url = `messaging.html?user=${
+      user.id
+    }&type=${currentUserType}&name=${encodeURIComponent(user.name)}&email=${
+      user.email
+    }`;
+    window.location.href = url;
+  };
 
-  function messageUser(id) {
-    const user = getUserById(currentUserType, id);
+  const deleteUser = (id) => {
     Swal.fire({
-      title: `Message ${user.name}`,
-      input: 'textarea',
-      inputLabel: 'Your Message',
+      title: "Delete User?",
+      text: "This cannot be undone!",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Send',
-      cancelButtonText: 'Cancel'
-    }).then(result => {
-      if (result.isConfirmed && result.value) {
-        Swal.fire('Sent!', 'Your message has been delivered.', 'success');
-      }
-    });
-  }
-
-  function deleteUser(id) {
-    Swal.fire({
-      title: 'Delete User?',
-      text: 'This action cannot be undone!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#dc2626',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, delete!'
-    }).then(result => {
-      if (result.isConfirmed) {
-        if (currentUserType === 'clients') clients = clients.filter(u => u.id !== id);
-        else staff = staff.filter(u => u.id !== id);
+      confirmButtonColor: "#dc2626",
+    }).then((res) => {
+      if (res.isConfirmed) {
+        if (currentUserType === "clients")
+          clients = clients.filter((u) => u.id !== id);
+        else staff = staff.filter((u) => u.id !== id);
         saveData();
-        renderTables();
-        Swal.fire('Deleted!', 'User removed successfully.', 'success');
+        renderTable(currentUserType);
+        updateCounts();
+        Swal.fire("Deleted!", "", "success");
       }
     });
-  }
+  };
 
-  function renderTables() {
-    renderTable('clients');
-    renderTable('staff');
-    updateCounts();
-  }
-
-  function renderTable(type) {
-    const data = type === 'clients' ? clients : staff;
+  /* ==================== RENDERING ==================== */
+  const renderTable = (type) => {
+    const data = type === "clients" ? clients : staff;
     const filtered = applyFilters(type, data);
     const paginated = paginate(filtered, currentPage[type], itemsPerPage);
-    const tbody = document.getElementById(type + 'TableBody');
-    const isClient = type === 'clients';
+    const tbody = $(type + "TableBody");
+    if (!tbody) return;
 
-    tbody.innerHTML = paginated.map(user => `
-      <tr class="user-row transition-all duration-200 cursor-pointer">
-        <td class="p-4">
+    const isClient = type === "clients";
+    tbody.innerHTML = paginated
+      .map(
+        (user) => `
+      <tr class="user-row transition-all duration-200 cursor-pointer" onclick="viewUser('${
+        user.id
+      }')">
+        <td class="p-4" onclick="event.stopPropagation()">
           <div class="flex items-center space-x-3">
-            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" value="${user.id}">
-            <div class="w-11 h-11 bg-gradient-to-br ${isClient ? getPlanColor(user.plan) : getRoleColor(user.role)} rounded-full flex items-center justify-center shadow-md">
-              <span class="text-white font-bold text-sm">${user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</span>
+            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" value="${
+              user.id
+            }">
+            <div class="w-11 h-11 bg-gradient-to-br ${
+              isClient ? getPlanColor(user.plan) : getRoleColor(user.role)
+            } rounded-full flex items-center justify-center shadow-md">
+              <span class="text-white font-bold text-sm">${user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()}</span>
             </div>
             <div>
               <p class="font-semibold text-gray-900">${user.name}</p>
@@ -530,167 +878,249 @@
         </td>
         <td class="p-4">
           <div class="space-y-1">
-            <p class="text-gray-700 text-sm flex items-center"><i class="fas fa-envelope text-gray-400 mr-2 text-xs"></i>${user.email}</p>
-            <p class="text-gray-600 text-sm flex items-center"><i class="fas fa-phone text-gray-400 mr-2 text-xs"></i>${user.phone}</p>
+            <p class="text-gray-700 text-sm flex items-center"><i class="fas fa-envelope text-gray-400 mr-2 text-xs"></i>${
+              user.email
+            }</p>
+            <p class="text-gray-600 text-sm flex items-center"><i class="fas fa-phone text-gray-400 mr-2 text-xs"></i>${
+              user.phone
+            }</p>
           </div>
         </td>
-        ${isClient ? `
+        ${
+          isClient
+            ? `
         <td class="p-4">
-          <span class="px-3 py-1.5 ${getPlanBadge(user.plan)} rounded-lg text-sm font-semibold">
-            <i class="fas fa-wifi mr-1"></i>${user.plan}
-          </span>
+          <span class="px-3 py-1.5 ${getPlanBadge(
+            user.plan
+          )} rounded-lg text-sm font-semibold">${user.plan}</span>
         </td>
-        ` : `
+        `
+            : `
         <td class="p-4">
           <p class="font-semibold text-gray-800">${user.role}</p>
-          <p class="text-sm text-gray-500"><i class="fas fa-building text-gray-400 mr-1"></i>${user.department}</p>
+          <p class="text-sm text-gray-500">${user.department}</p>
         </td>
-        `}
+        `
+        }
         <td class="p-4">
-          <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(user.status)} rounded-lg text-sm font-semibold">
-            ${user.status === 'Active' ? '<span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>' : ''}
-            ${user.status === 'On Leave' ? '<span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>' : ''}
+          <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(
+            user.status
+          )} rounded-lg text-sm font-semibold">
+            ${
+              user.status === "Active"
+                ? '<span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>'
+                : ""
+            }
+            ${
+              user.status === "On Leave"
+                ? '<span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>'
+                : ""
+            }
             ${user.status}
           </span>
         </td>
         <td class="p-4">
           <div class="text-sm">
-            <p class="text-gray-700 font-medium">${isClient ? user.lastPayment.split(' - ')[0] : user.joined.split(', ')[0]}</p>
-            <p class="text-gray-500 text-xs">${isClient ? user.lastPayment.split(' - ')[1] : user.joined.split(', ')[1]}</p>
+            <p class="text-gray-700 font-medium">${
+              isClient ? user.lastPayment.split(" - ")[0] : user.joined
+            }</p>
+            <p class="text-gray-500 text-xs">${
+              isClient ? user.lastPayment.split(" - ")[1] : ""
+            }</p>
           </div>
         </td>
-        <td class="p-4">
+        <td class="p-4" onclick="event.stopPropagation()">
           <div class="flex items-center justify-end space-x-2">
-            <button onclick="viewUser('${user.id}')" class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="View"><i class="fas fa-eye"></i></button>
-            <button onclick="editUser('${user.id}')" class="w-9 h-9 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit"><i class="fas fa-edit"></i></button>
-            <button onclick="messageUser('${user.id}')" class="w-9 h-9 flex items-center justify-center text-purple-600 hover:bg-purple-50 rounded-lg transition-all" title="Message"><i class="fas fa-comment"></i></button>
-            <button onclick="deleteUser('${user.id}')" class="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete"><i class="fas fa-trash"></i></button>
+            <button onclick="viewUser('${
+              user.id
+            }')" class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="View"><i class="fas fa-eye"></i></button>
+            <button onclick="editUser('${
+              user.id
+            }')" class="w-9 h-9 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit"><i class="fas fa-edit"></i></button>
+            <button onclick="messageUser('${
+              user.id
+            }')" class="w-9 h-9 flex items-center justify-center text-purple-600 hover:bg-purple-50 rounded-lg transition-all" title="Message"><i class="fas fa-comment"></i></button>
+            <button onclick="deleteUser('${
+              user.id
+            }')" class="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete"><i class="fas fa-trash"></i></button>
           </div>
         </td>
       </tr>
-    `).join('');
+    `
+      )
+      .join("");
 
     renderPagination(type, filtered.length);
     updateRange(type, filtered.length);
-  }
+  };
 
-  function applyFilters(type, data) {
+  const applyFilters = (type, data) => {
     let filtered = [...data];
-    const search = document.getElementById(type + 'Search').value.toLowerCase();
+    const searchInput = $(type + "Search");
+    const search = searchInput ? searchInput.value.toLowerCase() : "";
     if (search) {
-      filtered = filtered.filter(u => 
-        u.name.toLowerCase().includes(search) || 
-        u.email.toLowerCase().includes(search) || 
-        u.phone.includes(search)
+      filtered = filtered.filter(
+        (u) =>
+          u.name.toLowerCase().includes(search) ||
+          u.email.toLowerCase().includes(search) ||
+          u.phone.includes(search)
       );
     }
 
-    if (type === 'clients') {
-      const sub = document.getElementById('clientSubFilter').value;
-      const status = document.getElementById('clientStatusFilter').value;
-      const plan = document.getElementById('clientPlanFilter').value;
-      if (sub) filtered = filtered.filter(u => sub === 'Overdue' ? u.lastPayment.includes('overdue') : sub === 'Paid' ? !u.lastPayment.includes('overdue') : true);
-      if (status) filtered = filtered.filter(u => u.status === status);
-      if (plan) filtered = filtered.filter(u => u.plan === plan);
+    if (type === "clients") {
+      const sub = $("clientSubFilter")?.value;
+      const status = $("clientStatusFilter")?.value;
+      const plan = $("clientPlanFilter")?.value;
+      if (sub)
+        filtered = filtered.filter((u) =>
+          sub === "Overdue"
+            ? u.lastPayment.includes("overdue")
+            : sub === "Paid"
+            ? !u.lastPayment.includes("overdue")
+            : true
+        );
+      if (status) filtered = filtered.filter((u) => u.status === status);
+      if (plan) filtered = filtered.filter((u) => u.plan === plan);
     } else {
-      const dept = document.getElementById('staffDeptFilter').value;
-      const role = document.getElementById('staffRoleFilter').value;
-      const status = document.getElementById('staffStatusFilter').value;
-      if (dept) filtered = filtered.filter(u => u.department === dept);
-      if (role) filtered = filtered.filter(u => u.role === role);
-      if (status) filtered = filtered.filter(u => u.status === status);
+      const dept = $("staffDeptFilter")?.value;
+      const role = $("staffRoleFilter")?.value;
+      const status = $("staffStatusFilter")?.value;
+      if (dept) filtered = filtered.filter((u) => u.department === dept);
+      if (role) filtered = filtered.filter((u) => u.role === role);
+      if (status) filtered = filtered.filter((u) => u.status === status);
     }
     return filtered;
-  }
+  };
 
-  function paginate(array, page, size) {
-    const start = (page - 1) * size;
-    return array.slice(start, start + size);
-  }
+  const paginate = (array, page, size) =>
+    array.slice((page - 1) * size, page * size);
 
-  function renderPagination(type, total) {
+  const renderPagination = (type, total) => {
     const pages = Math.ceil(total / itemsPerPage);
-    const container = document.getElementById(type + 'Pagination');
-    container.innerHTML = '';
+    const container = $(type + "Pagination");
+    if (!container) return;
+    container.innerHTML = "";
     if (pages <= 1) return;
 
-    const prev = `<button ${currentPage[type] === 1 ? 'disabled' : ''} onclick="changePage('${type}', ${currentPage[type] - 1})" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"><i class="fas fa-chevron-left mr-1"></i>Previous</button>`;
-    container.innerHTML += prev;
+    const btn = (text, page, disabled = false) => {
+      const b = document.createElement("button");
+      b.innerHTML = text;
+      b.disabled = disabled;
+      b.className = `px-4 py-2 border rounded text-sm font-medium ${
+        disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+      } ${
+        page === currentPage[type] ? "bg-teal-600 text-white" : "text-gray-700"
+      }`;
+      if (!disabled)
+        b.onclick = () => {
+          currentPage[type] = page;
+          renderTable(type);
+        };
+      return b;
+    };
 
-    for (let i = 1; i <= pages; i++) {
-      container.innerHTML += `<button ${i === currentPage[type] ? 'class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium"' : 'class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"'} onclick="changePage('${type}', ${i})">${i}</button>`;
-    }
+    container.appendChild(
+      btn("Prev", currentPage[type] - 1, currentPage[type] === 1)
+    );
+    for (let i = 1; i <= pages; i++) container.appendChild(btn(i, i));
+    container.appendChild(
+      btn("Next", currentPage[type] + 1, currentPage[type] === pages)
+    );
+  };
 
-    const next = `<button ${currentPage[type] === pages ? 'disabled' : ''} onclick="changePage('${type}', ${currentPage[type] + 1})" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">Next<i class="fas fa-chevron-right ml-1"></i></button>`;
-    container.innerHTML += next;
-  }
-
-  function changePage(type, page) {
-    currentPage[type] = page;
-    renderTable(type);
-  }
-
-  function updateRange(type, total) {
+  const updateRange = (type, total) => {
+    const el = $(type + "Range");
+    const totalEl = $(`total${type === "clients" ? "Clients" : "Staff"}`);
+    if (!el || !totalEl) return;
     const start = (currentPage[type] - 1) * itemsPerPage + 1;
     const end = Math.min(currentPage[type] * itemsPerPage, total);
-    document.getElementById(type + 'Range').textContent = total ? `${start}-${end}` : '0-0';
-    document.getElementById(`total${type === 'clients' ? 'Clients' : 'Staff'}`).textContent = total;
-  }
+    el.textContent = total ? `${start}-${end}` : "0-0";
+    totalEl.textContent = total;
+  };
 
-  function updateCounts() {
-    document.getElementById('clientCount').textContent = clients.length;
-    document.getElementById('staffCount').textContent = staff.length;
-  }
+  const updateCounts = () => {
+    const c = $("clientCount");
+    if (c) c.textContent = clients.length;
+    const s = $("staffCount");
+    if (s) s.textContent = staff.length;
+  };
 
-  function resetFilters(type) {
-    document.getElementById(type + 'Search').value = '';
-    const filters = type === 'clients' ? ['clientSubFilter', 'clientStatusFilter', 'clientPlanFilter'] : ['staffDeptFilter', 'staffRoleFilter', 'staffStatusFilter'];
-    filters.forEach(id => document.getElementById(id).value = '');
+  const resetFilters = (type) => {
+    const search = $(type + "Search");
+    if (search) search.value = "";
+    const filters =
+      type === "clients"
+        ? ["clientSubFilter", "clientStatusFilter", "clientPlanFilter"]
+        : ["staffDeptFilter", "staffRoleFilter", "staffStatusFilter"];
+    filters.forEach((id) => {
+      const el = $(id);
+      if (el) el.value = "";
+    });
     currentPage[type] = 1;
     renderTable(type);
-  }
+  };
 
-  function toggleSelectAll(e) {
-    const checkboxes = document.querySelectorAll(`#${e.target.id.replace('selectAll', '').toLowerCase()}TableBody input[type="checkbox"]`);
-    checkboxes.forEach(cb => cb.checked = e.target.checked);
-  }
-
-  function exportData(type) {
-    const data = type === 'clients' ? clients : staff;
+  const exportData = (type) => {
+    const data = type === "clients" ? clients : staff;
     const csv = [
-      Object.keys(data[0]).join(','),
-      ...data.map(row => Object.values(row).join(','))
-    ].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+      Object.keys(data[0]).join(","),
+      ...data.map((row) => Object.values(row).join(",")),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${type}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `${type}_${dayjs().format("YYYY-MM-DD")}.csv`;
     a.click();
-  }
+  };
 
-  function getPlanColor(plan) {
-    const colors = { 'Premium 50Mbps': 'from-teal-400 to-teal-600', 'Standard 20Mbps': 'from-blue-400 to-blue-600', 'Basic 10Mbps': 'from-pink-400 to-red-500' };
-    return colors[plan] || 'from-gray-400 to-gray-600';
-  }
+  /* ==================== EVENT LISTENERS ==================== */
+  document.addEventListener("DOMContentLoaded", () => {
+    renderTable("clients");
+    updateCounts();
 
-  function getRoleColor(role) {
-    const colors = { 'Network Engineer': 'from-purple-400 to-purple-600', 'Support Agent': 'from-green-400 to-green-600', 'Sales Rep': 'from-orange-400 to-orange-600', 'Manager': 'from-indigo-400 to-indigo-600' };
-    return colors[role] || 'from-gray-400 to-gray-600';
-  }
+    ["clientsSearch", "staffSearch"].forEach((id) => {
+      const el = $(id);
+      if (el)
+        el.addEventListener("input", () => {
+          currentPage[currentUserType] = 1;
+          renderTable(currentUserType);
+        });
+    });
 
-  function getPlanBadge(plan) {
-    const badges = { 'Premium 50Mbps': 'bg-blue-100 text-blue-700', 'Standard 20Mbps': 'bg-purple-100 text-purple-700', 'Basic 10Mbps': 'bg-yellow-100 text-yellow-700' };
-    return badges[plan] || 'bg-gray-100 text-gray-700';
-  }
+    [
+      "clientSubFilter",
+      "clientStatusFilter",
+      "clientPlanFilter",
+      "staffDeptFilter",
+      "staffRoleFilter",
+      "staffStatusFilter",
+    ].forEach((id) => {
+      const el = $(id);
+      if (el)
+        el.addEventListener("change", () => {
+          currentPage[currentUserType] = 1;
+          renderTable(currentUserType);
+        });
+    });
 
-  function getStatusBadge(status) {
-    const badges = { 'Active': 'bg-green-100 text-green-700', 'Expired': 'bg-red-100 text-red-700', 'Suspended': 'bg-orange-100 text-orange-700', 'On Leave': 'bg-yellow-100 text-yellow-700', 'Inactive': 'bg-gray-100 text-gray-700' };
-    return badges[status] || 'bg-gray-100 text-gray-700';
-  }
+    const form = $("addUserForm");
+    if (form) form.addEventListener("submit", handleFormSubmit);
 
-  function filterAndRender(type) {
-    currentPage[type] = 1;
-    renderTable(type);
-  }
+    const selectAllClients = $("selectAllClients");
+    if (selectAllClients)
+      selectAllClients.addEventListener("change", (e) =>
+        document
+          .querySelectorAll('#clientsTableBody input[type="checkbox"]')
+          .forEach((cb) => (cb.checked = e.target.checked))
+      );
+
+    const selectAllStaff = $("selectAllStaff");
+    if (selectAllStaff)
+      selectAllStaff.addEventListener("change", (e) =>
+        document
+          .querySelectorAll('#staffTableBody input[type="checkbox"]')
+          .forEach((cb) => (cb.checked = e.target.checked))
+      );
+  });
 </script>

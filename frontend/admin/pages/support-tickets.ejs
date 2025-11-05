@@ -1,0 +1,552 @@
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">Support Tickets</h3>
+    <p class="text-teal-600 mt-1">Manage and track support requests</p>
+  </div>
+  <button
+    onclick="addNewTicket()"
+    class="bg-teal-500 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group"
+  >
+    <i class="fas fa-plus"></i>
+    <span class="mr-2">New Ticket</span>
+  </button>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Total Tickets</h3>
+        <h2 id="monthlyExpenses" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-ticket-alt text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Open Tickets</h3>
+        <h2 id="yearlyExpenses" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-inbox text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">In Progress</h3>
+        <h2 id="largestExpense" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-spinner text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Resolved</h3>
+        <h2 id="totalExpenses" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-flag-checkered text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100">
+  <div
+    class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4"
+  >
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-2 flex-1">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Search</label
+        >
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Ticket Id, Name, phone…"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Priority</label
+        >
+        <select
+          id="serviceTypeFilter"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Issue Type</label
+        >
+        <select
+          id="statusFilter"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
+          <option value="">Select issue type...</option>
+          <option value="network_issue">Network Issue</option>
+          <option value="hardware_problem">Hardware Problem</option>
+          <option value="software_bug">Software Bug</option>
+          <option value="installation_request">Installation Request</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="repair">Repair</option>
+          <option value="inspection">Inspection</option>
+          <option value="asset_recovery">Asset Recovery</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex-shrink-0 pb-3">
+      <button
+        onclick="refreshTickets()"
+        class="bg-teal-500 hover:bg-teal-700 text-white px-2 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group"
+      >
+        <i class="fas fa-sync animate-spin-slow"></i>
+        <span class="mr-2">Refresh</span>
+      </button>
+    </div>
+  </div>
+  <div class="flex items-center justify-between border-b pb-4">
+    <h3 class="text-lg font-bold text-teal-800">
+      <i class="fas fa-list mr-2"></i>Tickets
+    </h3>
+  </div>
+  <div id="allTicketslList" class="space-y-4">
+    <p class="text-center text-gray-500 py-8">Loading tickets...</p>
+  </div>
+</div>
+
+<!-- Add New Ticket Modal -->
+<div
+  id="addTicketsModal"
+  class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40"
+>
+  <div
+    class="bg-white w-full max-w-3xl shadow-xl border border-teal-200 overflow-y-auto max-h-[90vh]"
+  >
+    <div class="bg-teal-600 text-white p-6 flex justify-between items-center">
+      <h3 id="modalTitle" class="text-2xl font-bold tracking-wide">
+        Add New Booking
+      </h3>
+      <button
+        onclick="closeTicketsModal()"
+        class="text-white/90 hover:text-white"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+    <div class="p-8 space-y-6 text-gray-700">
+      <form id="ticketForm" onsubmit="createTicket(event)" class="space-y-6">
+        <input type="hidden" id="ticketId" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block font-semibold mb-2">Full Name *</label>
+            <input
+              required
+              type="text"
+              id="fullName"
+              class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+            />
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-2">Phone Number *</label>
+            <input
+              required
+              type="text"
+              id="phoneNumber"
+              class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+            />
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-2">Issue Type *</label>
+            <select
+              id="issueType"
+              required
+              class="w-full bg-white p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+            >
+              <option value="" disabled selected hidden>
+                Select issue type...
+              </option>
+              <option value="Network Issue">Network Issue</option>
+              <option value="Hardware Problem">Hardware Problem</option>
+              <option value="Software Bug">Software Bug</option>
+              <option value="Installation Request">Installation Request</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Repair">Repair</option>
+              <option value="Inspection">Inspection</option>
+              <option value="Asset Recovery">Asset Recovery</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-2">Priority *</label>
+            <select
+              id="priority"
+              required
+              class="w-full bg-white p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+            >
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-2">Status *</label>
+            <select
+              id="status"
+              class="w-full bg-white p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+            >
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-2">Message</label>
+          <textarea
+            id="message"
+            rows="3"
+            class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="p-6 border-t border-gray-200 flex justify-end space-x-4">
+      <button
+        id="addBtn"
+        class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-semibold shadow-md flex items-center gap-2 transition"
+      >
+        <i class="fas fa-plus"></i> Add
+      </button>
+      <button
+        onclick="closeTicketsModal()"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- View Ticket Modal -->
+<div
+  id="viewTicketModal"
+  class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40"
+>
+  <div
+    class="bg-white w-full max-w-2xl shadow-xl border border-teal-200 overflow-y-auto max-h-[90vh]"
+  >
+    <div class="bg-teal-600 text-white p-6 flex justify-between items-center">
+      <h3 class="text-2xl font-bold">
+        Details<span id="ticket-title_id"></span>
+      </h3>
+      <button onclick="closeViewModal()" class="text-white/90 hover:text-white">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+
+    <div class="p-8 space-y-6 text-gray-800">
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div><strong>Name:</strong> <span id="v_fullName"></span></div>
+        <div><strong>Phone:</strong> <span id="v_phone"></span></div>
+        <div><strong>Ticket ID:</strong> <span id="v_ticket_id"></span></div>
+        <div><strong>Priority:</strong> <span id="v_priority"></span></div>
+        <div><strong>Status:</strong> <span id="v_status"></span></div>
+        <div><strong>Issue Type:</strong> <span id="v_issueType"></span></div>
+      </div>
+
+      <div>
+        <strong>Message:</strong>
+        <p
+          id="v_message"
+          class="mt-2 bg-gray-50 p-4 border border-gray-200"
+        ></p>
+      </div>
+    </div>
+
+    <div class="p-6 border-t border-gray-200 flex justify-end">
+      <button
+        onclick="closeViewModal()"
+        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let tickets = [
+    {
+      id: 1,
+      fullName: "John Doe",
+      phone: "0701456987",
+      ticket_id: "TKT414879M0L",
+      issueType: "Network Issue",
+      priority: "High",
+      status: "Pending",
+      message: "Internet keeps dropping every 20 minutes.",
+    },
+    {
+      id: 2,
+      fullName: "Alice Kim",
+      phone: "0712234455",
+      ticket_id: "TKT414879M0L",
+      issueType: "Hardware Problem",
+      priority: "Critical",
+      status: "In Progress",
+      message: "Router is overheating and auto shutting down.",
+    },
+    {
+      id: 3,
+      fullName: "Peter Kirui",
+      phone: "0798456712",
+      ticket_id: "TKT414879M0L",
+      issueType: "Installation Request",
+      priority: "Medium",
+      status: "Resolved",
+      message: "Need installation at home bundle setup next week.",
+    },
+    {
+      id: 4,
+      fullName: "Sarah Njeri",
+      phone: "0709988776",
+      ticket_id: "TKT414879M0L",
+      issueType: "Software Bug",
+      priority: "Low",
+      status: "Closed",
+      message: "Portal shows wrong expiry date values.",
+    },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+
+  async function fetchTickets() {
+    return tickets.filter((x) => !x.is_deleted);
+  }
+
+  async function renderTickets() {
+    const container = $("allTicketslList");
+    const list = await fetchTickets();
+
+    if (!list.length) {
+      container.innerHTML = `<p class="text-center text-gray-500 py-8">No tickets found</p>`;
+      return;
+    }
+
+    let html = "";
+    list.forEach((r) => {
+      const statusOptions = ["Pending", "In Progress", "Resolved", "Closed"]
+        .map(
+          (st) => `
+      <option value="${st}" ${r.status === st ? "selected" : ""}>${st}</option>
+    `
+        )
+        .join("");
+
+      html += `
+      <div class="bg-gray-50 p-5 border hover:border-teal-300 hover:bg-teal-50 transition-all mb-3">
+        <div class="grid grid-cols-1 sm:grid-cols-7 gap-3 items-center">
+
+          <div class="flex items-center space-x-2 overflow-hidden">
+            <span class="font-semibold text-gray-800 truncate">${
+              r.fullName
+            }</span>
+            <span class="px-2 py-0.5 rounded text-xs font-medium ${
+              r.status == "Resolved"
+                ? "bg-green-100 text-green-700"
+                : r.status == "In Progress"
+                ? "bg-blue-100 text-blue-700"
+                : r.status == "Closed"
+                ? "bg-gray-200 text-gray-700"
+                : "bg-yellow-100 text-yellow-700"
+            }">${r.status}</span>
+          </div>
+
+          <div class="text-sm text-gray-700 truncate">${r.phone}</div>
+          <div class="text-sm text-gray-700 truncate">#${r.ticket_id}</div>
+          <div class="text-sm text-gray-700 truncate">${r.issueType}</div>
+          <div class="text-sm text-gray-700 truncate">${r.priority}</div>
+
+          <div class="flex justify-end space-x-2 sm:col-start-7 sm:justify-end ml-auto">
+            <div class="inline-flex shadow-sm border border-gray-300 bg-white overflow-hidden" role="group">
+              <select onchange="updateStatus(${
+                r.id
+              }, this.value)" class="text-xs font-medium px-3 py-1.5 bg-transparent border-0 focus:outline-none cursor-pointer hover:bg-gray-50 transition
+                ${
+                  r.status === "Pending"
+                    ? "text-yellow-700"
+                    : r.status === "In Progress"
+                    ? "text-blue-700"
+                    : r.status === "Resolved"
+                    ? "text-green-700"
+                    : r.status === "Closed"
+                    ? "text-gray-700"
+                    : "text-gray-700"
+                }">
+                ${statusOptions}
+              </select>
+
+              <button onclick="editTicket(${
+                r.id
+              })" class="px-2.5 py-1.5 text-blue-600 hover:bg-blue-50 transition border-l border-gray-300" title="Edit">
+                <i class="fas fa-edit text-sm"></i>
+              </button>
+              <button onclick="viewTicket(${
+                r.id
+              })" class="px-2.5 py-1.5 text-teal-600 hover:bg-teal-50 transition border-l border-gray-300" title="View">
+                <i class="fas fa-eye text-sm"></i>
+              </button>
+              <button onclick="deleteTicket(${
+                r.id
+              })" class="px-2.5 py-1.5 text-red-600 hover:bg-red-50 transition border-l border-gray-300" title="Delete">
+                <i class="fas fa-trash text-sm"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>`;
+    });
+
+    container.innerHTML = html;
+  }
+
+  function refreshTickets() {
+    renderTickets();
+  }
+
+  function addNewTicket() {
+    $("ticketId").value = "";
+    $("ticketForm").reset();
+    $("modalTitle").textContent = "Add New Ticket";
+    $("addTicketsModal").classList.remove("hidden");
+  }
+
+  function closeTicketsModal() {
+    $("addTicketsModal").classList.add("hidden");
+  }
+
+  function editTicket(id) {
+    const t = tickets.find((x) => x.id == id);
+    if (!t) return;
+
+    $("ticketId").value = t.id;
+    $("fullName").value = t.fullName;
+    $("phoneNumber").value = t.phone;
+    $("issueType").value = t.issueType;
+    $("priority").value = t.priority;
+    $("status").value = t.status;
+    $("message").value = t.message;
+
+    $("modalTitle").textContent = "Edit Ticket";
+    $("addTicketsModal").classList.remove("hidden");
+  }
+
+  function createTicket(e) {
+    e.preventDefault();
+
+    const id = $("ticketId").value;
+    const data = {
+      fullName: $("fullName").value.trim(),
+      phone: $("phoneNumber").value.trim(),
+      issueType: $("issueType").value,
+      priority: $("priority").value,
+      status: $("status").value,
+      message: $("message").value.trim(),
+    };
+
+    if (id) {
+      const idx = tickets.findIndex((x) => x.id == id);
+      tickets[idx] = { ...tickets[idx], ...data };
+    } else {
+      data.id = Date.now();
+      tickets.push(data);
+    }
+
+    closeTicketsModal();
+    renderTickets();
+  }
+
+  function updateStatus(id, st) {
+    const t = tickets.find((x) => x.id == id);
+    if (t) t.status = st;
+    renderTickets();
+  }
+
+  function deleteTicket(id) {
+    if (!confirm("Delete this ticket?")) return;
+    const t = tickets.find((x) => x.id == id);
+    if (t) t.is_deleted = true;
+    renderTickets();
+  }
+
+  function viewTicket(id) {
+    const t = tickets.find((x) => x.id == id);
+    if (!t) return;
+
+    document.getElementById("ticket-title_id").textContent = ` #${t.ticket_id}`;
+
+    $("v_fullName").textContent = t.fullName;
+    $("v_phone").textContent = t.phone;
+    $("v_ticket_id").textContent = t.ticket_id;
+    $("v_priority").textContent = t.priority;
+    $("v_status").textContent = t.status;
+    $("v_issueType").textContent = t.issueType;
+    $("v_message").textContent = t.message;
+
+    $("viewTicketModal").classList.remove("hidden");
+  }
+
+  function closeViewModal() {
+    $("viewTicketModal").classList.add("hidden");
+  }
+
+  window.onload = () => {
+    $("addBtn").onclick = () => $("ticketForm").requestSubmit();
+    renderTickets();
+  };
+</script>

@@ -1,0 +1,1005 @@
+<script>
+  dayjs.extend(window.dayjs_plugin_relativeTime);
+</script>
+
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">Inventory Management</h3>
+    <p class="text-teal-600 mt-1">Full CTIO access with priority management</p>
+  </div>
+  <button
+    onclick="openAddModal()"
+    class="bg-teal-500 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group"
+  >
+    <i class="fas fa-plus"></i>
+    <span class="mr-2">Add Item</span>
+  </button>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Total Items</h3>
+        <h2 id="totalItems" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-ticket-alt text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Open Tickets</h3>
+        <h2 id="yearlyExpenses" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-boxes text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">In Stock</h3>
+        <h2 id="inStock" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Low Stock</h3>
+        <h2 id="lowStock" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Out of Stock</h3>
+        <h2 id="outOfStock" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+
+      <div
+        class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-times-circle text-red-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100">
+  <div
+    class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4"
+  >
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-2 flex-1">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Search</label
+        >
+        <input
+          id="searchInput"
+          type="text"
+          onkeyup="applyFilters()"
+          placeholder="Search Equipment..."
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >All Categories</label
+        >
+        <select
+          id="categoryFilter"
+          onchange="applyFilters()"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
+          <option value="">All Categories</option>
+          <option value="network">Network Equipment</option>
+          <option value="tools">Tools</option>
+          <option value="cables">Cables & Accessories</option>
+          <option value="hardware">Hardware</option>
+          <option value="safety">Safety Equipment</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Status</label
+        >
+        <select
+          id="statusFilter"
+          onchange="applyFilters()"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
+          <option value="">All Status</option>
+          <option value="in-stock">In Stock</option>
+          <option value="low-stock">Low Stock</option>
+          <option value="out-of-stock">Out of Stock</option>
+          <option value="priority">Priority Restock</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Added By</label
+        >
+        <select
+          id="addedByFilter"
+          onchange="applyFilters()"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
+          <option value="">All Added By</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex-shrink-0 pb-4 flex items-center space-x-3">
+      <button
+        onclick="downloadReport()"
+        class="bg-teal-500 hover:bg-teal-700 text-white px-2 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group"
+      >
+        <i class="fas fa-download"></i>
+        <span class="mr-2">Report</span>
+      </button>
+      <button
+        onclick="downloadDepleted()"
+        class="bg-teal-500 hover:bg-teal-700 text-white px-2 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group"
+      >
+        <i class="fas fa-download"></i>
+        <span class="mr-2">Depleted</span>
+      </button>
+    </div>
+  </div>
+  <div class="flex items-center justify-between border-b pb-4">
+    <h3 class="text-lg font-bold text-teal-800">
+      <i class="fas fa-list mr-2"></i>Tickets
+    </h3>
+  </div>
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-teal-50">
+        <tr>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Equipment
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Serial Number
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Category
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Quantity
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Status
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Priority
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Added By
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody id="equipmentTableBody" class="bg-white divide-y divide-gray-200">
+        <!-- Data loaded by JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="equipmentModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+  <div class="flex min-h-screen items-center justify-center p-4">
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50"
+      onclick="closeModal()"
+    ></div>
+    <div
+      class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6"
+    >
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">
+          Add New Equipment
+        </h3>
+        <button
+          onclick="closeModal()"
+          class="text-gray-400 hover:text-gray-600"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <form id="equipmentForm" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Equipment Name</label
+            >
+            <input
+              type="text"
+              id="name"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g., Router, Drill"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Serial Number</label
+            >
+            <input
+              type="text"
+              id="serial"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g., RT-001"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Category</label
+            >
+            <select
+              id="category"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select Category</option>
+              <option value="network">Network Equipment</option>
+              <option value="tools">Tools</option>
+              <option value="cables">Cables & Accessories</option>
+              <option value="hardware">Hardware</option>
+              <option value="safety">Safety Equipment</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Brand</label
+            >
+            <input
+              type="text"
+              id="brand"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g., Cisco"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Total Qty</label
+            >
+            <input
+              type="number"
+              id="totalQty"
+              required
+              min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Available</label
+            >
+            <input
+              type="number"
+              id="available"
+              required
+              min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Min Stock</label
+            >
+            <input
+              type="number"
+              id="minStock"
+              required
+              min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              value="5"
+            />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Description</label
+          >
+          <textarea
+            id="description"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          ></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Location</label
+            >
+            <input
+              type="text"
+              id="location"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g., Shelf A3"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Unit Price</label
+            >
+            <input
+              type="number"
+              id="price"
+              step="0.01"
+              min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+        <div class="flex items-center">
+          <input
+            type="checkbox"
+            id="priority"
+            class="mr-2 text-red-600 focus:ring-red-500"
+          />
+          <label class="text-sm font-medium text-gray-700"
+            >Flag as High Priority for Restocking</label
+          >
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t">
+          <button
+            type="button"
+            onclick="closeModal()"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+          >
+            <span id="submitText">Add Equipment</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Details Modal -->
+<div id="detailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+  <div class="flex min-h-screen items-center justify-center p-4">
+    <div
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+      onclick="closeDetails()"
+    ></div>
+
+    <div
+      class="relative bg-white shadow-2xl rounded-2xl max-w-3xl w-full p-8 border border-teal-100"
+    >
+      <div
+        class="flex items-center justify-between mb-6 pb-3 border-b border-teal-200"
+      >
+        <h3 class="text-2xl font-bold text-teal-700 flex items-center gap-2">
+          <i class="fas fa-info-circle"></i>
+          Equipment Details
+        </h3>
+        <button
+          onclick="closeDetails()"
+          class="text-teal-600 hover:text-teal-800 transition"
+        >
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+
+      <div
+        id="detailsContent"
+        class="text-gray-700 space-y-4 max-h-[60vh] overflow-y-auto pr-2"
+      ></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mock Data
+  const mockEquipment = [
+    {
+      id: "EQP1",
+      name: "Cisco Router 2901",
+      serial: "RT-2901-001",
+      category: "network",
+      brand: "Cisco",
+      totalQty: 10,
+      available: 7,
+      minStock: 3,
+      description: "Enterprise edge router",
+      location: "Rack A1",
+      price: 1200,
+      priority: true,
+      addedBy: "CTIO",
+      dateAdded: "2025-01-15",
+    },
+    {
+      id: "EQP2",
+      name: "Bosch Cordless Drill",
+      serial: "DR-BOS-456",
+      category: "tools",
+      brand: "Bosch",
+      totalQty: 5,
+      available: 1,
+      minStock: 2,
+      description: "18V heavy-duty drill",
+      location: "Tool Cabinet B",
+      price: 189,
+      priority: true,
+      addedBy: "Supervisor",
+      dateAdded: "2025-02-20",
+    },
+    {
+      id: "EQP3",
+      name: "Cat6 Ethernet Cable",
+      serial: "CAB-100M-01",
+      category: "cables",
+      brand: "Belkin",
+      totalQty: 50,
+      available: 50,
+      minStock: 20,
+      description: "100m spool",
+      location: "Storage C",
+      price: 45,
+      priority: false,
+      addedBy: "CTIO",
+      dateAdded: "2025-03-10",
+    },
+    {
+      id: "EQP4",
+      name: "Server CPU",
+      serial: "CPU-XEON-001",
+      category: "hardware",
+      brand: "Intel",
+      totalQty: 8,
+      available: 0,
+      minStock: 2,
+      description: "Xeon Gold 32-core",
+      location: "Parts Drawer",
+      price: 850,
+      priority: true,
+      addedBy: "CTIO",
+      dateAdded: "2025-01-05",
+    },
+    {
+      id: "EQP5",
+      name: "Safety Helmet",
+      serial: "SH-OSHA-100",
+      category: "safety",
+      brand: "3M",
+      totalQty: 20,
+      available: 18,
+      minStock: 10,
+      description: "ANSI Z89.1 certified",
+      location: "Safety Locker",
+      price: 35,
+      priority: false,
+      addedBy: "Supervisor",
+      dateAdded: "2025-04-01",
+    },
+  ];
+
+  let equipment = JSON.parse(localStorage.getItem("equipment")) || [
+    ...mockEquipment,
+  ];
+  let editingId = null;
+
+  // Save to localStorage
+  function saveData() {
+    localStorage.setItem("equipment", JSON.stringify(equipment));
+  }
+
+  // Load table
+  function loadTable(data = equipment) {
+    const tbody = document.getElementById("equipmentTableBody");
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-gray-500"><i class="fas fa-boxes text-4xl text-gray-300 mb-3 block"></i><p class="font-medium">No equipment found</p></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data
+      .map((item) => {
+        const status =
+          item.available === 0
+            ? "Out of Stock"
+            : item.available <= item.minStock
+            ? "Low Stock"
+            : "In Stock";
+        const statusClass =
+          item.available === 0
+            ? "bg-red-100 text-red-800"
+            : item.available <= item.minStock
+            ? "bg-yellow-100 text-yellow-800"
+            : "bg-green-100 text-green-800";
+        const priorityBadge = item.priority
+          ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><i class="fas fa-flag mr-1"></i>High Priority</span>'
+          : '<span class="text-gray-400">-</span>';
+        const catIcon =
+          {
+            network: "fa-network-wired",
+            tools: "fa-tools",
+            cables: "fa-ethernet",
+            hardware: "fa-microchip",
+            safety: "fa-hard-hat",
+          }[item.category] || "fa-box";
+        const catColor =
+          {
+            network: "bg-blue-100 text-blue-800",
+            tools: "bg-green-100 text-green-800",
+            cables: "bg-purple-100 text-purple-800",
+            hardware: "bg-gray-100 text-gray-800",
+            safety: "bg-orange-100 text-orange-800",
+          }[item.category] || "bg-gray-100 text-gray-800";
+
+        return `
+          <tr class="hover:bg-teal-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">${item.name}</div>
+              <div class="text-sm text-gray-500">${item.brand || "N/A"}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+              item.serial
+            }</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${catColor}">
+                <i class="fas ${catIcon} mr-1"></i> ${formatCategory(
+          item.category
+        )}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+              item.available
+            }/${item.totalQty}</td>
+            <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">${status}</span></td>
+            <td class="px-6 py-4 whitespace-nowrap">${priorityBadge}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+              item.addedBy
+            }</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+              <button onclick="viewDetails('${
+                item.id
+              }')" class="text-blue-600 hover:text-blue-900"><i class="fas fa-eye"></i></button>
+              <button onclick="editItem('${
+                item.id
+              }')" class="text-green-600 hover:text-green-900"><i class="fas fa-edit"></i></button>
+              <button onclick="togglePriority('${
+                item.id
+              }')" class="text-orange-600 hover:text-orange-900"><i class="fas fa-flag"></i></button>
+              <button onclick="deleteItem('${
+                item.id
+              }')" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>`;
+      })
+      .join("");
+  }
+
+  function formatCategory(cat) {
+    return (
+      {
+        network: "Network Equipment",
+        tools: "Tools",
+        cables: "Cables & Accessories",
+        hardware: "Hardware",
+        safety: "Safety Equipment",
+      }[cat] || cat
+    );
+  }
+
+  function updateStats() {
+    const total = equipment.length;
+    const inStock = equipment.filter((i) => i.available > i.minStock).length;
+    const low = equipment.filter(
+      (i) => i.available <= i.minStock && i.available > 0
+    ).length;
+    const out = equipment.filter((i) => i.available === 0).length;
+
+    document.getElementById("totalItems").textContent = total;
+    document.getElementById("inStock").textContent = inStock;
+    document.getElementById("lowStock").textContent = low;
+    document.getElementById("outOfStock").textContent = out;
+  }
+
+  function applyFilters() {
+    let filtered = [...equipment];
+    const cat = document.getElementById("categoryFilter").value;
+    const status = document.getElementById("statusFilter").value;
+    const added = document.getElementById("addedByFilter").value;
+    const search = document.getElementById("searchInput").value.toLowerCase();
+
+    if (cat) filtered = filtered.filter((i) => i.category === cat);
+    if (status === "in-stock")
+      filtered = filtered.filter((i) => i.available > i.minStock);
+    if (status === "low-stock")
+      filtered = filtered.filter(
+        (i) => i.available <= i.minStock && i.available > 0
+      );
+    if (status === "out-of-stock")
+      filtered = filtered.filter((i) => i.available === 0);
+    if (status === "priority") filtered = filtered.filter((i) => i.priority);
+    if (added) filtered = filtered.filter((i) => i.addedBy === added);
+    if (search)
+      filtered = filtered.filter(
+        (i) =>
+          i.name.toLowerCase().includes(search) ||
+          i.serial.toLowerCase().includes(search) ||
+          (i.brand && i.brand.toLowerCase().includes(search))
+      );
+
+    loadTable(filtered);
+  }
+
+  function populateAddedBy() {
+    const select = document.getElementById("addedByFilter");
+    if (!select) return;
+    const users = [...new Set(equipment.map((i) => i.addedBy))];
+    select.innerHTML = '<option value="">All Added By</option>';
+    users.forEach(
+      (u) => (select.innerHTML += `<option value="${u}">${u}</option>`)
+    );
+  }
+
+  function openAddModal() {
+    editingId = null;
+    document.getElementById("modalTitle").textContent = "Add New Equipment";
+    document.getElementById("submitText").textContent = "Add Equipment";
+    document.getElementById("equipmentForm").reset();
+    document.getElementById("equipmentModal").classList.remove("hidden");
+  }
+
+  function closeModal() {
+    document.getElementById("equipmentModal").classList.add("hidden");
+  }
+
+  function closeDetails() {
+    document.getElementById("detailsModal").classList.add("hidden");
+  }
+
+  document.getElementById("equipmentForm").onsubmit = function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      id: editingId || "EQP" + Date.now(),
+      name: form.name.value,
+      serial: form.serial.value,
+      category: form.category.value,
+      brand: form.brand.value || null,
+      totalQty: parseInt(form.totalQty.value),
+      available: parseInt(form.available.value),
+      minStock: parseInt(form.minStock.value),
+      description: form.description.value || null,
+      location: form.location.value || null,
+      price: parseFloat(form.price.value) || 0,
+      priority: form.priority.checked,
+      addedBy: editingId
+        ? equipment.find((i) => i.id === editingId).addedBy
+        : "CTIO",
+      dateAdded: editingId
+        ? equipment.find((i) => i.id === editingId).dateAdded
+        : new Date().toISOString().split("T")[0],
+    };
+
+    if (data.available > data.totalQty) {
+      Swal.fire(
+        "Error",
+        "Available quantity cannot exceed total quantity.",
+        "error"
+      );
+      return;
+    }
+
+    if (editingId) {
+      const idx = equipment.findIndex((i) => i.id === editingId);
+      equipment[idx] = data;
+    } else {
+      equipment.push(data);
+    }
+
+    saveData();
+    closeModal();
+    loadTable();
+    updateStats();
+    populateAddedBy();
+    Swal.fire(
+      "Success",
+      editingId ? "Equipment updated!" : "Equipment added!",
+      "success"
+    );
+  };
+
+  function editItem(id) {
+    const item = equipment.find((i) => i.id === id);
+    if (!item) return;
+    editingId = id;
+    document.getElementById("modalTitle").textContent = "Edit Equipment";
+    document.getElementById("submitText").textContent = "Update Equipment";
+    document.getElementById("name").value = item.name;
+    document.getElementById("serial").value = item.serial;
+    document.getElementById("category").value = item.category;
+    document.getElementById("brand").value = item.brand || "";
+    document.getElementById("totalQty").value = item.totalQty;
+    document.getElementById("available").value = item.available;
+    document.getElementById("minStock").value = item.minStock;
+    document.getElementById("description").value = item.description || "";
+    document.getElementById("location").value = item.location || "";
+    document.getElementById("price").value = item.price;
+    document.getElementById("priority").checked = item.priority;
+    document.getElementById("equipmentModal").classList.remove("hidden");
+  }
+
+  function viewDetails(id) {
+    const item = equipment.find((i) => i.id === id);
+    if (!item) return;
+    const status =
+      item.available === 0
+        ? "Out of Stock"
+        : item.available <= item.minStock
+        ? "Low Stock"
+        : "In Stock";
+    document.getElementById("detailsContent").innerHTML = `
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-gray-700">Name</label><p class="text-sm text-gray-900">${
+              item.name
+            }</p></div>
+            <div><label class="block text-sm font-medium text-gray-700">Serial</label><p class="text-sm text-gray-900">${
+              item.serial
+            }</p></div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-gray-700">Category</label><p class="text-sm text-gray-900">${formatCategory(
+              item.category
+            )}</p></div>
+            <div><label class="block text-sm font-medium text-gray-700">Brand</label><p class="text-sm text-gray-900">${
+              item.brand || "N/A"
+            }</p></div>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div><label class="block text-sm font-medium text-gray-700">Total</label><p class="text-sm text-gray-900">${
+              item.totalQty
+            }</p></div>
+            <div><label class="block text-sm font-medium text-gray-700">Available</label><p class="text-sm text-gray-900">${
+              item.available
+            }</p></div>
+            <div><label class="block text-sm font-medium text-gray-700">Min Stock</label><p class="text-sm text-gray-900">${
+              item.minStock
+            }</p></div>
+          </div>
+          ${
+            item.description
+              ? `<div><label class="block text-sm font-medium text-gray-700">Description</label><p class="text-sm text-gray-900">${item.description}</p></div>`
+              : ""
+          }
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-gray-700">Location</label><p class="text-sm text-gray-900">${
+              item.location || "N/A"
+            }</p></div>
+            <div><label class="block text-sm font-medium text-gray-700">Price</label><p class="text-sm text-gray-900">$${item.price.toFixed(
+              2
+            )}</p></div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-gray-700">Priority</label><p class="text-sm ${
+              item.priority ? "text-red-600" : "text-gray-900"
+            }">${item.priority ? "High Priority" : "Normal"}</p></div>
+            <div><label class="block text-sm font-medium text-gray-700">Added By</label><p class="text-sm text-gray-900">${
+              item.addedBy
+            }</p></div>
+          </div>
+          <div><label class="block text-sm font-medium text-gray-700">Date Added</label><p class="text-sm text-gray-900">${
+            item.dateAdded
+          }</p></div>
+          <div class="pt-4 border-t flex justify-end gap-2">
+            <button onclick="editItem('${
+              item.id
+            }'); closeDetails();" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"><i class="fas fa-edit mr-1"></i> Edit</button>
+            <button onclick="togglePriority('${
+              item.id
+            }'); closeDetails(); loadTable(); updateStats();" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium"><i class="fas fa-flag mr-1"></i> Toggle Priority</button>
+            <button onclick="deleteItem('${
+              item.id
+            }'); closeDetails();" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium"><i class="fas fa-trash mr-1"></i> Delete</button>
+          </div>
+        </div>`;
+    document.getElementById("detailsModal").classList.remove("hidden");
+  }
+
+  function togglePriority(id) {
+    const item = equipment.find((i) => i.id === id);
+    if (item) {
+      item.priority = !item.priority;
+      saveData();
+      loadTable();
+      updateStats();
+      Swal.fire(
+        "Updated",
+        `Priority ${item.priority ? "added" : "removed"}`,
+        "success"
+      );
+    }
+  }
+
+  function deleteItem(id) {
+    Swal.fire({
+      title: "Delete?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+    }).then((res) => {
+      if (res.isConfirmed) {
+        equipment = equipment.filter((i) => i.id !== id);
+        saveData();
+        loadTable();
+        updateStats();
+        populateAddedBy();
+        Swal.fire("Deleted", "Equipment removed.", "success");
+      }
+    });
+  }
+
+  function downloadReport() {
+    const headers = [
+      "Name",
+      "Serial",
+      "Category",
+      "Brand",
+      "Total",
+      "Available",
+      "Min",
+      "Status",
+      "Priority",
+      "Location",
+      "Price",
+      "Added By",
+      "Date",
+    ];
+    const rows = equipment.map((i) => {
+      const status =
+        i.available === 0
+          ? "Out of Stock"
+          : i.available <= i.minStock
+          ? "Low Stock"
+          : "In Stock";
+      return [
+        i.name,
+        i.serial,
+        formatCategory(i.category),
+        i.brand || "N/A",
+        i.totalQty,
+        i.available,
+        i.minStock,
+        status,
+        i.priority ? "Yes" : "No",
+        i.location || "N/A",
+        i.price,
+        i.addedBy,
+        i.dateAdded,
+      ];
+    });
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    downloadCSV(
+      csv,
+      `inventory_report_${new Date().toISOString().split("T")[0]}.csv`
+    );
+  }
+
+  function downloadDepleted() {
+    const depleted = equipment.filter(
+      (i) => i.available === 0 || i.available <= i.minStock || i.priority
+    );
+    if (depleted.length === 0) {
+      Swal.fire("No Items", "No depleted or priority items found.", "info");
+      return;
+    }
+    const headers = [
+      "Name",
+      "Serial",
+      "Category",
+      "Available",
+      "Min",
+      "Status",
+      "Priority",
+      "Added By",
+    ];
+    const rows = depleted.map((i) => {
+      const status = i.available === 0 ? "Out of Stock" : "Low Stock";
+      return [
+        i.name,
+        i.serial,
+        formatCategory(i.category),
+        i.available,
+        i.minStock,
+        status,
+        i.priority ? "HIGH" : "Normal",
+        i.addedBy,
+      ];
+    });
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    downloadCSV(
+      csv,
+      `depleted_report_${new Date().toISOString().split("T")[0]}.csv`
+    );
+  }
+
+  function downloadCSV(content, filename) {
+    const blob = new Blob([content], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    Swal.fire("Downloaded", "Report generated successfully.", "success");
+  }
+
+  // Init
+  document.addEventListener("DOMContentLoaded", () => {
+    loadTable();
+    updateStats();
+    populateAddedBy();
+  });
+</script>
