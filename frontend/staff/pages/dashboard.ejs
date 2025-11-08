@@ -1,0 +1,381 @@
+<div class="mb-6">
+  <h1 id="pageTitle" class="text-3xl font-bold text-teal-800">Dashboard</h1>
+  <p id="pageSubtitle" class="text-teal-600">
+    Welcome to Dr.Net Technology Labs Management System
+  </p>
+</div>
+<!-- Quick Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <!-- Open Tickets -->
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-teal-600 text-sm font-bold">Open Tickets</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-2">30</h3>
+      </div>
+      <div
+        class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-ticket-alt text-teal-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Tasks / Active Tasks -->
+  <div
+    class="stat-card bg-blue-50 rounded-xl shadow-lg p-6 border border-blue-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-blue-600 text-sm font-bold">Active Tasks</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-2">30</h3>
+      </div>
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-tasks text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks Completed -->
+  <div
+    class="stat-card bg-green-50 rounded-xl shadow-lg p-6 border border-green-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-green-600 text-sm font-bold">Tasks Completed</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-2">1000</h3>
+      </div>
+      <div
+        class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Score -->
+  <div
+    class="stat-card bg-orange-50 rounded-xl shadow-lg p-6 border border-orange-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-orange-600 text-sm font-bold">Performance Score</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-2">60%</h3>
+      </div>
+      <div
+        class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-star-half-alt text-orange-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- Weekly Performance Chart -->
+  <div class="bg-white shadow-lg p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">
+        Performance Trend (Weekly)
+      </h3>
+    </div>
+    <div class="h-64">
+      <canvas id="revenueChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Staff List Card -->
+  <div class="bg-white shadow-lg p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">Today's Tasks</h3>
+      <a
+        href="#"
+        class="inline-flex items-center px-4 py-2 bg-teal-100 text-teal-700 font-semibold text-sm rounded-lg hover:bg-teal-200 transition duration-200"
+      >
+        View more
+        <svg
+          class="w-4 h-4 ml-2"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 5l7 7-7 7"
+          ></path>
+        </svg>
+      </a>
+    </div>
+
+    <div class="space-y-3 max-h-96 overflow-y-auto">
+      <!-- Task Row -->
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+      >
+        <div>
+          <p class="font-medium text-gray-800">
+            Router Installation - John Smith
+          </p>
+          <p class="text-gray-500 text-sm">Address: 123 Main St, Apt 4B</p>
+          <p class="text-gray-500 text-sm">Time: 2:00 PM - 4:00 PM</p>
+        </div>
+        <span class="text-green-600 font-semibold mt-2 md:mt-0">Completed</span>
+      </div>
+
+      <!-- Task Row -->
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+      >
+        <div>
+          <p class="font-medium text-gray-800">
+            Fiber Troubleshoot - Alice Johnson
+          </p>
+          <p class="text-gray-500 text-sm">Address: 45 Riverside Lane</p>
+          <p class="text-gray-500 text-sm">Time: 10:00 AM - 12:30 PM</p>
+        </div>
+        <span class="text-yellow-600 font-semibold mt-2 md:mt-0"
+          >In Progress</span
+        >
+      </div>
+
+      <!-- Task Row -->
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+      >
+        <div>
+          <p class="font-medium text-gray-800">New ISP Setup - Mark Lee</p>
+          <p class="text-gray-500 text-sm">
+            Address: 89 West Industrial Zone Block C
+          </p>
+          <p class="text-gray-500 text-sm">Time: 9:00 AM - 11:30 AM</p>
+        </div>
+        <span class="text-blue-600 font-semibold mt-2 md:mt-0">Scheduled</span>
+      </div>
+
+      <!-- Task Row -->
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+      >
+        <div>
+          <p class="font-medium text-gray-800">Home WiFi Repair - David Kim</p>
+          <p class="text-gray-500 text-sm">Address: 210 Green Court Phase 2</p>
+          <p class="text-gray-500 text-sm">Time: 5:00 PM - 7:00 PM</p>
+        </div>
+        <span class="text-red-600 font-semibold mt-2 md:mt-0">Pending</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- My Payslips  -->
+  <div class="lg:col-span-2 bg-white shadow-lg p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-6">My Payslips</h3>
+      <a
+        href="payslips.html"
+        class="inline-flex items-center px-4 py-2 bg-teal-100 text-teal-700 font-semibold text-sm rounded-lg hover:bg-teal-200 transition duration-200"
+      >
+        View all
+        <svg
+          class="w-4 h-4 ml-2"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 5l7 7-7 7"
+          ></path>
+        </svg>
+      </a>
+    </div>
+    <div class="space-y-4">
+      <a href="payslip-single.html" class="block">
+        <div
+          class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-200 rounded-lg transition-colors"
+        >
+          <div
+            class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center"
+          >
+            <i class="fas fa-file-invoice-dollar text-teal-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="font-medium text-gray-800">November Salary Payslip</p>
+            <p class="text-gray-600 text-sm">Basic + Commission + Allowances</p>
+          </div>
+          <span class="text-gray-500 text-sm">Nov 2025</span>
+          <svg
+            class="w-4 h-4 ml-2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 5l7 7-7 7"
+            ></path>
+          </svg>
+        </div>
+      </a>
+
+      <a href="payslip-single.html" class="block">
+        <div
+          class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-200 rounded-lg transition-colors"
+        >
+          <div
+            class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center"
+          >
+            <i class="fas fa-file-invoice-dollar text-teal-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="font-medium text-gray-800">October Salary Payslip</p>
+            <p class="text-gray-600 text-sm">Basic + Commission + Allowances</p>
+          </div>
+          <span class="text-gray-500 text-sm">Oct 2025</span
+          ><svg
+            class="w-4 h-4 ml-2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 5l7 7-7 7"
+            ></path>
+          </svg>
+        </div>
+      </a>
+
+      <a href="payslip-single.html" class="block">
+        <div
+          class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-200 rounded-lg transition-colors"
+        >
+          <div
+            class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center"
+          >
+            <i class="fas fa-file-invoice-dollar text-teal-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="font-medium text-gray-800">September Salary Payslip</p>
+            <p class="text-gray-600 text-sm">Basic + Commission + Allowances</p>
+          </div>
+          <span class="text-gray-500 text-sm">Sep 2025</span
+          ><svg
+            class="w-4 h-4 ml-2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 5l7 7-7 7"
+            ></path>
+          </svg>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-white shadow-lg p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
+    <div class="grid grid-cols-2 gap-4">
+      <a
+        href="team-performance.html"
+        class="bg-teal-50 hover:bg-teal-100 rounded-lg p-4 text-center transition-colors group"
+      >
+        <div
+          class="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-teal-600 transition-colors"
+        >
+          <i class="fas fa-chart-line text-white text-xl"></i>
+        </div>
+        <p class="font-medium text-teal-700">Team Performance</p>
+      </a>
+
+      <a
+        href="/staff/communication-team"
+        class="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 text-center transition-colors group"
+      >
+        <div
+          class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition-colors"
+        >
+          <i class="fas fa-comments text-white text-xl"></i>
+        </div>
+        <p class="font-medium text-blue-700">Team Communication</p>
+      </a>
+
+      <a
+        href="schedule.html"
+        class="bg-green-50 hover:bg-green-100 rounded-lg p-4 text-center transition-colors group"
+      >
+        <div
+          class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-green-600 transition-colors"
+        >
+          <i class="fas fa-calendar-alt text-white text-xl"></i>
+        </div>
+        <p class="font-medium text-green-700">View Schedule</p>
+      </a>
+
+      <a
+        href="financial-reports.html"
+        class="bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-colors group"
+      >
+        <div
+          class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-600 transition-colors"
+        >
+          <i class="fas fa-file-alt text-white text-xl"></i>
+        </div>
+        <p class="font-medium text-purple-700">Financial Reports</p>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ctx = document.getElementById("revenueChart").getContext("2d");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"],
+      datasets: [
+        {
+          label: "Performance (%)",
+          data: [10, 65, 72, 68, 75, 78, 80],
+          borderColor: "#0d9488",
+          tension: 0.3,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          ticks: {
+            callback: function (value) {
+              return value + "%";
+            },
+          },
+          suggestedMin: 0,
+          suggestedMax: 100,
+        },
+      },
+    },
+  });
+</script>

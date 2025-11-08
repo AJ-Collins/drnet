@@ -1,0 +1,714 @@
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">Staff Attendance</h3>
+    <p class="text-teal-600 mt-1">Mark staff attendance</p>
+  </div>
+  <button
+    onclick="openCreateModal()"
+    class="bg-teal-500 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
+  >
+    <i class="fas fa-plus"></i><span>Mark New</span>
+  </button>
+</div>
+
+<!-- STATS -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Present Today</h3>
+        <h2 id="totalPresent" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-user-check text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Absent Today</h3>
+        <h2 id="totalAbsent" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-user-times text-red-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Attendance Rate</h3>
+        <h2 id="attendanceRate" class="text-2xl font-bold text-gray-800">0%</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-percent text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Total Staff</h3>
+        <h2 id="totalEmployees" class="text-2xl font-bold text-gray-800">0</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-users text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS & TABLE -->
+<div class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100">
+  <div
+    class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4"
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Search</label
+        >
+        <input
+          id="searchInput"
+          type="text"
+          onkeyup="applyFilters()"
+          placeholder="Search Staff..."
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >Status</label
+        >
+        <select
+          id="statusFilter"
+          onchange="applyFilters()"
+          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+        >
+          <option value="">All Status</option>
+          <option value="present">Present</option>
+          <option value="absent">Absent</option>
+          <option value="off-duty">Off Duty</option>
+          <option value="on-leave">On Leave</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex-shrink-0 mb-2">
+      <button
+        onclick="refreshData()"
+        class="bg-teal-500 hover:bg-teal-700 text-white px-2 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
+      >
+        <i class="fas fa-sync-alt"></i><span>Refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between border-b pb-4">
+    <h3 class="text-lg font-bold text-teal-800">
+      <i class="fas fa-list mr-2"></i>Attendance Records
+    </h3>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-teal-50">
+        <tr>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Employee ID
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Name
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Department
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Role
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Phone
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Email
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Time In
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Time Out
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Status
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Date
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Marked By
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-200">
+        <!-- JS fills this -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- VIEW / EDIT MODAL (REUSED FOR BOTH) -->
+<div id="detailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+  <div class="flex min-h-screen items-center justify-center p-4">
+    <div
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+      onclick="closeModal()"
+    ></div>
+    <div
+      class="relative bg-white shadow-2xl max-w-3xl w-full p-8 border border-teal-100"
+    >
+      <div
+        class="flex items-center justify-between mb-6 pb-3 border-b border-teal-200"
+      >
+        <h3 id="modalTitle" class="text-2xl font-bold text-teal-700">
+          Attendance Details
+        </h3>
+        <button
+          onclick="closeModal()"
+          class="text-teal-600 hover:text-teal-800 transition"
+        >
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+      <div
+        id="modalContent"
+        class="text-gray-700 space-y-4 max-h-[60vh] overflow-y-auto pr-2"
+      ></div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE / EDIT FORM MODAL -->
+<div id="formModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+  <div class="flex min-h-screen items-center justify-center p-4">
+    <div class="fixed inset-0 bg-black/60" onclick="closeFormModal()"></div>
+    <div class="relative bg-white shadow-2xl max-w-2xl w-full p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h3 id="formModalTitle" class="text-2xl font-bold text-teal-700">
+          Mark New Attendance
+        </h3>
+        <button
+          onclick="closeFormModal()"
+          class="text-gray-500 hover:text-gray-700"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+
+      <form id="attendanceForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Employee ID</label
+            >
+            <input
+              type="text"
+              id="formEmployeeId"
+              required
+              class="w-full p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+              placeholder="EMP004"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Name</label
+            >
+            <input
+              type="text"
+              id="formName"
+              required
+              class="w-full p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Department</label
+            >
+            <input
+              type="text"
+              id="formDepartment"
+              required
+              class="w-full p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Role</label
+            >
+            <input
+              type="text"
+              id="formRole"
+              required
+              class="w-full p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Phone</label
+            >
+            <input
+              type="tel"
+              id="formPhone"
+              required
+              class="w-full p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Email</label
+            >
+            <input
+              type="email"
+              id="formEmail"
+              required
+              class="w-full p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Status</label
+            >
+            <select
+              id="formStatus"
+              required
+              class="w-full bg-white p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+            >
+              <option value="present">Present</option>
+              <option value="absent">Absent</option>
+              <option value="on-leave">On Leave</option>
+              <option value="off-duty">Off Duty</option>
+            </select>
+          </div>
+          <div id="timeInContainer" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Time In</label
+            >
+            <input
+              type="text"
+              id="formTimeIn"
+              class="w-full p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+              placeholder="08:30 AM"
+            />
+          </div>
+          <div id="timeOutContainer" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Time Out</label
+            >
+            <input
+              type="text"
+              id="formTimeOut"
+              class="w-full p-3 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+              placeholder="05:00 PM"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            type="button"
+            onclick="closeFormModal()"
+            class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            id="formSubmitBtn"
+            class="px-5 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+          >
+            Save Attendance
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // === CONFIG ===
+  const API = {
+    GET_ATTENDANCE: "/api/attendance",
+    CREATE_ATTENDANCE: "/api/attendance",
+    UPDATE_ATTENDANCE: "/api/attendance",
+    DELETE_ATTENDANCE: "/api/attendance",
+  };
+
+  // === MOCK DATA ===
+  let mockAttendanceData = [
+    {
+      id: 1,
+      employeeId: "EMP001",
+      name: "Alice Johnson",
+      department: "Engineering",
+      role: "Senior Developer",
+      phone: "+254 712 345 678",
+      email: "alice@company.com",
+      timeIn: "08:30 AM",
+      timeOut: "05:00 PM",
+      status: "present",
+      date: "2025-11-06",
+      markedBy: "Admin",
+    },
+    {
+      id: 2,
+      employeeId: "EMP002",
+      name: "Bob Smith",
+      department: "Marketing",
+      role: "Marketing Lead",
+      phone: "+254 723 456 789",
+      email: "bob@company.com",
+      timeIn: "08:30 AM",
+      timeOut: "08:30 PM",
+      status: "absent",
+      date: "2025-11-06",
+      markedBy: "Supervisor",
+    },
+    {
+      id: 3,
+      employeeId: "EMP003",
+      name: "Carol Davis",
+      department: "HR",
+      role: "HR Manager",
+      phone: "+254 734 567 890",
+      email: "carol@company.com",
+      timeIn: "08:30 AM",
+      timeOut: "08:30 PM",
+      status: "on-leave",
+      date: "2025-11-06",
+      markedBy: "Admin",
+    },
+  ];
+
+  // === MOCK BACKEND ===
+  const mockApi = {
+    delay: (ms) => new Promise((r) => setTimeout(r, ms)),
+    async get() {
+      await this.delay(400);
+      return { success: true, data: [...mockAttendanceData] };
+    },
+    async post(data) {
+      await this.delay(500);
+      const id = Math.max(...mockAttendanceData.map((a) => a.id)) + 1;
+      const rec = { ...data, id };
+      mockAttendanceData.push(rec);
+      return { success: true, data: rec };
+    },
+    async put(id, data) {
+      await this.delay(400);
+      const idx = mockAttendanceData.findIndex((a) => a.id === id);
+      if (idx === -1) throw new Error("Not found");
+      mockAttendanceData[idx] = { ...mockAttendanceData[idx], ...data };
+      return { success: true, data: mockAttendanceData[idx] };
+    },
+    async delete(id) {
+      await this.delay(300);
+      mockAttendanceData = mockAttendanceData.filter((a) => a.id !== id);
+      return { success: true };
+    },
+  };
+
+  const backend = mockApi; // Switch to real API later
+
+  let allAttendance = [];
+  let filteredAttendance = [];
+  let editingId = null;
+
+  // === LOAD & UPDATE ===
+  async function loadAttendance() {
+    try {
+      const res = await backend.get();
+      if (res.success) {
+        allAttendance = res.data;
+        filteredAttendance = [...allAttendance];
+        updateTable();
+        updateStats();
+      }
+    } catch (err) {
+      showNotification("Load failed: " + err.message, "error");
+    }
+  }
+
+  function updateTable() {
+    const tbody = document.getElementById("attendanceTableBody");
+    tbody.innerHTML = "";
+    if (!filteredAttendance.length) {
+      tbody.innerHTML = `<tr><td colspan="12" class="text-center py-8 text-gray-500">No records found</td></tr>`;
+      return;
+    }
+    filteredAttendance.forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-teal-50 transition";
+      const statusColor =
+        {
+          present: "bg-green-100 text-green-800",
+          absent: "bg-red-100 text-red-800",
+          "on-leave": "bg-yellow-100 text-yellow-800",
+          "off-duty": "bg-gray-100 text-gray-800",
+        }[r.status] || "bg-gray-100 text-gray-800";
+      tr.innerHTML = `
+        <td class="px-6 py-4 text-sm text-gray-900">${r.employeeId}</td>
+        <td class="px-6 py-4 text-sm font-medium text-gray-900">${r.name}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${r.department}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${r.role}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${r.phone}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${r.email}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${r.timeIn || "-"}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${r.timeOut || "-"}</td>
+        <td class="px-6 py-4 text-sm"><span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap ${statusColor}">${r.status.replace(
+        "-",
+        " "
+      )}</span></td>
+        <td class="px-6 py-4 text-sm text-gray-700">${r.date}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${r.markedBy || "-"}</td>
+        <td class="px-6 py-4 text-sm font-medium space-x-2 whitespace-nowrap">
+          <button onclick="viewRecord(${
+            r.id
+          })" class="text-blue-600 hover:text-blue-900"><i class="fas fa-eye"></i></button>
+          <button onclick="openEditModal(${
+            r.id
+          })" class="text-teal-600 hover:text-teal-900"><i class="fas fa-edit"></i></button>
+          <button onclick="deleteRecord(${
+            r.id
+          })" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateStats() {
+    const today = new Date().toISOString().split("T")[0];
+    const todayRec = allAttendance.filter((a) => a.date === today);
+    const present = todayRec.filter((a) => a.status === "present").length;
+    const absent = todayRec.filter((a) => a.status === "absent").length;
+    const total = todayRec.length || 1;
+    const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+    document.getElementById("totalPresent").textContent = present;
+    document.getElementById("totalAbsent").textContent = absent;
+    document.getElementById("attendanceRate").textContent = rate + "%";
+    document.getElementById("totalEmployees").textContent =
+      allAttendance.length;
+  }
+
+  function applyFilters() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const status = document.getElementById("statusFilter").value;
+    filteredAttendance = allAttendance.filter((r) => {
+      const matchSearch =
+        r.name.toLowerCase().includes(search) ||
+        r.employeeId.toLowerCase().includes(search) ||
+        r.email.toLowerCase().includes(search);
+      const matchStatus = !status || r.status === status;
+      return matchSearch && matchStatus;
+    });
+    updateTable();
+  }
+
+  function refreshData() {
+    loadAttendance();
+    showNotification("Refreshed", "info");
+  }
+
+  // === VIEW RECORD (READ-ONLY) ===
+  function viewRecord(id) {
+    const rec = allAttendance.find((r) => r.id === id);
+    if (!rec) return;
+    const content = document.getElementById("modalContent");
+    content.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        ${Object.entries(rec)
+          .map(([k, v]) => {
+            if (k === "id") return "";
+            const label = k
+              .replace(/([A-Z])/g, " $1")
+              .replace(/^./, (s) => s.toUpperCase());
+            return `<div><p class="text-xs font-semibold text-gray-500 uppercase">${label}</p>
+                  <p class="mt-1 text-sm text-gray-900">${v || "-"}</p></div>`;
+          })
+          .join("")}
+      </div>`;
+    document.getElementById("modalTitle").textContent = "Attendance Details";
+    document.getElementById("detailsModal").classList.remove("hidden");
+  }
+
+  function closeModal() {
+    document.getElementById("detailsModal").classList.add("hidden");
+  }
+
+  // === CREATE MODAL ===
+  function openCreateModal() {
+    editingId = null;
+    document.getElementById("formModalTitle").textContent =
+      "Mark New Attendance";
+    document.getElementById("formSubmitBtn").textContent = "Save Attendance";
+    document.getElementById("formSubmitBtn").className =
+      "px-5 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700";
+    document.getElementById("attendanceForm").reset();
+    document.getElementById("timeInContainer").classList.add("hidden");
+    document.getElementById("timeOutContainer").classList.add("hidden");
+    document.getElementById("formModal").classList.remove("hidden");
+  }
+
+  // === EDIT MODAL ===
+  function openEditModal(id) {
+    const rec = allAttendance.find((r) => r.id === id);
+    if (!rec) return;
+    editingId = id;
+
+    document.getElementById("formModalTitle").textContent = "Edit Attendance";
+    document.getElementById("formSubmitBtn").textContent = "Update Attendance";
+    document.getElementById("formSubmitBtn").className =
+      "px-5 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700";
+
+    // Fill fields
+    document.getElementById("formEmployeeId").value = rec.employeeId;
+    document.getElementById("formName").value = rec.name;
+    document.getElementById("formDepartment").value = rec.department;
+    document.getElementById("formRole").value = rec.role;
+    document.getElementById("formPhone").value = rec.phone;
+    document.getElementById("formEmail").value = rec.email;
+    document.getElementById("formStatus").value = rec.status;
+
+    // Show time fields only if present
+    const isPresent = rec.status === "present";
+    document
+      .getElementById("timeInContainer")
+      .classList.toggle("hidden", !isPresent);
+    document
+      .getElementById("timeOutContainer")
+      .classList.toggle("hidden", !isPresent);
+    document.getElementById("formTimeIn").value = rec.timeIn || "";
+    document.getElementById("formTimeOut").value = rec.timeOut || "";
+
+    document.getElementById("formModal").classList.remove("hidden");
+  }
+
+  function closeFormModal() {
+    document.getElementById("formModal").classList.add("hidden");
+    document.getElementById("attendanceForm").reset();
+    editingId = null;
+  }
+
+  // === FORM SUBMIT (CREATE OR EDIT) ===
+  document
+    .getElementById("attendanceForm")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const status = document.getElementById("formStatus").value;
+      const data = {
+        employeeId: document.getElementById("formEmployeeId").value,
+        name: document.getElementById("formName").value,
+        department: document.getElementById("formDepartment").value,
+        role: document.getElementById("formRole").value,
+        phone: document.getElementById("formPhone").value,
+        email: document.getElementById("formEmail").value,
+        status,
+        timeIn:
+          status === "present"
+            ? document.getElementById("formTimeIn").value
+            : null,
+        timeOut:
+          status === "present"
+            ? document.getElementById("formTimeOut").value
+            : null,
+        date: editingId
+          ? allAttendance.find((r) => r.id === editingId).date
+          : new Date().toISOString().split("T")[0],
+        markedBy: editingId
+          ? allAttendance.find((r) => r.id === editingId).markedBy
+          : "Current User",
+      };
+
+      try {
+        const res = editingId
+          ? await backend.put(editingId, data)
+          : await backend.post(data);
+        if (res.success) {
+          closeFormModal();
+          loadAttendance();
+          showNotification(editingId ? "Updated!" : "Marked!", "success");
+        }
+      } catch (err) {
+        showNotification("Failed: " + err.message, "error");
+      }
+    });
+
+  // === DELETE ===
+  async function deleteRecord(id) {
+    if (!confirm("Delete this record?")) return;
+    try {
+      await backend.delete(id);
+      loadAttendance();
+      showNotification("Deleted", "success");
+    } catch (err) {
+      showNotification("Delete failed", "error");
+    }
+  }
+
+  // === INIT ===
+  document.addEventListener("DOMContentLoaded", () => {
+    loadAttendance();
+    setInterval(refreshData, 30000);
+  });
+
+  // Global
+  window.openCreateModal = openCreateModal;
+  window.viewRecord = viewRecord;
+  window.openEditModal = openEditModal;
+  window.closeModal = closeModal;
+  window.closeFormModal = closeFormModal;
+  window.deleteRecord = deleteRecord;
+  window.applyFilters = applyFilters;
+  window.refreshData = refreshData;
+</script>

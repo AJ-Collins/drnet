@@ -1,0 +1,428 @@
+<div class="mb-6">
+  <h1 id="pageTitle" class="text-3xl font-bold text-teal-800">
+    Manage Clients
+  </h1>
+  <p id="pageSubtitle" class="text-teal-600">Manage Your Clients</p>
+</div>
+<div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+      <input
+        type="text"
+        id="clientsSearch"
+        placeholder="Search name, email, phone..."
+        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+      />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2"
+        >Subscriptions</label
+      >
+      <select
+        id="clientSubFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Subscriptions</option>
+        <option>Paid</option>
+        <option>Unpaid</option>
+        <option>Overdue</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+      <select
+        id="clientStatusFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Status</option>
+        <option>Active</option>
+        <option>Expired</option>
+        <option>Suspended</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Plans</label>
+      <select
+        id="clientPlanFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Plans</option>
+        <option>Premium 50Mbps</option>
+        <option>Standard 20Mbps</option>
+        <option>Basic 10Mbps</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Clients Table -->
+  <div class="px-6 py-4 border-b border-teal-200">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold text-teal-800">
+        <i class="fas fa-list mr-2"></i>Client Directory
+      </h3>
+      <button
+        onclick="exportData('clients')"
+        class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-100 rounded-lg transition-all"
+      >
+        <i class="fas fa-download mr-1"></i>Export
+      </button>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full" id="clientsTable">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th
+            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            <input
+              type="checkbox"
+              id="selectAllClients"
+              class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2"
+            />
+            User
+          </th>
+          <th
+            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Contact Info
+          </th>
+          <th
+            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Service Plan
+          </th>
+          <th
+            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Status
+          </th>
+          <th
+            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Last Payment
+          </th>
+          <th
+            class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody id="clientsTableBody" class="divide-y divide-gray-100"></tbody>
+    </table>
+  </div>
+  <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-sm text-gray-600">
+        Showing <span id="clientsRange">0-0</span> of
+        <span id="totalClients">0</span> clients
+      </p>
+      <div class="flex items-center space-x-2" id="clientsPagination"></div>
+    </div>
+  </div>
+</div>
+<script>
+  /* ==================== MOCK DATA ==================== */
+  let clients = [
+    {
+      id: "CLT-001",
+      name: "John Doe",
+      email: "john.doe@example.com",
+      phone: "+254 712 345 678",
+      idNumber: "12345678",
+      address: "Nairobi",
+      plan: "Premium 50Mbps",
+      status: "Active",
+      lastPayment: "Ksh 5,000 - 3 days ago",
+      paymentDate: Date.now() - 3 * 24 * 60 * 60 * 1000,
+    },
+    {
+      id: "CLT-002",
+      name: "Jane Smith",
+      email: "jane.smith@client.com",
+      phone: "+254 711 234 567",
+      idNumber: "87654321",
+      address: "Mombasa",
+      plan: "Basic 10Mbps",
+      status: "Expired",
+      lastPayment: "Ksh 1,500 - 15 days overdue",
+      paymentDate: Date.now() - 18 * 24 * 60 * 60 * 1000,
+    },
+    {
+      id: "CLT-003",
+      name: "Robert Wilson",
+      email: "robert.w@business.com",
+      phone: "+254 720 111 222",
+      idNumber: "11223344",
+      address: "Kisumu",
+      plan: "Standard 20Mbps",
+      status: "Active",
+      lastPayment: "Ksh 3,000 - 1 week ago",
+      paymentDate: Date.now() - 7 * 24 * 60 * 60 * 1000,
+    },
+  ];
+
+  const itemsPerPage = 10;
+  let currentPage = 1;
+
+  /* ==================== UTILS ==================== */
+  const $ = (id) => document.getElementById(id);
+
+  const getPlanBadge = (plan) =>
+    ({
+      "Premium 50Mbps": "bg-blue-100 text-blue-700",
+      "Standard 20Mbps": "bg-purple-100 text-purple-700",
+      "Basic 10Mbps": "bg-yellow-100 text-yellow-700",
+    }[plan] || "bg-gray-100 text-gray-700");
+
+  const getStatusBadge = (status) =>
+    ({
+      Active: "bg-green-100 text-green-700",
+      Expired: "bg-red-100 text-red-700",
+      Suspended: "bg-orange-100 text-orange-700",
+    }[status] || "bg-gray-100 text-gray-700");
+
+  /* ==================== ACTIONS ==================== */
+  const viewUser = (id) => {
+    const user = clients.find((u) => u.id === id);
+    if (!user) return;
+
+    Swal.fire({
+      title: "Client Details",
+      html: `
+        <div class="text-left space-y-2">
+          <p><strong>Name:</strong> ${user.name}</p>
+          <p><strong>Email:</strong> ${user.email}</p>
+          <p><strong>Phone:</strong> ${user.phone}</p>
+          <p><strong>ID:</strong> ${user.idNumber}</p>
+          <p><strong>Address:</strong> ${user.address}</p>
+          <p><strong>Plan:</strong> ${user.plan}</p>
+          <p><strong>Status:</strong> <span class="px-2 py-1 rounded text-xs font-medium ${
+            getStatusBadge(user.status).split(" ")[1]
+          }">${user.status}</span></p>
+          <p><strong>Last Payment:</strong> ${user.lastPayment}</p>
+        </div>
+      `,
+      icon: "info",
+      confirmButtonColor: "#0d9488",
+    });
+  };
+
+  const messageUser = (id) => {
+    const user = clients.find((u) => u.id === id);
+    if (!user) return;
+    const url = `messaging.html?user=${user.id}&name=${encodeURIComponent(
+      user.name
+    )}&email=${user.email}`;
+    window.location.href = url;
+  };
+
+  /* ==================== RENDERING ==================== */
+  const renderTable = () => {
+    const filtered = applyFilters();
+    const paginated = paginate(filtered, currentPage, itemsPerPage);
+    const tbody = $("clientsTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = paginated
+      .map(
+        (user) => `
+      <tr class="user-row transition-all duration-200 cursor-pointer hover:bg-teal-50" onclick="viewUser('${
+        user.id
+      }')">
+        <td class="p-4" onclick="event.stopPropagation()">
+          <div class="flex items-center space-x-3">
+            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" value="${
+              user.id
+            }">
+            <div class="w-11 h-11 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-md">
+              <span class="text-white font-bold text-sm">${user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()}</span>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-900">${user.name}</p>
+              <p class="text-xs text-gray-500">ID: #${user.id}</p>
+            </div>
+          </div>
+        </td>
+        <td class="p-4">
+          <div class="space-y-1">
+            <p class="text-gray-700 text-sm flex items-center"><i class="fas fa-envelope text-gray-400 mr-2 text-xs"></i>${
+              user.email
+            }</p>
+            <p class="text-gray-600 text-sm flex items-center"><i class="fas fa-phone text-gray-400 mr-2 text-xs"></i>${
+              user.phone
+            }</p>
+          </div>
+        </td>
+        <td class="p-4">
+          <span class="px-3 py-1.5 ${getPlanBadge(
+            user.plan
+          )} rounded-lg text-sm font-semibold">${user.plan}</span>
+        </td>
+        <td class="p-4">
+          <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(
+            user.status
+          )} rounded-lg text-sm font-semibold">
+            ${
+              user.status === "Active"
+                ? '<span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>'
+                : ""
+            }
+            ${user.status}
+          </span>
+        </td>
+        <td class="p-4">
+          <div class="text-sm">
+            <p class="text-gray-700 font-medium">${
+              user.lastPayment.split(" - ")[0]
+            }</p>
+            <p class="text-gray-500 text-xs">${
+              user.lastPayment.split(" - ")[1]
+            }</p>
+          </div>
+        </td>
+        <td class="p-4" onclick="event.stopPropagation()">
+          <div class="flex items-center justify-end space-x-2">
+            <button onclick="viewUser('${
+              user.id
+            }')" class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="View">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button onclick="messageUser('${
+              user.id
+            }')" class="w-9 h-9 flex items-center justify-center text-purple-600 hover:bg-purple-50 rounded-lg transition-all" title="Message">
+              <i class="fas fa-comment"></i>
+            </button>
+          </div>
+        </td>
+      </t>
+    `
+      )
+      .join("");
+
+    renderPagination(filtered.length);
+    updateRange(filtered.length);
+  };
+
+  const applyFilters = () => {
+    let filtered = [...clients];
+    const search = $("clientsSearch")?.value.toLowerCase() || "";
+    if (search) {
+      filtered = filtered.filter(
+        (u) =>
+          u.name.toLowerCase().includes(search) ||
+          u.email.toLowerCase().includes(search) ||
+          u.phone.includes(search)
+      );
+    }
+
+    const sub = $("clientSubFilter")?.value;
+    const status = $("clientStatusFilter")?.value;
+    const plan = $("clientPlanFilter")?.value;
+
+    if (sub) {
+      filtered = filtered.filter((u) =>
+        sub === "Overdue"
+          ? u.lastPayment.includes("overdue")
+          : sub === "Paid"
+          ? !u.lastPayment.includes("overdue")
+          : true
+      );
+    }
+    if (status) filtered = filtered.filter((u) => u.status === status);
+    if (plan) filtered = filtered.filter((u) => u.plan === plan);
+
+    return filtered;
+  };
+
+  const paginate = (array, page, size) =>
+    array.slice((page - 1) * size, page * size);
+
+  const renderPagination = (total) => {
+    const pages = Math.ceil(total / itemsPerPage);
+    const container = $("clientsPagination");
+    if (!container) return;
+    container.innerHTML = "";
+    if (pages <= 1) return;
+
+    const btn = (text, page, disabled = false) => {
+      const b = document.createElement("button");
+      b.innerHTML = text;
+      b.disabled = disabled;
+      b.className = `px-4 py-2 border rounded text-sm font-medium transition-all ${
+        disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-teal-50"
+      } ${page === currentPage ? "bg-teal-600 text-white" : "text-gray-700"}`;
+      if (!disabled)
+        b.onclick = () => {
+          currentPage = page;
+          renderTable();
+        };
+      return b;
+    };
+
+    container.appendChild(btn("Prev", currentPage - 1, currentPage === 1));
+    for (let i = 1; i <= pages; i++) container.appendChild(btn(i, i));
+    container.appendChild(btn("Next", currentPage + 1, currentPage === pages));
+  };
+
+  const updateRange = (total) => {
+    const el = $("clientsRange");
+    const totalEl = $("totalClients");
+    if (!el || !totalEl) return;
+    const start = (currentPage - 1) * itemsPerPage + 1;
+    const end = Math.min(currentPage * itemsPerPage, total);
+    el.textContent = total ? `${start}-${end}` : "0-0";
+    totalEl.textContent = total;
+  };
+
+  const exportData = () => {
+    const csv = [
+      Object.keys(clients[0]).join(","),
+      ...clients.map((row) => Object.values(row).join(",")),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clients_${dayjs().format("YYYY-MM-DD")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  /* ==================== EVENT LISTENERS ==================== */
+  document.addEventListener("DOMContentLoaded", () => {
+    renderTable();
+
+    // Search
+    $("clientsSearch")?.addEventListener("input", () => {
+      currentPage = 1;
+      renderTable();
+    });
+
+    // Filters
+    ["clientSubFilter", "clientStatusFilter", "clientPlanFilter"].forEach(
+      (id) => {
+        $(id)?.addEventListener("change", () => {
+          currentPage = 1;
+          renderTable();
+        });
+      }
+    );
+
+    // Select All
+    $("selectAllClients")?.addEventListener("change", (e) => {
+      document
+        .querySelectorAll('#clientsTableBody input[type="checkbox"]')
+        .forEach((cb) => (cb.checked = e.target.checked));
+    });
+  });
+
+  // Expose to HTML
+  window.exportData = exportData;
+</script>

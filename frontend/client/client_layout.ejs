@@ -56,21 +56,18 @@
           <!-- Navigation -->
           <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <% const pages = [ {slug:'dashboard', name:'Dashboard'},
-            {slug:'manage-users', name:'User Management'},
-            {slug:'service-management', name:'Service Management'},
-            {slug:'support-tickets', name:'Support Tickets'}, {slug:'finance',
-            name:'Finance & Reports'}, {slug:'renewals', name:'Renewals'},
-            {slug:'website-bookings', name:'Website Bookings'},
-            {slug:'communication-team', name:'Team Communication'},
-            {slug:'equipments', name:'Equipments & Tools'}, {slug:'settings',
-            name:'Settings'} ]; %> <% pages.forEach(p => { %>
+            {slug:'my-subscription', name:'My Subscriptions'},
+            {slug:'payment-billing', name: 'Payment & Billing'},
+            {slug:'support', name:'Technical Support'}, {slug:'profile',
+            name:'Profile'} ]; %> <% pages.forEach(p => { %>
             <a
-              href="/admin/<%= p.slug %>"
+              href="/client/<%= p.slug %>"
               class="nav-link flex items-center px-4 py-3 rounded-lg w-full <%= currentPage===p.slug ? 'bg-teal-900/50 text-white font-medium' : 'text-teal-100 font-medium' %> transition-all duration-200 hover:bg-teal-900/50 hover:text-white hover:translate-x-1"
             >
               <i
-                class="fas <%= p.slug==='dashboard' ? 'fa-chart-pie' : p.slug.includes('users') ? 'fa-users' : p.slug.includes('service') ? 'fa-tools' : p.slug.includes('ticket') ? 'fa-ticket-alt' : p.slug.includes('finance') ? 'fa-dollar-sign' : p.slug.includes('renewals') ? 'fa-sync-alt' : p.slug.includes('booking') ? 'fa-globe' : p.slug.includes('communication') ? 'fa-comments' : p.slug.includes('equipments') ? 'fa-tools' : 'fa-cog' %> w-6 text-lg"
+                class="fas <%= p.slug === 'dashboard' ? 'fa-chart-pie' : p.slug === 'my-subscription' ? 'fa-layer-group' : p.slug === 'payment-billing' ? 'fa-credit-card' : p.slug === 'support' ? 'fa-headset' : p.slug === 'profile' ? 'fa-user' : 'fa-cog' %> w-6 text-lg"
               ></i>
+
               <span><%= p.name %></span>
             </a>
             <% }); %>
@@ -103,7 +100,7 @@
               </button>
               <div>
                 <h1 id="pageTitle" class="text-2xl font-bold text-teal-800">
-                  Dashboard
+                  User
                 </h1>
                 <p id="pageSubtitle" class="text-sm text-teal-600">
                   Welcome to Dr.Net Technology Labs
@@ -229,12 +226,6 @@
                     class="flex items-center px-4 py-2 text-gray-700 hover:bg-teal-50 transition"
                   >
                     <i class="fas fa-user mr-3 text-teal-600"></i> My Profile
-                  </a>
-                  <a
-                    href="#"
-                    class="flex items-center px-4 py-2 text-gray-700 hover:bg-teal-50 transition"
-                  >
-                    <i class="fas fa-cog mr-3 text-teal-600"></i> Settings
                   </a>
                   <div class="border-t border-gray-200 my-1"></div>
                   <a
@@ -410,6 +401,37 @@
 
       // Initialize on page load
       document.addEventListener("DOMContentLoaded", initSidebar);
+
+      //Notification
+      let notificationContainer = document.getElementById(
+        "notificationContainer"
+      );
+      if (!notificationContainer) {
+        notificationContainer = document.createElement("div");
+        notificationContainer.id = "notificationContainer";
+        notificationContainer.className =
+          "fixed top-4 right-4 flex flex-col gap-3 z-50";
+        document.body.appendChild(notificationContainer);
+      }
+
+      function showNotification(message, type) {
+        const colors = {
+          success: "bg-teal-500",
+          error: "bg-red-500",
+          info: "bg-blue-500",
+        };
+
+        const notification = document.createElement("div");
+        notification.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300`;
+        notification.textContent = message;
+
+        notificationContainer.prepend(notification);
+
+        setTimeout(() => {
+          notification.style.opacity = "0";
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      }
     </script>
   </body>
 </html>

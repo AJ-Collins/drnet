@@ -1,0 +1,949 @@
+<!-- Header -->
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="text-3xl font-bold text-teal-800">Work Schedule</h1>
+    <p class="text-teal-600 mt-1">
+      Manage your installations, repairs, and maintenance tasks
+    </p>
+  </div>
+  <button
+    onclick="openScheduleModal()"
+    class="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+  >
+    <i class="fas fa-plus"></i>
+    <span>New Schedule</span>
+  </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+  <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-blue-600 text-sm font-bold mb-1">Today's Tasks</h3>
+        <h2 id="todayTasks" class="text-3xl font-bold text-gray-800">3</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-calendar-day text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-green-100">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-green-600 text-sm font-bold mb-1">Completed</h3>
+        <h2 id="completedTasks" class="text-3xl font-bold text-gray-800">12</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-amber-100">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-amber-600 text-sm font-bold mb-1">Pending</h3>
+        <h2 id="pendingTasks" class="text-3xl font-bold text-gray-800">5</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-clock text-amber-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-purple-100">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-purple-600 text-sm font-bold mb-1">This Week</h3>
+        <h2 id="weekTasks" class="text-3xl font-bold text-gray-800">8</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-calendar-week text-purple-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- Left Column -->
+  <div class="lg:col-span-1 space-y-6">
+    <!-- Quick Filters -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+      <h3 class="text-xl font-bold text-gray-900 mb-4">Quick Filters</h3>
+      <div class="space-y-3">
+        <button
+          onclick="filterByDate('today')"
+          class="filter-btn w-full px-4 py-3 bg-teal-100 text-teal-700 border-2 border-teal-300 rounded-xl font-semibold transition flex items-center justify-between"
+        >
+          <span><i class="fas fa-calendar-day mr-2"></i>Today</span>
+          <span class="bg-teal-200 px-2 py-1 rounded-full text-xs">3</span>
+        </button>
+        <button
+          onclick="filterByDate('tomorrow')"
+          class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition flex items-center justify-between"
+        >
+          <span><i class="fas fa-calendar-plus mr-2"></i>Tomorrow</span>
+          <span class="bg-gray-200 px-2 py-1 rounded-full text-xs">2</span>
+        </button>
+        <button
+          onclick="filterByDate('week')"
+          class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition flex items-center justify-between"
+        >
+          <span><i class="fas fa-calendar-week mr-2"></i>This Week</span>
+          <span class="bg-gray-200 px-2 py-1 rounded-full text-xs">8</span>
+        </button>
+        <button
+          onclick="filterByDate('all')"
+          class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition"
+        >
+          <i class="fas fa-list mr-2"></i>All Tasks
+        </button>
+      </div>
+    </div>
+
+    <!-- Task Types Filter -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+      <h3 class="text-xl font-bold text-gray-900 mb-4">Task Types</h3>
+      <div class="space-y-3">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked
+            class="w-5 h-5 text-teal-600 rounded focus:ring-2 focus:ring-teal-500"
+            onchange="filterTasks()"
+          />
+          <span class="flex-1 font-semibold text-gray-700">Installation</span>
+          <span
+            class="bg-teal-100 text-teal-700 px-2 py-1 rounded-full text-xs font-bold"
+            >4</span
+          >
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked
+            class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+            onchange="filterTasks()"
+          />
+          <span class="flex-1 font-semibold text-gray-700">Repair</span>
+          <span
+            class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold"
+            >6</span
+          >
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked
+            class="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
+            onchange="filterTasks()"
+          />
+          <span class="flex-1 font-semibold text-gray-700">Maintenance</span>
+          <span
+            class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-bold"
+            >3</span
+          >
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked
+            class="w-5 h-5 text-amber-600 rounded focus:ring-2 focus:ring-amber-500"
+            onchange="filterTasks()"
+          />
+          <span class="flex-1 font-semibold text-gray-700">Inspection</span>
+          <span
+            class="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-bold"
+            >2</span
+          >
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked
+            class="w-5 h-5 text-red-600 rounded focus:ring-2 focus:ring-red-500"
+            onchange="filterTasks()"
+          />
+          <span class="flex-1 font-semibold text-gray-700">Emergency</span>
+          <span
+            class="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold"
+            >1</span
+          >
+        </label>
+      </div>
+    </div>
+
+    <!-- Mini Calendar -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+      <h3 class="text-xl font-bold text-gray-900 mb-4">November 2025</h3>
+      <div class="grid grid-cols-7 gap-2 text-center text-sm">
+        <div class="font-bold text-gray-500">S</div>
+        <div class="font-bold text-gray-500">M</div>
+        <div class="font-bold text-gray-500">T</div>
+        <div class="font-bold text-gray-500">W</div>
+        <div class="font-bold text-gray-500">T</div>
+        <div class="font-bold text-gray-500">F</div>
+        <div class="font-bold text-gray-500">S</div>
+        <div class="text-gray-400">27</div>
+        <div class="text-gray-400">28</div>
+        <div class="text-gray-400">29</div>
+        <div class="text-gray-400">30</div>
+        <div class="text-gray-400">31</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">1</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">2</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">3</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">4</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">5</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">6</div>
+        <div class="py-2 bg-teal-500 text-white rounded-lg font-bold">7</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer relative">
+          8
+          <div
+            class="w-1 h-1 bg-teal-500 rounded-full absolute bottom-1 left-1/2 transform -translate-x-1/2"
+          ></div>
+        </div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">9</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">10</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer relative">
+          11
+          <div
+            class="w-1 h-1 bg-teal-500 rounded-full absolute bottom-1 left-1/2 transform -translate-x-1/2"
+          ></div>
+        </div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer relative">
+          12
+          <div
+            class="w-1 h-1 bg-teal-500 rounded-full absolute bottom-1 left-1/2 transform -translate-x-1/2"
+          ></div>
+        </div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">13</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">14</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">15</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">16</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">17</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">18</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">19</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">20</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">21</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">22</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">23</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">24</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">25</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">26</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">27</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">28</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">29</div>
+        <div class="py-2 hover:bg-gray-100 rounded-lg cursor-pointer">30</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column -->
+  <div class="lg:col-span-2">
+    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">My Schedule</h2>
+        <select
+          class="px-4 py-2 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-teal-500"
+        >
+          <option>All Status</option>
+          <option>Pending</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+        </select>
+      </div>
+
+      <div id="scheduleList" class="space-y-4 max-h-[900px] overflow-y-auto">
+        <!-- Tasks rendered here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<!-- Add/Edit Modal -->
+<div
+  id="scheduleModal"
+  class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50"
+>
+  <div
+    class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+  >
+    <div
+      class="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6 flex justify-between items-center"
+    >
+      <h3 id="modalTitle" class="text-2xl font-bold">Add New Schedule</h3>
+      <button
+        onclick="closeScheduleModal()"
+        class="text-white/90 hover:text-white transition"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+    <form
+      id="scheduleForm"
+      onsubmit="saveSchedule(event)"
+      class="p-8 space-y-6"
+    >
+      <input type="hidden" id="scheduleId" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2"
+            >Task Type *</label
+          >
+          <select
+            id="taskType"
+            required
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white"
+          >
+            <option value="">Select task type...</option>
+            <option>Installation</option>
+            <option>Repair</option>
+            <option>Maintenance</option>
+            <option>Inspection</option>
+            <option>Emergency</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2"
+            >Priority *</label
+          >
+          <select
+            id="priority"
+            required
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white"
+          >
+            <option>Low</option>
+            <option selected>Medium</option>
+            <option>High</option>
+            <option>Urgent</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2"
+            >Date *</label
+          >
+          <input
+            type="date"
+            id="taskDate"
+            required
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2"
+            >Time *</label
+          >
+          <input
+            type="time"
+            id="taskTime"
+            required
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2"
+            >Duration (hours) *</label
+          >
+          <input
+            type="number"
+            id="duration"
+            required
+            min="0.5"
+            step="0.5"
+            value="2"
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2"
+            >Status *</label
+          >
+          <select
+            id="status"
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white"
+          >
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2"
+          >Customer Name *</label
+        >
+        <input
+          type="text"
+          id="customerName"
+          required
+          placeholder="Enter customer name"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2"
+          >Location *</label
+        >
+        <input
+          type="text"
+          id="location"
+          required
+          placeholder="Enter service location address"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2"
+          >Contact Number *</label
+        >
+        <input
+          type="tel"
+          id="contactNumber"
+          required
+          placeholder="0700000000"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2"
+          >Task Description</label
+        >
+        <textarea
+          id="description"
+          rows="4"
+          placeholder="Describe the task details..."
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none"
+        ></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">Notes</label>
+        <textarea
+          id="notes"
+          rows="3"
+          placeholder="Any additional notes..."
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none"
+        ></textarea>
+      </div>
+      <div class="flex gap-4 pt-4">
+        <button
+          type="submit"
+          class="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg"
+        >
+          <i class="fas fa-save mr-2"></i>Save Schedule
+        </button>
+        <button
+          type="button"
+          onclick="closeScheduleModal()"
+          class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- View Task Modal -->
+<div
+  id="viewTaskModal"
+  class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50"
+>
+  <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
+    <div
+      class="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6 flex justify-between items-center"
+    >
+      <h3 class="text-2xl font-bold">Task Details</h3>
+      <button
+        onclick="closeViewTaskModal()"
+        class="text-white/90 hover:text-white transition"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+    <div class="p-8 space-y-6">
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">TASK TYPE</p>
+          <p id="viewTaskType" class="font-bold text-gray-900 text-lg"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">PRIORITY</p>
+          <span
+            id="viewPriority"
+            class="inline-block px-3 py-1 rounded-full text-sm font-bold"
+          ></span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">DATE & TIME</p>
+          <p id="viewDateTime" class="font-semibold text-gray-900"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">DURATION</p>
+          <p id="viewDuration" class="font-semibold text-gray-900"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">STATUS</p>
+          <span
+            id="viewStatus"
+            class="inline-block px-3 py-1 rounded-full text-sm font-bold"
+          ></span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">CONTACT</p>
+          <p id="viewContact" class="font-semibold text-gray-900"></p>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-500 mb-2">CUSTOMER NAME</p>
+        <p id="viewCustomer" class="font-bold text-gray-900 text-lg"></p>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-500 mb-2">LOCATION</p>
+        <p id="viewLocation" class="font-semibold text-gray-900"></p>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-500 mb-2">DESCRIPTION</p>
+        <p
+          id="viewDescription"
+          class="text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-200"
+        ></p>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-500 mb-2">NOTES</p>
+        <p
+          id="viewNotes"
+          class="text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-200"
+        ></p>
+      </div>
+    </div>
+    <div class="p-6 border-t-2 border-gray-100 bg-gray-50 flex justify-between">
+      <div class="flex gap-3">
+        <button
+          onclick="editTaskFromView()"
+          class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition flex items-center gap-2"
+        >
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button
+          onclick="deleteTask(currentSchedule.id)"
+          class="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition flex items-center gap-2"
+        >
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+      <button
+        onclick="closeViewTaskModal()"
+        class="px-6 py-3 bg-gray-600 text-white font-bold rounded-xl hover:bg-gray-700 transition"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // === MOCK DATA ===
+  let schedules = JSON.parse(localStorage.getItem("drnet_schedules")) || [
+    {
+      id: 1,
+      taskType: "Installation",
+      priority: "High",
+      date: "2025-11-07",
+      time: "09:00",
+      duration: 3,
+      status: "Pending",
+      customerName: "John Mwangi",
+      location: "Kilimani, Nairobi - Apartment 5B",
+      contactNumber: "0712345678",
+      description:
+        "New fiber optic installation for 100Mbps package. Need to install ONT and configure router.",
+      notes:
+        "Customer prefers morning installation. Building has access restrictions.",
+    },
+    {
+      id: 2,
+      taskType: "Repair",
+      priority: "Urgent",
+      date: "2025-11-07",
+      time: "11:30",
+      duration: 2,
+      status: "In Progress",
+      customerName: "Sarah Wanjiru",
+      location: "Westlands, Nairobi - Office Block C",
+      contactNumber: "0723456789",
+      description:
+        "Network outage reported. Check fiber connection and ONT status.",
+      notes:
+        "Business customer - high priority. Contact security before entering premises.",
+    },
+    {
+      id: 3,
+      taskType: "Maintenance",
+      priority: "Medium",
+      date: "2025-11-07",
+      time: "14:00",
+      duration: 1.5,
+      status: "Pending",
+      customerName: "David Omondi",
+      location: "Karen, Nairobi - House 24",
+      contactNumber: "0734567890",
+      description: "Routine maintenance check and speed optimization.",
+      notes: "Gate code: 1234. Customer works from home.",
+    },
+    {
+      id: 4,
+      taskType: "Installation",
+      priority: "Medium",
+      date: "2025-11-08",
+      time: "10:00",
+      duration: 2.5,
+      status: "Pending",
+      customerName: "Grace Akinyi",
+      location: "Lavington, Nairobi - Villa 12",
+      contactNumber: "0745678901",
+      description: "Install additional access points for better WiFi coverage.",
+      notes: "Customer wants coverage in garden area as well.",
+    },
+    {
+      id: 5,
+      taskType: "Inspection",
+      priority: "Low",
+      date: "2025-11-08",
+      time: "15:00",
+      duration: 1,
+      status: "Pending",
+      customerName: "Peter Kamau",
+      location: "Parklands, Nairobi - Flat 3A",
+      contactNumber: "0756789012",
+      description: "Pre-installation site survey for new customer.",
+      notes: "Check fiber availability in the area.",
+    },
+  ];
+
+  let currentSchedule = null;
+  let activeFilter = "today";
+  let taskTypeFilters = [
+    "Installation",
+    "Repair",
+    "Maintenance",
+    "Inspection",
+    "Emergency",
+  ];
+
+  function saveSchedules() {
+    localStorage.setItem(
+      "drnet_schedules",
+      JSON.stringify(schedules.filter((s) => !s.is_deleted))
+    );
+  }
+
+  function getPriorityBadge(p) {
+    const map = {
+      Low: "bg-gray-100 text-gray-700",
+      Medium: "bg-blue-100 text-blue-700",
+      High: "bg-orange-100 text-orange-700",
+      Urgent: "bg-red-100 text-red-700",
+    };
+    return map[p] || "bg-gray-100 text-gray-700";
+  }
+
+  function getStatusBadge(s) {
+    const map = {
+      Pending: "bg-yellow-100 text-yellow-700",
+      "In Progress": "bg-blue-100 text-blue-700",
+      Completed: "bg-green-100 text-green-700",
+    };
+    return map[s] || "bg-gray-100 text-gray-700";
+  }
+
+  function renderSchedules() {
+    const container = document.getElementById("scheduleList");
+    let filtered = schedules.filter((s) => !s.is_deleted);
+
+    const today = dayjs().format("YYYY-MM-DD");
+    const tomorrow = dayjs().add(1, "day").format("YYYY-MM-DD");
+    const weekStart = dayjs().startOf("week").format("YYYY-MM-DD");
+    const weekEnd = dayjs().endOf("week").format("YYYY-MM-DD");
+
+    if (activeFilter === "today")
+      filtered = filtered.filter((s) => s.date === today);
+    else if (activeFilter === "tomorrow")
+      filtered = filtered.filter((s) => s.date === tomorrow);
+    else if (activeFilter === "week")
+      filtered = filtered.filter(
+        (s) => s.date >= weekStart && s.date <= weekEnd
+      );
+
+    if (taskTypeFilters.length > 0)
+      filtered = filtered.filter((s) => taskTypeFilters.includes(s.taskType));
+
+    filtered.sort((a, b) =>
+      a.date !== b.date
+        ? a.date.localeCompare(b.date)
+        : a.time.localeCompare(b.time)
+    );
+
+    container.innerHTML =
+      filtered
+        .map(
+          (s) => `
+        <div class="bg-gradient-to-r from-teal-50 to-white p-5 rounded-2xl border-2 border-teal-100 hover:shadow-lg transition-all cursor-pointer flex justify-between items-start" onclick="viewTask(${
+          s.id
+        })">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg ${
+                s.taskType === "Installation"
+                  ? "bg-teal-500"
+                  : s.taskType === "Repair"
+                  ? "bg-blue-500"
+                  : s.taskType === "Maintenance"
+                  ? "bg-purple-500"
+                  : s.taskType === "Inspection"
+                  ? "bg-amber-500"
+                  : "bg-red-500"
+              }">
+                ${s.taskType[0]}
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-900">${s.customerName}</h4>
+                <p class="text-sm text-gray-600">${s.location}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-gray-600">
+              <span><i class="fas fa-clock mr-1"></i>${s.time} (${
+            s.duration
+          }h)</span>
+              <span><i class="fas fa-calendar mr-1"></i>${dayjs(s.date).format(
+                "ddd, MMM D"
+              )}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 ${getPriorityBadge(
+              s.priority
+            )}">${s.priority}</span>
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${getStatusBadge(
+              s.status
+            )}">${s.status}</span>
+          </div>
+        </div>
+      `
+        )
+        .join("") ||
+      '<p class="text-center text-gray-500 py-8">No tasks found.</p>';
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const today = dayjs().format("YYYY-MM-DD");
+    const weekStart = dayjs().startOf("week").format("YYYY-MM-DD");
+    const weekEnd = dayjs().endOf("week").format("YYYY-MM-DD");
+
+    document.getElementById("todayTasks").textContent = schedules.filter(
+      (s) => !s.is_deleted && s.date === today
+    ).length;
+    document.getElementById("completedTasks").textContent = schedules.filter(
+      (s) => !s.is_deleted && s.status === "Completed"
+    ).length;
+    document.getElementById("pendingTasks").textContent = schedules.filter(
+      (s) => !s.is_deleted && s.status === "Pending"
+    ).length;
+    document.getElementById("weekTasks").textContent = schedules.filter(
+      (s) => !s.is_deleted && s.date >= weekStart && s.date <= weekEnd
+    ).length;
+  }
+
+  function filterByDate(filter) {
+    activeFilter = filter;
+    document.querySelectorAll(".filter-btn").forEach((b) => {
+      b.classList.remove("bg-teal-100", "text-teal-700", "border-teal-300");
+      b.classList.add(
+        "bg-gray-50",
+        "hover:bg-gray-100",
+        "border-gray-200",
+        "text-gray-700"
+      );
+    });
+    event.target.classList.remove(
+      "bg-gray-50",
+      "hover:bg-gray-100",
+      "border-gray-200",
+      "text-gray-700"
+    );
+    event.target.classList.add(
+      "bg-teal-100",
+      "text-teal-700",
+      "border-teal-300"
+    );
+    renderSchedules();
+  }
+
+  function filterTasks() {
+    taskTypeFilters = Array.from(
+      document.querySelectorAll('input[type="checkbox"]:checked')
+    ).map((cb) => cb.parentElement.querySelector("span").textContent.trim());
+    renderSchedules();
+  }
+
+  function openScheduleModal(id = null) {
+    currentSchedule = id ? schedules.find((s) => s.id === id) : null;
+    const modal = document.getElementById("scheduleModal");
+    const title = document.getElementById("modalTitle");
+    if (currentSchedule) {
+      title.textContent = "Edit Schedule";
+      document.getElementById("scheduleId").value = currentSchedule.id;
+      document.getElementById("taskType").value = currentSchedule.taskType;
+      document.getElementById("priority").value = currentSchedule.priority;
+      document.getElementById("taskDate").value = currentSchedule.date;
+      document.getElementById("taskTime").value = currentSchedule.time;
+      document.getElementById("duration").value = currentSchedule.duration;
+      document.getElementById("status").value = currentSchedule.status;
+      document.getElementById("customerName").value =
+        currentSchedule.customerName;
+      document.getElementById("location").value = currentSchedule.location;
+      document.getElementById("contactNumber").value =
+        currentSchedule.contactNumber;
+      document.getElementById("description").value =
+        currentSchedule.description || "";
+      document.getElementById("notes").value = currentSchedule.notes || "";
+    } else {
+      title.textContent = "Add New Schedule";
+      document.getElementById("scheduleForm").reset();
+      document.getElementById("scheduleId").value = "";
+      document.getElementById("priority").value = "Medium";
+      document.getElementById("status").value = "Pending";
+    }
+    modal.classList.remove("hidden");
+  }
+
+  function closeScheduleModal() {
+    document.getElementById("scheduleModal").classList.add("hidden");
+  }
+
+  function saveSchedule(e) {
+    e.preventDefault();
+    const id = document.getElementById("scheduleId").value;
+    const data = {
+      taskType: document.getElementById("taskType").value,
+      priority: document.getElementById("priority").value,
+      date: document.getElementById("taskDate").value,
+      time: document.getElementById("taskTime").value,
+      duration: parseFloat(document.getElementById("duration").value),
+      status: document.getElementById("status").value,
+      customerName: document.getElementById("customerName").value,
+      location: document.getElementById("location").value,
+      contactNumber: document.getElementById("contactNumber").value,
+      description: document.getElementById("description").value,
+      notes: document.getElementById("notes").value,
+    };
+
+    if (id) {
+      const idx = schedules.findIndex((s) => s.id === parseInt(id));
+      schedules[idx] = { ...schedules[idx], ...data };
+    } else {
+      data.id = Date.now();
+      schedules.push(data);
+    }
+
+    saveSchedules();
+    closeScheduleModal();
+    renderSchedules();
+  }
+
+  function viewTask(id) {
+    const task = schedules.find((s) => s.id === id);
+    if (!task) return;
+    currentSchedule = task;
+
+    document.getElementById("viewTaskType").textContent = task.taskType;
+    document.getElementById("viewPriority").textContent = task.priority;
+    document.getElementById(
+      "viewPriority"
+    ).className = `inline-block px-3 py-1 rounded-full text-sm font-bold ${getPriorityBadge(
+      task.priority
+    )}`;
+    document.getElementById("viewDateTime").textContent = `${dayjs(
+      task.date
+    ).format("MMMM D, YYYY")} at ${task.time}`;
+    document.getElementById("viewDuration").textContent = `${
+      task.duration
+    } hour${task.duration > 1 ? "s" : ""}`;
+    document.getElementById("viewStatus").textContent = task.status;
+    document.getElementById(
+      "viewStatus"
+    ).className = `inline-block px-3 py-1 rounded-full text-sm font-bold ${getStatusBadge(
+      task.status
+    )}`;
+    document.getElementById("viewCustomer").textContent = task.customerName;
+    document.getElementById("viewLocation").textContent = task.location;
+    document.getElementById("viewContact").textContent = task.contactNumber;
+    document.getElementById("viewDescription").textContent =
+      task.description || "—";
+    document.getElementById("viewNotes").textContent = task.notes || "—";
+
+    document.getElementById("viewTaskModal").classList.remove("hidden");
+  }
+
+  function closeViewTaskModal() {
+    document.getElementById("viewTaskModal").classList.add("hidden");
+  }
+
+  function editTaskFromView() {
+    closeViewTaskModal();
+    openScheduleModal(currentSchedule.id);
+  }
+
+  function deleteTask(id) {
+    Swal.fire({
+      title: "Delete Task?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const idx = schedules.findIndex((s) => s.id === id);
+        if (idx > -1) {
+          schedules[idx].is_deleted = true;
+          saveSchedules();
+          renderSchedules();
+          closeViewTaskModal();
+          Swal.fire("Deleted!", "Task has been removed.", "success");
+        }
+      }
+    });
+  }
+
+  // Init
+  document.addEventListener("DOMContentLoaded", () => {
+    renderSchedules();
+  });
+
+  // Close modals on outside click
+  document.addEventListener("click", (e) => {
+    ["scheduleModal", "viewTaskModal"].forEach((id) => {
+      const modal = document.getElementById(id);
+      if (
+        !modal.classList.contains("hidden") &&
+        !modal.querySelector(".bg-white").contains(e.target)
+      ) {
+        modal.classList.add("hidden");
+      }
+    });
+  });
+</script>

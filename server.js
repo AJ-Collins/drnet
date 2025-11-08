@@ -38,7 +38,11 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // === EJS Setup ===
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "frontend/admin")); // <-- points to admin folder
+app.set("views", [
+  path.join(__dirname, "frontend/admin"),
+  path.join(__dirname, "frontend/staff"),
+  path.join(__dirname, "frontend/client"),
+]);
 
 // === Static Assets ===
 app.use(
@@ -86,6 +90,22 @@ app.get("/admin/login", (req, res) => {
   });
 });
 
+app.get("/staff/login", (req, res) => {
+  res.render("layout", {
+    pageTitle: "Staff Login",
+    pageSubtitle: "Sign in to continue",
+    currentPage: "login",
+  });
+});
+
+app.get("/client/login", (req, res) => {
+  res.render("layout", {
+    pageTitle: "Client Login",
+    pageSubtitle: "Sing in to continue",
+    currentPage: "Login",
+  });
+});
+
 app.get("/admin/logout", (req, res) => {
   if (req.session) {
     req.session.destroy(() => {
@@ -97,16 +117,16 @@ app.get("/admin/logout", (req, res) => {
   }
 });
 // === ADMIN ROUTES (EJS) ===
-const validPages = [
+const adminPages = [
   "dashboard",
+  "staff-attendance",
   "manage-users",
   "service-management",
   "support-tickets",
   "finance",
   "reports",
-  "settings",
-  "register-user",
   "profile",
+  "register-user",
   "renewals",
   "website-bookings",
   "invoice-generator",
@@ -123,7 +143,7 @@ const validPages = [
 app.get("/admin/:page", (req, res) => {
   let page = req.params.page;
 
-  if (!validPages.includes(page)) {
+  if (!adminPages.includes(page)) {
     return res.redirect("/admin/dashboard");
   }
 
@@ -132,7 +152,7 @@ app.get("/admin/:page", (req, res) => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  res.render("layout", {
+  res.render("admin_layout", {
     pageTitle: title,
     pageSubtitle: `Manage ${title.toLowerCase()}`,
     currentPage: page,
@@ -142,6 +162,73 @@ app.get("/admin/:page", (req, res) => {
 // Fallback: /admin → dashboard
 app.get("/admin", requireAdminAuth, (req, res) => {
   res.redirect("/admin/dashboard");
+});
+
+// Staff routes
+const staffPages = [
+  "dashboard",
+  "profile",
+  "communication-team",
+  "my-customers",
+  "support-tickets",
+  "work-schedule",
+];
+
+app.get("/staff/:page", (req, res) => {
+  let page = req.params.page;
+
+  if (!staffPages.includes(page)) {
+    return res.redirect("/staff/dashboard");
+  }
+
+  const title = page
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  res.render("staff_layout", {
+    pageTitle: title,
+    pageSubtitle: `Manage ${title.toLowerCase()}`,
+    currentPage: page,
+  });
+});
+
+// Fallback: /staff → dashboard
+app.get("/staff", (req, res) => {
+  res.redirect("/staff/dashboard");
+});
+
+// Client routes
+const clientPages = [
+  "dashboard",
+  "profile",
+  "my-subscription",
+  "support",
+  "payment-billing",
+];
+
+app.get("/client/:page", (req, res) => {
+  let page = req.params.page;
+
+  if (!clientPages.includes(page)) {
+    return res.redirect("/client/dashboard");
+  }
+
+  const title = page
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  res.render("client_layout", {
+    pageTitle: title,
+    pageSubtitle: `Manage ${title.toLowerCase()}`,
+    currentPage: page,
+  });
+});
+
+// Fallback: /staff → dashboard
+app.get("/client", (req, res) => {
+  res.redirect("/client/dashboard");
 });
 
 // === API Routes ===

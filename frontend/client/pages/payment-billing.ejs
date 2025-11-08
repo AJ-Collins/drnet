@@ -1,0 +1,458 @@
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-2">Payments & Billing</h1>
+  <p class="text-gray-600">
+    Manage your payment methods and view transaction history
+  </p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- Payment Methods -->
+  <div class="lg:col-span-1">
+    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900">Payment Methods</h2>
+      </div>
+
+      <!-- M-PESA Card -->
+      <div
+        class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-5 mb-4 relative overflow-hidden shadow-lg"
+      >
+        <div
+          class="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full -mr-12 -mt-12"
+        ></div>
+        <div class="relative">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-white bg-opacity-20 rounded-lg px-3 py-1">
+              <p class="text-white text-xs font-bold">PRIMARY</p>
+            </div>
+            <svg
+              class="w-8 h-8 text-white"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+              />
+            </svg>
+          </div>
+          <p class="text-white text-xs font-medium mb-1">M-PESA Paybill</p>
+          <p class="text-white text-lg font-bold tracking-wider">456789</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Next Payment -->
+    <div
+      class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 mt-6 text-white"
+    >
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <p class="text-blue-100 text-sm font-medium mb-1">Next Payment Due</p>
+          <p class="text-3xl font-bold">KES 3,499</p>
+        </div>
+        <div class="bg-white bg-opacity-20 rounded-lg p-3">
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+      </div>
+      <p class="text-blue-100 text-sm">Due on December 2, 2025</p>
+      <button
+        class="mt-4 w-full bg-white text-blue-600 font-semibold py-3 rounded-xl hover:bg-blue-50 transition-all shadow-lg"
+      >
+        Pay Now
+      </button>
+    </div>
+  </div>
+
+  <!-- Transaction History -->
+  <div class="lg:col-span-2">
+    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4"
+      >
+        <h2 class="text-xl font-bold text-gray-900">Transaction History</h2>
+        <div class="flex items-center gap-3">
+          <select
+            class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:border-teal-500 transition"
+          >
+            <option>All Transactions</option>
+            <option>Successful</option>
+            <option>Pending</option>
+            <option>Failed</option>
+          </select>
+          <button
+            class="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all flex items-center gap-2"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Transaction Items -->
+      <div class="space-y-4">
+        <!-- Transaction 1 -->
+        <div
+          class="border-2 border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition-all"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-start gap-4">
+              <div class="bg-green-100 rounded-full p-3">
+                <svg
+                  class="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 mb-1">
+                  Professional Business Plan
+                </h3>
+                <p class="text-sm text-gray-600 mb-2">
+                  Monthly subscription payment
+                </p>
+                <div class="flex items-center gap-3 text-xs text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Nov 2, 2025
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                      />
+                    </svg>
+                    M-PESA
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-gray-900 text-lg mb-1">KES 3,499</p>
+              <span
+                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
+              >
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Successful
+              </span>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-between pt-3 border-t border-gray-100"
+          >
+            <p class="text-xs text-gray-500">Transaction ID: TXN-2025110201</p>
+            <button
+              class="text-teal-600 hover:text-teal-700 text-sm font-semibold flex items-center gap-1"
+            >
+              Download Receipt
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Transaction 2 -->
+        <div
+          class="border-2 border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition-all"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-start gap-4">
+              <div class="bg-green-100 rounded-full p-3">
+                <svg
+                  class="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 mb-1">
+                  Professional Business Plan
+                </h3>
+                <p class="text-sm text-gray-600 mb-2">
+                  Monthly subscription payment
+                </p>
+                <div class="flex items-center gap-3 text-xs text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Oct 2, 2025
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                      />
+                    </svg>
+                    VISA •••• 4532
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-gray-900 text-lg mb-1">KES 3,499</p>
+              <span
+                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
+              >
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Successful
+              </span>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-between pt-3 border-t border-gray-100"
+          >
+            <p class="text-xs text-gray-500">Transaction ID: TXN-2025100201</p>
+            <button
+              class="text-teal-600 hover:text-teal-700 text-sm font-semibold flex items-center gap-1"
+            >
+              Download Receipt
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Transaction 3 -->
+        <div
+          class="border-2 border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition-all"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-start gap-4">
+              <div class="bg-green-100 rounded-full p-3">
+                <svg
+                  class="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 mb-1">
+                  Professional Business Plan
+                </h3>
+                <p class="text-sm text-gray-600 mb-2">
+                  Initial subscription payment
+                </p>
+                <div class="flex items-center gap-3 text-xs text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Sep 2, 2025
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                      />
+                    </svg>
+                    M-PESA
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-gray-900 text-lg mb-1">KES 3,499</p>
+              <span
+                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
+              >
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Successful
+              </span>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-between pt-3 border-t border-gray-100"
+          >
+            <p class="text-xs text-gray-500">Transaction ID: TXN-2025090201</p>
+            <button
+              class="text-teal-600 hover:text-teal-700 text-sm font-semibold flex items-center gap-1"
+            >
+              Download Receipt
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200"
+      >
+        <p class="text-sm text-gray-600">Showing 1 to 3 of 3 transactions</p>
+        <div class="flex items-center gap-2">
+          <button
+            class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <button
+            class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium"
+          >
+            1
+          </button>
+          <button
+            class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

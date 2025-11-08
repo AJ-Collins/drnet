@@ -1,0 +1,259 @@
+<div class="flex items-center justify-between mb-12">
+  <div>
+    <h3 class="text-3xl font-bold text-teal-900 tracking-tight">
+      My Subscriptions
+    </h3>
+    <p class="text-teal-700 mt-2 text-lg">
+      Manage your current plan and explore other packages
+    </p>
+  </div>
+</div>
+
+<!-- Current Subscription -->
+<div
+  class="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 mb-12 shadow-xl relative overflow-hidden"
+>
+  <div
+    class="absolute top-0 right-0 w-64 h-64 bg-teal-500 rounded-full opacity-20 -mr-32 -mt-32"
+  ></div>
+  <div
+    class="absolute bottom-0 left-0 w-48 h-48 bg-teal-800 rounded-full opacity-20 -ml-24 -mb-24"
+  ></div>
+
+  <div
+    class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+  >
+    <div class="flex-1">
+      <div
+        class="inline-block bg-white bg-opacity-20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3"
+      >
+        ACTIVE PLAN
+      </div>
+      <h4 class="text-3xl font-bold text-white mb-2">Standard Business</h4>
+      <div class="flex flex-wrap items-center gap-4 text-teal-100">
+        <div class="flex items-center gap-2">
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span class="font-medium">Expires: Dec 30, 2025</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+            />
+          </svg>
+          <span class="text-2xl font-bold text-white">Ksh 3,500</span>
+          <span class="text-teal-100">/ Month</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button
+        class="px-6 py-3 rounded-xl bg-white text-teal-700 font-semibold hover:bg-teal-50 transition-all transform hover:scale-105 shadow-lg"
+      >
+        Renew Plan
+      </button>
+      <button
+        class="px-6 py-3 rounded-xl border-2 border-white text-white font-semibold hover:bg-white hover:text-teal-700 transition-all transform hover:scale-105"
+      >
+        Upgrade Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Other Plans -->
+<div class="mb-6">
+  <h4 class="text-2xl font-bold text-gray-900 mb-2">Explore Other Plans</h4>
+  <p class="text-gray-600">Choose the perfect plan for your business needs</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+  <!-- Starter Plan -->
+  <div
+    class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-gray-100 relative group"
+  >
+    <div
+      class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-teal-500 rounded-t-2xl"
+    ></div>
+
+    <div class="mb-6">
+      <h5 class="text-2xl font-bold text-gray-900 mb-2">Starter</h5>
+      <div class="flex items-baseline gap-1">
+        <span class="text-4xl font-bold text-teal-700">Ksh 1,500</span>
+        <span class="text-gray-500 font-medium">/ Month</span>
+      </div>
+    </div>
+
+    <div class="mb-8 space-y-3">
+      <div class="flex items-start gap-3">
+        <svg
+          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <span class="text-gray-700">Basic visibility</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <svg
+          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <span class="text-gray-700">Limited features</span>
+      </div>
+    </div>
+
+    <button
+      class="w-full px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all transform group-hover:scale-105 shadow-md hover:shadow-lg"
+    >
+      Subscribe Now
+    </button>
+  </div>
+
+  <!-- Premium Plan -->
+  <div
+    class="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-teal-500 relative group scale-105"
+  >
+    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+      <span
+        class="bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg"
+      >
+        MOST POPULAR
+      </span>
+    </div>
+    <div
+      class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-t-2xl"
+    ></div>
+
+    <div class="mb-6 mt-2">
+      <h5 class="text-2xl font-bold text-gray-900 mb-2">Premium</h5>
+      <div class="flex items-baseline gap-1">
+        <span class="text-4xl font-bold text-teal-700">Ksh 6,500</span>
+        <span class="text-gray-500 font-medium">/ Month</span>
+      </div>
+    </div>
+
+    <div class="mb-8 space-y-3">
+      <div class="flex items-start gap-3">
+        <svg
+          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <span class="text-gray-700">More exposure</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <svg
+          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <span class="text-gray-700">Priority boost</span>
+      </div>
+    </div>
+
+    <button
+      class="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 text-white font-semibold hover:from-teal-700 hover:to-teal-800 transition-all transform group-hover:scale-105 shadow-lg hover:shadow-xl"
+    >
+      Subscribe Now
+    </button>
+  </div>
+
+  <!-- Enterprise Plan -->
+  <div
+    class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-gray-100 relative group"
+  >
+    <div
+      class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-600 to-teal-700 rounded-t-2xl"
+    ></div>
+
+    <div class="mb-6">
+      <h5 class="text-2xl font-bold text-gray-900 mb-2">Enterprise</h5>
+      <div class="flex items-baseline gap-1">
+        <span class="text-4xl font-bold text-teal-700">Ksh 12,000</span>
+        <span class="text-gray-500 font-medium">/ Month</span>
+      </div>
+    </div>
+
+    <div class="mb-8 space-y-3">
+      <div class="flex items-start gap-3">
+        <svg
+          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <span class="text-gray-700">Nationwide reach</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <svg
+          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <span class="text-gray-700">Advanced features</span>
+      </div>
+    </div>
+
+    <button
+      class="w-full px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all transform group-hover:scale-105 shadow-md hover:shadow-lg"
+    >
+      Subscribe Now
+    </button>
+  </div>
+</div>
