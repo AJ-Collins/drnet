@@ -5,38 +5,54 @@ const cors = require("cors");
 const session = require("express-session");
 const fs = require("fs");
 const ejs = require("ejs");
-
-// Bootstrap modules
-const runMigrations = require("./src/migrations/index");
-const createDefaultAdmin = require("./src/migrations/createDefaultAdmin");
-
-// Routes
-const bookingRoutes = require("./src/routes/bookings");
-const contactRoutes = require("./src/routes/contact");
-const adminRoutes = require("./src/routes/admin");
-const userRoutes = require("./src/routes/users");
-const renewals = require("./src/routes/renewals");
-const clientRoutes = require("./src/routes/client");
-const staffRoutes = require("./src/routes/staff");
-
+const apiSessionAuth = require("./src/middleware/apiSessionAuth");
 const app = express();
-
-// === Sessions ===
+const runMigrations = require("./src/migrations/index");
+const authRoutes = require("./src/routes/authRoutes");
+const admin = require("./src/routes/admin");
+const staff = require("./src/routes/staff");
+const client = require("./src/routes/client");
+const bookings = require("./src/routes/bookings");
+const payment = require("./src/routes/payment");
+const staffAssignment = require("./src/routes/staff");
+const schedules = require("./src/routes/schedules");
+const SupportTickets = require("./src/routes/supportTickets");
+const attendance = require("./src/routes/attendance");
+const packages = require("./src/routes/packages");
+const users = require("./src/routes/users");
+const subscription = require("./src/routes/subscription");
+const invoices = require("./src/routes/invoices");
+const receipts = require("./src/routes/receipts");
+const sales = require("./src/routes/sales");
+const expenses = require("./src/routes/expenses");
+const payslips = require("./src/routes/payslips");
+const profile = require("./src/routes/profile");
+const userProfile = require("./src/routes/userProfile");
+// Session Configuration
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "drnet-session-secret",
+    secret:
+      process.env.SESSION_SECRET || "drnet-session-secret-change-in-production",
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }, // 1 day
+    cookie: {
+      httpOnly: true,
+      secure: false, // false for development (http), set to true for production (https)
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+    },
+    name: "drnet.sid",
   })
 );
 
-// === Middleware ===
+// Middleware
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// === EJS Setup ===
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// VIEW ENGINE SETUP
 app.set("view engine", "ejs");
 app.set("views", [
   path.join(__dirname, "frontend/admin"),
@@ -44,12 +60,14 @@ app.set("views", [
   path.join(__dirname, "frontend/client"),
 ]);
 
-// === Static Assets ===
+// STATIC ASSETS
+app.use("/static", express.static(path.join(__dirname, "frontend/assets")));
 app.use(
   "/admin/static",
   express.static(path.join(__dirname, "frontend/assets"))
-); // css, js, images
-// Keep old paths for backward compatibility (optional)
+);
+
+// Backward compatibility paths
 app.use(
   "/admin/js",
   express.static(path.join(__dirname, "frontend/assets/js"))
@@ -67,59 +85,127 @@ app.use(
   express.static(path.join(__dirname, "frontend/assets/videos"))
 );
 
-// === Auth Middleware ===
+// AUTHENTICATION MIDDLEWARE
+
 function requireAdminAuth(req, res, next) {
-  if (req.session && req.session.admin) return next();
-  res.redirect("/admin/login");
+  console.log("Admin Auth Check:", req.session?.user);
+  if (req.session && req.session.user && req.session.user.role_id === 1) {
+    return next();
+  }
+
+  if (req.path.startsWith("/api/")) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized",
+      redirectUrl: "/login",
+    });
+  }
+
+  return res.redirect("/login");
 }
 
-function requireClientAuth(req, res, next) {
-  if (req.session && req.session.client) return next();
-  res.redirect("/client/login");
+function requireSupervisorAuth(req, res, next) {
+  console.log("Supervisor Auth Check:", req.session?.user);
+  if (req.session && req.session.user && req.session.user.role_id === 2) {
+    console.log("✅ Supervisor auth passed");
+    return next();
+  }
+
+  console.log("Supervisor auth failed");
+  if (req.path.startsWith("/api/")) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized",
+      redirectUrl: "/login",
+    });
+  }
+
+  return res.redirect("/login");
 }
 
 function requireStaffAuth(req, res, next) {
-  if (req.session && req.session.staff) return next();
-  res.redirect("/staff/login");
-}
-app.get("/admin/login", (req, res) => {
-  res.render("layout", {
-    pageTitle: "Admin Login",
-    pageSubtitle: "Sign in to continue",
-    currentPage: "login",
-  });
-});
-
-app.get("/staff/login", (req, res) => {
-  res.render("layout", {
-    pageTitle: "Staff Login",
-    pageSubtitle: "Sign in to continue",
-    currentPage: "login",
-  });
-});
-
-app.get("/client/login", (req, res) => {
-  res.render("layout", {
-    pageTitle: "Client Login",
-    pageSubtitle: "Sing in to continue",
-    currentPage: "Login",
-  });
-});
-
-app.get("/admin/logout", (req, res) => {
-  if (req.session) {
-    req.session.destroy(() => {
-      res.clearCookie("connect.sid");
-      res.redirect("/admin/login");
-    });
-  } else {
-    res.redirect("/admin/login");
+  console.log("Staff Auth Check:", req.session?.user);
+  if (req.session && req.session.user && req.session.user.role_id === 3) {
+    return next();
   }
-});
-// === ADMIN ROUTES (EJS) ===
+
+  if (req.path.startsWith("/api/")) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized",
+      redirectUrl: "/login",
+    });
+  }
+
+  return res.redirect("/login");
+}
+
+function requireClientAuth(req, res, next) {
+  console.log("Client Auth Check:", req.session?.user);
+  if (req.session && req.session.user && req.session.user.role_id === 4) {
+    return next();
+  }
+
+  if (req.path.startsWith("/api/")) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized",
+      redirectUrl: "/login",
+    });
+  }
+
+  return res.redirect("/login");
+}
+
+// API ROUTES
+app.use("/api", authRoutes);
+app.use("/api", apiSessionAuth, admin);
+app.use("/api", apiSessionAuth, attendance);
+app.use("/api", apiSessionAuth, packages);
+app.use("/api", apiSessionAuth, users);
+app.use("/api", apiSessionAuth, staff);
+app.use("/api", apiSessionAuth, client);
+app.use("/api", apiSessionAuth, payment);
+app.use("/api", apiSessionAuth, staffAssignment);
+app.use("/api", apiSessionAuth, schedules);
+app.use("/api", apiSessionAuth, SupportTickets);
+app.use("/api", apiSessionAuth, subscription);
+app.use("/api", apiSessionAuth, invoices);
+app.use("/api", apiSessionAuth, receipts);
+app.use("/api", apiSessionAuth, sales);
+app.use("/api", apiSessionAuth, expenses);
+app.use("/api", apiSessionAuth, payslips);
+app.use("/api", apiSessionAuth, profile);
+app.use("/api", apiSessionAuth, userProfile);
+app.use("/api/client", bookings);
+
+// Create uploads folder
+if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
+
+// FRONTEND PUBLIC ROUTES
+
+app.get("/", (req, res) =>
+  res.sendFile(path.join(__dirname, "frontend/index.html"))
+);
+
+app.get("/login", (req, res) =>
+  res.sendFile(path.join(__dirname, "frontend/login.html"))
+);
+
+app.get("/register", (req, res) =>
+  res.sendFile(path.join(__dirname, "frontend/register.html"))
+);
+
+app.get("/forgot_password", (req, res) =>
+  res.sendFile(path.join(__dirname, "frontend/forgot_password.html"))
+);
+
+// ADMIN ROUTES
+
 const adminPages = [
   "dashboard",
   "staff-attendance",
+  "my-packages",
   "manage-users",
   "service-management",
   "support-tickets",
@@ -140,9 +226,8 @@ const adminPages = [
   "equipments",
 ];
 
-app.get("/admin/:page", (req, res) => {
+app.get("/admin/:page", requireAdminAuth, (req, res) => {
   let page = req.params.page;
-
   if (!adminPages.includes(page)) {
     return res.redirect("/admin/dashboard");
   }
@@ -159,12 +244,12 @@ app.get("/admin/:page", (req, res) => {
   });
 });
 
-// Fallback: /admin → dashboard
 app.get("/admin", requireAdminAuth, (req, res) => {
   res.redirect("/admin/dashboard");
 });
 
-// Staff routes
+// STAFF ROUTES
+
 const staffPages = [
   "dashboard",
   "profile",
@@ -174,9 +259,8 @@ const staffPages = [
   "work-schedule",
 ];
 
-app.get("/staff/:page", (req, res) => {
+app.get("/staff/:page", requireStaffAuth, (req, res) => {
   let page = req.params.page;
-
   if (!staffPages.includes(page)) {
     return res.redirect("/staff/dashboard");
   }
@@ -193,12 +277,12 @@ app.get("/staff/:page", (req, res) => {
   });
 });
 
-// Fallback: /staff → dashboard
-app.get("/staff", (req, res) => {
+app.get("/staff", requireStaffAuth, (req, res) => {
   res.redirect("/staff/dashboard");
 });
 
-// Client routes
+// CLIENT ROUTES
+
 const clientPages = [
   "dashboard",
   "profile",
@@ -207,9 +291,8 @@ const clientPages = [
   "payment-billing",
 ];
 
-app.get("/client/:page", (req, res) => {
+app.get("/client/:page", requireClientAuth, (req, res) => {
   let page = req.params.page;
-
   if (!clientPages.includes(page)) {
     return res.redirect("/client/dashboard");
   }
@@ -226,52 +309,29 @@ app.get("/client/:page", (req, res) => {
   });
 });
 
-// Fallback: /staff → dashboard
-app.get("/client", (req, res) => {
+app.get("/client", requireClientAuth, (req, res) => {
   res.redirect("/client/dashboard");
 });
 
-// === API Routes ===
-app.use("/api/bookings", bookingRoutes);
-app.use("/api/contact", contactRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/renewals", renewals);
-app.use("/api/client", clientRoutes);
-app.use("/api/staff", staffRoutes);
+// ERROR HANDLING
 
-// === Frontend HTML Routes ===
-app.get("/", (req, res) =>
-  res.sendFile(path.join(__dirname, "frontend/index.html"))
-);
-app.get("/login", (req, res) =>
-  res.sendFile(path.join(__dirname, "frontend/login.html"))
-);
-app.get("/register", (req, res) =>
-  res.sendFile(path.join(__dirname, "frontend/register.html"))
-);
-app.get("/forgot_password", (req, res) =>
-  res.sendFile(path.join(__dirname, "frontend/forgot_password.html"))
-);
-
-// === Error Handling ===
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
   process.exit(1);
 });
+
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection:", err);
   process.exit(1);
 });
 
-// === Server Bootstrap ===
+// SERVER STARTUP
+
 async function startServer() {
   try {
     console.log("Starting Dr.Net Server...");
     await runMigrations();
     console.log("Migrations complete.");
-    await createDefaultAdmin();
-    console.log("Default admin created.");
 
     const PORT = process.env.PORT || 5000;
     const server = app.listen(PORT, () => {

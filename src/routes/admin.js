@@ -1,374 +1,455 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const db = require('../config/db');
-const { generateToken, verifyToken } = require('../utils/jwt');
+const Staff = require("../models/Staff");
+const Booking = require("../models/Booking");
+const StaffClientAssignment = require("../models/StaffClientAssignment");
+const Item = require("../models/Item");
+const User = require("../models/User");
+const SupportTicket = require("../models/SupportTicket");
+const Payment = require("../models/Payment");
+const Renewals = require("../models/Renewal");
+const StaffSalary = require("../models/StaffSalary");
 
-const {
-  findAdminByUsername,
-  createAdmin,
-  deleteAllAdmins
-} = require('../models/Admin');
-
-const {
-  getAllClients,
-  getDeletedClients,
-  softDeleteClient,
-  recoverClient,
-  permanentDeleteClient
-} = require('../models/Client');
-
-// Temporarily commenting out Staff imports to debug
-// const {
-//   createStaff,
-//   findStaffByEmployeeId,
-//   findStaffByEmail,
-//   getAllStaff,
-//   deactivateStaff,
-//   activateStaff
-// } = require('../models/Staff');
-
-// ✅ CTIO (SysAdmin) Login
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-
+router.get("/dashboard/stats", async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM admins WHERE username = ?', [username]);
+    // USERS
+    const allUsers = await User.findAll();
+    const activeUsers = allUsers.filter((u) => u.is_active).length;
+    const expiredUsers = allUsers.filter((u) => !u.is_active).length;
 
-    if (rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid username or password' });
-    }
+    // GROWTH placeholders (you can calculate by comparing previous month)
+    const activeGrowth = 12;
+    const expiredGrowth = 5;
 
-    const admin = rows[0];
-    const match = await bcrypt.compare(password, admin.password);
+    // BOOKINGS count
+    const allBookings = await Booking.findAll();
+    const bookings = allBookings.length;
 
-    if (!match) {
-      return res.status(401).json({ error: 'Invalid username or password' });
-    }
+    // SUPPORT INQUIRIES
+    const allTickets = await SupportTicket.findAll();
+    const inquiries = allTickets.length;
 
-    // ✅ Set session data
-    req.session.admin = {
-      id: admin.id,
-      username: admin.username
-    };
+    // REVENUE
+    // Sum of all renewals + item sales
+    let revenueFromRenewals = 0;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
 
-    res.json({ success: true, message: "Login successful" }); // optional token can also be sent
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+    const monthlyRenewals = await Renewals.getMonthlyStats(year, month);
+    revenueFromRenewals = monthlyRenewals.revenue || 0;
 
-// CTIO (SysAdmin) Notifications Endpoint
-router.post('/notifications', async (req, res) => {
-  try {
-    const { message, type, from, timestamp } = req.body;
-    
-    // For now, just log the notification - can be stored in database later
-    console.log(`📢 CTIO NOTIFICATION [${type}] from ${from}: ${message} at ${timestamp}`);
-    
-    // Here you could store in database, send email, etc.
-    // await db.execute('INSERT INTO notifications (message, type, from_user, timestamp) VALUES (?, ?, ?, ?)', 
-    //   [message, type, from, timestamp]);
-    
-    res.json({ success: true, message: 'Notification sent to CTIO (SysAdmin)' });
-  } catch (error) {
-    console.error('Error processing notification:', error);
-    res.status(500).json({ error: 'Failed to send notification' });
-  }
-});
-
-router.get('/logout', (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      console.error('❌ Error destroying session:', err);
-      return res.status(500).json({ message: 'Logout failed' });
-    }
-
-    res.clearCookie('connect.sid'); // Clear session cookie
-    res.status(200).json({ message: 'Logged out successfully' });
-  });
-});
-
-// ✅ Create Default CTIO (SysAdmin)
-router.get('/create-default', async (req, res) => {
-  try {
-    const existing = await findAdminByUsername('drnet');
-    if (existing) return res.status(400).json({ message: 'CTIO (SysAdmin) already exists' });
-
-    const hashed = await bcrypt.hash('Janam@2030', 10);
-    await createAdmin('drnet', hashed);
-
-    // console.log('✅ Default admin created (username: drnet)');
-    res.json({ message: '✅ New CTIO (SysAdmin) created' });
-  } catch (err) {
-    console.error('❌ Failed to create CTIO (SysAdmin):', err.message);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-router.put('/profile', async (req, res) => {
-  const { name, title, email, phone, image } = req.body;
-
-  if (!name || !email || !phone ) {
-    return res.status(400).json({ message: 'Missing required fields' });
-  }
-
-  try {
-    await db.execute(`
-      UPDATE admins SET
-        name = ?, title = ?, email = ?, phone = ?, image = ?
-      WHERE username = ?
-    `, [name, title, email, phone, image || null, 'drnet' ]);
-
-    res.status(200).json({ message: '✅ CTIO (SysAdmin) profile updated' });
-  } catch (err) {
-    console.error('❌ Error updating profile:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// ✅ Update Admin Profile Picture Only
-router.put('/profile/image', async (req, res) => {
-  const { image } = req.body;
-  try {
-    await db.execute(`UPDATE admins SET image = ? WHERE username = ?`, [image, 'drnet']);
-    res.status(200).json({ message: '✅ Profile picture updated' });
-  } catch (err) {
-    console.error('❌ Error updating profile image:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// ✅ Reset Admin Password
-router.post('/reset-password', async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
-
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json({ message: 'Missing password fields' });
-  }
-
-  try {
-    const [rows] = await db.execute("SELECT * FROM admins WHERE username = ?", ['drnet']);
-    const admin = rows[0];
-
-    if (!admin) return res.status(404).json({ message: 'Admin not found' });
-
-    const isMatch = await bcrypt.compare(currentPassword, admin.password);
-    if (!isMatch) return res.status(401).json({ message: 'Current password is incorrect' });
-
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await db.execute("UPDATE admins SET password = ? WHERE username = ?", [hashed, 'drnet']);
-
-    res.status(200).json({ message: '✅ Password updated successfully' });
-  } catch (err) {
-    console.error('❌ Password reset error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-router.get('/profile', async (req, res) => {
-  const adminId = req.session?.admin?.id;
-
-  if (!adminId) {
-    return res.status(401).json({ error: 'Unauthorized: Admin not authenticated' });
-  }
-
-  try {
-    const [rows] = await db.query(
-      'SELECT name, title, image FROM admins WHERE id = ?',
-      [adminId]
+    // Sum of all item sales (assuming price * quantity sold)
+    const allItems = await Item.findAll();
+    const accessoryRevenue = allItems.reduce(
+      (sum, item) => sum + (item.price || 0),
+      0
     );
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Admin not found' });
-    }
+    const monthlyIncome = revenueFromRenewals + accessoryRevenue;
 
-    res.json(rows[0]);
+    // Placeholder for income growth
+    const incomeGrowth = 8;
+
+    res.json({
+      activeUsers,
+      expiredUsers,
+      activeGrowth,
+      expiredGrowth,
+      monthlyIncome,
+      incomeGrowth,
+      accessoryRevenue,
+      bookings,
+      inquiries,
+    });
   } catch (err) {
-    console.error('Profile fetch error:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// Client Management Routes
-
-// Get all active clients
-router.get('/clients', async (req, res) => {
+router.get("/dashboard/staff", async (req, res) => {
   try {
-    const clients = await getAllClients();
-    res.json(clients);
+    const staff = await Staff.findAll(); // returns normalized staff
+    res.json(staff);
   } catch (err) {
-    console.error('Error fetching clients:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
-
-// Get deleted clients
-router.get('/clients/deleted', async (req, res) => {
+router.get("/dashboard/recent-activity", async (req, res) => {
   try {
-    const deletedClients = await getDeletedClients();
-    res.json(deletedClients);
-  } catch (err) {
-    console.error('Error fetching deleted clients:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+    const newUsers = await User.findAll(); // filter last X period
+    const tickets = await SupportTicket.findAll(); // filter last X period
 
-// Soft delete client
-router.delete('/clients/:id', async (req, res) => {
-  const { id } = req.params;
-  
-  try {
-    const success = await softDeleteClient(id);
-    if (success) {
-      res.json({ success: true, message: 'Client moved to deleted users' });
-    } else {
-      res.status(404).json({ error: 'Client not found' });
-    }
-  } catch (err) {
-    console.error('Error deleting client:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+    const recentActivity = [];
 
-// Recover deleted client
-router.post('/clients/:id/recover', async (req, res) => {
-  const { id } = req.params;
-  
-  try {
-    const success = await recoverClient(id);
-    if (success) {
-      res.json({ success: true, message: 'Client recovered successfully' });
-    } else {
-      res.status(404).json({ error: 'Client not found' });
-    }
-  } catch (err) {
-    console.error('Error recovering client:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Permanently delete client
-router.delete('/clients/:id/permanent', async (req, res) => {
-  const { id } = req.params;
-  
-  try {
-    const success = await permanentDeleteClient(id);
-    if (success) {
-      res.json({ success: true, message: 'Client permanently deleted' });
-    } else {
-      res.status(404).json({ error: 'Client not found' });
-    }
-  } catch (err) {
-    console.error('Error permanently deleting client:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// ✅ Get All Staff Members (Admin only) - TEMPORARILY DISABLED
-// router.get('/staff', async (req, res) => {
-//   try {
-//     const staff = await getAllStaff();
-//     res.json(staff);
-//   } catch (err) {
-//     console.error('Error fetching staff:', err);
-//     res.status(500).json({ error: 'Server error occurred while fetching staff members' });
-//   }
-// });
-
-/*
-// ✅ Create Staff Member (Admin only) - TEMPORARILY DISABLED
-router.post('/staff', async (req, res) => {
-  try {
-    const {
-      name, email, phone, employee_id, position, department,
-      salary, password, isActive, hire_date, contractDuration
-    } = req.body;
-
-    // Validate required fields
-    if (!name || !email || !phone || !employee_id || !position || !department || !salary || !password || !hire_date) {
-      return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    // Check if employee ID already exists
-    const existingStaffById = await findStaffByEmployeeId(employee_id);
-    if (existingStaffById) {
-      return res.status(400).json({ error: 'Employee ID already exists' });
-    }
-
-    // Check if email already exists
-    const existingStaffByEmail = await findStaffByEmail(email);
-    if (existingStaffByEmail) {
-      return res.status(400).json({ error: 'Email already exists' });
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Calculate contract end date if provided
-    let contractEndDate = null;
-    if (contractDuration) {
-      const hireDate = new Date(hire_date);
-      contractEndDate = new Date(hireDate);
-      contractEndDate.setMonth(contractEndDate.getMonth() + parseInt(contractDuration));
-    }
-
-    // Create staff member
-    const staffData = {
-      name,
-      email,
-      phone,
-      employee_id,
-      position,
-      department,
-      salary: parseFloat(salary),
-      password: hashedPassword,
-      isActive: isActive !== false, // Default to true
-      hire_date,
-      contract_end_date: contractEndDate
-    };
-
-    const staffId = await createStaff(staffData);
-
-    res.status(201).json({
-      success: true,
-      message: 'Staff member created successfully',
-      staffId: staffId
+    newUsers.slice(-5).forEach((u) => {
+      recentActivity.push({
+        id: u.id,
+        icon: "fa-user-plus",
+        iconBg: "bg-green-100",
+        iconColor: "text-green-600",
+        title: "New user registration",
+        description: `${u.first_name} ${u.second_name} registered as a new client`,
+        timeAgo: "2 min ago", // you can calculate dynamically
+      });
     });
 
+    tickets.slice(-5).forEach((t) => {
+      if (t.status === "resolved") {
+        recentActivity.push({
+          id: t.id,
+          icon: "fa-check",
+          iconBg: "bg-blue-100",
+          iconColor: "text-blue-600",
+          title: "Ticket resolved",
+          description: t.subject,
+          timeAgo: "5 min ago",
+        });
+      }
+    });
+
+    res.json(recentActivity);
   } catch (err) {
-    console.error('Error creating staff:', err);
-    res.status(500).json({ error: 'Server error occurred while creating staff member' });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// ✅ Toggle Staff Status (Admin only)
-router.put('/staff/:id/status', async (req, res) => {
+router.get("/dashboard/revenue-trend", async (req, res) => {
   try {
-    const { id } = req.params;
-    const { isActive } = req.body;
+    const period = req.query.period || "monthly";
 
-    let success;
-    if (isActive) {
-      success = await activateStaff(id);
-    } else {
-      success = await deactivateStaff(id);
+    if (period === "monthly") {
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      const data = [];
+      for (let i = 0; i < 12; i++) {
+        const amount = await Payment.sumMonth(i + 1);
+        data.push({ month: months[i], amount });
+      }
+      return res.json(data);
     }
 
-    if (success) {
-      res.json({ 
-        success: true, 
-        message: `Staff ${isActive ? 'activated' : 'deactivated'} successfully` 
-      });
-    } else {
-      res.status(404).json({ error: 'Staff member not found' });
+    if (period === "quarterly") {
+      const data = [];
+      for (let q = 1; q <= 4; q++) {
+        const amount = await Payment.sumQuarter(q);
+        data.push({ quarter: `Q${q}`, amount });
+      }
+      return res.json(data);
     }
+
+    res.json([]);
   } catch (err) {
-    console.error('Error toggling staff status:', err);
-    res.status(500).json({ error: 'Server error occurred while updating staff status' });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
-*/
+
+// Staff Attendance Routes
+router.get("/staff", async (req, res) => {
+  try {
+    const staff = await Staff.findAllWithSalary();
+    res.json(staff);
+  } catch (err) {
+    console.error("Error fetching staff:", err);
+    res.status(500).json({ error: "Failed to fetch staff" });
+  }
+});
+
+// Create a new staff member
+router.post("/staff", async (req, res) => {
+  try {
+    const data = req.body;
+
+    if (!data.first_name || !data.email) {
+      return res
+        .status(400)
+        .json({ error: "First name and email are required" });
+    }
+
+    const result = await Staff.create(data);
+    const staffId = result.insertId;
+
+    if (data.basic_salary) {
+      await StaffSalary.create({
+        staff_id: staffId,
+        basic_salary: data.basic_salary,
+        effective_from: data.effective_from || new Date(), // default now
+        effective_to: data.effective_to || null,
+      });
+    }
+
+    res.status(201).json({
+      message: "Staff member created successfully",
+      staffId,
+    });
+  } catch (err) {
+    console.error("Error creating staff:", err);
+    res.status(500).json({ error: "Failed to create staff" });
+  }
+});
+
+// Update a staff record
+router.put("/staff/:id", async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+
+  try {
+    // Optional: Check if staff exists
+    const existing = await Staff.findById(id);
+    if (!existing) {
+      return res.status(404).json({ error: "Staff member not found" });
+    }
+
+    // Perform update using model
+    const result = await Staff.update(id, updateData);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ error: "No changes made" });
+    }
+
+    // Fetch updated record (normalized from model)
+    const updatedStaff = await Staff.findById(id);
+
+    res.json({
+      message: "Staff updated successfully",
+      data: updatedStaff,
+    });
+  } catch (err) {
+    console.error("Error updating staff:", err);
+    res.status(500).json({ error: "Failed to update staff" });
+  }
+});
+
+//Booking Routes
+//Get all bookings
+router.get("/bookings", async (req, res) => {
+  try {
+    const bookings = await Booking.findAll();
+    res.json(bookings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch bookings" });
+  }
+});
+
+// GET a booking by ID
+router.get("/bookings/:id", async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    res.json(booking);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch booking" });
+  }
+});
+
+// CREATE booking
+router.post("/bookings/", async (req, res) => {
+  try {
+    const result = await Booking.create(req.body);
+    res.status(201).json({ message: "Booking created", id: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create booking" });
+  }
+});
+
+// UPDATE booking
+router.put("/bookings/:id", async (req, res) => {
+  try {
+    const result = await Booking.update(req.params.id, req.body);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Booking not found" });
+    res.json({ message: "Booking updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update booking" });
+  }
+});
+
+// DELETE booking
+router.delete("/bookings/:id", async (req, res) => {
+  try {
+    const result = await Booking.delete(req.params.id);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Booking not found" });
+    res.json({ message: "Booking deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete booking" });
+  }
+});
+
+// Inventory Routes
+router.get("/inventory", async (req, res) => {
+  try {
+    const items = await Item.findAll();
+    res.json(items);
+  } catch (err) {
+    console.error("Error fetching items:", err);
+    res.status(500).json({ error: "Failed to fetch items" });
+  }
+});
+
+// GET single item
+router.get("/inventory/:id", async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: "Item not found" });
+    res.json(item);
+  } catch (err) {
+    console.error("Error fetching item:", err);
+    res.status(500).json({ error: "Failed to fetch item" });
+  }
+});
+
+// CREATE item
+router.post("/inventory", async (req, res) => {
+  try {
+    const data = {
+      ...req.body,
+      added_by: req.session.user?.id || null,
+    };
+
+    const result = await Item.create(data);
+    const newItem = await Item.findById(result.insertId);
+    res.status(201).json(newItem);
+  } catch (err) {
+    console.error("Error creating item:", err);
+    res.status(500).json({ error: "Failed to create item" });
+  }
+});
+
+// UPDATE item
+router.put("/inventory/:id", async (req, res) => {
+  try {
+    const existingItem = await Item.findById(req.params.id);
+    if (!existingItem) return res.status(404).json({ error: "Item not found" });
+
+    // Optional validation
+    if (
+      req.body.available &&
+      req.body.available > (req.body.quantity || existingItem.quantity)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Available quantity cannot exceed total quantity" });
+    }
+
+    await Item.update(req.params.id, req.body);
+    const updatedItem = await Item.findById(req.params.id);
+    res.json(updatedItem);
+  } catch (err) {
+    console.error("Error updating item:", err);
+    res.status(500).json({ error: "Failed to update item" });
+  }
+});
+
+// DELETE item
+router.delete("/inventory/:id", async (req, res) => {
+  try {
+    const existingItem = await Item.findById(req.params.id);
+    if (!existingItem) return res.status(404).json({ error: "Item not found" });
+
+    await Item.delete(req.params.id);
+    res.json({ success: true, message: "Item deleted" });
+  } catch (err) {
+    console.error("Error deleting item:", err);
+    res.status(500).json({ error: "Failed to delete item" });
+  }
+});
+
+// Staff Client Assignments Routes
+router.get("/assignments", async (req, res) => {
+  try {
+    const data = await StaffClientAssignment.findAll();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch assignments" });
+  }
+});
+
+// GET by id
+router.get("/assignments/:id", async (req, res) => {
+  try {
+    const data = await StaffClientAssignment.findById(req.params.id);
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch assignment" });
+  }
+});
+
+// POST create
+router.post("/assignments/", async (req, res) => {
+  try {
+    const result = await StaffClientAssignment.create(req.body);
+    res.json({ id: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create assignment" });
+  }
+});
+
+// PUT update
+router.put("/assignments/:id", async (req, res) => {
+  try {
+    await StaffClientAssignment.update(req.params.id, req.body);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update assignment" });
+  }
+});
+
+// DELETE
+router.delete("/assignments/:id", async (req, res) => {
+  try {
+    await StaffClientAssignment.delete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete assignment" });
+  }
+});
+
+router.get("/technicians", async (req, res) => {
+  try {
+    const techs = await Staff.findAll();
+    res.json(techs);
+  } catch (err) {
+    console.error("Error fetching staff:", err);
+    res.status(500).json({ error: "Failed to fetch staff" });
+  }
+});
+
+router.get("/supervisors", async (req, res) => {
+  try {
+    // const sups = await Staff.findByRole(2);
+    const sups = await Staff.findAll();
+    res.json(sups);
+  } catch (err) {
+    console.error("Error fetching supervisors:", err);
+    res.status(500).json({ error: "Failed to fetch supervisors" });
+  }
+});
 
 module.exports = router;

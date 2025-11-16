@@ -1,21 +1,28 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
 async function createRenewalsTable() {
-    await db.query(`
-        CREATE TABLE IF NOT EXISTS renewals (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT,
-        user_name VARCHAR(100),
-        amount DECIMAL(10,2),
-        renewal_date DATE,
-        expiry_date DATE,
-        month VARCHAR(20),
-        year INT,
-        is_deleted BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `);
-    console.log('Renewals table created');
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS renewals (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      subscription_id INT NOT NULL,
+      user_id INT NOT NULL,
+      package_id INT NOT NULL,
+      old_package_id INT,
+      amount DECIMAL(10,2) NOT NULL,
+      old_amount DECIMAL(10,2),
+      renewal_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      old_expiry_date DATE,
+      new_expiry_date DATE,
+      is_deleted BOOLEAN DEFAULT FALSE,
+
+      FOREIGN KEY (subscription_id) REFERENCES user_subscriptions(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
+      FOREIGN KEY (old_package_id) REFERENCES packages(id) ON DELETE SET NULL
+    );
+  `);
+
+  console.log("Renewals table created");
 }
 
 module.exports = createRenewalsTable;

@@ -1,139 +1,81 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { createBooking, getAllBookings, deleteBooking, updateBooking, updateBookingStatus } = require('../models/Booking');
+const Booking = require("../models/Booking");
 
-router.get('/test', (req, res) => res.send('✅ Booking route working'));
-
-// ✅ Create Booking
-router.post('/', async (req, res) => {
+// ✅ Create new booking
+router.post("/bookings", async (req, res) => {
   try {
-    const requiredFields = [
-      'name',
-      'phone',
-      'email',
-      'location',
-      'exact_location',
-      'package',
-      'extra_notes',
-      'installation_date',
-      'status'
-    ];
+    const booking = req.body;
 
-    // Assign null to any missing fields
-    requiredFields.forEach(field => {
-      if (req.body[field] === undefined || req.body[field] === '') {
-        req.body[field] = null;
-      }
-    });
-
-    // Optional: if installation_date exists and is not null, format it
-    if (req.body.installation_date) {
-      const dateOnly = new Date(req.body.installation_date).toISOString().split('T')[0];
-      req.body.installation_date = dateOnly;
+    // Optional: Validate required fields
+    if (
+      !booking.name ||
+      !booking.phone ||
+      !booking.email ||
+      !booking.location
+    ) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    await createBooking(req.body);
-
-    res.status(201).json({ message: '✅ Booking saved' });
+    const result = await Booking.create(booking);
+    res.status(201).json({
+      message: "Booking created successfully",
+      booking_id: result.insertId,
+    });
   } catch (err) {
-    console.error("❌ Error saving booking:", err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error creating booking:", err);
+    res.status(500).json({ error: "Failed to create booking" });
   }
 });
 
-
-// ✅ Get All Bookings
-router.get('/', async (req, res) => {
+// ✅ Get all bookings
+router.get("/bookings", async (req, res) => {
   try {
-    const bookings = await getAllBookings();
+    const bookings = await Booking.findAll();
     res.json(bookings);
   } catch (err) {
-    console.error("❌ Error fetching bookings:", err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching bookings:", err);
+    res.status(500).json({ error: "Failed to fetch bookings" });
   }
 });
 
-router.delete('/:id', async (req, res) => {
+// ✅ Get single booking
+router.get("/bookings/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    await deleteBooking(id);
-    res.json({ message: '✅ Booking deleted' });
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    res.json(booking);
   } catch (err) {
-    console.error('❌ Error deleting booking:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching booking:", err);
+    res.status(500).json({ error: "Failed to fetch booking" });
   }
 });
 
-router.put('/:id', async (req, res) => {
+// ✅ Update booking
+router.put("/bookings/:id", async (req, res) => {
   try {
-    const { id } = req.params;
+    const result = await Booking.update(req.params.id, req.body);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Booking not found" });
 
-    const {
-      name,
-      email,
-      phone,
-      location,
-      exact_location,
-      package: pkg,
-      status,
-      installation_date,
-      extra_notes
-    } = req.body;
-
-    // Check for missing fields
-    const missingFields = [];
-
-    if (!name?.trim()) missingFields.push('name');
-    if (!email?.trim()) missingFields.push('email');
-    if (!phone?.trim()) missingFields.push('phone');
-    if (!location?.trim()) missingFields.push('location');
-    if (!exact_location?.trim()) missingFields.push('exact_location');
-    if (!pkg?.trim()) missingFields.push('package');
-    if (!status?.trim()) missingFields.push('status');
-    if (!installation_date?.trim()) missingFields.push('installation_date');
-    if (!extra_notes?.trim()) missingFields.push('extra_notes');
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        message: `❌ Missing required fields: ${missingFields.join(', ')}`
-      });
-    }
-
-    await updateBooking(id, {
-      name,
-      email,
-      phone,
-      location,
-      exact_location,
-      package: pkg,
-      status,
-      installation_date,
-      extra_notes
-    });
-
-    res.json({ message: '✅ Booking updated' });
-
+    res.json({ message: "Booking updated successfully" });
   } catch (err) {
-    console.error('❌ Error updating booking:', err);
-    res.status(500).json({ message: 'Server error during update' });
+    console.error("Error updating booking:", err);
+    res.status(500).json({ error: "Failed to update booking" });
   }
 });
 
-
-router.put('/status/:id', async (req, res) => {
+// ✅ Delete booking
+router.delete("/bookings/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    const result = await Booking.delete(req.params.id);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Booking not found" });
 
-    if (!status) {
-      return res.status(400).json({ message: 'Missing status value' });
-    }
-
-    await updateBookingStatus(id, status);
-    res.status(200).json({ message: '✅ Booking status updated' });
+    res.json({ message: "Booking deleted successfully" });
   } catch (err) {
-    console.error('❌ Error updating booking status:', err);
-    res.status(500).json({ message: 'Server error while updating status' });
+    console.error("Error deleting booking:", err);
+    res.status(500).json({ error: "Failed to delete booking" });
   }
 });
 

@@ -17,7 +17,6 @@
         ← Back to Home
       </a>
     </div>
-
     <form
       id="loginForm"
       autocomplete="off"
@@ -26,22 +25,22 @@
       <div class="text-center mb-6">
         <div class="w-30 h-20 mx-auto mb-4">
           <img
-            src="assets/images/logo_image_1.jpg"
+            src="static/images/logo_image_1.jpg"
             alt="Dr.Net Logo"
             class="w-full h-full object-contain rounded-full"
           />
         </div>
-
         <h2 class="text-3xl font-bold text-teal-700">Login</h2>
-        <p class="text-gray-600 text-base mt-3">Welcome to Dr.Net Technology Labs</p>
+        <p class="text-gray-600 text-base mt-3">
+          Welcome to Dr.Net Technology Labs
+        </p>
       </div>
-
       <div class="mb-4">
         <label
           for="identifier"
           class="block text-sm font-semibold text-gray-700 mb-1"
         >
-          Username / Email / Phone / ID
+          Email / Phone / ID
         </label>
         <input
           type="text"
@@ -51,7 +50,6 @@
           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
         />
       </div>
-
       <div class="mb-4">
         <label
           for="password"
@@ -67,7 +65,6 @@
           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
         />
       </div>
-
       <div class="mb-4 flex items-center justify-between">
         <label class="flex items-center">
           <input type="checkbox" id="remember" class="mr-2" />
@@ -75,23 +72,26 @@
         </label>
         <a
           href="/forgot_password"
-          onclick="forgotPassword()"
           class="text-sm text-teal-600 hover:text-teal-800"
           >Forgot Password?</a
         >
       </div>
-
+      <p
+        id="success"
+        class="text-green-600 text-sm mt-4 text-center hidden font-medium"
+      >
+        Login successful! Redirecting...
+      </p>
       <button
         type="submit"
+        id="loginBtn"
         class="w-full bg-teal-600 text-white py-2 rounded-lg font-bold hover:bg-teal-700 transition duration-200"
       >
         Login
       </button>
-
       <p id="error" class="text-red-500 text-sm mt-4 text-center hidden">
         Invalid credentials. Please try again.
       </p>
-
       <div class="mt-4 text-center">
         <p class="text-sm text-gray-600">
           Don't have an account?
@@ -103,7 +103,6 @@
           </a>
         </p>
       </div>
-
       <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
           Need help?
@@ -116,54 +115,80 @@
         </p>
       </div>
     </form>
-
-    <script src="assets/js/config.js"></script>
-    <!-- <script>
+    <script>
       document
         .getElementById("loginForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
-
           const identifier = document.getElementById("identifier").value.trim();
           const password = document.getElementById("password").value;
+          const loginBtn = document.getElementById("loginBtn");
+          const errorEl = document.getElementById("error");
+          const successEl = document.getElementById("success");
+
+          // Reset messages
+          errorEl.classList.add("hidden");
+          successEl.classList.add("hidden");
+
+          // Disable button
+          loginBtn.disabled = true;
+          loginBtn.textContent = "Logging in...";
 
           try {
-            const res = await fetch(`${window.BASE_URL}/api/login`, {
+            console.log("🚀 Sending login request...");
+            const res = await fetch("/api/login", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include", // CRITICAL: Include cookies
               body: JSON.stringify({ identifier, password }),
             });
 
+            console.log("📡 Response status:", res.status);
             const data = await res.json();
-
-            console.log("Login response:", res.status, data);
+            console.log("📦 Response data:", data);
 
             if (res.ok && data.success) {
-              alert("Login successful! Redirecting...");
-              window.location.href = data.redirect || "/";
+              // Show success message
+              successEl.classList.remove("hidden");
+
+              console.log(
+                "✅ Login successful, redirecting to:",
+                data.redirectUrl
+              );
+
+              // Small delay to show success message, then redirect
+              setTimeout(() => {
+                window.location.href = data.redirectUrl;
+              }, 500);
             } else {
-              alert("Login failed: " + (data.error || "Unknown error"));
-              document.getElementById("error").classList.remove("hidden");
+              // Show error
+              const errorMsg = data.error || "Unknown error";
+              console.error("❌ Login failed:", errorMsg);
+              errorEl.textContent = errorMsg;
+              errorEl.classList.remove("hidden");
+
+              // Re-enable button
+              loginBtn.disabled = false;
+              loginBtn.textContent = "Login";
             }
           } catch (err) {
-            console.error("Login error:", err);
-            alert("Network error: " + err.message);
-            document.getElementById("error").classList.remove("hidden");
+            console.error("💥 Network error:", err);
+            errorEl.textContent = "Network error. Please try again.";
+            errorEl.classList.remove("hidden");
+
+            // Re-enable button
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login";
           }
         });
-
-      function forgotPassword() {
-        alert(
-          "Forgot Password\n\nPlease contact customer support to reset your password:\n\nPhone: +1-234-567-8900\nEmail: support@drnet.com"
-        );
-      }
 
       function showContactInfo() {
         alert(
           "Customer Support\n\nPhone: +1-234-567-8900\nEmail: support@drnet.com\nHours: Mon-Fri 9AM-6PM\nEmergency: 24/7 Available"
         );
       }
-    </script> -->
+    </script>
   </body>
 </html>

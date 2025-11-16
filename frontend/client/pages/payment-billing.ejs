@@ -1,458 +1,375 @@
-<div class="mb-8">
-  <h1 class="text-3xl font-bold text-gray-900 mb-2">Payments & Billing</h1>
-  <p class="text-gray-600">
-    Manage your payment methods and view transaction history
-  </p>
-</div>
+<style>
+    /* Skeleton Loading */
+    @keyframes skeleton {
+      0% { background-color: #f3f4f6; }
+      100% { background-color: #e5e7eb; }
+    }
+    .skeleton {
+      background: #e5e7eb;
+      animation: skeleton 1.2s ease-in-out infinite;
+      border-radius: 0.5rem;
+    }
+    .skeleton-text { height: 1rem; }
+    .skeleton-title { height: 1.5rem; width: 60%; }
+    .skeleton-circle { width: 2.5rem; height: 2.5rem; border-radius: 9999px; }
+    .skeleton-card { height: 8rem; }
+    .skeleton-btn { height: 3rem; }
+    .skeleton-price { height: 2rem; width: 8rem; }
+    .skeleton-transaction { height: 10rem; }
+  </style>
+</head>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-  <!-- Payment Methods -->
-  <div class="lg:col-span-1">
-    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-gray-900">Payment Methods</h2>
-      </div>
-
-      <!-- M-PESA Card -->
-      <div
-        class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-5 mb-4 relative overflow-hidden shadow-lg"
-      >
-        <div
-          class="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full -mr-12 -mt-12"
-        ></div>
-        <div class="relative">
-          <div class="flex items-center justify-between mb-4">
-            <div class="bg-white bg-opacity-20 rounded-lg px-3 py-1">
-              <p class="text-white text-xs font-bold">PRIMARY</p>
-            </div>
-            <svg
-              class="w-8 h-8 text-white"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
-              />
-            </svg>
-          </div>
-          <p class="text-white text-xs font-medium mb-1">M-PESA Paybill</p>
-          <p class="text-white text-lg font-bold tracking-wider">456789</p>
-        </div>
-      </div>
+<div class="max-w-full mx-auto p-6" id="app">
+  <!-- Loading Skeleton -->
+  <div id="skeleton" class="space-y-8">
+    <div class="mb-8">
+      <div class="skeleton skeleton-title mb-2"></div>
+      <div class="skeleton skeleton-text w-80"></div>
     </div>
 
-    <!-- Next Payment -->
-    <div
-      class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 mt-6 text-white"
-    >
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <p class="text-blue-100 text-sm font-medium mb-1">Next Payment Due</p>
-          <p class="text-3xl font-bold">KES 3,499</p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Payment Methods -->
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+          <div class="skeleton h-6 w-48 mb-6"></div>
+          <div class="skeleton-card rounded-xl mb-4"></div>
         </div>
-        <div class="bg-white bg-opacity-20 rounded-lg p-3">
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
+        <div class="skeleton-card rounded-2xl"></div>
+      </div>
+
+      <!-- Transactions -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+          <div class="flex justify-between mb-6">
+            <div class="skeleton h-6 w-48"></div>
+            <div class="flex gap-3">
+              <div class="skeleton w-32 h-10 rounded-lg"></div>
+              <div class="skeleton w-24 h-10 rounded-lg"></div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="skeleton-transaction rounded-xl"></div>
+            <div class="skeleton-transaction rounded-xl"></div>
+            <div class="skeleton-transaction rounded-xl"></div>
+          </div>
+          <div class="flex justify-between mt-6 pt-6 border-t">
+            <div class="skeleton w-64 h-5"></div>
+            <div class="flex gap-2">
+              <div class="skeleton w-20 h-10 rounded-lg"></div>
+              <div class="skeleton w-10 h-10 rounded-lg"></div>
+              <div class="skeleton w-20 h-10 rounded-lg"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <p class="text-blue-100 text-sm">Due on December 2, 2025</p>
-      <button
-        class="mt-4 w-full bg-white text-blue-600 font-semibold py-3 rounded-xl hover:bg-blue-50 transition-all shadow-lg"
-      >
-        Pay Now
-      </button>
     </div>
   </div>
 
-  <!-- Transaction History -->
-  <div class="lg:col-span-2">
-    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
-      <div
-        class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4"
-      >
-        <h2 class="text-xl font-bold text-gray-900">Transaction History</h2>
-        <div class="flex items-center gap-3">
-          <select
-            class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:border-teal-500 transition"
-          >
-            <option>All Transactions</option>
-            <option>Successful</option>
-            <option>Pending</option>
-            <option>Failed</option>
-          </select>
-          <button
-            class="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all flex items-center gap-2"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            Export
+  <!-- Real Content -->
+  <div id="content" class="hidden space-y-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Payments & Billing</h1>
+      <p class="text-gray-600">Manage your payment methods and view transaction history</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Payment Methods -->
+      <div class="lg:col-span-1">
+        <!-- M-PESA Buy Goods Card -->
+        <div id="mpesa-card" class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-5 mb-6 relative overflow-hidden shadow-lg">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full -mr-12 -mt-12"></div>
+          <div class="relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="bg-white bg-opacity-20 rounded-lg px-3 py-1">
+                <p class="text-white text-xs font-bold">LIPA NA M-PESA</p>
+              </div>
+              <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+              </svg>
+            </div>
+            <p class="text-white text-sm font-medium mb-1">Buy Goods</p>
+            <div class="space-y-1">
+              <p class="text-white text-xs uppercase opacity-90">Till Number</p>
+              <p id="till-number" class="text-white text-xl font-bold tracking-wide">5626320</p>
+            </div>
+            <div class="mt-3">
+              <p class="text-white text-xs uppercase opacity-90">Name</p>
+              <p class="text-white text-lg font-semibold">DR.NET TECHNOLOGY LABS</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Payment -->
+        <div id="next-payment-card" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <p class="text-blue-100 text-sm font-medium mb-1">Next Payment Due</p>
+              <p id="next-amount" class="text-3xl font-bold">KES 0</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+          </div>
+          <p id="next-due-date" class="text-blue-100 text-sm">No upcoming payment</p>
+          <button onclick="payNow()" class="mt-4 w-full bg-white text-blue-600 font-bold py-2 rounded-lg hover:bg-blue-50 transition">
+            Pay Now
           </button>
         </div>
       </div>
 
-      <!-- Transaction Items -->
-      <div class="space-y-4">
-        <!-- Transaction 1 -->
-        <div
-          class="border-2 border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition-all"
-        >
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex items-start gap-4">
-              <div class="bg-green-100 rounded-full p-3">
-                <svg
-                  class="w-6 h-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
+      <!-- Transaction History -->
+      <div class="lg:col-span-2">
+        <div class="bg-white p-6 border-2 border-gray-100">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <h2 class="text-xl font-bold text-gray-900">Transaction History</h2>
+            <div class="flex items-center gap-3">
+              <select id="filter-status" onchange="filterTransactions()" class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:border-teal-500 transition">
+                <option value="all">All Transactions</option>
+                <option value="successful">Successful</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+              </select>
+              <button onclick="exportTransactions()" class="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
-              </div>
-              <div>
-                <h3 class="font-bold text-gray-900 mb-1">
-                  Professional Business Plan
-                </h3>
-                <p class="text-sm text-gray-600 mb-2">
-                  Monthly subscription payment
-                </p>
-                <div class="flex items-center gap-3 text-xs text-gray-500">
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    Nov 2, 2025
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                      />
-                    </svg>
-                    M-PESA
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="font-bold text-gray-900 text-lg mb-1">KES 3,499</p>
-              <span
-                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
-              >
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Successful
-              </span>
+                Export
+              </button>
             </div>
           </div>
-          <div
-            class="flex items-center justify-between pt-3 border-t border-gray-100"
-          >
-            <p class="text-xs text-gray-500">Transaction ID: TXN-2025110201</p>
-            <button
-              class="text-teal-600 hover:text-teal-700 text-sm font-semibold flex items-center gap-1"
-            >
-              Download Receipt
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
 
-        <!-- Transaction 2 -->
-        <div
-          class="border-2 border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition-all"
-        >
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex items-start gap-4">
-              <div class="bg-green-100 rounded-full p-3">
-                <svg
-                  class="w-6 h-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 class="font-bold text-gray-900 mb-1">
-                  Professional Business Plan
-                </h3>
-                <p class="text-sm text-gray-600 mb-2">
-                  Monthly subscription payment
-                </p>
-                <div class="flex items-center gap-3 text-xs text-gray-500">
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    Oct 2, 2025
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                      />
-                    </svg>
-                    VISA •••• 4532
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="font-bold text-gray-900 text-lg mb-1">KES 3,499</p>
-              <span
-                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
-              >
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Successful
-              </span>
-            </div>
+          <!-- Transactions -->
+          <div id="transactions-container" class="space-y-4">
+            <!-- Filled by JS -->
           </div>
-          <div
-            class="flex items-center justify-between pt-3 border-t border-gray-100"
-          >
-            <p class="text-xs text-gray-500">Transaction ID: TXN-2025100201</p>
-            <button
-              class="text-teal-600 hover:text-teal-700 text-sm font-semibold flex items-center gap-1"
-            >
-              Download Receipt
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
 
-        <!-- Transaction 3 -->
-        <div
-          class="border-2 border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition-all"
-        >
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex items-start gap-4">
-              <div class="bg-green-100 rounded-full p-3">
-                <svg
-                  class="w-6 h-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 class="font-bold text-gray-900 mb-1">
-                  Professional Business Plan
-                </h3>
-                <p class="text-sm text-gray-600 mb-2">
-                  Initial subscription payment
-                </p>
-                <div class="flex items-center gap-3 text-xs text-gray-500">
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    Sep 2, 2025
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                      />
-                    </svg>
-                    M-PESA
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="font-bold text-gray-900 text-lg mb-1">KES 3,499</p>
-              <span
-                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
-              >
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Successful
-              </span>
+          <!-- Pagination -->
+          <div class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+            <p id="pagination-info" class="text-sm text-gray-600">Loading...</p>
+            <div class="flex items-center gap-2">
+              <button id="prev-page" onclick="changePage(-1)" class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed">Previous</button>
+              <button id="page-number" onclick="goToPage(currentPage)" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium">1</button>
+              <button id="next-page" onclick="changePage(1)" class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed">Next</button>
             </div>
           </div>
-          <div
-            class="flex items-center justify-between pt-3 border-t border-gray-100"
-          >
-            <p class="text-xs text-gray-500">Transaction ID: TXN-2025090201</p>
-            <button
-              class="text-teal-600 hover:text-teal-700 text-sm font-semibold flex items-center gap-1"
-            >
-              Download Receipt
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pagination -->
-      <div
-        class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200"
-      >
-        <p class="text-sm text-gray-600">Showing 1 to 3 of 3 transactions</p>
-        <div class="flex items-center gap-2">
-          <button
-            class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed"
-          >
-            Previous
-          </button>
-          <button
-            class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium"
-          >
-            1
-          </button>
-          <button
-            class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed"
-          >
-            Next
-          </button>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  // === DOM ELEMENTS ===
+  const skeleton = document.getElementById("skeleton");
+  const content = document.getElementById("content");
+  const tillNumber = document.getElementById("till-number");
+  const nextAmount = document.getElementById("next-amount");
+  const nextDueDate = document.getElementById("next-due-date");
+  const transactionsContainer = document.getElementById("transactions-container");
+  const filterStatus = document.getElementById("filter-status");
+  const paginationInfo = document.getElementById("pagination-info");
+  const prevPageBtn = document.getElementById("prev-page");
+  const nextPageBtn = document.getElementById("next-page");
+  const pageNumberBtn = document.getElementById("page-number");
+
+  // === STATE ===
+  let transactions = [];
+  let filteredTransactions = [];
+  let currentPage = 1;
+  const perPage = 3;
+
+  // === HELPERS ===
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function getStatusColor(status) {
+    return status === "successful" ? "green" :
+           status === "pending" ? "yellow" : "red";
+  }
+
+  // === FETCH DATA ===
+  async function fetchPaymentMethod() {
+    const res = await fetch("/api/payment/method");
+    if (!res.ok) return { till: "5626320" };
+    return await res.json();
+  }
+
+  async function fetchNextPayment() {
+    const res = await fetch("/api/payment/next");
+    if (!res.ok) return null;
+    return await res.json();
+  }
+
+  async function fetchTransactions() {
+    const res = await fetch("/api/payment/transactions");
+    if (!res.ok) return [];
+    return await res.json();
+  }
+
+  // === RENDER ===
+  async function renderPaymentMethod() {
+    const data = await fetchPaymentMethod();
+    tillNumber.textContent = data.till || "5626320";
+  }
+
+  async function renderNextPayment() {
+    const data = await fetchNextPayment();
+    if (!data || !data.amount) {
+      nextAmount.textContent = "KES 0";
+      nextDueDate.textContent = "No upcoming payment";
+      return;
+    }
+    nextAmount.textContent = `KES ${parseFloat(data.amount).toLocaleString()}`;
+    nextDueDate.textContent = `Due on ${formatDate(data.dueDate)}`;
+  }
+
+  async function renderTransactions() {
+    const pageTx = filteredTransactions.slice((currentPage - 1) * perPage, currentPage * perPage);
+    transactionsContainer.innerHTML = pageTx.map(tx => `
+      <div class="border-2 border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition-all">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex items-start gap-4">
+            <div class="bg-${getStatusColor(tx.status)}-100 rounded-full p-3">
+              <svg class="w-6 h-6 text-${getStatusColor(tx.status)}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                ${tx.status === "successful" ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>' :
+                  tx.status === "pending" ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m-3-3H9"/>' :
+                  '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'}
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 mb-1">${tx.planName || 'Subscription'}</h3>
+              <p class="text-sm text-gray-600 mb-2">${tx.description || 'Monthly plan payment'}</p>
+              <div class="flex items-center gap-3 text-xs text-gray-500">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  ${formatDate(tx.payment_date)}
+                </span>
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                  ${tx.payment_method}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-gray-900 text-lg mb-1">KES ${parseFloat(tx.amount).toLocaleString()}</p>
+            <span class="inline-flex items-center gap-1 px-2 py-1 bg-${getStatusColor(tx.status)}-100 text-${getStatusColor(tx.status)}-700 text-xs font-semibold rounded-full">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                ${tx.status === "successful" ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>' :
+                  '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 00.293.707l2 2a1 1 0 001.414-1.414L11 11.586V7z" clip-rule="evenodd"/>'}
+              </svg>
+              ${tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+            </span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+          <p class="text-xs text-gray-500">Transaction ID: ${tx.transaction_id || tx.id}</p>
+          <button onclick="downloadReceipt('${tx.id}')" class="text-teal-600 hover:text-teal-700 text-sm font-semibold flex items-center gap-1">
+            Download Receipt
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    `).join("") || "<p class='text-gray-500 text-center py-8'>No transactions found.</p>";
+  }
+
+  function updatePagination() {
+    const total = filteredTransactions.length;
+    const pages = Math.ceil(total / perPage);
+    const start = (currentPage - 1) * perPage + 1;
+    const end = Math.min(currentPage * perPage, total);
+
+    paginationInfo.textContent = total ? `Showing ${start} to ${end} of ${total} transactions` : "No transactions";
+
+    prevPageBtn.disabled = currentPage === 1;
+    nextPageBtn.disabled = currentPage === pages;
+    pageNumberBtn.textContent = currentPage;
+
+    prevPageBtn.className = currentPage === 1
+      ? "px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed"
+      : "px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50";
+
+    nextPageBtn.className = currentPage === pages
+      ? "px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed"
+      : "px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50";
+  }
+
+  // === FILTER & PAGINATION ===
+  async function filterTransactions() {
+    const status = filterStatus.value;
+    filteredTransactions = status === "all" ? [...transactions] : transactions.filter(t => t.status === status);
+    currentPage = 1;
+    renderTransactions();
+    updatePagination();
+  }
+
+  function changePage(delta) {
+    const newPage = currentPage + delta;
+    const pages = Math.ceil(filteredTransactions.length / perPage);
+    if (newPage < 1 || newPage > pages) return;
+    currentPage = newPage;
+    renderTransactions();
+    updatePagination();
+  }
+
+  function goToPage(page) {
+    currentPage = page;
+    renderTransactions();
+    updatePagination();
+  }
+
+  // === ACTIONS ===
+  async function payNow() {
+    const next = await fetchNextPayment();
+    if (!next) return alert("No payment due.");
+    alert(`Redirecting to M-PESA\nTill: ${tillNumber.textContent}\nAmount: KES ${next.amount}`);
+  }
+
+  async function downloadReceipt(id) {
+    window.location.href = `/api/payment/transactions/receipt/${id}`;
+  }
+
+  async function exportTransactions() {
+    const csv = [
+      "ID,Plan,Amount,Method,Status,Date",
+      ...filteredTransactions.map(t => `${t.id},${t.planName || 'N/A'},${t.amount},${t.payment_method},${t.status},${t.payment_date}`)
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "transactions.csv"; a.click();
+  }
+
+  // === MAIN LOAD ===
+  async function loadData() {
+    skeleton.classList.remove("hidden");
+    content.classList.add("hidden");
+
+    try {
+      await Promise.all([
+        renderPaymentMethod(),
+        renderNextPayment(),
+        fetchTransactions().then(data => {
+          transactions = data;
+          filteredTransactions = [...data];
+          renderTransactions();
+          updatePagination();
+        })
+      ]);
+    } catch (err) {
+      alert("Failed to load data.");
+      console.error(err);
+    } finally {
+      skeleton.classList.add("hidden");
+      content.classList.remove("hidden");
+    }
+  }
+
+  window.addEventListener("load", loadData);
+</script>

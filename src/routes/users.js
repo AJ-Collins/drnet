@@ -1,156 +1,177 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const {
-  createUser,
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
-  softDeleteUser,
-  upgradeUserPackage
-} = require('../models/User');
+const User = require("../models/User");
+const bcrypt = require("bcrypt");
+const Package = require("../models/Package");
 
-// Create User
-router.post('/', async (req, res) => {
+async function getPackageName(packageId) {
+  if (!packageId) return "No Plan";
+  const pkg = await Package.findById(packageId);
+  return pkg ? pkg.name : "No Plan";
+}
+
+router.get("/clients", async (req, res) => {
   try {
-    const data = req.body;
-    if (!data.name || !data.phone || !data.paymentDate) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    const clients = await User.findAll();
+
+    // Transform the data to match frontend expectations
+    const formattedClients = await Promise.all(
+      clients.map(async (client) => ({
+        id: client.id,
+        name:
+          `${client.first_name || ""} ${client.second_name || ""}`.trim() ||
+          "No Name",
+        email: client.email || "No Email",
+        phone: client.phone || "N/A",
+        idNumber: client.id_number,
+        address: client.address,
+        plan: await getPackageName(client.package_id),
+        status: client.is_active ? "Active" : "Inactive",
+        lastPayment: client.debt || "0.00",
+        paymentStatus: client.paid_subscription ? "Paid" : "Unpaid",
+        ...client,
+      }))
+    );
+
+    res.json(formattedClients);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch clients" });
+  }
+});
+
+router.post("/clients", async (req, res) => {
+  try {
+    const {
+      first_name,
+      second_name,
+      email,
+      phone,
+      idNumber,
+      address,
+      password,
+      plan,
+    } = req.body;
+
+    // Validate required fields
+    if (!first_name || !email || !password) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    console.log('📥 Registering user:', data);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Default values
-    data.debt = 0;
-    data.routerPurchased = data.routerCost > 0;
-
-    await createUser(data);
-
-    res.status(201).json({ message: '✅ User created successfully' });
-  } catch (err) {
-    console.error('❌ Error creating user:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Read All
-router.get('/', async (req, res) => {
-  try {
-    const users = await getAllUsers();
-    res.status(200).json(users);
-  } catch (err) {
-    console.error('❌ Error fetching users:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Read One
-router.get('/:id', async (req, res) => {
-  try {
-    const user = await getUserById(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user);
-  } catch (err) {
-    console.error('❌ Error fetching user:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Update
-router.put('/:id', async (req, res) => {
-  try {
-    const requiredFields = [
-      'name',
-      'phone',
-      'location',
-      'package',
-      'subscription_amount',
-      'router_cost',
-      'paid_subscription',
-      'payment_date',
-      'expiry_date'
-    ];
-
-    const missingFields = requiredFields.filter(field => {
-      const value = req.body[field];
-      return value === undefined || value === null || value === '';
+    // Create the user
+    const newUser = await User.create({
+      first_name,
+      second_name,
+      email,
+      phone,
+      id_number: idNumber,
+      address,
+      password: hashedPassword,
+      role_id: null, // clients may not have a role
+      package_id: plan ? parseInt(plan, 10) : null,
+      paid_subscription: false,
+      last_payment_date: null,
+      expiry_date: null,
+      debt: 0,
+      router_purchased: false,
+      router_cost: 0,
+      image: null,
+      is_active: true,
     });
 
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        message: `Missing required fields: ${missingFields.join(', ')}`
-      });
-    }
-
-    const updated = await updateUser(req.params.id, req.body);
-    if (!updated) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json({ message: '✅ User updated' });
+    res.status(201).json({ message: "Client created", id: newUser.insertId });
   } catch (err) {
-    console.error('❌ Error updating user:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error creating client:", err);
+    res.status(500).json({ error: "Failed to create client" });
   }
 });
 
+// Update client data
+router.put("/clients/:id", async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
 
-// Delete
-router.delete('/:id', async (req, res) => {
   try {
-    const deleted = await deleteUser(req.params.id);
-    if (!deleted) return res.status(404).json({ message: 'User not found' });
-    res.json({ message: '🗑️ User deleted' });
-  } catch (err) {
-    console.error('❌ Error deleting user:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-router.patch('/:id', async (req, res) => {
-  try {
-    if ('isDeleted' in req.body) {
-      const success = await softDeleteUser(req.params.id);
-      if (!success) return res.status(404).json({ message: 'User not found' });
-      return res.json({ message: '🗑️ User soft-deleted' });
+    // Check if user exists
+    const existingUser = await User.findById(id);
+    if (!existingUser) {
+      return res.status(404).json({ error: "Client not found" });
     }
-    res.status(400).json({ message: 'Invalid PATCH request' });
-  } catch (err) {
-    console.error('❌ Error soft-deleting user:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
-router.put('/package/:id', async (req, res) => {
-  try {
-    const requiredFields = [
-      'package',
-      'subscription_amount',
-      'payment_date',
-      'expiry_date',
-      'paid_subscription'
-    ];
+    // Map frontend keys to database columns
+    const dbUpdate = {};
+    if (updateData.first_name) dbUpdate.first_name = updateData.first_name;
+    if (updateData.second_name) dbUpdate.second_name = updateData.second_name;
+    if (updateData.email) dbUpdate.email = updateData.email;
+    if (updateData.phone) dbUpdate.phone = updateData.phone;
+    if (updateData.idNumber) dbUpdate.id_number = updateData.idNumber;
+    if (updateData.address) dbUpdate.address = updateData.address;
+    if (updateData.plan) dbUpdate.package_id = parseInt(updateData.plan, 10);
+    if (updateData.password) {
+      dbUpdate.password = await bcrypt.hash(updateData.password, 10);
+    }
 
-    const missingFields = requiredFields.filter(field => {
-      const value = req.body[field];
-      return value === undefined || value === null || value === '';
+    // Perform update via model
+    const result = await User.update(id, dbUpdate);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ error: "No changes made" });
+    }
+
+    // Get the updated client
+    const updatedUser = await User.findById(id);
+
+    // Format for frontend
+    const formattedClient = {
+      id: updatedUser.id,
+      name:
+        `${updatedUser.first_name || ""} ${
+          updatedUser.second_name || ""
+        }`.trim() || "No Name",
+      email: updatedUser.email || "No Email",
+      phone: updatedUser.phone || "N/A",
+      idNumber: updatedUser.id_number || "",
+      address: updatedUser.address || "",
+      plan: updatedUser.package_id,
+      status: updatedUser.is_active ? "Active" : "Inactive",
+      lastPayment: updatedUser.debt || "0.00",
+      paymentStatus: updatedUser.paid_subscription ? "Paid" : "Unpaid",
+    };
+
+    res.json({
+      message: "Client updated successfully",
+      data: formattedClient,
     });
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        message: `Missing required fields: ${missingFields.join(', ')}`
-      });
-    }
-
-    const success = await upgradeUserPackage(req.params.id, req.body);
-    if (!success) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json({ message: '✅ Package upgraded successfully' });
   } catch (err) {
-    console.error('❌ Error upgrading package:', err);
-    res.status(500).json({ message: 'Server error during package upgrade' });
+    console.error("Error updating client:", err);
+    res.status(500).json({ error: "Failed to update client" });
+  }
+});
+
+router.delete("/clients/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Check if user exists
+    const existingUser = await User.findById(id);
+    if (!existingUser) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+
+    // Delete the user
+    const result = await User.delete(id);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ error: "Failed to delete client" });
+    }
+
+    res.json({ message: "Client deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting client:", err);
+    res.status(500).json({ error: "Failed to delete client" });
   }
 });
 

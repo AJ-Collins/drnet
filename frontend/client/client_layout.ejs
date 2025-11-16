@@ -217,12 +217,13 @@
                 </button>
 
                 <!-- User Dropdown -->
+                 <% const profilePageSlug = "profile"; %>
                 <div
                   id="userDropdown"
                   class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-50 hidden border border-teal-100"
                 >
                   <a
-                    href="#"
+                   href="/client/<%= profilePageSlug %>"
                     class="flex items-center px-4 py-2 text-gray-700 hover:bg-teal-50 transition"
                   >
                     <i class="fas fa-user mr-3 text-teal-600"></i> My Profile
@@ -383,11 +384,36 @@
         .getElementById("logoutBtn")
         .addEventListener("click", function (e) {
           e.preventDefault();
+
           if (confirm("Are you sure you want to log out?")) {
-            alert("Logging out...");
-            // Redirect to login page would go here
+            // Start the logout process
+            logoutUser();
           }
         });
+
+      async function logoutUser() {
+        try {
+          // Send a POST request to the server's logout endpoint
+          const response = await fetch("/api/logout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            window.location.href = "/login";
+          } else {
+            alert("Logout failed: " + (data.error || "Please try again."));
+          }
+        } catch (error) {
+          console.error("Network or system error during logout:", error);
+          alert("A network error occurred. Please check your connection.");
+        }
+      }
 
       // Close sidebar when clicking nav links
       document.querySelectorAll(".nav-link").forEach((link) => {
@@ -432,6 +458,66 @@
           setTimeout(() => notification.remove(), 300);
         }, 3000);
       }
+      async function loadUserMenu() {
+    const avatarCircle = document.querySelector('#userMenuBtn .w-9.h-9');
+    const nameSpan     = document.querySelector('#userMenuBtn .font-medium');
+
+    try {
+      const res = await fetch('/api/my/profile', {
+        method: 'GET',
+        credentials: 'include',               // keep session cookies
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch profile');
+
+      const data = await res.json();
+      const profile = data.profile;           // <-- your API shape
+
+      // ---- 1. Avatar -------------------------------------------------
+      if (profile.image) {
+        // create an <img> inside the circle
+        const img = document.createElement('img');
+        img.src = profile.image;
+        img.alt = 'Profile';
+        img.className = 'w-full h-full rounded-full object-cover';
+
+        // replace the placeholder <div> with the image
+        avatarCircle.innerHTML = '';
+        avatarCircle.appendChild(img);
+      } else {
+        // keep the initials fallback
+        const initials = (profile.name || 'U')
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase()
+          .substring(0, 2);
+        avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">${initials}</span>`;
+      }
+
+      // ---- 2. Name ---------------------------------------------------
+      nameSpan.textContent = profile.name || 'User';
+
+      // optional: tiny success toast
+      // showNotification('Profile loaded', 'success');
+
+    } catch (err) {
+      console.error('loadUserMenu error:', err);
+      showNotification('Could not load user info', 'error');
+
+      // keep the static placeholder when everything fails
+      avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">JO</span>`;
+      nameSpan.textContent = 'Julius Ojwang';
+    }
+  }
+
+  // -----------------------------------------------------------------
+  // Run on DOM ready (you already have DOMContentLoaded elsewhere)
+  // -----------------------------------------------------------------
+  document.addEventListener('DOMContentLoaded', () => {
+    loadUserMenu();
+  });
     </script>
   </body>
 </html>

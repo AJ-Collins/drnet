@@ -1,88 +1,58 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
-async function createBooking(data) {
-  const {
-    name,
-    phone,
-    email,
-    location,
-    exact_location,
-    package: pkg,
-    extra_notes,
-    installation_date,
-    status,
-  } = data;
+const Booking = {
+  create: async (data) => {
+    let {
+      name,
+      phone,
+      email,
+      location,
+      exact_location,
+      package: pkg,
+      extra_notes,
+      installation_date,
+      status,
+    } = data;
 
-  // Optional: Debug print
-  // console.log("💡 Booking data received:", {
-  //   name, phone, email, location, exactLocation, pkg, extraNotes
-  // });
+    installation_date = installation_date || null;
+    status = status || "pending";
+    extra_notes = extra_notes || null;
+    exact_location = exact_location || null;
+    pkg = pkg || null;
 
-  await db.execute(
-    `INSERT INTO bookings (name, phone, email, location, exact_location, package, extra_notes, installation_date, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      name ?? null,
-      phone ?? null,
-      email ?? null,
-      location ?? null,
-      exact_location ?? null,
-      pkg ?? null,
-      extra_notes ?? null,
-      installation_date ?? null,
-      status ?? null
-    ]
-  );
-}
+    const [result] = await db.query(
+      `INSERT INTO bookings
+      (name, phone, email, location, exact_location, package, extra_notes, installation_date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, phone, email, location, exact_location, pkg, extra_notes, installation_date, status]
+    );
+    return result;
+  },
 
-async function getAllBookings() {
-  const [rows] = await db.execute("SELECT * FROM bookings ORDER BY created_at DESC");
-  return rows;
-}
+  findAll: async () => {
+    const [rows] = await db.query(`SELECT * FROM bookings ORDER BY created_at DESC`);
+    return rows;
+  },
 
-async function deleteBooking(id) {
-  await db.execute(`DELETE FROM bookings WHERE id = ?`, [id]);
-}
+  findById: async (id) => {
+    const [rows] = await db.query(`SELECT * FROM bookings WHERE id=?`, [id]);
+    return rows[0];
+  },
 
-async function updateBooking(id, data) {
-  const {
-    name,
-    phone,
-    email,
-    location,
-    exact_location,
-    package: pkg,
-    extra_notes,
-    installation_date,
-    status
-  } = data;
+  update: async (id, data) => {
+    if (data.installation_date === "") data.installation_date = null;
+    if (data.status === "") data.status = "pending";
 
-  const formattedDate = installation_date ? new Date(installation_date).toISOString().split('T')[0] : null;
+    const fields = Object.keys(data).map((key) => `${key}=?`).join(", ");
+    const values = [...Object.values(data), id];
+    const [result] = await db.query(`UPDATE bookings SET ${fields} WHERE id=?`, values);
+    return result;
+  },
 
-  await db.execute(`
-    UPDATE bookings SET
-      name = ?, phone = ?, email = ?, location = ?, exact_location = ?,
-      package = ?, extra_notes = ?, installation_date = ?, status = ?
-    WHERE id = ?
-  `, [
-    name ?? null,
-    phone ?? null,
-    email ?? null,
-    location ?? null,
-    exact_location ?? null,
-    pkg ?? null,
-    extra_notes ?? null,
-    formattedDate,
-    status ?? null,
-    id
-  ]);
-}
+  delete: async (id) => {
+    const [result] = await db.query(`DELETE FROM bookings WHERE id=?`, [id]);
+    return result;
+  },
+};
 
-async function updateBookingStatus(id, status) {
-  await db.execute(
-    `UPDATE bookings SET status = ? WHERE id = ?`,
-    [status, id]
-  );
-}
-
-module.exports = { createBooking, getAllBookings, deleteBooking, updateBooking, updateBookingStatus };
+module.exports = Booking;

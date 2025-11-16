@@ -1,259 +1,369 @@
-<div class="flex items-center justify-between mb-12">
-  <div>
-    <h3 class="text-3xl font-bold text-teal-900 tracking-tight">
-      My Subscriptions
-    </h3>
-    <p class="text-teal-700 mt-2 text-lg">
-      Manage your current plan and explore other packages
-    </p>
-  </div>
-</div>
+<style>
+    /* Skeleton Loading */
+    @keyframes skeleton {
+      0% { background-color: #f3f4f6; }
+      100% { background-color: #e5e7eb; }
+    }
+    .skeleton {
+      background: #e5e7eb;
+      animation: skeleton 1.2s ease-in-out infinite;
+      border-radius: 0.5rem;
+    }
+    .skeleton-text { height: 1rem; }
+    .skeleton-title { height: 1.5rem; width: 60%; }
+    .skeleton-circle { width: 2.5rem; height: 2.5rem; border-radius: 9999px; }
+    .skeleton-btn { height: 3rem; }
+    .skeleton-price { height: 2rem; width: 6rem; }
+  </style>
+</head>
 
-<!-- Current Subscription -->
-<div
-  class="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 mb-12 shadow-xl relative overflow-hidden"
->
-  <div
-    class="absolute top-0 right-0 w-64 h-64 bg-teal-500 rounded-full opacity-20 -mr-32 -mt-32"
-  ></div>
-  <div
-    class="absolute bottom-0 left-0 w-48 h-48 bg-teal-800 rounded-full opacity-20 -ml-24 -mb-24"
-  ></div>
-
-  <div
-    class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6"
-  >
-    <div class="flex-1">
-      <div
-        class="inline-block bg-white bg-opacity-20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3"
-      >
-        ACTIVE PLAN
+<div class="max-w-full mx-auto p-6" id="app">
+  <!-- Skeleton Loading -->
+  <div id="skeleton" class="space-y-12">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-12">
+      <div>
+        <div class="skeleton skeleton-title mb-2"></div>
+        <div class="skeleton skeleton-text w-64"></div>
       </div>
-      <h4 class="text-3xl font-bold text-white mb-2">Standard Business</h4>
-      <div class="flex flex-wrap items-center gap-4 text-teal-100">
-        <div class="flex items-center gap-2">
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          <span class="font-medium">Expires: Dec 30, 2025</span>
+    </div>
+
+    <!-- Current Plan -->
+    <div class="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 mb-12 shadow-xl relative overflow-hidden">
+      <div class="space-y-6">
+        <div class="skeleton w-32 h-6 rounded-full"></div>
+        <div class="skeleton skeleton-title w-48"></div>
+        <div class="flex gap-8">
+          <div class="skeleton w-40 h-6"></div>
+          <div class="skeleton skeleton-price"></div>
         </div>
-        <div class="flex items-center gap-2">
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-            />
-          </svg>
-          <span class="text-2xl font-bold text-white">Ksh 3,500</span>
-          <span class="text-teal-100">/ Month</span>
+        <div class="flex gap-3">
+          <div class="skeleton skeleton-btn w-32 rounded-xl"></div>
+          <div class="skeleton skeleton-btn w-32 rounded-xl"></div>
         </div>
       </div>
     </div>
-    <div class="flex gap-3">
-      <button
-        class="px-6 py-3 rounded-xl bg-white text-teal-700 font-semibold hover:bg-teal-50 transition-all transform hover:scale-105 shadow-lg"
-      >
-        Renew Plan
-      </button>
-      <button
-        class="px-6 py-3 rounded-xl border-2 border-white text-white font-semibold hover:bg-white hover:text-teal-700 transition-all transform hover:scale-105"
-      >
-        Upgrade Now
-      </button>
-    </div>
-  </div>
-</div>
 
-<!-- Other Plans -->
-<div class="mb-6">
-  <h4 class="text-2xl font-bold text-gray-900 mb-2">Explore Other Plans</h4>
-  <p class="text-gray-600">Choose the perfect plan for your business needs</p>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-  <!-- Starter Plan -->
-  <div
-    class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-gray-100 relative group"
-  >
-    <div
-      class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-teal-500 rounded-t-2xl"
-    ></div>
-
+    <!-- Other Plans -->
     <div class="mb-6">
-      <h5 class="text-2xl font-bold text-gray-900 mb-2">Starter</h5>
-      <div class="flex items-baseline gap-1">
-        <span class="text-4xl font-bold text-teal-700">Ksh 1,500</span>
-        <span class="text-gray-500 font-medium">/ Month</span>
-      </div>
+      <div class="skeleton skeleton-title mb-2"></div>
+      <div class="skeleton skeleton-text w-80"></div>
     </div>
 
-    <div class="mb-8 space-y-3">
-      <div class="flex items-start gap-3">
-        <svg
-          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <span class="text-gray-700">Basic visibility</span>
-      </div>
-      <div class="flex items-start gap-3">
-        <svg
-          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <span class="text-gray-700">Limited features</span>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div v-for="n in 3" class="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-100">
+        <div class="h-1 skeleton mb-6"></div>
+        <div class="skeleton skeleton-title mb-2"></div>
+        <div class="skeleton w-24 h-10 mb-8"></div>
+        <div class="space-y-3 mb-8">
+          <div class="flex gap-3">
+            <div class="skeleton skeleton-circle"></div>
+            <div class="skeleton flex-1 h-5"></div>
+          </div>
+          <div class="flex gap-3">
+            <div class="skeleton skeleton-circle"></div>
+            <div class="skeleton flex-1 h-5"></div>
+          </div>
+        </div>
+        <div class="skeleton skeleton-btn rounded-xl"></div>
       </div>
     </div>
-
-    <button
-      class="w-full px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all transform group-hover:scale-105 shadow-md hover:shadow-lg"
-    >
-      Subscribe Now
-    </button>
   </div>
 
-  <!-- Premium Plan -->
-  <div
-    class="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-teal-500 relative group scale-105"
-  >
-    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-      <span
-        class="bg-gradient-to-r from-teal-500 to-teal-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg"
-      >
-        MOST POPULAR
-      </span>
-    </div>
-    <div
-      class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-teal-600 rounded-t-2xl"
-    ></div>
-
-    <div class="mb-6 mt-2">
-      <h5 class="text-2xl font-bold text-gray-900 mb-2">Premium</h5>
-      <div class="flex items-baseline gap-1">
-        <span class="text-4xl font-bold text-teal-700">Ksh 6,500</span>
-        <span class="text-gray-500 font-medium">/ Month</span>
+  <!-- Real Content -->
+  <div id="content" class="hidden space-y-12">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-12">
+      <div>
+        <h3 class="text-3xl font-bold text-teal-900 tracking-tight">My Subscriptions</h3>
+        <p class="text-teal-700 mt-2 text-lg">Manage your current plan and explore other packages</p>
       </div>
     </div>
 
-    <div class="mb-8 space-y-3">
-      <div class="flex items-start gap-3">
-        <svg
-          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <span class="text-gray-700">More exposure</span>
-      </div>
-      <div class="flex items-start gap-3">
-        <svg
-          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <span class="text-gray-700">Priority boost</span>
-      </div>
-    </div>
+    <!-- Current Plan (or No Plan) -->
+    <div id="current-plan-container"></div>
 
-    <button
-      class="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 text-white font-semibold hover:from-teal-700 hover:to-teal-800 transition-all transform group-hover:scale-105 shadow-lg hover:shadow-xl"
-    >
-      Subscribe Now
-    </button>
-  </div>
-
-  <!-- Enterprise Plan -->
-  <div
-    class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border-2 border-gray-100 relative group"
-  >
-    <div
-      class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-600 to-teal-700 rounded-t-2xl"
-    ></div>
-
+    <!-- Explore Plans -->
     <div class="mb-6">
-      <h5 class="text-2xl font-bold text-gray-900 mb-2">Enterprise</h5>
-      <div class="flex items-baseline gap-1">
-        <span class="text-4xl font-bold text-teal-700">Ksh 12,000</span>
-        <span class="text-gray-500 font-medium">/ Month</span>
-      </div>
+      <h4 class="text-2xl font-bold text-gray-900 mb-2">Explore Other Plans</h4>
+      <p class="text-gray-600">Choose the perfect plan for your needs</p>
     </div>
 
-    <div class="mb-8 space-y-3">
-      <div class="flex items-start gap-3">
-        <svg
-          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <span class="text-gray-700">Nationwide reach</span>
-      </div>
-      <div class="flex items-start gap-3">
-        <svg
-          class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <span class="text-gray-700">Advanced features</span>
-      </div>
+    <div id="plans-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Plans injected here -->
     </div>
+  </div>
+</div>
 
-    <button
-      class="w-full px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all transform group-hover:scale-105 shadow-md hover:shadow-lg"
-    >
-      Subscribe Now
+<!-- Upgrade Modal -->
+<div id="upgrade-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+    <h3 class="text-2xl font-bold text-gray-900 mb-4">Upgrade Your Plan</h3>
+    <p class="text-gray-600 mb-6">Select a plan to upgrade to:</p>
+    <div id="upgrade-options" class="space-y-3 mb-6"></div>
+    <button onclick="closeUpgradeModal()" class="w-full px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50">
+      Cancel
     </button>
   </div>
 </div>
+
+<script>
+  // === DOM ELEMENTS ===
+  const skeleton = document.getElementById("skeleton");
+  const content = document.getElementById("content");
+  const currentPlanContainer = document.getElementById("current-plan-container");
+  const plansContainer = document.getElementById("plans-container");
+  const upgradeModal = document.getElementById("upgrade-modal");
+  const upgradeOptions = document.getElementById("upgrade-options");
+
+  // === HELPERS ===
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function getPackageBadge(plan) {
+    const map = {
+      "Bronze Plan": { label: "Home Package", color: "bg-green-500" },
+      "Silver Plan": { label: "Business Package", color: "bg-teal-500", gradient: "bg-gradient-to-r from-teal-500 to-teal-600" },
+      "Gold Plan": { label: "Enterprise Package", color: "bg-purple-600" }
+    };
+    return map[plan.name] || { label: plan.name, color: "bg-gray-500" };
+  }
+
+  function scrollToPlans() {
+    const plansSection = document.getElementById('plans-container');
+    if (plansSection) {
+      plansSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // === FETCH CURRENT PLAN ===
+  async function fetchCurrentPlan() {
+    try {
+      const res = await fetch("/api/subscription/current");
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data && data.package_name && !data.name) {
+        data.name = data.package_name;
+      }
+
+      return data;
+    } catch (err) {
+      console.error("Failed to fetch current plan:", err);
+      return null;
+    }
+  }
+
+  // === FETCH ALL PLANS ===
+  async function fetchAllPlans() {
+    try {
+      const res = await fetch("/api/subscription/plans");
+      if (!res.ok) throw new Error("Failed to fetch plans");
+      return await res.json();
+    } catch (err) {
+      console.error("Failed to fetch plans:", err);
+      alert("Could not load plans. Please try again.");
+      return [];
+    }
+  }
+
+  // === RENDER CURRENT PLAN ===
+  async function renderCurrentPlan() {
+    const current = await fetchCurrentPlan();
+
+    if (!current || !current.name) {
+      currentPlanContainer.innerHTML = `
+        <div class="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-100 text-center">
+          <i class="fas fa-info-circle text-5xl text-gray-400 mb-4"></i>
+          <h4 class="text-xl font-semibold text-gray-700 mb-2">No Active Plan</h4>
+          <p class="text-gray-500 mb-6">Subscribe to a plan to get started.</p>
+          <button onclick="scrollToPlans()" class="px-6 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700">
+            Explore Plans
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    const badge = getPackageBadge(current);
+    currentPlanContainer.innerHTML = `
+      <div class="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 shadow-xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-teal-500 rounded-full opacity-20 -mr-32 -mt-32"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-teal-800 rounded-full opacity-20 -ml-24 -mb-24"></div>
+
+        <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="flex-1">
+            <div class="inline-block bg-white bg-opacity-20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+              ACTIVE PLAN
+            </div>
+            <h4 class="text-3xl font-bold text-white mb-2">${current.name}</h4>
+            <div class="flex flex-wrap items-center gap-4 text-teal-100">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="font-medium">Expires: ${formatDate(current.expires)}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-white">Ksh ${parseFloat(current.price).toLocaleString()}</span>
+                <span class="text-teal-100">/ Month</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="renewPlan()" class="px-6 py-3 rounded-xl bg-white text-teal-700 font-semibold hover:bg-teal-50 transition-all transform hover:scale-105 shadow-lg">
+              Renew Plan
+            </button>
+            <button onclick="openUpgradeModal()" class="px-6 py-3 rounded-xl border-2 border-white text-white font-semibold hover:bg-white hover:text-teal-700 transition-all transform hover:scale-105">
+              Upgrade Now
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // === RENDER ALL PLANS ===
+  async function renderPlans() {
+    const plans = await fetchAllPlans();
+    const current = await fetchCurrentPlan();
+    const currentId = current?.package_id;
+
+    plansContainer.innerHTML = "";
+
+    plans.forEach((plan) => {
+      const isCurrent = plan.id === currentId;
+      const badge = getPackageBadge(plan);
+
+      const card = document.createElement("div");
+      card.className = `bg-white p-8 shadow-lg border-2 relative group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-gray-100`;
+
+      card.innerHTML = `
+        <div class="absolute top-0 left-0 w-full h-1 ${badge.gradient || badge.color}"></div>
+        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <span class="text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md ${badge.color}">
+            ${badge.label}
+          </span>
+        </div>
+
+        <div class="mt-4 mb-6">
+          <h5 class="text-2xl font-bold text-gray-900 mb-2">${plan.name || 'Unknown Plan'}</h5>
+          <div class="flex items-baseline gap-1">
+            <span class="text-4xl font-bold text-teal-700">Ksh ${parseFloat(plan.price).toLocaleString()}</span>
+            <span class="text-gray-500 font-medium">/ Month</span>
+          </div>
+        </div>
+
+        <div class="mb-8 space-y-3">
+          ${plan.description.split(" | ").map(f => `
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-700">${f}</span>
+            </div>
+          `).join("")}
+        </div>
+
+        <button 
+          ${isCurrent ? `onclick="renewPlan()"` : `onclick="subscribe(${plan.id})"`}
+          class="w-full px-6 py-3 rounded-xl font-semibold transition-all transform group-hover:scale-105 shadow-md hover:shadow-lg ${
+            isCurrent
+              ? "bg-teal-700 text-white hover:bg-teal-800"
+              : "bg-teal-600 text-white hover:bg-teal-700"
+          }">
+          ${isCurrent ? "Renew Plan" : "Subscribe Now"}
+        </button>
+      `;
+
+      plansContainer.appendChild(card);
+    });
+  }
+
+  // === MAIN LOAD FUNCTION ===
+  async function loadData() {
+    skeleton.classList.remove("hidden");
+    content.classList.add("hidden");
+
+    try {
+      await Promise.all([
+        renderCurrentPlan(),
+        renderPlans()
+      ]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      skeleton.classList.add("hidden");
+      content.classList.remove("hidden");
+    }
+  }
+
+  // === ACTIONS ===
+  async function renewPlan() {
+    if (!confirm("Renew your current plan?")) return;
+    try {
+      const res = await fetch("/api/subscription/renew", { method: "POST" });
+      if (!res.ok) throw new Error("Renew failed");
+      await loadData(); // Full refresh from backend
+      alert("Plan renewed successfully!");
+    } catch (err) {
+      alert("Renewal failed.");
+    }
+  }
+
+  async function openUpgradeModal() {
+    const current = await fetchCurrentPlan();
+    const plans = await fetchAllPlans();
+    const higherPlans = plans.filter(p => parseFloat(p.price) > parseFloat(current?.price || 0));
+
+    upgradeOptions.innerHTML = higherPlans.map(plan => `
+      <button onclick="upgradeTo(${plan.id})" 
+        class="w-full text-left p-4 rounded-xl border-2 transition-all hover:border-teal-500 hover:bg-teal-50 ${plan.name === 'Silver Plan' ? 'border-teal-500 bg-teal-50' : 'border-gray-200'}">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="font-semibold text-gray-900">${plan.name}</div>
+            <div class="text-sm text-gray-600">Ksh ${parseFloat(plan.price).toLocaleString()} / month</div>
+          </div>
+          <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </button>
+    `).join("");
+
+    upgradeModal.classList.remove("hidden");
+  }
+
+  function closeUpgradeModal() {
+    upgradeModal.classList.add("hidden");
+  }
+
+  async function upgradeTo(planId) {
+    if (!confirm("Upgrade to this plan?")) return;
+    try {
+      const res = await fetch(`/api/subscription/upgrade/${planId}`, { method: "POST" });
+      if (!res.ok) throw new Error("Upgrade failed");
+      await loadData();
+      closeUpgradeModal();
+      alert("Upgraded successfully!");
+    } catch (err) {
+      alert("Upgrade failed.");
+    }
+  }
+
+  async function subscribe(planId) {
+    if (!confirm("Switch to this plan?")) return;
+    try {
+      const res = await fetch(`/api/subscription/subscribe/${planId}`, { method: "POST" });
+      if (!res.ok) throw new Error("Subscribe failed");
+      await loadData();
+      alert("Subscribed successfully!");
+    } catch (err) {
+      alert("Subscription failed.");
+    }
+  }
+
+  // === INIT ===
+  window.addEventListener("load", loadData);
+</script>

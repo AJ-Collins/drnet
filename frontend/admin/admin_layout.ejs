@@ -14,6 +14,10 @@
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -57,6 +61,7 @@
           <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <% const pages = [ {slug:'dashboard', name:'Dashboard'},
             {slug:'staff-attendance', name:'Staff Attendance'},
+            { slug: 'my-packages', name: 'My Packages' },
             {slug:'manage-users', name:'User Management'},
             {slug:'service-management', name:'Service Management'},
             {slug:'support-tickets', name:'Support Tickets'}, {slug:'finance',
@@ -70,8 +75,22 @@
               class="nav-link flex items-center px-4 py-3 rounded-lg w-full <%= currentPage===p.slug ? 'bg-teal-900/50 text-white font-medium' : 'text-teal-100 font-medium' %> transition-all duration-200 hover:bg-teal-900/50 hover:text-white hover:translate-x-1"
             >
               <i
-                class="fas <%= p.slug==='dashboard' ? 'fa-chart-pie' : p.slug.includes('attendance') ? 'fa-user-check' : p.slug.includes('users') ? 'fa-users' : p.slug.includes('service') ? 'fa-tools' : p.slug.includes('ticket') ? 'fa-ticket-alt' : p.slug.includes('finance') ? 'fa-dollar-sign' : p.slug.includes('renewals') ? 'fa-sync-alt' : p.slug.includes('booking') ? 'fa-globe' : p.slug.includes('communication') ? 'fa-comments' : p.slug.includes('equipments') ? 'fa-tools' : 'fa-cog' %> w-6 text-lg"
+                class="fas <%= 
+                  p.slug === 'dashboard' ? 'fa-chart-pie' :
+                  p.slug.includes('attendance') ? 'fa-user-check' :
+                  p.slug.includes('users') ? 'fa-users' :
+                  p.slug.includes('service') ? 'fa-tools' :
+                  p.slug.includes('ticket') ? 'fa-ticket-alt' :
+                  p.slug.includes('finance') ? 'fa-dollar-sign' :
+                  p.slug.includes('renewals') ? 'fa-sync-alt' :
+                  p.slug.includes('booking') ? 'fa-globe' :
+                  p.slug.includes('communication') ? 'fa-comments' :
+                  p.slug.includes('equipments') ? 'fa-tools' :
+                  p.slug === 'my-packages' ? 'fa-box' :  // Added this line
+                  'fa-cog' 
+                %> w-6 text-lg"
               ></i>
+
 
               <span><%= p.name %></span>
             </a>
@@ -147,50 +166,12 @@
                       </div>
                       <div class="flex-1">
                         <p class="text-sm text-gray-800 font-medium">
-                          New user registered
+                          Coming soon
                         </p>
-                        <p class="text-xs text-gray-500">
+                        <!-- <p class="text-xs text-gray-500">
                           John Doe joined the platform
                         </p>
-                        <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
-                      </div>
-                    </a>
-                    <a
-                      href="#"
-                      class="flex items-start px-4 py-3 hover:bg-teal-50 transition border-b border-gray-100"
-                    >
-                      <div
-                        class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0"
-                      >
-                        <i class="fas fa-ticket-alt text-yellow-600"></i>
-                      </div>
-                      <div class="flex-1">
-                        <p class="text-sm text-gray-800 font-medium">
-                          Support ticket opened
-                        </p>
-                        <p class="text-xs text-gray-500">
-                          Ticket #1234: Connection issue
-                        </p>
-                        <p class="text-xs text-gray-400 mt-1">5 hours ago</p>
-                      </div>
-                    </a>
-                    <a
-                      href="#"
-                      class="flex items-start px-4 py-3 hover:bg-teal-50 transition border-b border-gray-100"
-                    >
-                      <div
-                        class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0"
-                      >
-                        <i class="fas fa-dollar-sign text-green-600"></i>
-                      </div>
-                      <div class="flex-1">
-                        <p class="text-sm text-gray-800 font-medium">
-                          Payment received
-                        </p>
-                        <p class="text-xs text-gray-500">
-                          Ksh 5,000 from Jane Smith
-                        </p>
-                        <p class="text-xs text-gray-400 mt-1">1 day ago</p>
+                        <p class="text-xs text-gray-400 mt-1">2 hours ago</p> -->
                       </div>
                     </a>
                   </div>
@@ -213,21 +194,22 @@
                   <div
                     class="w-9 h-9 bg-teal-200 rounded-full flex items-center justify-center"
                   >
-                    <span class="text-teal-800 font-bold text-sm">JO</span>
+                    <span class="text-teal-800 font-bold text-sm"></span>
                   </div>
                   <span class="hidden sm:block font-medium text-gray-800"
-                    >Julius Ojwang</span
+                    >N/A</span
                   >
                   <i class="fas fa-chevron-down text-sm text-gray-600"></i>
                 </button>
 
                 <!-- User Dropdown -->
+                <% const profilePageSlug = "profile"; %>
                 <div
                   id="userDropdown"
                   class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-50 hidden border border-teal-100"
                 >
                   <a
-                    href="#"
+                   href="/admin/<%= profilePageSlug %>"
                     class="flex items-center px-4 py-2 text-gray-700 hover:bg-teal-50 transition"
                   >
                     <i class="fas fa-user mr-3 text-teal-600"></i> My Profile
@@ -388,11 +370,36 @@
         .getElementById("logoutBtn")
         .addEventListener("click", function (e) {
           e.preventDefault();
+
           if (confirm("Are you sure you want to log out?")) {
-            alert("Logging out...");
-            // Redirect to login page would go here
+            // Start the logout process
+            logoutUser();
           }
         });
+
+      async function logoutUser() {
+        try {
+          // Send a POST request to the server's logout endpoint
+          const response = await fetch("/api/logout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            window.location.href = "/login";
+          } else {
+            alert("Logout failed: " + (data.error || "Please try again."));
+          }
+        } catch (error) {
+          console.error("Network or system error during logout:", error);
+          alert("A network error occurred. Please check your connection.");
+        }
+      }
 
       // Close sidebar when clicking nav links
       document.querySelectorAll(".nav-link").forEach((link) => {
@@ -437,6 +444,67 @@
           setTimeout(() => notification.remove(), 300);
         }, 3000);
       }
+
+      async function loadUserMenu() {
+    const avatarCircle = document.querySelector('#userMenuBtn .w-9.h-9');
+    const nameSpan     = document.querySelector('#userMenuBtn .font-medium');
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'GET',
+        credentials: 'include',               // keep session cookies
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch profile');
+
+      const data = await res.json();
+      const profile = data.profile;           // <-- your API shape
+
+      // ---- 1. Avatar -------------------------------------------------
+      if (profile.image) {
+        // create an <img> inside the circle
+        const img = document.createElement('img');
+        img.src = profile.image;
+        img.alt = 'Profile';
+        img.className = 'w-full h-full rounded-full object-cover';
+
+        // replace the placeholder <div> with the image
+        avatarCircle.innerHTML = '';
+        avatarCircle.appendChild(img);
+      } else {
+        // keep the initials fallback
+        const initials = (profile.name || 'U')
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase()
+          .substring(0, 2);
+        avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">${initials}</span>`;
+      }
+
+      // ---- 2. Name ---------------------------------------------------
+      nameSpan.textContent = profile.name || 'User';
+
+      // optional: tiny success toast
+      // showNotification('Profile loaded', 'success');
+
+    } catch (err) {
+      console.error('loadUserMenu error:', err);
+      showNotification('Could not load user info', 'error');
+
+      // keep the static placeholder when everything fails
+      avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">JO</span>`;
+      nameSpan.textContent = 'Julius Ojwang';
+    }
+  }
+
+  // -----------------------------------------------------------------
+  // Run on DOM ready (you already have DOMContentLoaded elsewhere)
+  // -----------------------------------------------------------------
+  document.addEventListener('DOMContentLoaded', () => {
+    loadUserMenu();
+  });
     </script>
   </body>
 </html>

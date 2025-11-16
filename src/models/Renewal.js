@@ -1,21 +1,60 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
-async function createRenewal(data) {
-  const {
-    userId, userName, amount, renewalDate, expiryDate,
-    month, year, isDeleted = false
-  } = data;
+const Renewals = {
+  create: async (data) => {
+    const query = `
+      INSERT INTO renewals 
+        (subscription_id, user_id, package_id, old_package_id,
+         amount, old_amount, old_expiry_date, new_expiry_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-  await db.execute(
-    `INSERT INTO renewals (user_id, user_name, amount, renewal_date, expiry_date, month, year, is_deleted)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [userId, userName, amount, renewalDate, expiryDate, month, year, isDeleted]
-  );
-}
+    const values = [
+      data.subscription_id,
+      data.user_id,
+      data.package_id,
+      data.old_package_id,
+      data.amount,
+      data.old_amount,
+      data.old_expiry_date,
+      data.new_expiry_date,
+    ];
 
-async function getAllRenewals() {
-  const [rows] = await db.execute("SELECT * FROM renewals ORDER BY renewal_date DESC");
-  return rows;
-}
+    return db.query(query, values);
+  },
 
-module.exports = { createRenewal, getAllRenewals };
+  // Get last renewal for a subscription
+  getLastBySubscriptionId: async (subscriptionId) => {
+    const [rows] = await db.query(
+      `SELECT * FROM renewals WHERE subscription_id=? ORDER BY renewal_date DESC LIMIT 1`,
+      [subscriptionId]
+    );
+    return rows[0];
+  },
+
+  // Delete renewal by ID
+  deleteById: async (id) => {
+    const [result] = await db.query(`DELETE FROM renewals WHERE id=?`, [id]);
+    return result;
+  },
+
+  getMonthlyStats: async (year, month) => {
+    const [rows] = await db.query(
+      `
+      SELECT 
+        COUNT(*) as count,
+        COALESCE(SUM(amount), 0) as revenue,
+        COALESCE(AVG(amount), 0) as avg_amount
+      FROM renewals
+      WHERE YEAR(renewal_date) = ? 
+        AND MONTH(renewal_date) = ?
+        AND is_deleted = FALSE
+      `,
+      [year, month]
+    );
+
+    return rows[0] || { count: 0, revenue: 0, avg_amount: 0 };
+  },
+};
+
+module.exports = Renewals;

@@ -1,14 +1,16 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
 async function createPermissionsTable() {
-    await db.query(`
-        CREATE TABLE IF NOT EXISTS permissions (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) UNIQUE NOT NULL,
-        description VARCHAR(255)
-        );
-    `);
-    console.log('Permissions table created');
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS permissions (
+      id INT PRIMARY KEY,
+      name VARCHAR(50) NOT NULL UNIQUE,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+  `);
+  console.log("Permissions table created");
 }
 
 module.exports = createPermissionsTable;

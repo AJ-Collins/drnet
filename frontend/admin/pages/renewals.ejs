@@ -1,568 +1,798 @@
-        <div class="flex items-center justify-between mb-8">
-          <div>
-            <h3 class="text-2xl font-bold text-teal-800">
-              Renewals Management
-            </h3>
-            <p class="text-teal-600 mt-1">
-              Subscription & Service Renewals
-            </p>
-          </div>
+<!-- ==================== RENEWALS MANAGEMENT ==================== -->
+<div class="flex items-center justify-between mb-8 px-6 pt-6">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">Renewals Management</h3>
+    <p class="text-teal-600 mt-1">Subscription & Service Renewals</p>
+  </div>
 
-          <button onclick="exportRenewalsToCSV()"
-            class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 group">
-            <i class="fas fa-download group-hover:scale-110 transition-transform"></i>
-            <span class="mr-2">Export CSV</span>
-          </button>
+  <button
+    onclick="exportRenewalsCSV()"
+    class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
+  >
+    <i class="fas fa-download group-hover:scale-110 transition-transform"></i>
+    <span>Export CSV</span>
+  </button>
+</div>
+
+<!-- ==================== STATS ==================== -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 px-6">
+  <div
+    class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400 stat-card"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-teal-600 text-sm font-bold mb-1">Monthly Renewals</p>
+        <h3 id="statRenewals" class="text-3xl font-bold text-gray-800">0</h3>
+      </div>
+      <div
+        class="w-14 h-14 bg-teal-100 rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-sync text-teal-600 text-2xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400 stat-card"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-green-600 text-sm font-bold mb-1">
+          Revenue (Current Month)
+        </p>
+        <h3 id="statRevenue" class="text-3xl font-bold text-gray-800">Ksh 0</h3>
+      </div>
+      <div
+        class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-dollar-sign text-green-600 text-2xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400 stat-card"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-blue-600 text-sm font-bold mb-1">Avg. Renewal</p>
+        <h3 id="statAvg" class="text-3xl font-bold text-gray-800">Ksh 0</h3>
+      </div>
+      <div
+        class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-chart-pie text-blue-600 text-2xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400 stat-card"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-purple-600 text-sm font-bold mb-1">Active Clients</p>
+        <h3 id="statActive" class="text-3xl font-bold text-gray-800">0</h3>
+      </div>
+      <div
+        class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-user-check text-purple-600 text-2xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== QUICK RENEWAL ==================== -->
+<div class="bg-white shadow-xl p-6 mb-8 rounded-xl slide-in px-6">
+  <div class="flex items-center mb-6">
+    <div
+      class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center mr-3"
+    >
+      <i class="fas fa-bolt text-teal-600 text-sm"></i>
+    </div>
+    <h2 class="text-xl font-bold text-gray-800">Quick Renewal / Upgrade</h2>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Search & Select -->
+    <div class="lg:col-span-2">
+      <label class="block text-sm font-bold text-gray-700 mb-2">
+        <i class="fas fa-user text-teal-600 mr-2"></i>Select Client
+      </label>
+      <div class="relative">
+        <i
+          class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+        ></i>
+        <input
+          type="text"
+          id="renewClientSearch"
+          placeholder="Type name / phone / email..."
+          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all"
+        />
+      </div>
+
+      <select
+        id="renewClientSelect"
+        size="6"
+        class="mt-3 w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all bg-white"
+        onchange="loadClientSubscriptions(this.value)"
+      ></select>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col justify-center space-y-2">
+      <button
+        onclick="openRenewModal()"
+        id="btnRenew"
+        class="w-full bg-teal-700 hover:bg-teal-800 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors"
+      >
+        <i class="fas fa-sync text-sm"></i>
+        <span class="text-sm">Renew</span>
+      </button>
+
+      <button
+        onclick="openUpgradeModal()"
+        id="btnUpgrade"
+        class="w-full bg-teal-800 hover:bg-teal-900 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors"
+      >
+        <i class="fas fa-arrow-up text-sm"></i>
+        <span class="text-sm">Upgrade</span>
+      </button>
+
+      <button
+        onclick="openSubscribeModal()"
+        id="btnSubscribe"
+        class="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors"
+      >
+        <i class="fas fa-plus text-sm"></i>
+        <span class="text-sm">Subscribe</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Client Preview -->
+  <div
+    id="clientPreview"
+    class="mt-6 hidden bg-teal-50 border-2 border-teal-200 rounded-xl p-4"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div
+          class="w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center text-white font-bold"
+        >
+          <span id="previewInitials"></span>
         </div>
-        <!-- Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-teal-600 text-sm font-bold mb-1">Monthly Renewals</p>
-                        <h3 id="renewalsCount" class="text-3xl font-bold text-gray-800">0</h3>
-                        <p class="text-green-500 text-sm mt-1">
-                            <i class="fas fa-arrow-up mr-1"></i>This month
-                        </p>
-                    </div>
-                    <div class="w-14 h-14 bg-teal-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-sync text-teal-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-green-600 text-sm font-bold mb-1">Total Revenue</p>
-                        <h3 id="renewalsRevenue" class="text-3xl font-bold text-gray-800">Ksh 0</h3>
-                        <p class="text-green-500 text-sm mt-1">
-                            <i class="fas fa-chart-line mr-1"></i>Revenue
-                        </p>
-                    </div>
-                    <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-green-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-blue-600 text-sm font-bold mb-1">Average Amount</p>
-                        <h3 id="renewalsAverage" class="text-3xl font-bold text-gray-800">Ksh 0</h3>
-                        <p class="text-blue-500 text-sm mt-1">
-                            <i class="fas fa-calculator mr-1"></i>Per renewal
-                        </p>
-                    </div>
-                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-chart-pie text-blue-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-purple-600 text-sm font-bold mb-1">Active Users</p>
-                        <h3 id="activeUsersCount" class="text-3xl font-bold text-gray-800">0</h3>
-                        <p class="text-purple-500 text-sm mt-1">
-                            <i class="fas fa-users mr-1"></i>Subscribed
-                        </p>
-                    </div>
-                    <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user-check text-purple-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
+        <div>
+          <p id="previewName" class="font-bold text-gray-800"></p>
+          <p id="previewContact" class="text-sm text-gray-600"></p>
         </div>
+      </div>
+      <div class="text-right">
+        <p id="previewPlan" class="font-semibold text-teal-800"></p>
+        <p id="previewExpiry" class="text-xs text-gray-600"></p>
+      </div>
+    </div>
+  </div>
+</div>
 
-        <!-- Quick Renewal Form -->
-        <div class="bg-white shadow-xl p-6 mb-8">
-            <div class="flex items-center mb-6">
-                <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center mr-3">
-                    <i class="fas fa-bolt text-teal-600 text-sm"></i>
-                </div>
-                <h2 class="text-xl font-bold text-gray-800">Quick Renewal</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">
-                                <i class="fas fa-user text-teal-600 mr-2"></i>Select User
-                            </label>
-                            <select id="renewalUser" onchange="previewUser()" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all bg-white text-gray-900">
-                                <option value="">Choose a user...</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">
-                                <i class="fas fa-money-bill-wave text-green-600 mr-2"></i>Renewal Amount (Ksh)
-                            </label>
-                            <input id="renewalAmount" type="number" placeholder="Enter amount" class="w-full p-4 rounded-xl border-2 border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all bg-white text-gray-900" />
-                        </div>
-                    </div>
+<!-- ==================== SUBSCRIPTION HISTORY ==================== -->
+<div class="bg-white shadow-md p-6 rounded-xl mb-8 slide-in px-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-bold text-teal-800">
+      <i class="fas fa-history mr-2"></i>Subscription History
+    </h3>
+  </div>
 
-                    <div id="userPreview" class="hidden bg-teal-50 border-2 border-teal-200 rounded-xl p-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-user text-white text-xl"></i>
-                                </div>
-                                <div>
-                                    <p id="previewName" class="font-bold text-gray-800"></p>
-                                    <p id="previewDetails" class="text-sm text-gray-600"></p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p id="previewStatus" class="text-sm font-bold"></p>
-                                <p id="previewExpiry" class="text-xs text-gray-600"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <div class="overflow-x-auto">
+    <table class="w-full" id="historyTable">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Plan
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Assigned
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Expires
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Price
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Status
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+</div>
 
-                <div class="flex flex-col justify-start mt-[30px] md:mt-[32px]">
-                  <button onclick="processQuickRenewal()" 
-                    class="w-full bg-teal-500 text-white 
-                    px-6 py-3 rounded-xl font-semibold text-base shadow-md 
-                    hover:bg-teal-700 transition-all duration-300
-                    md:text-base md:py-3 
-                    sm:text-sm sm:py-2">
-                      <i class="fas fa-check-circle text-lg mr-2"></i>
-                      Renew
-                  </button>
-                </div>
-            </div>
-        </div>
+<!-- ==================== RENEW / UPGRADE / SUBSCRIBE MODAL ==================== -->
+<div
+  id="renewModal"
+  class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
+>
+  <div
+    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
+  >
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-bold text-teal-800 flex items-center">
+        <i class="fas fa-wifi mr-3 text-indigo-600"></i
+        ><span id="modalHeader">Renew Subscription</span>
+      </h3>
+      <button
+        type="button"
+        onclick="closeRenewModal()"
+        class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+      >
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
 
-        <!-- Filters and Search -->
-        <div class="bg-white shadow-xl p-6 mb-8">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                <div class="flex-1 lg:mr-4">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input id="renewalSearchInput" type="text" placeholder="Search by name, phone, or location..." class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all bg-white text-gray-900" />
-                    </div>
-                </div>
-                
-                <div class="flex flex-wrap gap-3">
-                    <select id="renewalSubscriptionFilter" class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all bg-white text-gray-900 font-medium">
-                        <option value="all">All Subscriptions</option>
-                        <option value="paid">Paid</option>
-                        <option value="unpaid">Unpaid</option>
-                    </select>
-                    
-                    <select id="renewalStatusFilter" class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all bg-white text-gray-900 font-medium">
-                        <option value="all">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="expired">Expired</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+    <div class="space-y-5">
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <p class="text-sm text-gray-600">Client</p>
+        <p id="modalClientName" class="text-lg font-bold text-gray-900">-</p>
+      </div>
 
-        <!-- All Renewals -->
-        <div class="bg-white shadow-md border border-gray-200 overflow-hidden slide-in">
-          <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-teal-100 border-b border-teal-200">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-bold text-teal-800"><i class="fas fa-list mr-2"></i>Assignments</h3>
-            </div>
-          </div>
-          <div id="allRenewalsList" class="space-y-4">
-               <p class="text-center text-gray-500 py-8">Loading renewals...</p>
-          </div>
-        </div>
+      <div
+        id="currentPlanBox"
+        class="bg-teal-50 p-4 rounded-lg border border-teal-200 hidden"
+      >
+        <p class="text-sm text-teal-700 font-medium">Current Plan</p>
+        <p id="currentPlanName" class="text-xl font-bold text-teal-800">-</p>
+        <p id="currentPlanExpiry" class="text-sm text-teal-600 mt-1">-</p>
+      </div>
 
-    <script>
-        // Mock data for demonstration
-        let users = [
-            { id: 1, name: 'John Doe', phone: '+254712345678', location: 'Mombasa', subscription_amount: 1500, payment_date: '2025-11-01', expiry_date: '2025-12-01', paid_subscription: true, is_deleted: 0 },
-            { id: 2, name: 'Jane Smith', phone: '+254723456789', location: 'Nairobi', subscription_amount: 2000, payment_date: '2025-10-15', expiry_date: '2025-11-15', paid_subscription: false, is_deleted: 0 },
-            { id: 3, name: 'Bob Wilson', phone: '+254734567890', location: 'Kisumu', subscription_amount: 1800, payment_date: '2025-11-03', expiry_date: '2025-12-03', paid_subscription: true, is_deleted: 0 },
-            { id: 4, name: 'Alice Brown', phone: '+254745678901', location: 'Eldoret', subscription_amount: 1200, payment_date: '2025-09-20', expiry_date: '2025-10-20', paid_subscription: false, is_deleted: 0 }
-        ];
+      <div id="planSelectWrapper">
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Select Plan
+        </label>
+        <select
+          id="modalPlanSelect"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white"
+        >
+          <option value="">Loading plans…</option>
+        </select>
+      </div>
 
-        let renewals = [
-            { id: 1, user_id: 1, user_name: 'John Doe', amount: 1500, renewal_date: '2025-11-01', expiry_date: '2025-12-01', month: 'November', year: 2025, is_deleted: false },
-            { id: 2, user_id: 3, user_name: 'Bob Wilson', amount: 1800, renewal_date: '2025-11-03', expiry_date: '2025-12-03', month: 'November', year: 2025, is_deleted: false },
-            { id: 3, user_id: 2, user_name: 'Jane Smith', amount: 2000, renewal_date: '2025-10-15', expiry_date: '2025-11-15', month: 'October', year: 2025, is_deleted: false }
-        ];
+      <div class="flex space-x-3">
+        <button
+          type="button"
+          onclick="closeRenewModal()"
+          class="flex-1 py-3 px-6 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-all"
+        >
+          Cancel
+        </button>
+        <button
+          id="modalActionBtn"
+          type="button"
+          class="flex-1 py-3 px-6 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-semibold hover:from-teal-700 hover:to-teal-800 shadow-lg hover:shadow-xl transition-all"
+        >
+          <span id="modalActionText">Renew</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        window.BASE_URL = '';
-        window.MOCK_MODE = true;
+<script>
+  /* ==============================================================
+   RENEWALS MANAGEMENT – FULLY RE-IMPLEMENTED (same API as User Mgmt)
+   ============================================================== */
+  const RENEW = {
+    clientsCache: [], // all clients
+    packagesCache: [], // all packages
+    selectedClient: null, // {id, name, email, phone, currentSub}
+    historyCache: [], // historic subs for selected client
+    modalMode: "", // 'renew' | 'upgrade' | 'subscribe'
+  };
 
-        function previewUser() {
-            const userId = document.getElementById('renewalUser').value;
-            const preview = document.getElementById('userPreview');
-            
-            if (!userId) {
-                preview.classList.add('hidden');
-                return;
+  const $r = (id) => document.getElementById(id);
+  const API = "/api";
+  const PKG_API = "/api/packages";
+
+  /* ---------- HELPERS ---------- */
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString("en-KE", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  const getBadge = (s) =>
+    ({
+      Active: "bg-green-100 text-green-700",
+      Expired: "bg-red-100 text-red-700",
+      Suspended: "bg-orange-100 text-orange-700",
+    }[s] || "bg-gray-100 text-gray-700");
+
+  /* ---------- FETCH ---------- */
+  async function fetchClients() {
+    const res = await fetch(`${API}/clients`);
+    if (!res.ok) throw new Error("Clients fetch failed");
+    const data = await res.json();
+
+    // enrich with current subscription
+    const enriched = await Promise.all(
+      data.map(async (c) => {
+        try {
+          const subRes = await fetch(
+            `${API}/subscribe/client/current?userId=${c.id}`,
+            {
+              headers: { "X-Admin-Request": "true" },
             }
-
-            const user = users.find(u => u.id == userId);
-            if (!user) return;
-
-            const expiryDate = dayjs(user.expiry_date);
-            const daysRemaining = expiryDate.diff(dayjs(), 'day');
-            const isActive = daysRemaining >= 0;
-
-            document.getElementById('previewName').textContent = user.name;
-            document.getElementById('previewDetails').textContent = `${user.phone} • ${user.location}`;
-            document.getElementById('previewStatus').textContent = isActive ? '✓ Active' : '✗ Expired';
-            document.getElementById('previewStatus').className = `text-sm font-bold ${isActive ? 'text-green-600' : 'text-red-600'}`;
-            document.getElementById('previewExpiry').textContent = `Expires: ${expiryDate.format('MMM D, YYYY')} (${daysRemaining} days)`;
-
-            document.getElementById('renewalAmount').value = user.subscription_amount;
-            preview.classList.remove('hidden');
+          );
+          const sub = subRes.ok ? await subRes.json() : null;
+          return { ...c, currentSub: sub };
+        } catch {
+          return { ...c, currentSub: null };
         }
+      })
+    );
+    RENEW.clientsCache = enriched;
+    return enriched;
+  }
 
-        async function fetchData() {
-            return users;
+  async function fetchPackages() {
+    const res = await fetch(PKG_API);
+    if (!res.ok) throw new Error("Packages fetch failed");
+    const data = await res.json();
+    RENEW.packagesCache = Array.isArray(data) ? data : [];
+    return RENEW.packagesCache;
+  }
+
+  async function fetchHistory(clientId) {
+    const res = await fetch(
+      `${API}/subscribe/client/history?userId=${clientId}`,
+      {
+        headers: { "X-Admin-Request": "true" },
+      }
+    );
+    if (!res.ok) throw new Error("History fetch failed");
+    const data = await res.json();
+    RENEW.historyCache = Array.isArray(data) ? data : [];
+    return RENEW.historyCache;
+  }
+
+  /* ---------- UI POPULATION ---------- */
+  async function populateClientSelect(search = "") {
+    const select = $r("renewClientSelect");
+    if (!select) return;
+
+    const clients = RENEW.clientsCache.filter(
+      (c) =>
+        `${c.first_name} ${c.second_name}`
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        c.phone?.includes(search) ||
+        c.email?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    select.innerHTML = clients
+      .map(
+        (c) => `
+    <option value="${c.id}">
+      ${c.first_name} ${c.second_name} – ${c.phone} ${
+          c.currentSub ? `(${c.currentSub.package_name})` : ""
         }
+    </option>
+  `
+      )
+      .join("");
+  }
 
-        async function fetchRenewals() {
-            return renewals;
+  /* ---------- SEARCH DEBOUNCE ---------- */
+  let searchTimer;
+  $r("renewClientSearch").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => populateClientSelect(e.target.value), 300);
+  });
+
+  /* ---------- CLIENT SELECTED ---------- */
+  window.loadClientSubscriptions = async (clientId) => {
+    if (!clientId) return;
+    const client = RENEW.clientsCache.find((c) => c.id == clientId);
+    if (!client) return;
+
+    RENEW.selectedClient = client;
+    await fetchHistory(clientId);
+    renderClientPreview();
+    renderHistory();
+    toggleActionButtons();
+  };
+
+  /* ---------- PREVIEW ---------- */
+  function renderClientPreview() {
+    const p = $r("clientPreview");
+    const c = RENEW.selectedClient;
+    const sub = c.currentSub;
+
+    $r("previewInitials").textContent =
+      `${c.first_name[0]}${c.second_name[0]}`.toUpperCase();
+    $r("previewName").textContent = `${c.first_name} ${c.second_name}`;
+    $r("previewContact").textContent = `${c.phone} • ${c.email}`;
+    $r("previewPlan").textContent = sub ? sub.package_name : "No active plan";
+    $r("previewExpiry").textContent = sub
+      ? `Expires ${formatDate(sub.expires)}`
+      : "";
+
+    p.classList.remove("hidden");
+  }
+
+  /* ---------- HISTORY TABLE ---------- */
+  function renderHistory() {
+    const tbody = $r("historyBody");
+    if (!RENEW.historyCache.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">No history</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = RENEW.historyCache
+      .map((h, idx) => {
+        const status = new Date(h.expires) >= new Date() ? "Active" : "Expired";
+        const isActive = status === "Active";
+        const isLatest = idx === 0; // latest entry
+
+        return `
+    <tr class="hover:bg-gray-50 transition-all">
+      <td class="p-3">${h.package_name}</td>
+      <td class="p-3">${formatDate(h.assigned_at || h.created_at)}</td>
+      <td class="p-3">${formatDate(h.expires)}</td>
+      <td class="p-3">KSh ${Number(h.price).toLocaleString()}</td>
+      <td class="p-3"><span class="px-2 py-1 rounded text-xs font-medium ${getBadge(
+        status
+      )}">${status}</span></td>
+      <td class="p-3 text-right space-x-1">
+        ${
+          isActive && isLatest
+            ? `<button onclick="reverseRenewal(${h.id})" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-2 py-1 rounded" title="Reverse this renewal">
+                 <i class="fas fa-undo"></i> Reverse
+               </button>`
+            : ""
         }
+        <button onclick="deleteRenewal(${
+          h.id
+        })" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded" title="Delete record">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    </tr>`;
+      })
+      .join("");
+  }
 
-        async function renderRenewals() {
-            const renewalUserSelect = document.getElementById('renewalUser');
-            const allRenewalsList = document.getElementById('allRenewalsList');
-            const renewalsCount = document.getElementById('renewalsCount');
-            const renewalsRevenue = document.getElementById('renewalsRevenue');
-            const renewalsAverage = document.getElementById('renewalsAverage');
-            const activeUsersCount = document.getElementById('activeUsersCount');
-            const renewalSearchInput = document.getElementById('renewalSearchInput').value.toLowerCase();
-            const renewalSubscriptionFilter = document.getElementById('renewalSubscriptionFilter');
-            const renewalStatusFilter = document.getElementById('renewalStatusFilter');
+  /* ---------- ACTION BUTTON VISIBILITY ---------- */
+  function toggleActionButtons() {
+    const hasCurrent = !!RENEW.selectedClient.currentSub;
+    $r("btnRenew").disabled = !hasCurrent;
+    $r("btnUpgrade").disabled = !hasCurrent;
+    $r("btnSubscribe").disabled = false;
+  }
 
-            try {
-                await fetchData();
-                const renewalsList = await fetchRenewals();
-                const activeUsers = users.filter(u => u.is_deleted !== 1);
-                const currentMonth = dayjs().format('YYYY-MM');
+  /* ---------- MODAL HANDLERS ---------- */
+  async function populateModalPlans() {
+    const sel = $r("modalPlanSelect");
+    sel.innerHTML = '<option value="">Select plan…</option>';
+    RENEW.packagesCache.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.name} – KSh ${p.price} (${p.speed})`;
+      sel.appendChild(opt);
+    });
+  }
+  function autoSelectCurrentPlan() {
+    const cur = RENEW.selectedClient.currentSub;
+    if (!cur) return;
 
-                // Monthly Renewals
-                const monthlyRenewals = renewalsList.filter(r => 
-                    !r.is_deleted && 
-                    r.month === dayjs().format('MMMM') && 
-                    r.year === dayjs().year()
-                );
+    const sel = $r("modalPlanSelect");
+    const opt = sel.querySelector(`option[value="${cur.package_id}"]`);
+    if (opt) opt.selected = true;
+  }
 
-                const renewalsRevenueValue = monthlyRenewals.reduce((sum, r) => sum + Number(r.amount), 0);
-                const renewalsAverageValue = monthlyRenewals.length > 0 ? Math.round(renewalsRevenueValue / monthlyRenewals.length) : 0;
-                const activeUsersValue = activeUsers.filter(u => {
-                    const expiryDate = dayjs(u.expiry_date);
-                    return expiryDate.diff(dayjs(), 'day') >= 0;
-                }).length;
+  function openModal(mode) {
+    if (!RENEW.selectedClient) {
+      return Swal.fire(
+        "No Client Selected",
+        "Please select a client first",
+        "warning"
+      );
+    }
 
-                // Populate Quick Renewal Select
-                renewalUserSelect.innerHTML = `
-                    <option value="">Choose a user...</option>
-                    ${activeUsers.map(user => `
-                        <option value="${user.id}">${user.name} - ${user.location}</option>
-                    `).join('')}
-                `;
+    RENEW.modalMode = mode;
+    const header = {
+      renew: "Renew Subscription",
+      upgrade: "Upgrade Plan",
+      subscribe: "Subscribe to New Plan",
+    }[mode];
+    $r("modalHeader").textContent = header;
+    $r("modalActionText").textContent =
+      mode === "renew" ? "Renew" : mode === "upgrade" ? "Upgrade" : "Subscribe";
 
-                // Filter renewals
-                let filteredRenewals = renewalsList.filter(r => !r.is_deleted);
+    $r(
+      "modalClientName"
+    ).textContent = `${RENEW.selectedClient.first_name} ${RENEW.selectedClient.second_name}`;
 
-                if (renewalSearchInput) {
-                    filteredRenewals = filteredRenewals.filter(r => {
-                        const user = users.find(u => u.id === r.user_id);
-                        return (
-                            r.user_name.toLowerCase().includes(renewalSearchInput) ||
-                            (user && user.phone.toLowerCase().includes(renewalSearchInput)) ||
-                            (user && user.location.toLowerCase().includes(renewalSearchInput))
-                        );
-                    });
-                }
+    // ---- Current plan box ----
+    const curBox = $r("currentPlanBox");
+    const cur = RENEW.selectedClient.currentSub;
+    if (cur && mode !== "subscribe") {
+      $r("currentPlanName").textContent = cur.package_name;
+      $r("currentPlanExpiry").textContent = `Expires: ${formatDate(
+        cur.expires
+      )}`;
+      curBox.classList.remove("hidden");
+    } else {
+      curBox.classList.add("hidden");
+    }
 
-                if (renewalSubscriptionFilter.value !== 'all') {
-                    filteredRenewals = filteredRenewals.filter(r => {
-                        const user = users.find(u => u.id === r.user_id);
-                        return user ? (renewalSubscriptionFilter.value === 'paid' ? user.paid_subscription : !user.paid_subscription) : false;
-                    });
-                }
+    // ---- Plan selector visibility & auto-select ----
+    const wrapper = $r("planSelectWrapper");
+    if (mode === "renew") {
+      wrapper.classList.add("hidden"); // hide selector
+      populateModalPlans(); // still load options (for cache)
+      autoSelectCurrentPlan(); // pre-select current plan
+    } else {
+      wrapper.classList.remove("hidden"); // show for Upgrade/Subscribe
+      populateModalPlans();
+      // clear selection for safety
+      $r("modalPlanSelect").selectedIndex = 0;
+    }
 
-                if (renewalStatusFilter.value !== 'all') {
-                    filteredRenewals = filteredRenewals.filter(r => {
-                        const expiryDate = dayjs(r.expiry_date);
-                        const daysRemaining = expiryDate.diff(dayjs(), 'day');
-                        const isActive = daysRemaining >= 0;
-                        return renewalStatusFilter.value === 'active' ? isActive : !isActive;
-                    });
-                }
+    $r("renewModal").style.display = "flex";
+    setTimeout(
+      () =>
+        $r("renewModal")
+          .querySelector(".bg-white")
+          .classList.replace("scale-95", "scale-100"),
+      10
+    );
+  }
 
-                // Render All Renewals
-                allRenewalsList.innerHTML = filteredRenewals.length > 0 ? filteredRenewals.map(r => {
-                    const user = users.find(u => u.id === r.user_id) || {};
-                    const expiryDate = dayjs(r.expiry_date);
-                    const daysRemaining = expiryDate.diff(dayjs(), 'day');
-                    const isActive = daysRemaining >= 0;
-                    const statusBg = isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+  window.openRenewModal = () => openModal("renew");
+  window.openUpgradeModal = () => openModal("upgrade");
+  window.openSubscribeModal = () => openModal("subscribe");
 
-                    return `
-                      <div class="bg-gray-50 p-5 border hover:border-gray-100 hover:bg-teal-50 transition-all cursor-pointer"
-                          onclick="viewRenewal('${r.id}')">
+  window.closeRenewModal = () => {
+    const modal = $r("renewModal");
+    modal.querySelector(".bg-white").classList.replace("scale-100", "scale-95");
+    setTimeout(() => (modal.style.display = "none"), 200);
+  };
 
-                        <div class="grid grid-cols-1 sm:grid-cols-7 items-center gap-4 w-full">
+  /* ---------- MODAL ACTION ---------- */
+  $r("modalActionBtn").onclick = async () => {
+    // For Renew we auto-selected the plan – no need to validate selection
+    if (RENEW.modalMode !== "renew") {
+      const planId = $r("modalPlanSelect").value;
+      if (!planId)
+        return Swal.fire("Select Plan", "Please choose a plan", "warning");
+    }
 
-                          <!-- NAME + STATUS -->
-                          <div class="flex items-center space-x-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                            <span class="font-semibold text-gray-800">${r.user_name}</span>
-                            <span class="px-2 py-0.5 rounded text-xs font-medium ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                              ${isActive ? 'ACTIVE' : 'EXPIRED'}
-                            </span>
-                          </div>
+    const clientId = RENEW.selectedClient.id;
+    let endpoint = "";
+    let method = "POST";
+    let msg = "";
 
-                          <div class="text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap">${user.phone || ''}</div>
-                          <div class="text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap">${user.location || ''}</div>
+    switch (RENEW.modalMode) {
+      case "renew":
+        endpoint = `${API}/subscribe/client/renew?userId=${clientId}`;
+        msg = "Renewed";
+        break;
+      case "upgrade":
+        endpoint = `${API}/subscribe/client/upgrade/${
+          $r("modalPlanSelect").value
+        }?userId=${clientId}`;
+        msg = "Upgraded";
+        break;
+      case "subscribe":
+        endpoint = `${API}/subscribe/client/${
+          $r("modalPlanSelect").value
+        }?userId=${clientId}`;
+        msg = "Subscribed";
+        break;
+    }
 
-                          <div class="text-sm text-gray-700 whitespace-nowrap">Renewed: ${dayjs(r.renewal_date).format('MMM D, YYYY')}</div>
-                          <div class="text-sm text-gray-700 whitespace-nowrap">Expires: ${expiryDate.format('MMM D, YYYY')}</div>
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        headers: { "X-Admin-Request": "true" },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
 
-                          <!-- AMOUNTS -->
-                          <div class="flex flex-col text-right whitespace-nowrap">
-                            <span class="text-xs text-gray-500">Prev: KSH ${Number(user.subscription_amount || 0).toLocaleString()}</span>
-                            <span class="font-semibold text-gray-800">New: KSH ${Number(r.amount).toLocaleString()}</span>
-                          </div>
+      Swal.fire(
+        "Success!",
+        `${msg}: ${data.name}<br>Expires ${data.expires}`,
+        "success"
+      );
+      closeRenewModal();
 
-                          <!-- ACTIONS -->
-                          <div class="flex space-x-2 justify-end">
-                            <button onclick="editRenewal(event,'${r.id}')" class="text-blue-600 hover:bg-blue-100 p-2 rounded">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="reverseRenewal(event,'${r.id}')" class="text-red-600 hover:bg-red-100 p-2 rounded">
-                              <i class="fas fa-undo"></i>
-                            </button>
-                          </div>
+      // refresh
+      await fetchClients();
+      await loadClientSubscriptions(clientId);
+      await updateStats();
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  };
 
-                        </div>
-                      </div>
-                    `;
-                }).join('') : '<p class="text-gray-500 text-center py-8">No renewals found.</p>';
+  /* ---------- STATS ---------- */
+  async function updateStats() {
+    try {
+      const res = await fetch(`${API}/renewals/stats`, {
+        headers: { "X-Admin-Request": "true" },
+      });
 
-                // Update Summary
-                renewalsCount.textContent = monthlyRenewals.length.toString();
-                renewalsRevenue.textContent = `Ksh ${renewalsRevenueValue.toLocaleString()}`;
-                renewalsAverage.textContent = `Ksh ${renewalsAverageValue.toLocaleString()}`;
-                activeUsersCount.textContent = activeUsersValue.toString();
+      if (!res.ok) throw new Error("Failed to load stats");
 
-            } catch (err) {
-                console.error('Error loading renewals:', err);
-                allRenewalsList.innerHTML = '<p class="text-red-600 text-center py-8">Failed to load renewals.</p>';
-            }
+      const { monthlyRenewals, revenue, avgRenewal, activeClients } =
+        await res.json();
+
+      // Optional: still calculate active clients from clientsCache if needed
+      const now = new Date();
+      const active = RENEW.clientsCache.filter(
+        (c) => c.currentSub && new Date(c.currentSub.expires) >= now
+      ).length;
+
+      $r("statRenewals").textContent = monthlyRenewals;
+      $r("statRevenue").textContent = `Ksh ${revenue.toLocaleString()}`;
+      $r("statAvg").textContent = `Ksh ${avgRenewal.toLocaleString()}`;
+      $r("statActive").textContent = active; // still from clients
+    } catch (e) {
+      console.error("Stats error:", e);
+      $r("statRenewals").textContent = "Error";
+      $r("statRevenue").textContent = "Error";
+      $r("statAvg").textContent = "Error";
+    }
+  }
+
+  /* ---------- EXPORT CSV ---------- */
+  window.exportRenewalsCSV = () => {
+    if (!RENEW.selectedClient) {
+      return Swal.fire(
+        "No Client Selected",
+        "Please select a client first to export their renewal history",
+        "info"
+      );
+    }
+
+    const rows = RENEW.historyCache.map((h) => [
+      RENEW.selectedClient
+        ? `${RENEW.selectedClient.first_name} ${RENEW.selectedClient.second_name}`
+        : "",
+      h.package_name,
+      h.price,
+      formatDate(h.assigned_at || h.created_at),
+      formatDate(h.expires),
+      new Date(h.expires) >= new Date() ? "Active" : "Expired",
+    ]);
+
+    if (!rows.length)
+      return Swal.fire("No data", "No renewal history to export", "info");
+
+    const csv = [
+      ["Client", "Plan", "Price", "Assigned", "Expires", "Status"],
+      ...rows,
+    ]
+      .map((r) => r.map((v) => `"${v}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `renewals-${RENEW.selectedClient.id}-${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  /* ---------- REVERSE RENEWAL ---------- */
+  window.reverseRenewal = async (subscriptionId) => {
+    const client = RENEW.selectedClient;
+    if (!client) return;
+
+    const confirm = await Swal.fire({
+      title: "Reverse Renewal?",
+      text: "This will cancel the current plan and restore the previous one (if any).",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, reverse it",
+      cancelButtonText: "No, keep it",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const res = await fetch(
+        `${API}/subscribe/client/reverse/${subscriptionId}?userId=${client.id}`,
+        {
+          method: "POST",
+          headers: { "X-Admin-Request": "true" },
         }
+      );
 
-        async function processQuickRenewal() {
-            const userId = document.getElementById('renewalUser').value;
-            const amount = document.getElementById('renewalAmount').value;
+      if (!res.ok) throw new Error(await res.text());
 
-            if (!userId || !amount || amount <= 0) {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Please select a user and enter a valid renewal amount',
-                    icon: 'error',
-                    confirmButtonColor: '#0d9488'
-                });
-                return;
-            }
+      const data = await res.json();
 
-            const user = users.find(u => u.id == userId);
-            if (!user) return;
+      Swal.fire(
+        "Reversed!",
+        `Plan reverted to: ${data.previous?.package_name || "None"}`,
+        "success"
+      );
 
-            const renewalDate = dayjs().format('YYYY-MM-DD');
-            const expiryDate = dayjs().add(30, 'day').format('YYYY-MM-DD');
+      // Refresh
+      await fetchClients();
+      await loadClientSubscriptions(client.id);
+      await updateStats();
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  };
 
-            // Update user
-            user.subscription_amount = parseFloat(amount);
-            user.payment_date = renewalDate;
-            user.expiry_date = expiryDate;
-            user.paid_subscription = true;
+  /* ---------- DELETE RENEWAL ---------- */
+  window.deleteRenewal = async (subscriptionId) => {
+    const confirm = await Swal.fire({
+      title: "Delete Renewal Record?",
+      text: "This action cannot be undone.",
+      icon: "danger",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+    });
 
-            // Add renewal
-            renewals.push({
-                id: renewals.length + 1,
-                user_id: user.id,
-                user_name: user.name,
-                amount: parseFloat(amount),
-                renewal_date: renewalDate,
-                expiry_date: expiryDate,
-                month: dayjs().format('MMMM'),
-                year: dayjs().year(),
-                is_deleted: false
-            });
+    if (!confirm.isConfirmed) return;
 
-            Swal.fire({
-                title: 'Success!',
-                text: `${user.name} renewed successfully!`,
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false
-            });
-
-            document.getElementById('renewalUser').value = '';
-            document.getElementById('renewalAmount').value = '';
-            document.getElementById('userPreview').classList.add('hidden');
-            await renderRenewals();
+    try {
+      const res = await fetch(
+        `${API}/subscribe/client/delete/${subscriptionId}`,
+        {
+          method: "DELETE",
+          headers: { "X-Admin-Request": "true" },
         }
+      );
 
-        async function editRenewal(renewalId) {
-            const renewal = renewals.find(r => r.id === renewalId);
-            if (!renewal) return;
+      if (!res.ok) throw new Error(await res.text());
 
-            const user = users.find(u => u.id === renewal.user_id) || {};
+      Swal.fire("Deleted!", "Renewal record removed.", "success");
 
-            const { value: formValues } = await Swal.fire({
-                title: `Edit Renewal for ${renewal.user_name}`,
-                html: `
-                    <div class="text-left space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Renewal Amount (Ksh)</label>
-                            <input id="editRenewalAmount" type="number" value="${renewal.amount}" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Renewal Date</label>
-                            <input id="editRenewalDate" type="date" value="${renewal.renewal_date}" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <input type="checkbox" id="editPaidSubscription" ${user.paid_subscription ? 'checked' : ''} class="w-4 h-4 text-teal-600">
-                            <label class="text-sm text-gray-700">Paid Subscription</label>
-                        </div>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Save Changes',
-                confirmButtonColor: '#0d9488',
-                cancelButtonText: 'Cancel',
-                preConfirm: () => {
-                    const amount = document.getElementById('editRenewalAmount').value;
-                    const renewalDate = document.getElementById('editRenewalDate').value;
-                    const paidSubscription = document.getElementById('editPaidSubscription').checked;
+      const clientId = RENEW.selectedClient.id;
+      await fetchHistory(clientId);
+      renderHistory();
+      await updateStats();
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  };
 
-                    if (!amount || amount <= 0 || !renewalDate) {
-                        Swal.showValidationMessage('Please enter valid amount and date');
-                        return false;
-                    }
-
-                    return { amount: parseFloat(amount), renewalDate, paidSubscription };
-                }
-            });
-
-            if (formValues) {
-                const expiryDate = dayjs(formValues.renewalDate).add(30, 'day').format('YYYY-MM-DD');
-                
-                renewal.amount = formValues.amount;
-                renewal.renewal_date = formValues.renewalDate;
-                renewal.expiry_date = expiryDate;
-                renewal.month = dayjs(formValues.renewalDate).format('MMMM');
-                renewal.year = dayjs(formValues.renewalDate).year();
-
-                user.subscription_amount = formValues.amount;
-                user.payment_date = formValues.renewalDate;
-                user.expiry_date = expiryDate;
-                user.paid_subscription = formValues.paidSubscription;
-
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Renewal updated successfully!',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-
-                await renderRenewals();
-            }
-        }
-
-        async function reverseRenewal(renewalId) {
-            const renewal = renewals.find(r => r.id === renewalId);
-            if (!renewal) return;
-
-            const result = await Swal.fire({
-                title: 'Are you sure?',
-                text: `This will reverse the renewal for ${renewal.user_name}. The subscription will be marked as unpaid.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, reverse it!',
-                confirmButtonColor: '#dc2626',
-                cancelButtonText: 'Cancel'
-            });
-
-            if (result.isConfirmed) {
-                renewal.is_deleted = true;
-                
-                const user = users.find(u => u.id === renewal.user_id);
-                if (user) {
-                    user.paid_subscription = false;
-                    user.payment_date = dayjs().subtract(31, 'days').format('YYYY-MM-DD');
-                    user.expiry_date = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
-                }
-
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Renewal reversed successfully!',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-
-                await renderRenewals();
-            }
-        }
-
-        function exportRenewalsToCSV() {
-            const currentMonth = dayjs().format('MMMM');
-            const monthlyRenewals = renewals.filter(r => 
-                !r.is_deleted && 
-                r.month === currentMonth && 
-                r.year === dayjs().year()
-            );
-
-            const headers = ['ID', 'Name', 'Phone', 'Location', 'Amount', 'Renewal Date', 'Expiry Date', 'Status'];
-            const csvContent = [
-                headers.join(','),
-                ...monthlyRenewals.map(r => {
-                    const user = users.find(u => u.id === r.user_id) || {};
-                    return [
-                        r.id,
-                        `"${r.user_name}"`,
-                        user.phone || 'N/A',
-                        `"${user.location || 'N/A'}"`,
-                        r.amount,
-                        dayjs(r.renewal_date).format('YYYY-MM-DD'),
-                        dayjs(r.expiry_date).format('YYYY-MM-DD'),
-                        user.paid_subscription ? 'Paid' : 'Unpaid'
-                    ].join(',');
-                })
-            ].join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `renewals-${dayjs().format('YYYY-MM-DD')}.csv`;
-            link.click();
-
-            Swal.fire({
-                title: 'Success!',
-                text: 'Renewals exported successfully!',
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            renderRenewals();
-
-            document.getElementById('renewalSearchInput').addEventListener('input', renderRenewals);
-            document.getElementById('renewalSubscriptionFilter').addEventListener('change', renderRenewals);
-            document.getElementById('renewalStatusFilter').addEventListener('change', renderRenewals);
-        });
-    </script>
+  /* ---------- INITIAL LOAD ---------- */
+  (async () => {
+    try {
+      await Promise.all([fetchClients(), fetchPackages()]);
+      populateClientSelect();
+      updateStats();
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Load error", e.message, "error");
+    }
+  })();
+</script>

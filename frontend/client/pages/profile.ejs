@@ -1,7 +1,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
   <!-- Left Column - Profile Card -->
   <div class="lg:col-span-1">
-    <div class="bg-white shadow-lg overflow-hidden">
+    <div class="bg-white shadow-lg overflow-hidden rounded-xl">
       <!-- Profile Image -->
       <div class="relative h-48 bg-teal-600 rounded-t-xl">
         <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
@@ -71,10 +71,10 @@
       <!-- Profile Info -->
       <div class="pt-20 pb-6 px-6 text-center">
         <h2 id="displayName" class="text-2xl font-bold text-gray-800 mb-1">
-          Jeremy Rose
+          Loading...
         </h2>
         <p id="displayTitle" class="text-teal-600 font-medium mb-1">
-          Product Designer
+          Loading...
         </p>
         <div
           class="flex items-center justify-center text-gray-500 text-sm mb-4"
@@ -98,7 +98,7 @@
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             ></path>
           </svg>
-          <span id="displayLocation">New York, NY</span>
+          <span id="displayLocation">Loading...</span>
         </div>
 
         <!-- Action Buttons -->
@@ -202,26 +202,26 @@
             <div>
               <p class="text-xs text-gray-500 mb-1">Phone:</p>
               <p id="displayPhone" class="text-sm text-teal-600 font-medium">
-                +1 123 456 7890
+                Loading...
               </p>
             </div>
             <div>
               <p class="text-xs text-gray-500 mb-1">Address:</p>
               <p id="displayAddress" class="text-sm text-gray-700">
-                525 E 68th Street<br />New York, NY 10651-78 156-187-60
+                Loading...
               </p>
             </div>
             <div>
               <p class="text-xs text-gray-500 mb-1">E-mail:</p>
               <p id="displayEmail" class="text-sm text-teal-600 font-medium">
-                hello@jeremyrose.com
+                Loading...
               </p>
             </div>
           </div>
         </div>
 
         <div id="timelineContent" class="text-left hidden">
-          <p class="text-gray-500 text-sm">Timeline content goes here...</p>
+          <p class="text-gray-500 text-sm">No timeline events yet.</p>
         </div>
       </div>
     </div>
@@ -229,7 +229,7 @@
 
   <!-- Right Column - Edit Profile Form -->
   <div class="lg:col-span-2">
-    <div class="bg-white shadow-lg overflow-hidden p-8">
+    <div class="bg-white shadow-lg overflow-hidden p-8 rounded-xl">
       <h3 class="text-2xl font-bold text-gray-800 mb-6">Edit Profile</h3>
 
       <!-- Profile Information -->
@@ -245,7 +245,6 @@
             <input
               id="adminName"
               type="text"
-              value="Jeremy Rose"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
               placeholder="Enter your full name"
             />
@@ -257,7 +256,6 @@
             <input
               id="adminTitle"
               type="text"
-              value="Product Designer"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
               placeholder="Enter your job title"
             />
@@ -269,7 +267,6 @@
             <input
               id="adminEmail"
               type="email"
-              value="hello@jeremyrose.com"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
               placeholder="Enter your email"
             />
@@ -281,7 +278,6 @@
             <input
               id="adminPhone"
               type="tel"
-              value="+1 123 456 7890"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
               placeholder="Enter your phone number"
             />
@@ -293,7 +289,6 @@
             <input
               id="adminLocation"
               type="text"
-              value="New York, NY"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
               placeholder="Enter your location"
             />
@@ -305,7 +300,6 @@
             <input
               id="adminBirthday"
               type="text"
-              value="June 5, 1992"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
               placeholder="Enter your birthday"
             />
@@ -318,7 +312,7 @@
               id="adminGender"
               class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
             >
-              <option value="Male" selected>Male</option>
+              <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Other">Other</option>
               <option value="Prefer not to say">Prefer not to say</option>
@@ -334,10 +328,7 @@
             rows="3"
             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
             placeholder="Enter your address"
-          >
-525 E 68th Street
-New York, NY 10651-78 156-187-60</textarea
-          >
+          ></textarea>
         </div>
       </div>
 
@@ -404,7 +395,7 @@ New York, NY 10651-78 156-187-60</textarea
         </div>
       </div>
 
-      <!-- Save Button -->
+      <!-- Save/Cancel Buttons -->
       <div class="flex justify-end space-x-4">
         <button
           onclick="cancelEdit()"
@@ -436,282 +427,224 @@ New York, NY 10651-78 156-187-60</textarea
   </div>
 </div>
 <script>
+  const API_BASE = "/api";
+  const $ = (id) => document.getElementById(id);
   let currentImageData = null;
+  let cachedProfile = null;
 
-  // API CONFIGURATION
-  const API = {
-    GET_PROFILE: "/api/profile",
-    UPDATE_PROFILE: "/api/profile",
-    UPLOAD_IMAGE: "/api/upload-profile-image",
-    CHANGE_PASSWORD: "/api/change-password",
-  };
-
-  //  MOCK DATA
-  const mockApi = {
-    // Simulate network delay
-    delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-
-    async get(url) {
-      await this.delay(500);
-      if (url === API.GET_PROFILE) {
-        return {
-          success: true,
-          data: {
-            name: "Julius Ojwang",
-            title: "Software Engineer",
-            email: "juliusojwang@gmail.com",
-            phone: "+254 712345678",
-            location: "Mombasa, Kenya",
-            birthday: "June 5, 2004",
-            gender: "Male",
-            address: "525 E 68th Street\nKenya, Mombasa 10651-78 156-187-60",
-            profileImage: null,
-          },
-        };
-      }
-      throw new Error("Mock endpoint not found");
-    },
-
-    async post(url, data) {
-      await this.delay(600);
-      console.log(`[MOCK POST] ${url}`, data);
-      return { success: true, message: "Updated successfully" };
-    },
-  };
-
-  // API caller
-  const api = {
-    async get(url) {
-      const res = await fetch(url, { credentials: "include" });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.message || "Request failed");
-      return json;
-    },
-    async post(url, data) {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.message || "Request failed");
-      return json;
-    },
-    async postForm(url, formData) {
-      const res = await fetch(url, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.message || "Upload failed");
-      return json;
-    },
-  };
-
-  // MOCK IN DEV
-  const backend = mockApi;
-
-  //  NOTIFICATION SYSTEM
+  // Notification
   function showNotification(message, type = "info") {
     const colors = {
       success: "bg-green-500",
       error: "bg-red-500",
       info: "bg-blue-500",
     };
-    const notification = document.createElement("div");
-    notification.className = `fixed top-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg ${colors[type]} z-50 transition-all`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
+    const div = document.createElement("div");
+    div.className = `fixed top-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg ${colors[type]} z-50 transition-all`;
+    div.textContent = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
   }
 
-  //  LOAD PROFILE ON START
   async function loadProfile() {
     try {
-      const response = await backend.get(API.GET_PROFILE);
-      if (response.success) {
-        const d = response.data;
-        document.getElementById("displayName").textContent = d.name;
-        document.getElementById("displayTitle").textContent = d.title;
-        document.getElementById("displayEmail").textContent = d.email;
-        document.getElementById("displayPhone").textContent = d.phone;
-        document.getElementById("displayLocation").textContent = d.location;
-        document.getElementById("displayBirthday").textContent = d.birthday;
-        document.getElementById("displayGender").textContent = d.gender;
-        document.getElementById("displayAddress").innerHTML = d.address.replace(
-          /\n/g,
-          "<br>"
-        );
+      const res = await fetch(`${API_BASE}/my/profile`, {
+        headers: { "Cache-Control": "no-cache" },
+      });
 
-        // Admin form
-        document.getElementById("adminName").value = d.name;
-        document.getElementById("adminTitle").value = d.title;
-        document.getElementById("adminEmail").value = d.email;
-        document.getElementById("adminPhone").value = d.phone;
-        document.getElementById("adminLocation").value = d.location;
-        document.getElementById("adminBirthday").value = d.birthday;
-        document.getElementById("adminGender").value = d.gender;
-        document.getElementById("adminAddress").value = d.address;
+      let p = {};
 
-        // Profile image
-        if (d.profileImage) {
-          currentImageData = d.profileImage;
-          const img = document.getElementById("profileImage");
-          const def = document.getElementById("defaultProfileIcon");
-          img.src = d.profileImage;
-          img.classList.remove("hidden");
-          def.classList.add("hidden");
+      if (res.status === 304) {
+        // Use cached data
+        if (!cachedProfile) {
+          throw new Error("No cached profile available");
         }
+        p = cachedProfile;
+        console.log("Using cached profile (304)");
+      } else if (res.ok) {
+        const data = await res.json();
+        p = data.profile;
+        cachedProfile = p; // Update cache
+        console.log("Loaded fresh profile");
+      } else {
+        throw new Error("Failed to load profile");
+      }
+
+      const img = p.image || null;
+      currentImageData = img;
+
+      // === UPDATE DISPLAY ===
+      const setText = (id, value) => {
+        const el = $(id);
+        if (el) el.textContent = value || "N/A";
+      };
+
+      const setValue = (id, value) => {
+        const el = $(id);
+        if (el) el.value = value || "";
+      };
+
+      const displayName = `${p.first_name || ""} ${p.second_name || ""}`.trim();
+      setText("displayName", displayName);
+      setText("displayTitle", p.email);
+      setText("displayPhone", p.phone);
+      setText("displayEmail", p.email);
+      setText("displayLocation", p.location);
+      $("displayAddress").innerHTML = (p.address || "").replace(/\n/g, "<br>");
+
+      // Update form
+      setValue("adminName", displayName);
+      setValue("adminTitle", p.position);
+      setValue("adminEmail", p.email);
+      setValue("adminPhone", p.phone);
+      setValue("adminLocation", p.location);
+      setValue("adminBirthday", p.birthday);
+      setValue("adminGender", p.gender);
+      setValue("adminAddress", p.address);
+
+      // Update image
+      if (img) {
+        $("profileImage").src = img;
+        $("profileImage").classList.remove("hidden");
+        $("defaultProfileIcon").classList.add("hidden");
+      } else {
+        $("profileImage").classList.add("hidden");
+        $("defaultProfileIcon").classList.remove("hidden");
       }
     } catch (err) {
+      console.error("loadProfile error:", err);
       showNotification("Failed to load profile: " + err.message, "error");
     }
   }
 
-  //  SAVE PROFILE
+  // Save Profile
   async function saveProfile() {
     const profile = {
-      name: document.getElementById("adminName").value,
-      title: document.getElementById("adminTitle").value,
-      email: document.getElementById("adminEmail").value,
-      phone: document.getElementById("adminPhone").value,
-      location: document.getElementById("adminLocation").value,
-      birthday: document.getElementById("adminBirthday").value,
-      gender: document.getElementById("adminGender").value,
-      address: document.getElementById("adminAddress").value,
+      name: $("adminName").value.trim(),
+      title: $("adminTitle").value.trim(),
+      email: $("adminEmail").value.trim(),
+      phone: $("adminPhone").value.trim(),
+      location: $("adminLocation").value.trim(),
+      birthday: $("adminBirthday").value.trim(),
+      gender: $("adminGender").value,
+      address: $("adminAddress").value.trim(),
     };
 
-    try {
-      const res = await backend.post(API.UPDATE_PROFILE, profile);
-      if (res.success) {
-        // Update display
-        document.getElementById("displayName").textContent = profile.name;
-        document.getElementById("displayTitle").textContent = profile.title;
-        document.getElementById("displayEmail").textContent = profile.email;
-        document.getElementById("displayPhone").textContent = profile.phone;
-        document.getElementById("displayLocation").textContent =
-          profile.location;
-        document.getElementById("displayBirthday").textContent =
-          profile.birthday;
-        document.getElementById("displayGender").textContent = profile.gender;
-        document.getElementById("displayAddress").innerHTML =
-          profile.address.replace(/\n/g, "<br>");
+    if (!profile.name || !profile.email) {
+      showNotification("Name and email are required", "error");
+      return;
+    }
 
-        showNotification("Profile updated successfully!", "success");
-      }
+    try {
+      const res = await fetch(`${API_BASE}/my/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      loadProfile();
+      showNotification("Profile saved!", "success");
     } catch (err) {
-      showNotification("Update failed: " + err.message, "error");
+      showNotification("Save failed: " + err.message, "error");
     }
   }
 
-  // HANDLE IMAGE UPLOAD
-  async function handleImageUpload(event) {
-    const file = event.target.files[0];
+  // Upload Image
+  async function handleImageUpload(e) {
+    const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = async function (e) {
-      currentImageData = e.target.result;
+    reader.onload = async () => {
+      currentImageData = reader.result;
+      $("profileImage").src = currentImageData;
+      $("profileImage").classList.remove("hidden");
+      $("defaultProfileIcon").classList.add("hidden");
 
-      const imgElement = document.getElementById("profileImage");
-      const defaultIcon = document.getElementById("defaultProfileIcon");
-      imgElement.src = currentImageData;
-      imgElement.classList.remove("hidden");
-      defaultIcon.classList.add("hidden");
-
-      // Upload to backend
-      const formData = new FormData();
-      formData.append("image", file);
+      const form = new FormData();
+      form.append("image", file);
 
       try {
-        const res = await backend.postForm(API.UPLOAD_IMAGE, formData);
-        if (res.success && res.imageUrl) {
-          currentImageData = res.imageUrl;
-          imgElement.src = res.imageUrl;
-          showNotification("Profile picture updated!", "success");
-        }
+        const res = await fetch(`${API_BASE}/my/upload-profile-image`, {
+          method: "POST",
+          body: form,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        currentImageData = data.imageUrl;
+        showNotification("Image uploaded!", "success");
       } catch (err) {
-        showNotification("Image upload failed: " + err.message, "error");
+        showNotification("Upload failed: " + err.message, "error");
       }
     };
     reader.readAsDataURL(file);
   }
 
-  //  CHANGE PASSWORD
+  // Change Password
   async function resetPassword() {
-    const current = document.getElementById("currentPassword").value;
-    const newPass = document.getElementById("newPassword").value;
-    const confirm = document.getElementById("confirmNewPassword").value;
+    const current = $("currentPassword").value;
+    const newP = $("newPassword").value;
+    const confirm = $("confirmNewPassword").value;
 
-    if (!current || !newPass || !confirm) {
-      showNotification("Please fill in all password fields", "error");
-      return;
-    }
-    if (newPass !== confirm) {
-      showNotification("New passwords do not match", "error");
-      return;
-    }
-    if (newPass.length < 8) {
-      showNotification("Password must be at least 8 characters", "error");
-      return;
-    }
+    if (!current || !newP || !confirm)
+      return showNotification("All fields required", "error");
+    if (newP !== confirm)
+      return showNotification("Passwords don't match", "error");
+    if (newP.length < 6) return showNotification("Password too short", "error");
 
     try {
-      const res = await backend.post(API.CHANGE_PASSWORD, {
-        currentPassword: current,
-        newPassword: newPass,
+      const res = await fetch(`${API_BASE}/my/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: current, newPassword: newP }),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
 
-      if (res.success) {
-        document.getElementById("currentPassword").value = "";
-        document.getElementById("newPassword").value = "";
-        document.getElementById("confirmNewPassword").value = "";
-        showNotification("Password changed successfully!", "success");
-      }
+      $("currentPassword").value =
+        $("newPassword").value =
+        $("confirmNewPassword").value =
+          "";
+      showNotification("Password changed!", "success");
     } catch (err) {
-      showNotification("Password change failed: " + err.message, "error");
+      showNotification("Failed: " + err.message, "error");
     }
   }
 
-  // CANCEL EDIT
   function cancelEdit() {
     loadProfile();
     showNotification("Changes cancelled", "info");
   }
 
-  // TAB SWITCHING
   function showTab(tab) {
-    const aboutContent = document.getElementById("aboutContent");
-    const timelineContent = document.getElementById("timelineContent");
-    const aboutTab = document.getElementById("aboutTab");
-    const timelineTab = document.getElementById("timelineTab");
+    const about = $("aboutContent"),
+      timeline = $("timelineContent");
+    const aTab = $("aboutTab"),
+      tTab = $("timelineTab");
 
     if (tab === "about") {
-      aboutContent.classList.remove("hidden");
-      timelineContent.classList.add("hidden");
-      aboutTab.classList.remove("text-gray-500", "border-transparent");
-      aboutTab.classList.add("text-gray-900", "border-teal-600");
-      timelineTab.classList.remove("text-gray-900", "border-teal-600");
-      timelineTab.classList.add("text-gray-500", "border-transparent");
+      about.classList.remove("hidden");
+      timeline.classList.add("hidden");
+      aTab.classList.replace("text-gray-500", "text-gray-900");
+      aTab.classList.replace("border-transparent", "border-teal-600");
+      tTab.classList.replace("text-gray-900", "text-gray-500");
+      tTab.classList.replace("border-teal-600", "border-transparent");
     } else {
-      aboutContent.classList.add("hidden");
-      timelineContent.classList.remove("hidden");
-      timelineTab.classList.remove("text-gray-500", "border-transparent");
-      timelineTab.classList.add("text-gray-900", "border-teal-600");
-      aboutTab.classList.remove("text-gray-900", "border-teal-600");
-      aboutTab.classList.add("text-gray-500", "border-transparent");
+      timeline.classList.remove("hidden");
+      about.classList.add("hidden");
+      tTab.classList.replace("text-gray-500", "text-gray-900");
+      tTab.classList.replace("border-transparent", "border-teal-600");
+      aTab.classList.replace("text-gray-900", "text-gray-500");
+      aTab.classList.replace("border-teal-600", "border-transparent");
     }
   }
 
-  // TRIGGER FILE INPUT
   function triggerFileInput() {
-    document.getElementById("fileInput").click();
+    $("fileInput").click();
   }
 
-  // INIT ON LOAD
-  document.addEventListener("DOMContentLoaded", () => {
-    loadProfile();
-  });
+  // Init
+  window.onload = loadProfile;
 </script>

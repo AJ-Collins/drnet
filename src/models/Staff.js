@@ -1,217 +1,211 @@
-const db = require('../config/db');
+const bcrypt = require("bcryptjs");
+const db = require("../config/db");
 
-// Staff model functions
+const Staff = {
+  create: async (data) => {
+    const {
+      first_name,
+      second_name,
+      email,
+      phone,
+      role_id,
+      department,
+      password,
+      is_active,
+      hire_date,
+      contract_end_date,
+      image,
+      role,
+      idNumber,
+    } = data;
 
-async function createStaff(data) {
-  const {
-    name, email, phone, employee_id,
-    position, department, salary,
-    password, isActive = true, hire_date, contract_end_date
-  } = data;
+    const employee_id = idNumber || data.employee_id || null;
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
 
-  const [result] = await db.execute(
-    `INSERT INTO staff (name, email, phone, employee_id, position, department, 
-     salary, password, is_active, hire_date, contract_end_date, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-    [
-      name, email, phone, employee_id, position, department,
-      salary, password, isActive, hire_date, contract_end_date
-    ]
-  );
+    const position = role || data.position || "N/A";
 
-  return result.insertId;
-}
+    const [result] = await db.query(
+      `INSERT INTO staff (
+        first_name, second_name, email, phone, employee_id, role_id, position,
+        department, password, is_active, hire_date, contract_end_date, image
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        first_name,
+        second_name,
+        email,
+        phone,
+        employee_id,
+        role_id || 3,
+        position,
+        department,
+        hashedPassword,
+        is_active ?? true,
+        hire_date,
+        contract_end_date,
+        image,
+      ]
+    );
+    return result;
+  },
 
-async function findStaffByEmployeeId(employeeId) {
-  const [rows] = await db.execute('SELECT * FROM staff WHERE employee_id = ?', [employeeId]);
-  return rows[0];
-}
+  // 🔹 Get all staff with roles and normalize data
+  findAll: async () => {
+    const [rows] = await db.query(`
+      SELECT 
+        s.*, 
+        r.name AS role_name
+      FROM staff s
+      LEFT JOIN roles r ON s.role_id = r.id
+      ORDER BY s.created_at DESC
+    `);
 
-async function findStaffByEmail(email) {
-  const [rows] = await db.execute('SELECT * FROM staff WHERE email = ?', [email]);
-  return rows[0];
-}
+    return rows.map(formatStaff);
+  },
 
-async function getStaffById(id) {
-  const [rows] = await db.execute("SELECT * FROM staff WHERE id = ?", [id]);
-  return rows[0];
-}
+  // 🔹 Get single staff member with role
+  findById: async (id) => {
+    const [rows] = await db.query(
+      `
+      SELECT 
+        s.*, 
+        r.name AS role_name
+      FROM staff s
+      LEFT JOIN roles r ON s.role_id = r.id
+      WHERE s.id = ?
+    `,
+      [id]
+    );
 
-async function updateStaff(id, data) {
-  const { name, email, phone, position, department, salary } = data;
+    return rows[0] ? formatStaff(rows[0]) : null;
+  },
 
-  const [result] = await db.execute(
-    `UPDATE staff SET name = ?, email = ?, phone = ?, position = ?, 
-     department = ?, salary = ?, updated_at = NOW() WHERE id = ?`,
-    [name, email, phone, position, department, salary, id]
-  );
+  findByRole: async (roleId) => {
+    const [rows] = await db.query(
+      `SELECT s.*, r.name AS role_name
+      FROM staff s
+      LEFT JOIN roles r ON s.role_id = r.id
+      WHERE s.role_id = ?
+      ORDER BY s.created_at DESC`,
+      [roleId]
+    );
 
-  return result.affectedRows > 0;
-}
+    return rows.map(formatStaff);
+  },
 
-async function getAllStaff() {
-  const [rows] = await db.execute(
-    `SELECT id, name, email, phone, employee_id, position, department, 
-     salary, is_active, hire_date, created_at FROM staff ORDER BY created_at DESC`
-  );
-  return rows;
-}
-
-async function getActiveStaff() {
-  const [rows] = await db.execute(
-    `SELECT id, name, email, phone, employee_id, position, department 
-     FROM staff WHERE is_active = 1 ORDER BY name ASC`
-  );
-  return rows;
-}
-
-async function deactivateStaff(id) {
-  const [result] = await db.execute(
-    `UPDATE staff SET is_active = 0, updated_at = NOW() WHERE id = ?`,
-    [id]
-  );
-  return result.affectedRows > 0;
-}
-
-async function activateStaff(id) {
-  const [result] = await db.execute(
-    `UPDATE staff SET is_active = 1, updated_at = NOW() WHERE id = ?`,
-    [id]
-  );
-  return result.affectedRows > 0;
-}
-
-async function updateStaffPassword(id, hashedPassword) {
-  const [result] = await db.execute(
-    `UPDATE staff SET password = ?, updated_at = NOW() WHERE id = ?`,
-    [hashedPassword, id]
-  );
-  return result.affectedRows > 0;
-}
-
-// Staff assignment functions
-async function assignClientToStaff(staffId, clientId) {
-  const [result] = await db.execute(
-    `INSERT INTO staff_client_assignments (staff_id, client_id, assigned_date, created_at)
-     VALUES (?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE assigned_date = NOW()`,
-    [staffId, clientId]
-  );
-  return result.affectedRows > 0;
-}
-
-async function getStaffAssignments(staffId) {
-  const [rows] = await db.execute(
-    `SELECT c.*, sca.assigned_date 
-     FROM clients c 
-     INNER JOIN staff_client_assignments sca ON c.id = sca.client_id 
-     WHERE sca.staff_id = ? AND c.is_active = 1
-     ORDER BY sca.assigned_date DESC`,
-    [staffId]
-  );
-  return rows;
-}
-
-async function removeClientFromStaff(staffId, clientId) {
-  const [result] = await db.execute(
-    `DELETE FROM staff_client_assignments WHERE staff_id = ? AND client_id = ?`,
-    [staffId, clientId]
-  );
-  return result.affectedRows > 0;
-}
-
-// Staff task functions
-async function createStaffTask(data) {
-  const {
-    staff_id, client_id, task_type, description,
-    scheduled_time, priority = 'medium', status = 'pending'
-  } = data;
-
-  const [result] = await db.execute(
-    `INSERT INTO staff_tasks (staff_id, client_id, task_type, description, 
-     scheduled_time, priority, status, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
-    [staff_id, client_id, task_type, description, scheduled_time, priority, status]
-  );
-
-  return result.insertId;
-}
-
-async function getStaffTasks(staffId, status = null) {
-  let query = `
-    SELECT st.*, c.name as client_name, c.phone as client_phone, c.address as client_address
-    FROM staff_tasks st
-    LEFT JOIN clients c ON st.client_id = c.id
-    WHERE st.staff_id = ?
-  `;
-
-  const params = [staffId];
-
-  if (status) {
-    query += ` AND st.status = ?`;
-    params.push(status);
-  }
-
-  query += ` ORDER BY st.scheduled_time ASC`;
-
-  const [rows] = await db.execute(query, params);
-  return rows;
-}
-
-async function updateTaskStatus(taskId, status, completedBy = null) {
-  let query = `UPDATE staff_tasks SET status = ?, updated_at = NOW()`;
-  const params = [status];
-
-  if (status === 'completed' && completedBy) {
-    query += `, completed_date = NOW(), completed_by = ?`;
-    params.push(completedBy);
-  }
-
-  query += ` WHERE id = ?`;
-  params.push(taskId);
-
-  const [result] = await db.execute(query, params);
-  return result.affectedRows > 0;
-}
-
-// Staff performance tracking
-async function getStaffPerformance(staffId, startDate = null, endDate = null) {
-  let query = `
+  findAllWithSalary: async () => {
+    const [rows] = await db.query(`
     SELECT 
-      COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_tasks,
-      COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_tasks,
-      COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_tasks,
-      COUNT(*) as total_tasks
-    FROM staff_tasks 
-    WHERE staff_id = ?
-  `;
+      s.*, 
+      r.name AS role_name,
+      ss.basic_salary,
+      ss.commision,
+      ss.deductions
+    FROM staff s
+    LEFT JOIN roles r ON s.role_id = r.id
+    LEFT JOIN staff_salaries ss 
+      ON ss.staff_id = s.id
+      AND ss.effective_from = (
+        SELECT MAX(effective_from) 
+        FROM staff_salaries 
+        WHERE staff_id = s.id
+      )
+    ORDER BY s.created_at DESC
+  `);
 
-  const params = [staffId];
+    return rows.map((member) => ({
+      ...formatStaff(member),
+      salary: {
+        basic_salary: Number(member.basic_salary || 0),
+        commission: Number(member.commission || 0),
+        deductions: Number(member.deductions || 0),
+      },
+    }));
+  },
 
-  if (startDate && endDate) {
-    query += ` AND created_at BETWEEN ? AND ?`;
-    params.push(startDate, endDate);
-  }
+  // 🔹 Update staff
+  update: async (id, data) => {
+    // Map frontend fields to DB columns
+    if (data.idNumber) {
+      data.employee_id = data.idNumber;
+      delete data.idNumber;
+    }
 
-  const [rows] = await db.execute(query, params);
-  return rows[0] || { completed_tasks: 0, pending_tasks: 0, in_progress_tasks: 0, total_tasks: 0 };
+    if (data.role) {
+      data.position = data.role;
+      delete data.role;
+    }
+
+    // Remove fields that are not in staff table
+    if (data.basic_salary !== undefined) {
+      var basicSalary = data.basic_salary;
+      delete data.basic_salary;
+    }
+
+    // Optional: hash password if provided
+    if (data.password) {
+      const bcrypt = require("bcryptjs");
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+
+    // Build staff update query
+    const fields = Object.keys(data)
+      .map((k) => `${k}=?`)
+      .join(",");
+    const values = Object.values(data);
+    values.push(id);
+
+    const [result] = await db.query(
+      `UPDATE staff SET ${fields} WHERE id=?`,
+      values
+    );
+
+    // Update salary if sent
+    if (basicSalary !== undefined) {
+      // Insert or update staff_salaries
+      await db.query(
+        `INSERT INTO staff_salaries (staff_id, basic_salary, effective_from)
+       VALUES (?, ?, NOW())
+       ON DUPLICATE KEY UPDATE basic_salary = VALUES(basic_salary), effective_to = NULL`,
+        [id, basicSalary]
+      );
+    }
+
+    return result;
+  },
+
+  // 🔹 Delete staff
+  delete: async (id) => {
+    const [result] = await db.query(`DELETE FROM staff WHERE id=?`, [id]);
+    return result;
+  },
+};
+
+// Get staff raw (include password)
+Staff.findByIdRaw = async (id) => {
+  const [rows] = await db.query(`SELECT * FROM staff WHERE id = ?`, [id]);
+  return rows[0] || null;
+};
+
+// 🔹 Helper to normalize staff record for frontend
+function formatStaff(member) {
+  return {
+    id: member.id,
+    name:
+      `${member.first_name || ""} ${member.second_name || ""}`.trim() ||
+      "No Name",
+    email: member.email || "No Email",
+    phone: member.phone || "N/A",
+    employeeId: member.employee_id || "N/A",
+    position: member.position || "N/A",
+    department: member.department || "Staff",
+    role: member.role_name || "Unassigned",
+    status: member.is_active ? "Active" : "Inactive",
+    hireDate: member.hire_date || "N/A",
+    contractEnd: member.contract_end_date || "N/A",
+    lastPayment: member.debt || "0.00",
+    paymentStatus: member.paid_subscription ? "Paid" : "Unpaid",
+    image: member.image || null,
+  };
 }
 
-module.exports = {
-  createStaff,
-  findStaffByEmployeeId,
-  findStaffByEmail,
-  getStaffById,
-  updateStaff,
-  getAllStaff,
-  getActiveStaff,
-  deactivateStaff,
-  activateStaff,
-  updateStaffPassword,
-  assignClientToStaff,
-  getStaffAssignments,
-  removeClientFromStaff,
-  createStaffTask,
-  getStaffTasks,
-  updateTaskStatus,
-  getStaffPerformance
-};
+module.exports = Staff;

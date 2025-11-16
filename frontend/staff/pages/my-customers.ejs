@@ -1,428 +1,511 @@
-<div class="mb-6">
-  <h1 id="pageTitle" class="text-3xl font-bold text-teal-800">
-    Manage Clients
-  </h1>
-  <p id="pageSubtitle" class="text-teal-600">Manage Your Clients</p>
-</div>
-<div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-      <input
-        type="text"
-        id="clientsSearch"
-        placeholder="Search name, email, phone..."
-        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-      />
+<style>
+    .slide-in {
+      animation: slideIn 0.4s ease-out;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Skeleton Loading */
+    @keyframes skeleton {
+      0% { background-color: #f3f4f6; }
+      100% { background-color: #e5e7eb; }
+    }
+    .skeleton {
+      background: #e5e7eb;
+      animation: skeleton 1.2s ease-in-out infinite;
+      border-radius: 0.5rem;
+    }
+    .skeleton-text { height: 1rem; }
+    .skeleton-title { height: 1.5rem; width: 60%; }
+    .skeleton-circle { width: 2.5rem; height: 2.5rem; border-radius: 9999px; }
+    .skeleton-badge { height: 1.75rem; width: 6rem; }
+    .skeleton-row { height: 4rem; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50; opacity: 0; visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1; visibility: visible;
+    }
+    .modal-content {
+      background: white; border-radius: 1rem;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      transform: scale(0.9); transition: transform 0.3s ease;
+    }
+    .modal-backdrop.open .modal-content {
+      transform: scale(1);
+    }
+  </style>
+
+<div class="max-w-full mx-auto p-6" id="app">
+  <!-- Skeleton -->
+  <div id="skeleton" class="space-y-6">
+    <div class="mb-6">
+      <div class="skeleton skeleton-title mb-2"></div>
+      <div class="skeleton skeleton-text w-80"></div>
     </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2"
-        >Subscriptions</label
-      >
-      <select
-        id="clientSubFilter"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-      >
-        <option value="">All Subscriptions</option>
-        <option>Paid</option>
-        <option>Unpaid</option>
-        <option>Overdue</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-      <select
-        id="clientStatusFilter"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-      >
-        <option value="">All Status</option>
-        <option>Active</option>
-        <option>Expired</option>
-        <option>Suspended</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Plans</label>
-      <select
-        id="clientPlanFilter"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-      >
-        <option value="">All Plans</option>
-        <option>Premium 50Mbps</option>
-        <option>Standard 20Mbps</option>
-        <option>Basic 10Mbps</option>
-      </select>
-    </div>
-  </div>
 
-  <!-- Clients Table -->
-  <div class="px-6 py-4 border-b border-teal-200">
-    <div class="flex items-center justify-between">
-      <h3 class="text-lg font-bold text-teal-800">
-        <i class="fas fa-list mr-2"></i>Client Directory
-      </h3>
-      <button
-        onclick="exportData('clients')"
-        class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-100 rounded-lg transition-all"
-      >
-        <i class="fas fa-download mr-1"></i>Export
-      </button>
-    </div>
-  </div>
-  <div class="overflow-x-auto">
-    <table class="w-full" id="clientsTable">
-      <thead class="bg-gray-50 border-b border-gray-200">
-        <tr>
-          <th
-            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-          >
-            <input
-              type="checkbox"
-              id="selectAllClients"
-              class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2"
-            />
-            User
-          </th>
-          <th
-            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-          >
-            Contact Info
-          </th>
-          <th
-            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-          >
-            Service Plan
-          </th>
-          <th
-            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-          >
-            Status
-          </th>
-          <th
-            class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-          >
-            Last Payment
-          </th>
-          <th
-            class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-          >
-            Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody id="clientsTableBody" class="divide-y divide-gray-100"></tbody>
-    </table>
-  </div>
-  <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-      <p class="text-sm text-gray-600">
-        Showing <span id="clientsRange">0-0</span> of
-        <span id="totalClients">0</span> clients
-      </p>
-      <div class="flex items-center space-x-2" id="clientsPagination"></div>
-    </div>
-  </div>
-</div>
-<script>
-  /* ==================== MOCK DATA ==================== */
-  let clients = [
-    {
-      id: "CLT-001",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      phone: "+254 712 345 678",
-      idNumber: "12345678",
-      address: "Nairobi",
-      plan: "Premium 50Mbps",
-      status: "Active",
-      lastPayment: "Ksh 5,000 - 3 days ago",
-      paymentDate: Date.now() - 3 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: "CLT-002",
-      name: "Jane Smith",
-      email: "jane.smith@client.com",
-      phone: "+254 711 234 567",
-      idNumber: "87654321",
-      address: "Mombasa",
-      plan: "Basic 10Mbps",
-      status: "Expired",
-      lastPayment: "Ksh 1,500 - 15 days overdue",
-      paymentDate: Date.now() - 18 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: "CLT-003",
-      name: "Robert Wilson",
-      email: "robert.w@business.com",
-      phone: "+254 720 111 222",
-      idNumber: "11223344",
-      address: "Kisumu",
-      plan: "Standard 20Mbps",
-      status: "Active",
-      lastPayment: "Ksh 3,000 - 1 week ago",
-      paymentDate: Date.now() - 7 * 24 * 60 * 60 * 1000,
-    },
-  ];
+    <div class="bg-white shadow-md p-6 border border-gray-200">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
+        <div class="skeleton h-12 rounded-lg"></div>
+        <div class="skeleton h-12 rounded-lg"></div>
+        <div class="skeleton h-12 rounded-lg"></div>
+        <div class="skeleton h-12 rounded-lg"></div>
+      </div>
 
-  const itemsPerPage = 10;
-  let currentPage = 1;
-
-  /* ==================== UTILS ==================== */
-  const $ = (id) => document.getElementById(id);
-
-  const getPlanBadge = (plan) =>
-    ({
-      "Premium 50Mbps": "bg-blue-100 text-blue-700",
-      "Standard 20Mbps": "bg-purple-100 text-purple-700",
-      "Basic 10Mbps": "bg-yellow-100 text-yellow-700",
-    }[plan] || "bg-gray-100 text-gray-700");
-
-  const getStatusBadge = (status) =>
-    ({
-      Active: "bg-green-100 text-green-700",
-      Expired: "bg-red-100 text-red-700",
-      Suspended: "bg-orange-100 text-orange-700",
-    }[status] || "bg-gray-100 text-gray-700");
-
-  /* ==================== ACTIONS ==================== */
-  const viewUser = (id) => {
-    const user = clients.find((u) => u.id === id);
-    if (!user) return;
-
-    Swal.fire({
-      title: "Client Details",
-      html: `
-        <div class="text-left space-y-2">
-          <p><strong>Name:</strong> ${user.name}</p>
-          <p><strong>Email:</strong> ${user.email}</p>
-          <p><strong>Phone:</strong> ${user.phone}</p>
-          <p><strong>ID:</strong> ${user.idNumber}</p>
-          <p><strong>Address:</strong> ${user.address}</p>
-          <p><strong>Plan:</strong> ${user.plan}</p>
-          <p><strong>Status:</strong> <span class="px-2 py-1 rounded text-xs font-medium ${
-            getStatusBadge(user.status).split(" ")[1]
-          }">${user.status}</span></p>
-          <p><strong>Last Payment:</strong> ${user.lastPayment}</p>
+      <div class="px-6 py-4 border-b border-teal-200">
+        <div class="flex items-center justify-between">
+          <div class="skeleton h-6 w-48"></div>
+          <div class="skeleton w-24 h-9 rounded-lg"></div>
         </div>
-      `,
-      icon: "info",
-      confirmButtonColor: "#0d9488",
-    });
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Client</th>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Service</th>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Priority</th>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Scheduled</th>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Status</th>
+              <th class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="hover:bg-teal-50"><td colspan="6" class="p-4"><div class="skeleton skeleton-row"></div></td></tr>
+            <tr class="hover:bg-teal-50"><td colspan="6" class="p-4"><div class="skeleton skeleton-row"></div></td></tr>
+            <tr class="hover:bg-teal-50"><td colspan="6" class="p-4"><div class="skeleton skeleton-row"></div></td></tr>
+            <tr class="hover:bg-teal-50"><td colspan="6" class="p-4"><div class="skeleton skeleton-row"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="skeleton h-5 w-64"></div>
+          <div class="flex items-center space-x-2">
+            <div class="skeleton w-20 h-9 rounded"></div>
+            <div class="skeleton w-9 h-9 rounded"></div>
+            <div class="skeleton w-9 h-9 rounded"></div>
+            <div class="skeleton w-20 h-9 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real Content -->
+  <div id="content" class="hidden space-y-6">
+    <div class="mb-6 slide-in">
+      <h1 class="text-3xl font-bold text-teal-800">My Assignments</h1>
+      <p class="text-teal-600">View and manage your scheduled tasks</p>
+    </div>
+
+    <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
+      <!-- Filters -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+          <input type="text" id="searchInput" placeholder="Client name, contact..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+          <select id="priorityFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+            <option value="">All Priorities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+            <option value="">All Status</option>
+            <option value="assigned">Assigned</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+          <input type="date" id="dateFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+        </div>
+      </div>
+
+      <!-- Table Header -->
+      <div class="px-6 py-4 border-b border-teal-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-teal-800">
+            <i class="fas fa-list mr-2"></i>Assigned Tasks
+          </h3>
+          <button onclick="exportAssignments()" class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-100 rounded-lg transition-all">
+            <i class="fas fa-download mr-1"></i>Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full" id="assignmentsTable">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Client</th>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Service</th>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Priority</th>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Scheduled</th>
+              <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Status</th>
+              <th class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="assignmentsTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p class="text-sm text-gray-600">
+            Showing <span id="rangeStart">0</span>-<span id="rangeEnd">0</span> of <span id="totalCount">0</span> assignments
+          </p>
+          <div class="flex items-center space-x-2" id="paginationContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="assignmentModal" class="modal-backdrop">
+    <div class="modal-content w-11/12 max-w-4xl h-auto max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold text-teal-800" id="modalTitle">Assignment Details</h3>
+          <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6 space-y-4" id="modalBody">
+        <!-- Filled by JS -->
+      </div>
+      <div class="p-6 border-t border-gray-200 flex justify-end">
+        <button onclick="closeModal()" class="px-5 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // === DOM ELEMENTS ===
+  const skeleton = document.getElementById("skeleton");
+  const content = document.getElementById("content");
+  const tableBody = document.getElementById("assignmentsTableBody");
+  const searchInput = document.getElementById("searchInput");
+  const priorityFilter = document.getElementById("priorityFilter");
+  const statusFilter = document.getElementById("statusFilter");
+  const dateFilter = document.getElementById("dateFilter");
+  const rangeStart = document.getElementById("rangeStart");
+  const rangeEnd = document.getElementById("rangeEnd");
+  const totalCount = document.getElementById("totalCount");
+  const paginationContainer = document.getElementById("paginationContainer");
+  const modal = document.getElementById("assignmentModal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = document.getElementById("modalBody");
+
+  // === STATE ===
+  let assignments = [];
+  let filtered = [];
+  let currentPage = 1;
+  const perPage = 10;
+
+  // === HELPERS ===
+  const formatDate = (date) => dayjs(date).format("DD MMM YYYY, HH:mm");
+  const getPriorityBadge = (p) => {
+    return p === "high" ? "bg-red-100 text-red-700" :
+           p === "medium" ? "bg-yellow-100 text-yellow-700" :
+           "bg-green-100 text-green-700";
+  };
+  const getStatusBadge = (s) => {
+    return s === "completed" ? "bg-green-100 text-green-700" :
+           s === "in-progress" ? "bg-blue-100 text-blue-700" :
+           "bg-gray-100 text-gray-700";
   };
 
-  const messageUser = (id) => {
-    const user = clients.find((u) => u.id === id);
-    if (!user) return;
-    const url = `messaging.html?user=${user.id}&name=${encodeURIComponent(
-      user.name
-    )}&email=${user.email}`;
-    window.location.href = url;
-  };
+  // === FETCH DATA ===
+  async function fetchAssignments() {
+    const res = await fetch("/api/my/assignments");
+    if (!res.ok) throw new Error("Failed to load assignments");
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  }
 
-  /* ==================== RENDERING ==================== */
-  const renderTable = () => {
-    const filtered = applyFilters();
-    const paginated = paginate(filtered, currentPage, itemsPerPage);
-    const tbody = $("clientsTableBody");
-    if (!tbody) return;
+  // === RENDER TABLE ===
+  function renderTable() {
+    const start = (currentPage - 1) * perPage;
+    const end = start + perPage;
+    const pageData = filtered.slice(start, end);
 
-    tbody.innerHTML = paginated
-      .map(
-        (user) => `
-      <tr class="user-row transition-all duration-200 cursor-pointer hover:bg-teal-50" onclick="viewUser('${
-        user.id
-      }')">
-        <td class="p-4" onclick="event.stopPropagation()">
+    if (filtered.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center py-16 text-gray-500">
+            <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4 block"></i>
+            <p class="text-lg font-medium">No assignments assigned</p>
+            <p class="text-sm">Check back later or contact your supervisor.</p>
+          </td>
+        </tr>`;
+      paginationContainer.innerHTML = "";
+      updatePaginationCount(0);
+      return;
+    }
+
+    tableBody.innerHTML = pageData.map(a => `
+      <tr class="hover:bg-teal-50 transition-all cursor-pointer" onclick="openModal(${a.id})">
+        <td class="p-4">
           <div class="flex items-center space-x-3">
-            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" value="${
-              user.id
-            }">
-            <div class="w-11 h-11 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-md">
-              <span class="text-white font-bold text-sm">${user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()}</span>
+            <div class="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+              ${a.clientName.split(" ").map(n => n[0]).join("").toUpperCase()}
             </div>
             <div>
-              <p class="font-semibold text-gray-900">${user.name}</p>
-              <p class="text-xs text-gray-500">ID: #${user.id}</p>
+              <p class="font-semibold text-gray-900">${a.clientName}</p>
+              <p class="text-xs text-gray-500">${a.clientContact || "No contact"}</p>
             </div>
           </div>
         </td>
         <td class="p-4">
-          <div class="space-y-1">
-            <p class="text-gray-700 text-sm flex items-center"><i class="fas fa-envelope text-gray-400 mr-2 text-xs"></i>${
-              user.email
-            }</p>
-            <p class="text-gray-600 text-sm flex items-center"><i class="fas fa-phone text-gray-400 mr-2 text-xs"></i>${
-              user.phone
-            }</p>
-          </div>
+          <p class="font-medium text-gray-800">${a.serviceType}</p>
+          ${a.address ? `<p class="text-xs text-gray-500">${a.address}</p>` : ""}
         </td>
         <td class="p-4">
-          <span class="px-3 py-1.5 ${getPlanBadge(
-            user.plan
-          )} rounded-lg text-sm font-semibold">${user.plan}</span>
-        </td>
-        <td class="p-4">
-          <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(
-            user.status
-          )} rounded-lg text-sm font-semibold">
-            ${
-              user.status === "Active"
-                ? '<span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>'
-                : ""
-            }
-            ${user.status}
+          <span class="px-3 py-1.5 ${getPriorityBadge(a.priority)} rounded-lg text-xs font-semibold">
+            ${a.priority.toUpperCase()}
           </span>
         </td>
         <td class="p-4">
-          <div class="text-sm">
-            <p class="text-gray-700 font-medium">${
-              user.lastPayment.split(" - ")[0]
-            }</p>
-            <p class="text-gray-500 text-xs">${
-              user.lastPayment.split(" - ")[1]
-            }</p>
-          </div>
+          <p class="text-sm text-gray-700">${formatDate(a.scheduledDate)}</p>
+          ${a.estimatedDuration ? `<p class="text-xs text-gray-500">~${a.estimatedDuration}h</p>` : ""}
         </td>
-        <td class="p-4" onclick="event.stopPropagation()">
-          <div class="flex items-center justify-end space-x-2">
-            <button onclick="viewUser('${
-              user.id
-            }')" class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="View">
+        <td class="p-4">
+          <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(a.status)} rounded-lg text-xs font-semibold">
+            ${a.status === "in-progress" ? '<i class="fas fa-spinner fa-pulse mr-1"></i>' : ''}
+            ${a.status.charAt(0).toUpperCase() + a.status.slice(1)}
+          </span>
+        </td>
+        <td class="p-4 text-right" onclick="event.stopPropagation()">
+          <div class="flex justify-end space-x-2">
+            <button onclick="openModal(${a.id})" class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="View">
               <i class="fas fa-eye"></i>
             </button>
-            <button onclick="messageUser('${
-              user.id
-            }')" class="w-9 h-9 flex items-center justify-center text-purple-600 hover:bg-purple-50 rounded-lg transition-all" title="Message">
-              <i class="fas fa-comment"></i>
-            </button>
+            ${a.status !== "completed" ? `
+            <button onclick="markComplete(${a.id})" class="w-9 h-9 flex items-center justify-center text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Mark Complete">
+              <i class="fas fa-check"></i>
+            </button>` : ""}
           </div>
         </td>
-      </t>
-    `
-      )
-      .join("");
+      </tr>
+    `).join("");
 
-    renderPagination(filtered.length);
-    updateRange(filtered.length);
-  };
+    updatePagination();
+  }
 
-  const applyFilters = () => {
-    let filtered = [...clients];
-    const search = $("clientsSearch")?.value.toLowerCase() || "";
-    if (search) {
-      filtered = filtered.filter(
-        (u) =>
-          u.name.toLowerCase().includes(search) ||
-          u.email.toLowerCase().includes(search) ||
-          u.phone.includes(search)
-      );
-    }
+  function updatePaginationCount(total) {
+    rangeStart.textContent = total ? (currentPage - 1) * perPage + 1 : 0;
+    rangeEnd.textContent = Math.min(currentPage * perPage, total);
+    totalCount.textContent = total;
+  }
 
-    const sub = $("clientSubFilter")?.value;
-    const status = $("clientStatusFilter")?.value;
-    const plan = $("clientPlanFilter")?.value;
-
-    if (sub) {
-      filtered = filtered.filter((u) =>
-        sub === "Overdue"
-          ? u.lastPayment.includes("overdue")
-          : sub === "Paid"
-          ? !u.lastPayment.includes("overdue")
-          : true
-      );
-    }
-    if (status) filtered = filtered.filter((u) => u.status === status);
-    if (plan) filtered = filtered.filter((u) => u.plan === plan);
-
-    return filtered;
-  };
-
-  const paginate = (array, page, size) =>
-    array.slice((page - 1) * size, page * size);
-
-  const renderPagination = (total) => {
-    const pages = Math.ceil(total / itemsPerPage);
-    const container = $("clientsPagination");
-    if (!container) return;
-    container.innerHTML = "";
+  function updatePagination() {
+    const total = filtered.length;
+    const pages = Math.ceil(total / perPage);
+    updatePaginationCount(total);
+    paginationContainer.innerHTML = "";
     if (pages <= 1) return;
 
     const btn = (text, page, disabled = false) => {
       const b = document.createElement("button");
-      b.innerHTML = text;
+      b.textContent = text;
       b.disabled = disabled;
-      b.className = `px-4 py-2 border rounded text-sm font-medium transition-all ${
-        disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-teal-50"
-      } ${page === currentPage ? "bg-teal-600 text-white" : "text-gray-700"}`;
-      if (!disabled)
-        b.onclick = () => {
-          currentPage = page;
-          renderTable();
-        };
+      b.className = `px-4 py-2 border rounded text-sm font-medium transition-all ${disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-teal-50"} ${page === currentPage ? "bg-teal-600 text-white" : "text-gray-700"}`;
+      if (!disabled) b.onclick = () => { currentPage = page; renderTable(); };
       return b;
     };
 
-    container.appendChild(btn("Prev", currentPage - 1, currentPage === 1));
-    for (let i = 1; i <= pages; i++) container.appendChild(btn(i, i));
-    container.appendChild(btn("Next", currentPage + 1, currentPage === pages));
-  };
-
-  const updateRange = (total) => {
-    const el = $("clientsRange");
-    const totalEl = $("totalClients");
-    if (!el || !totalEl) return;
-    const start = (currentPage - 1) * itemsPerPage + 1;
-    const end = Math.min(currentPage * itemsPerPage, total);
-    el.textContent = total ? `${start}-${end}` : "0-0";
-    totalEl.textContent = total;
-  };
-
-  const exportData = () => {
-    const csv = [
-      Object.keys(clients[0]).join(","),
-      ...clients.map((row) => Object.values(row).join(",")),
-    ].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `clients_${dayjs().format("YYYY-MM-DD")}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  /* ==================== EVENT LISTENERS ==================== */
-  document.addEventListener("DOMContentLoaded", () => {
-    renderTable();
-
-    // Search
-    $("clientsSearch")?.addEventListener("input", () => {
-      currentPage = 1;
-      renderTable();
-    });
-
-    // Filters
-    ["clientSubFilter", "clientStatusFilter", "clientPlanFilter"].forEach(
-      (id) => {
-        $(id)?.addEventListener("change", () => {
-          currentPage = 1;
-          renderTable();
-        });
+    paginationContainer.appendChild(btn("Prev", currentPage - 1, currentPage === 1));
+    for (let i = 1; i <= pages; i++) {
+      if (pages > 7 && (i > 2 && i < pages - 1) && Math.abs(i - currentPage) > 2) {
+        if (i === 3 || i === pages - 2) paginationContainer.appendChild(btn("...", i, true));
+      } else {
+        paginationContainer.appendChild(btn(i, i));
       }
-    );
+    }
+    paginationContainer.appendChild(btn("Next", currentPage + 1, currentPage === pages));
+  }
 
-    // Select All
-    $("selectAllClients")?.addEventListener("change", (e) => {
-      document
-        .querySelectorAll('#clientsTableBody input[type="checkbox"]')
-        .forEach((cb) => (cb.checked = e.target.checked));
-    });
+  // === FILTERS ===
+  function applyFilters() {
+    let data = [...assignments];
+    const search = searchInput.value.toLowerCase();
+    const priority = priorityFilter.value;
+    const status = statusFilter.value;
+    const date = dateFilter.value;
+
+    if (search) {
+      data = data.filter(a =>
+        a.clientName.toLowerCase().includes(search) ||
+        (a.clientContact && a.clientContact.includes(search)) ||
+        (a.address && a.address.toLowerCase().includes(search))
+      );
+    }
+    if (priority) data = data.filter(a => a.priority === priority);
+    if (status) data = data.filter(a => a.status === status);
+    if (date) {
+      const filterDate = dayjs(date).format("YYYY-MM-DD");
+      data = data.filter(a => dayjs(a.scheduledDate).format("YYYY-MM-DD") === filterDate);
+    }
+
+    return data;
+  }
+
+  function filter() {
+    filtered = applyFilters();
+    currentPage = 1;
+    renderTable();
+  }
+
+  // === MODAL ===
+  function openModal(id) {
+    const assignment = assignments.find(a => a.id === id);
+    if (!assignment) return;
+
+    modalTitle.textContent = assignment.clientName;
+    modalBody.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <p class="text-gray-500">Service Type</p>
+          <p class="font-medium text-gray-900">${assignment.serviceType}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Contact</p>
+          <p class="font-medium text-gray-900">${assignment.clientContact || "N/A"}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Address</p>
+          <p class="font-medium text-gray-900">${assignment.address || "N/A"}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Priority</p>
+          <span class="inline-block px-3 py-1 ${getPriorityBadge(assignment.priority)} rounded-lg text-xs font-semibold">
+            ${assignment.priority.toUpperCase()}
+          </span>
+        </div>
+        <div>
+          <p class="text-gray-500">Scheduled</p>
+          <p class="font-medium text-gray-900">${formatDate(assignment.scheduledDate)}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Est. Duration</p>
+          <p class="font-medium text-gray-900">${assignment.estimatedDuration ? `${assignment.estimatedDuration} hours` : "Not specified"}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Status</p>
+          <span class="inline-block px-3 py-1 ${getStatusBadge(assignment.status)} rounded-lg text-xs font-semibold">
+            ${assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
+          </span>
+        </div>
+        ${assignment.description ? `
+        <div class="md:col-span-2">
+          <p class="text-gray-500">Description</p>
+          <p class="font-medium text-gray-900">${assignment.description}</p>
+        </div>` : ""}
+        ${assignment.requiredEquipment ? `
+        <div class="md:col-span-2">
+          <p class="text-gray-500">Required Equipment</p>
+          <p class="font-medium text-gray-900">${assignment.requiredEquipment}</p>
+        </div>` : ""}
+      </div>
+    `;
+
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    modal.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  // Close modal on backdrop click
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
   });
 
-  // Expose to HTML
-  window.exportData = exportData;
+  // === MARK COMPLETE ===
+  async function markComplete(id) {
+    if (!confirm("Mark this assignment as completed?")) return;
+
+    try {
+      const res = await fetch(`/api/assignments/${id}/complete`, { method: "PATCH" });
+      if (!res.ok) throw new Error("Failed to update");
+
+      assignments = assignments.map(a => a.id === id ? { ...a, status: "completed", completedAt: new Date() } : a);
+      filter();
+      alert("Assignment marked as completed!");
+    } catch (err) {
+      alert("Error: Could not update assignment");
+    }
+  }
+
+  // === EXPORT ===
+  async function exportAssignments() {
+    try {
+      const res = await fetch("/api/assignments/export");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `my-assignments_${dayjs().format("YYYY-MM-DD")}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Export failed");
+    }
+  }
+
+  // === LOAD DATA ===
+  async function loadData() {
+    skeleton.classList.remove("hidden");
+    content.classList.add("hidden");
+
+    try {
+      assignments = await fetchAssignments();
+      filtered = [...assignments];
+      renderTable();
+    } catch (err) {
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-red-600">Failed to load assignments</td></tr>`;
+    } finally {
+      skeleton.classList.add("hidden");
+      content.classList.remove("hidden");
+    }
+  }
+
+  // === INIT ===
+  window.addEventListener("load", () => {
+    loadData();
+
+    [searchInput, priorityFilter, statusFilter, dateFilter].forEach(el =>
+      el?.addEventListener("input", () => setTimeout(filter, 300))
+    );
+    [priorityFilter, statusFilter, dateFilter].forEach(el =>
+      el?.addEventListener("change", filter)
+    );
+  });
 </script>

@@ -1,3 +1,38 @@
+<style>
+  /* Skeleton Loading */
+  @keyframes skeleton {
+    0% {
+      background-color: #f3f4f6;
+    }
+    100% {
+      background-color: #e5e7eb;
+    }
+  }
+  .skeleton {
+    background: #e5e7eb;
+    animation: skeleton 1.2s ease-in-out infinite;
+    border-radius: 0.5rem;
+  }
+  .skeleton-text {
+    height: 1rem;
+  }
+  .skeleton-title {
+    height: 1.5rem;
+    width: 60%;
+  }
+  .skeleton-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+  }
+  .skeleton-badge {
+    height: 1.75rem;
+    width: 6rem;
+  }
+  .skeleton-ticket {
+    height: 8rem;
+  }
+</style>
 <div class="flex items-center justify-between mb-8">
   <div>
     <h3 class="text-3xl font-bold text-teal-800">Support Tickets</h3>
@@ -7,60 +42,65 @@
   </div>
 </div>
 
-<!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+  <!-- Total Tickets -->
   <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-teal-100">
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="text-teal-600 text-sm font-bold mb-1">Total Tickets</h3>
-        <h2 id="totalTickets" class="text-3xl font-bold text-gray-800">8</h2>
+        <p class="text-sm font-medium text-teal-600">Total Tickets</p>
+        <p id="totalTickets" class="text-3xl font-bold text-teal-800 mt-1">0</p>
       </div>
       <div
-        class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center"
+        class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center"
       >
         <i class="fas fa-ticket-alt text-teal-600 text-xl"></i>
       </div>
     </div>
   </div>
 
+  <!-- Open Tickets -->
   <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-amber-100">
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="text-amber-600 text-sm font-bold mb-1">Open Tickets</h3>
-        <h2 id="openTickets" class="text-3xl font-bold text-gray-800">2</h2>
+        <p class="text-sm font-medium text-amber-600">Open</p>
+        <p id="openTickets" class="text-3xl font-bold text-amber-800 mt-1">0</p>
       </div>
       <div
-        class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center"
+        class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center"
       >
-        <i class="fas fa-inbox text-amber-600 text-xl"></i>
+        <i class="fas fa-clock text-amber-600 text-xl"></i>
       </div>
     </div>
   </div>
 
+  <!-- In Progress -->
   <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100">
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="text-blue-600 text-sm font-bold mb-1">In Progress</h3>
-        <h2 id="inProgressTickets" class="text-3xl font-bold text-gray-800">
-          3
-        </h2>
+        <p class="text-sm font-medium text-blue-600">In Progress</p>
+        <p id="inProgressTickets" class="text-3xl font-bold text-blue-800 mt-1">
+          0
+        </p>
       </div>
       <div
-        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+        class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"
       >
-        <i class="fas fa-spinner text-blue-600 text-xl"></i>
+        <i class="fas fa-cog text-blue-600 text-xl"></i>
       </div>
     </div>
   </div>
 
+  <!-- Resolved -->
   <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-green-100">
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="text-green-600 text-sm font-bold mb-1">Resolved</h3>
-        <h2 id="resolvedTickets" class="text-3xl font-bold text-gray-800">3</h2>
+        <p class="text-sm font-medium text-green-600">Resolved</p>
+        <p id="resolvedTickets" class="text-3xl font-bold text-green-800 mt-1">
+          0
+        </p>
       </div>
       <div
-        class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+        class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"
       >
         <i class="fas fa-check-circle text-green-600 text-xl"></i>
       </div>
@@ -68,7 +108,7 @@
   </div>
 </div>
 
-<!-- Filters -->
+<!-- Filters & Tickets List -->
 <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100 mb-8">
   <div
     class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6"
@@ -83,7 +123,6 @@
           type="text"
           placeholder="Ticket ID, Name, Phone..."
           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
-          oninput="filterTickets()"
         />
       </div>
       <div>
@@ -93,7 +132,6 @@
         <select
           id="priorityFilter"
           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white"
-          onchange="filterTickets()"
         >
           <option value="">All Priorities</option>
           <option value="Low">Low</option>
@@ -109,7 +147,6 @@
         <select
           id="issueTypeFilter"
           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white"
-          onchange="filterTickets()"
         >
           <option value="">All Types</option>
           <option value="Network Issue">Network Issue</option>
@@ -130,7 +167,6 @@
         <select
           id="statusFilter"
           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white"
-          onchange="filterTickets()"
         >
           <option value="">All Status</option>
           <option value="Pending">Pending</option>
@@ -143,10 +179,10 @@
     <div class="flex-shrink-0">
       <button
         onclick="refreshTickets()"
+        id="refreshBtn"
         class="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
       >
-        <i class="fas fa-sync"></i>
-        <span>Refresh</span>
+        <i class="fas fa-sync"></i> Refresh
       </button>
     </div>
   </div>
@@ -157,12 +193,40 @@
       <i class="fas fa-list mr-2 text-teal-600"></i>All Tickets
     </h3>
     <div id="allTicketsList" class="space-y-3">
-      <!-- Tickets will be rendered here -->
+      <!-- Skeleton Tickets -->
+      <div class="bg-white border-2 border-gray-200 rounded-xl p-5">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div class="space-y-2">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton h-4 w-32"></div>
+          </div>
+          <div class="space-y-2">
+            <div class="skeleton skeleton-title"></div>
+          </div>
+          <div class="space-y-2">
+            <div class="skeleton skeleton-title"></div>
+          </div>
+          <div><div class="skeleton skeleton-badge"></div></div>
+          <div><div class="skeleton skeleton-badge"></div></div>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <div class="skeleton w-32 h-10 rounded-lg"></div>
+        </div>
+      </div>
+      <!-- Repeat 3 more -->
+      <div class="bg-white border-2 border-gray-200 rounded-xl p-5">
+        <div class="skeleton skeleton-ticket"></div>
+      </div>
+      <div class="bg-white border-2 border-gray-200 rounded-xl p-5">
+        <div class="skeleton skeleton-ticket"></div>
+      </div>
+      <div class="bg-white border-2 border-gray-200 rounded-xl p-5">
+        <div class="skeleton skeleton-ticket"></div>
+      </div>
     </div>
   </div>
 </div>
-
-<!-- View & Respond to Ticket Modal -->
+<!-- Modal (same as before, no changes) -->
 <div
   id="ticketModal"
   class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50"
@@ -170,7 +234,6 @@
   <div
     class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
   >
-    <!-- Modal Header -->
     <div
       class="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6 flex justify-between items-center"
     >
@@ -185,16 +248,12 @@
         <i class="fas fa-times text-2xl"></i>
       </button>
     </div>
-
     <div class="flex-1 overflow-y-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
-        <!-- Left Column - Ticket Info -->
         <div class="lg:col-span-1 space-y-4">
-          <!-- Customer Info -->
           <div class="bg-gray-50 rounded-xl p-5 border-2 border-gray-200">
             <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <i class="fas fa-user text-teal-600"></i>
-              Customer Information
+              <i class="fas fa-user text-teal-600"></i> Customer Information
             </h4>
             <div class="space-y-3 text-sm">
               <div>
@@ -211,12 +270,9 @@
               </div>
             </div>
           </div>
-
-          <!-- Ticket Details -->
           <div class="bg-gray-50 rounded-xl p-5 border-2 border-gray-200">
             <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <i class="fas fa-info-circle text-teal-600"></i>
-              Ticket Details
+              <i class="fas fa-info-circle text-teal-600"></i> Ticket Details
             </h4>
             <div class="space-y-3 text-sm">
               <div>
@@ -252,47 +308,31 @@
             </div>
           </div>
         </div>
-
-        <!-- Right Column - Conversation -->
         <div class="lg:col-span-2 flex flex-col h-[600px]">
-          <!-- Messages Container -->
           <div
             class="flex-1 overflow-y-auto bg-gray-50 rounded-xl p-5 border-2 border-gray-200 mb-4"
           >
-            <div id="conversationMessages" class="space-y-4">
-              <!-- Messages will be rendered here -->
-            </div>
+            <div id="conversationMessages" class="space-y-4"></div>
           </div>
-
-          <!-- Response Input -->
           <div class="bg-white border-2 border-gray-200 rounded-xl p-4">
             <textarea
               id="responseMessage"
               rows="4"
-              placeholder="Type your response to the customer..."
+              placeholder="Type your response..."
               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none mb-3"
             ></textarea>
-            <div class="flex items-center justify-between">
-              <button
-                class="text-gray-500 hover:text-teal-600 transition flex items-center gap-2 text-sm font-semibold"
-              >
-                <i class="fas fa-paperclip"></i>
-                Attach File
-              </button>
+            <div class="flex items-center justify-end">
               <button
                 onclick="sendResponse()"
                 class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg flex items-center gap-2"
               >
-                <span>Send Response</span>
-                <i class="fas fa-paper-plane"></i>
+                <span>Response</span> <i class="fas fa-paper-plane"></i>
               </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Modal Footer -->
     <div
       class="p-6 border-t-2 border-gray-100 bg-gray-50 flex justify-between items-center"
     >
@@ -300,8 +340,7 @@
         onclick="deleteTicket()"
         class="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition flex items-center gap-2"
       >
-        <i class="fas fa-trash"></i>
-        Delete Ticket
+        <i class="fas fa-trash"></i> Delete Ticket
       </button>
       <button
         onclick="closeTicketModal()"
@@ -314,223 +353,43 @@
 </div>
 
 <script>
-  let tickets = [
-    {
-      id: 1,
-      fullName: "John Doe",
-      phone: "0701456987",
-      ticket_id: "TKT414879M0L",
-      issueType: "Network Issue",
-      priority: "High",
-      status: "Pending",
-      message:
-        "Internet keeps dropping every 20 minutes. This has been happening for the past 3 days.",
-      created: "Nov 7, 2025 10:30 AM",
-      messages: [],
-    },
-    {
-      id: 2,
-      fullName: "Alice Kim",
-      phone: "0712234455",
-      ticket_id: "TKT528963X1M",
-      issueType: "Hardware Problem",
-      priority: "Critical",
-      status: "In Progress",
-      message:
-        "Router is overheating and auto shutting down every few hours. Need urgent replacement.",
-      created: "Nov 6, 2025 2:15 PM",
-      messages: [
-        {
-          from: "staff",
-          message:
-            "Hello Alice, I've checked your account and we'll send a technician tomorrow morning. Can you confirm your availability?",
-          time: "Nov 6, 2025 3:00 PM",
-        },
-        {
-          from: "customer",
-          message: "Yes, I'll be available from 9 AM to 12 PM. Thank you!",
-          time: "Nov 6, 2025 3:15 PM",
-        },
-      ],
-    },
-    {
-      id: 3,
-      fullName: "Peter Kirui",
-      phone: "0798456712",
-      ticket_id: "TKT639274P2N",
-      issueType: "Installation Request",
-      priority: "Medium",
-      status: "Resolved",
-      message:
-        "Need installation at home bundle setup next week. Preferably Tuesday or Wednesday.",
-      created: "Nov 5, 2025 11:00 AM",
-      messages: [
-        {
-          from: "staff",
-          message:
-            "Hello Peter, we can schedule installation for Wednesday, Nov 13th at 10 AM. Does this work for you?",
-          time: "Nov 5, 2025 12:00 PM",
-        },
-        {
-          from: "customer",
-          message: "Perfect! Wednesday works great. See you then.",
-          time: "Nov 5, 2025 12:30 PM",
-        },
-        {
-          from: "staff",
-          message:
-            "Great! Installation scheduled. You'll receive a confirmation SMS shortly.",
-          time: "Nov 5, 2025 12:35 PM",
-        },
-      ],
-    },
-    {
-      id: 4,
-      fullName: "Sarah Njeri",
-      phone: "0709988776",
-      ticket_id: "TKT741085S3O",
-      issueType: "Software Bug",
-      priority: "Low",
-      status: "Closed",
-      message:
-        "Portal shows wrong expiry date values for my subscription. Shows Dec 15 but should be Dec 30.",
-      created: "Nov 4, 2025 9:45 AM",
-      messages: [
-        {
-          from: "staff",
-          message:
-            "Hi Sarah, I've checked your account and corrected the expiry date. It now shows Dec 30 correctly. Please refresh your portal.",
-          time: "Nov 4, 2025 10:15 AM",
-        },
-        {
-          from: "customer",
-          message: "Yes, I can see it now. Thanks for the quick fix!",
-          time: "Nov 4, 2025 10:30 AM",
-        },
-      ],
-    },
-  ];
-
-  let currentTicket = null;
+  const API_BASE = "/api";
   const $ = (id) => document.getElementById(id);
+  let tickets = [];
+  let currentTicket = null;
 
-  function renderTickets() {
-    const container = $("allTicketsList");
-    const list = tickets.filter((t) => !t.is_deleted);
-
-    if (!list.length) {
-      container.innerHTML =
-        '<p class="text-center text-gray-500 py-8">No tickets found</p>';
-      return;
+  // Load Tickets
+  const loadTickets = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/tickets`);
+      if (!res.ok) throw new Error("Failed to load");
+      tickets = await res.json();
+      tickets = tickets.map((ticket) => {
+        if (!ticket.messages && ticket.message) {
+          return {
+            ...ticket,
+            messages: [
+              {
+                from: ticket.fullName || "customer",
+                message: ticket.message,
+                time: ticket.created || "N/A",
+              },
+            ],
+          };
+        }
+        return ticket;
+      });
+      renderTickets();
+      updateStats();
+    } catch (err) {
+      $(
+        "allTicketsList"
+      ).innerHTML = `<p class="text-center text-red-600 py-8">Error: ${err.message}</p>`;
     }
+  };
 
-    let html = "";
-    list.forEach((ticket) => {
-      const priorityColors = {
-        Low: "bg-green-100 text-green-700",
-        Medium: "bg-amber-100 text-amber-700",
-        High: "bg-orange-100 text-orange-700",
-        Critical: "bg-red-100 text-red-700",
-      };
-
-      const statusColors = {
-        Pending: "bg-yellow-100 text-yellow-700",
-        "In Progress": "bg-blue-100 text-blue-700",
-        Resolved: "bg-green-100 text-green-700",
-        Closed: "bg-gray-100 text-gray-700",
-      };
-
-      html += `
-                <div class="bg-white border-2 border-gray-200 hover:border-teal-300 rounded-xl p-5 transition-all cursor-pointer" onclick="viewTicket(${
-                  ticket.id
-                })">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="flex-1 grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <div>
-                                <p class="text-xs text-gray-500 font-semibold mb-1">Customer</p>
-                                <p class="font-bold text-gray-900">${
-                                  ticket.fullName
-                                }</p>
-                                <p class="text-sm text-gray-600">${
-                                  ticket.phone
-                                }</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 font-semibold mb-1">Ticket ID</p>
-                                <p class="font-semibold text-teal-600">#${
-                                  ticket.ticket_id
-                                }</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 font-semibold mb-1">Issue Type</p>
-                                <p class="text-sm font-semibold text-gray-900">${
-                                  ticket.issueType
-                                }</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 font-semibold mb-1">Priority</p>
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                                  priorityColors[ticket.priority]
-                                }">${ticket.priority}</span>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 font-semibold mb-1">Status</p>
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                                  statusColors[ticket.status]
-                                }">${ticket.status}</span>
-                            </div>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <button class="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition flex items-center gap-2">
-                                <i class="fas fa-eye"></i>
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                `;
-    });
-
-    container.innerHTML = html;
-    updateStats();
-  }
-
-  function filterTickets() {
-    const search = $("searchInput").value.toLowerCase();
-    const priority = $("priorityFilter").value;
-    const issueType = $("issueTypeFilter").value;
-    const status = $("statusFilter").value;
-
-    const filtered = tickets.filter((t) => {
-      if (t.is_deleted) return false;
-      if (
-        search &&
-        !t.fullName.toLowerCase().includes(search) &&
-        !t.phone.includes(search) &&
-        !t.ticket_id.toLowerCase().includes(search)
-      )
-        return false;
-      if (priority && t.priority !== priority) return false;
-      if (issueType && t.issueType !== issueType) return false;
-      if (status && t.status !== status) return false;
-      return true;
-    });
-
-    const container = $("allTicketsList");
-    if (!filtered.length) {
-      container.innerHTML =
-        '<p class="text-center text-gray-500 py-8">No tickets match your filters</p>';
-      return;
-    }
-
-    // Re-render with filtered list (reuse rendering logic)
-    const temp = tickets;
-    tickets = filtered;
-    renderTickets();
-    tickets = temp;
-  }
-
-  function updateStats() {
+  // Render Stats
+  const updateStats = () => {
     const active = tickets.filter((t) => !t.is_deleted);
     $("totalTickets").textContent = active.length;
     $("openTickets").textContent = active.filter(
@@ -542,9 +401,102 @@
     $("resolvedTickets").textContent = active.filter(
       (t) => t.status === "Resolved"
     ).length;
-  }
+  };
 
-  function viewTicket(id) {
+  // Render Tickets
+  const renderTickets = () => {
+    const container = $("allTicketsList");
+    const filtered = applyFilters();
+
+    if (!filtered.length) {
+      container.innerHTML =
+        '<p class="text-center text-gray-500 py-8">No tickets found</p>';
+      return;
+    }
+
+    const priorityColors = {
+      Low: "bg-green-100 text-green-700",
+      Medium: "bg-amber-100 text-amber-700",
+      High: "bg-orange-100 text-orange-700",
+      Critical: "bg-red-100 text-red-700",
+    };
+    const statusColors = {
+      Pending: "bg-yellow-100 text-yellow-700",
+      "In Progress": "bg-blue-100 text-blue-700",
+      Resolved: "bg-green-100 text-green-700",
+      Closed: "bg-gray-100 text-gray-700",
+    };
+
+    container.innerHTML = filtered
+      .map(
+        (t) => `
+      <div class="bg-white border-2 border-gray-200 hover:border-teal-300 rounded-xl p-5 transition-all cursor-pointer" onclick="viewTicket(${
+        t.id
+      })">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex-1 grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <p class="text-xs text-gray-500 font-semibold mb-1">Customer</p>
+              <p class="font-bold text-gray-900">${t.fullName}</p>
+              <p class="text-sm text-gray-600">${t.phone}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 font-semibold mb-1">Ticket ID</p>
+              <p class="font-semibold text-teal-600">#${t.ticket_id}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 font-semibold mb-1">Issue Type</p>
+              <p class="text-sm font-semibold text-gray-900">${t.issueType}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 font-semibold mb-1">Priority</p>
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                priorityColors[t.priority]
+              }">${t.priority}</span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 font-semibold mb-1">Status</p>
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                statusColors[t.status]
+              }">${t.status}</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0">
+            <button class="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition flex items-center gap-2">
+              <i class="fas fa-eye"></i> View Details
+            </button>
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join("");
+  };
+
+  // Filters
+  const applyFilters = () => {
+    let list = tickets.filter((t) => !t.is_deleted);
+    const search = $("searchInput").value.toLowerCase();
+    const priority = $("priorityFilter").value;
+    const issueType = $("issueTypeFilter").value;
+    const status = $("statusFilter").value;
+
+    if (search) {
+      list = list.filter(
+        (t) =>
+          t.fullName.toLowerCase().includes(search) ||
+          t.phone.includes(search) ||
+          t.ticket_id.toLowerCase().includes(search)
+      );
+    }
+    if (priority) list = list.filter((t) => t.priority === priority);
+    if (issueType) list = list.filter((t) => t.issueType === issueType);
+    if (status) list = list.filter((t) => t.status === status);
+    return list;
+  };
+
+  // Modal Actions
+  const viewTicket = async (id) => {
     currentTicket = tickets.find((t) => t.id === id);
     if (!currentTicket) return;
 
@@ -570,125 +522,126 @@
 
     renderConversation();
     $("ticketModal").classList.remove("hidden");
-  }
+  };
 
-  function renderConversation() {
+  const renderConversation = () => {
     const container = $("conversationMessages");
-    if (!currentTicket.messages || currentTicket.messages.length === 0) {
+    if (!currentTicket.messages?.length) {
       container.innerHTML =
-        '<p class="text-center text-gray-500 py-8">No responses yet. Be the first to respond to this ticket.</p>';
+        '<p class="text-center text-gray-500 py-8">No responses yet.</p>';
       return;
     }
 
-    let html = "";
-    currentTicket.messages.forEach((msg) => {
-      if (msg.from === "staff") {
-        html += `
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-user-tie text-blue-600"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="font-semibold text-gray-900 text-sm">Support Staff</span>
-                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Staff</span>
-                                <span class="text-xs text-gray-500">${msg.time}</span>
-                            </div>
-                            <div class="bg-blue-50 border-2 border-blue-100 rounded-2xl rounded-tl-none p-4">
-                                <p class="text-gray-900 text-sm">${msg.message}</p>
-                            </div>
-                        </div>
-                    </div>
-                    `;
-      } else {
-        html += `
-                    <div class="flex items-start gap-3 flex-row-reverse">
-                        <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-user text-teal-600"></i>
-                        </div>
-                        <div class="flex-1 text-right">
-                            <div class="flex items-center gap-2 mb-1 justify-end">
-                                <span class="text-xs text-gray-500">${msg.time}</span>
-                                <span class="font-semibold text-gray-900 text-sm">Customer</span>
-                            </div>
-                            <div class="bg-teal-50 border-2 border-teal-100 rounded-2xl rounded-tr-none p-4 text-left">
-                                <p class="text-gray-900 text-sm">${msg.message}</p>
-                            </div>
-                        </div>
-                    </div>
-                    `;
-      }
-    });
-
-    container.innerHTML = html;
+    container.innerHTML = currentTicket.messages
+      .map((m) =>
+        m.from === "staff"
+          ? `
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-user-tie text-blue-600"></i>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold text-gray-900 text-sm">Support Staff</span>
+            <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Staff</span>
+            <span class="text-xs text-gray-500">${m.time}</span>
+          </div>
+          <div class="bg-blue-50 border-2 border-blue-100 rounded-2xl rounded-tl-none p-4">
+            <p class="text-gray-900 text-sm">${m.message}</p>
+          </div>
+        </div>
+      </div>
+    `
+          : `
+      <div class="flex items-start gap-3 flex-row-reverse">
+        <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-user text-teal-600"></i>
+        </div>
+        <div class="flex-1 text-right">
+          <div class="flex items-center gap-2 mb-1 justify-end">
+            <span class="text-xs text-gray-500">${m.time}</span>
+            <span class="font-semibold text-gray-900 text-sm">Customer</span>
+          </div>
+          <div class="bg-teal-50 border-2 border-teal-100 rounded-2xl rounded-tr-none p-4 text-left">
+            <p class="text-gray-900 text-sm">${m.message}</p>
+          </div>
+        </div>
+      </div>
+    `
+      )
+      .join("");
     container.scrollTop = container.scrollHeight;
-  }
+  };
 
-  function sendResponse() {
-    const message = $("responseMessage").value.trim();
-    if (!message || !currentTicket) return;
+  const sendResponse = async () => {
+    const msg = $("responseMessage").value.trim();
+    if (!msg || !currentTicket) return;
 
-    const now = new Date();
-    const time =
-      now.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }) +
-      " " +
-      now.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
+    const now = dayjs().format("MMM D, YYYY h:mm A");
+    const newMsg = { from: "staff", message: msg, time: now };
+
+    try {
+      await fetch(`${API_BASE}/${currentTicket.id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, time: now }),
       });
-
-    if (!currentTicket.messages) currentTicket.messages = [];
-    currentTicket.messages.push({
-      from: "staff",
-      message: message,
-      time: time,
-    });
-
-    // Auto update status to In Progress if it was Pending
-    if (currentTicket.status === "Pending") {
-      currentTicket.status = "In Progress";
-      $("modalStatus").value = "In Progress";
+      currentTicket.messages.push(newMsg);
+      if (currentTicket.status === "Pending")
+        currentTicket.status = "In Progress";
+      $("responseMessage").value = "";
+      renderConversation();
+      renderTickets();
+    } catch (err) {
+      alert("Failed to send response");
     }
+  };
 
-    $("responseMessage").value = "";
-    renderConversation();
-    renderTickets();
-  }
-
-  function updateTicketStatus() {
+  const updateTicketStatus = async () => {
     if (!currentTicket) return;
-    currentTicket.status = $("modalStatus").value;
-    renderTickets();
-  }
+    const newStatus = $("modalStatus").value;
+    try {
+      await fetch(`${API_BASE}/${currentTicket.id}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      currentTicket.status = newStatus;
+      renderTickets();
+    } catch (err) {
+      alert("Failed to update status");
+    }
+  };
 
-  function deleteTicket() {
-    if (
-      !currentTicket ||
-      !confirm("Are you sure you want to delete this ticket?")
-    )
-      return;
-    currentTicket.is_deleted = true;
-    closeTicketModal();
-    renderTickets();
-  }
+  const deleteTicket = async () => {
+    if (!currentTicket || !confirm("Delete this ticket?")) return;
+    try {
+      await fetch(`${API_BASE}/${currentTicket.id}`, { method: "DELETE" });
+      currentTicket.is_deleted = true;
+      closeTicketModal();
+      renderTickets();
+    } catch (err) {
+      alert("Failed to delete");
+    }
+  };
 
-  function closeTicketModal() {
+  const closeTicketModal = () => {
     $("ticketModal").classList.add("hidden");
     currentTicket = null;
     $("responseMessage").value = "";
-  }
-
-  function refreshTickets() {
-    renderTickets();
-  }
-
-  // Initialize
-  window.onload = () => {
-    renderTickets();
   };
+
+  const refreshTickets = () => loadTickets();
+
+  // Filters
+  ["searchInput", "priorityFilter", "issueTypeFilter", "statusFilter"].forEach(
+    (id) =>
+      $(id)?.addEventListener("input", () => setTimeout(renderTickets, 300))
+  );
+  ["priorityFilter", "issueTypeFilter", "statusFilter"].forEach((id) =>
+    $(id)?.addEventListener("change", renderTickets)
+  );
+
+  // Init
+  window.onload = loadTickets;
 </script>

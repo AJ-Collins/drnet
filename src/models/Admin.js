@@ -1,21 +1,63 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
-async function findAdminByUsername(username) {
-  const [rows] = await db.execute("SELECT * FROM admins WHERE username = ?", [username]);
-  return rows[0];
-}
+const Admin = {
+  create: async (data) => {
+    const {
+      first_name,
+      second_name,
+      password,
+      title,
+      role_id,
+      email,
+      phone,
+      address,
+      image,
+    } = data;
+    const [result] = await db.query(
+      `INSERT INTO admins (first_name, second_name, password, title, role_id, email, phone, address, image) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        first_name,
+        second_name,
+        password,
+        title,
+        role_id,
+        email,
+        phone,
+        address,
+        image,
+      ]
+    );
+    return result;
+  },
 
-async function createAdmin(username, hashedPassword) {
-  const [result] = await db.execute(
-    "INSERT INTO admins (username, password) VALUES (?, ?)",
-    [username, hashedPassword]
-  );
-  return result.insertId;
-}
+  findById: async (id) => {
+    const [rows] = await db.query(`SELECT * FROM admins WHERE id = ?`, [id]);
+    return rows[0];
+  },
 
-async function deleteAllAdmins() {
-  const [result] = await db.execute("DELETE FROM admins");
-  return result.affectedRows;
-}
+  findAll: async () => {
+    const [rows] = await db.query(`SELECT * FROM admins`);
+    return rows;
+  },
 
-module.exports = { findAdminByUsername, createAdmin, deleteAllAdmins };
+  update: async (id, data) => {
+    const fields = Object.keys(data)
+      .map((key) => `${key}=?`)
+      .join(",");
+    const values = Object.values(data);
+    values.push(id);
+    const [result] = await db.query(
+      `UPDATE admins SET ${fields} WHERE id=?`,
+      values
+    );
+    return result;
+  },
+
+  delete: async (id) => {
+    const [result] = await db.query(`DELETE FROM admins WHERE id=?`, [id]);
+    return result;
+  },
+};
+
+module.exports = Admin;

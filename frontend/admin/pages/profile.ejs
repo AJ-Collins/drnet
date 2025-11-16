@@ -1,7 +1,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
   <!-- Left Column - Profile Card -->
   <div class="lg:col-span-1">
-    <div class="bg-white shadow-lg overflow-hidden">
+    <div class="bg-white shadow-lg overflow-hidden rounded-xl">
       <!-- Profile Image -->
       <div class="relative h-48 bg-teal-600 rounded-t-xl">
         <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
@@ -71,10 +71,10 @@
       <!-- Profile Info -->
       <div class="pt-20 pb-6 px-6 text-center">
         <h2 id="displayName" class="text-2xl font-bold text-gray-800 mb-1">
-          Jeremy Rose
+          Loading...
         </h2>
         <p id="displayTitle" class="text-teal-600 font-medium mb-1">
-          Product Designer
+          Loading...
         </p>
         <div
           class="flex items-center justify-center text-gray-500 text-sm mb-4"
@@ -98,7 +98,7 @@
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             ></path>
           </svg>
-          <span id="displayLocation">New York, NY</span>
+          <span id="displayLocation">Loading...</span>
         </div>
 
         <!-- Action Buttons -->
@@ -202,218 +202,180 @@
             <div>
               <p class="text-xs text-gray-500 mb-1">Phone:</p>
               <p id="displayPhone" class="text-sm text-teal-600 font-medium">
-                +1 123 456 7890
+                Loading...
               </p>
             </div>
             <div>
               <p class="text-xs text-gray-500 mb-1">Address:</p>
               <p id="displayAddress" class="text-sm text-gray-700">
-                525 E 68th Street<br />New York, NY 10651-78 156-187-60
+                Loading...
               </p>
             </div>
             <div>
               <p class="text-xs text-gray-500 mb-1">E-mail:</p>
               <p id="displayEmail" class="text-sm text-teal-600 font-medium">
-                hello@jeremyrose.com
+                Loading...
               </p>
             </div>
           </div>
+        </div>
 
-          <div id="timelineContent" class="text-left hidden">
-            <p class="text-gray-500 text-sm">Timeline content goes here...</p>
-          </div>
+        <div id="timelineContent" class="text-left hidden">
+          <p class="text-gray-500 text-sm">No timeline events yet.</p>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Right Column - Edit Profile Form -->
-    <div class="lg:col-span-2">
-      <div class="bg-white shadow-lg overflow-hidden p-8">
-        <h3 class="text-2xl font-bold text-gray-800 mb-6">Edit Profile</h3>
+  <!-- Right Column - Edit Profile Form -->
+  <div class="lg:col-span-2">
+    <div class="bg-white shadow-lg overflow-hidden p-8 rounded-xl">
+      <h3 class="text-2xl font-bold text-gray-800 mb-6">Edit Profile</h3>
 
-        <!-- Profile Information -->
-        <div class="mb-8">
-          <h4 class="text-lg font-semibold text-gray-800 mb-4">
-            Profile Information
-          </h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Full Name</label
-              >
-              <input
-                id="adminName"
-                type="text"
-                value="Jeremy Rose"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Enter your full name"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Job Title</label
-              >
-              <input
-                id="adminTitle"
-                type="text"
-                value="Product Designer"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Enter your job title"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Email Address</label
-              >
-              <input
-                id="adminEmail"
-                type="email"
-                value="hello@jeremyrose.com"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Enter your email"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Phone Number</label
-              >
-              <input
-                id="adminPhone"
-                type="tel"
-                value="+1 123 456 7890"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Enter your phone number"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Location</label
-              >
-              <input
-                id="adminLocation"
-                type="text"
-                value="New York, NY"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Enter your location"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Birthday</label
-              >
-              <input
-                id="adminBirthday"
-                type="text"
-                value="June 5, 1992"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Enter your birthday"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Gender</label
-              >
-              <select
-                id="adminGender"
-                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              >
-                <option value="Male" selected>Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-              </select>
-            </div>
-          </div>
-          <div class="mt-6">
+      <!-- Profile Information -->
+      <div class="mb-8">
+        <h4 class="text-lg font-semibold text-gray-800 mb-4">
+          Profile Information
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
             <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Address</label
+              >Full Name</label
             >
-            <textarea
-              id="adminAddress"
-              rows="3"
+            <input
+              id="adminName"
+              type="text"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              placeholder="Enter your address"
+              placeholder="Enter your full name"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Job Title</label
             >
-525 E 68th Street
-New York, NY 10651-78 156-187-60</textarea
+            <input
+              id="adminTitle"
+              type="text"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+              placeholder="Enter your job title"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Email Address</label
             >
+            <input
+              id="adminEmail"
+              type="email"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+              placeholder="Enter your email"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Phone Number</label
+            >
+            <input
+              id="adminPhone"
+              type="tel"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+              placeholder="Enter your phone number"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Location</label
+            >
+            <input
+              id="adminLocation"
+              type="text"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+              placeholder="Enter your location"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Birthday</label
+            >
+            <input
+              id="adminBirthday"
+              type="text"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+              placeholder="Enter your birthday"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Gender</label
+            >
+            <select
+              id="adminGender"
+              class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+            >
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
           </div>
         </div>
-
-        <!-- Password Reset Section -->
-        <div class="pt-6 border-t border-gray-200 mb-8">
-          <h4 class="text-lg font-semibold text-gray-800 mb-4">
-            Change Password
-          </h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Current Password</label
-              >
-              <input
-                id="currentPassword"
-                type="password"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Enter current password"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >New Password</label
-              >
-              <input
-                id="newPassword"
-                type="password"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Enter new password"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Confirm New Password</label
-              >
-              <input
-                id="confirmNewPassword"
-                type="password"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                placeholder="Confirm new password"
-              />
-            </div>
-          </div>
-          <div class="mt-4 flex justify-end">
-            <button
-              onclick="resetPassword()"
-              class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                ></path>
-              </svg>
-              <span>Change Password</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Save Button -->
-        <div class="flex justify-end space-x-4">
-          <button
-            onclick="cancelEdit()"
-            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200"
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Address</label
           >
-            Cancel
-          </button>
+          <textarea
+            id="adminAddress"
+            rows="3"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+            placeholder="Enter your address"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Password Reset Section -->
+      <div class="pt-6 border-t border-gray-200 mb-8">
+        <h4 class="text-lg font-semibold text-gray-800 mb-4">
+          Change Password
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Current Password</label
+            >
+            <input
+              id="currentPassword"
+              type="password"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+              placeholder="Enter current password"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >New Password</label
+            >
+            <input
+              id="newPassword"
+              type="password"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+              placeholder="Enter new password"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Confirm New Password</label
+            >
+            <input
+              id="confirmNewPassword"
+              type="password"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+              placeholder="Confirm new password"
+            />
+          </div>
+        </div>
+        <div class="mt-4 flex justify-end">
           <button
-            onclick="saveProfile()"
-            class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-md hover:shadow-lg"
+            onclick="resetPassword()"
+            class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
           >
             <svg
               class="w-4 h-4"
@@ -425,291 +387,263 @@ New York, NY 10651-78 156-187-60</textarea
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M5 13l4 4L19 7"
+                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
               ></path>
             </svg>
-            <span>Save Profile</span>
+            <span>Change Password</span>
           </button>
         </div>
       </div>
+
+      <!-- Save/Cancel Buttons -->
+      <div class="flex justify-end space-x-4">
+        <button
+          onclick="cancelEdit()"
+          class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200"
+        >
+          Cancel
+        </button>
+        <button
+          onclick="saveProfile()"
+          class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-md hover:shadow-lg"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            ></path>
+          </svg>
+          <span>Save Profile</span>
+        </button>
+      </div>
     </div>
   </div>
-  <script>
-    let currentImageData = null;
-
-    // API CONFIGURATION
-    const API = {
-      GET_PROFILE: "/api/profile",
-      UPDATE_PROFILE: "/api/profile",
-      UPLOAD_IMAGE: "/api/upload-profile-image",
-      CHANGE_PASSWORD: "/api/change-password",
-    };
-
-    //  MOCK DATA
-    const mockApi = {
-      // Simulate network delay
-      delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-
-      async get(url) {
-        await this.delay(500);
-        if (url === API.GET_PROFILE) {
-          return {
-            success: true,
-            data: {
-              name: "Julius Ojwang",
-              title: "Software Engineer",
-              email: "juliusojwang@gmail.com",
-              phone: "+254 712345678",
-              location: "Mombasa, Kenya",
-              birthday: "June 5, 2004",
-              gender: "Male",
-              address: "525 E 68th Street\nKenya, Mombasa 10651-78 156-187-60",
-              profileImage: null,
-            },
-          };
-        }
-        throw new Error("Mock endpoint not found");
-      },
-
-      async post(url, data) {
-        await this.delay(600);
-        console.log(`[MOCK POST] ${url}`, data);
-        return { success: true, message: "Updated successfully" };
-      },
-    };
-
-    // API caller
-    const api = {
-      async get(url) {
-        const res = await fetch(url, { credentials: "include" });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || "Request failed");
-        return json;
-      },
-      async post(url, data) {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-          credentials: "include",
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || "Request failed");
-        return json;
-      },
-      async postForm(url, formData) {
-        const res = await fetch(url, {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || "Upload failed");
-        return json;
-      },
-    };
-
-    // MOCK IN DEV
-    const backend = mockApi;
-
-    //  NOTIFICATION SYSTEM
-    function showNotification(message, type = "info") {
-      const colors = {
-        success: "bg-green-500",
-        error: "bg-red-500",
-        info: "bg-blue-500",
-      };
-      const notification = document.createElement("div");
-      notification.className = `fixed top-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg ${colors[type]} z-50 transition-all`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      setTimeout(() => notification.remove(), 3000);
-    }
-
-    //  LOAD PROFILE ON START
-    async function loadProfile() {
-      try {
-        const response = await backend.get(API.GET_PROFILE);
-        if (response.success) {
-          const d = response.data;
-          document.getElementById("displayName").textContent = d.name;
-          document.getElementById("displayTitle").textContent = d.title;
-          document.getElementById("displayEmail").textContent = d.email;
-          document.getElementById("displayPhone").textContent = d.phone;
-          document.getElementById("displayLocation").textContent = d.location;
-          document.getElementById("displayBirthday").textContent = d.birthday;
-          document.getElementById("displayGender").textContent = d.gender;
-          document.getElementById("displayAddress").innerHTML =
-            d.address.replace(/\n/g, "<br>");
-
-          // Admin form
-          document.getElementById("adminName").value = d.name;
-          document.getElementById("adminTitle").value = d.title;
-          document.getElementById("adminEmail").value = d.email;
-          document.getElementById("adminPhone").value = d.phone;
-          document.getElementById("adminLocation").value = d.location;
-          document.getElementById("adminBirthday").value = d.birthday;
-          document.getElementById("adminGender").value = d.gender;
-          document.getElementById("adminAddress").value = d.address;
-
-          // Profile image
-          if (d.profileImage) {
-            currentImageData = d.profileImage;
-            const img = document.getElementById("profileImage");
-            const def = document.getElementById("defaultProfileIcon");
-            img.src = d.profileImage;
-            img.classList.remove("hidden");
-            def.classList.add("hidden");
-          }
-        }
-      } catch (err) {
-        showNotification("Failed to load profile: " + err.message, "error");
-      }
-    }
-
-    //  SAVE PROFILE
-    async function saveProfile() {
-      const profile = {
-        name: document.getElementById("adminName").value,
-        title: document.getElementById("adminTitle").value,
-        email: document.getElementById("adminEmail").value,
-        phone: document.getElementById("adminPhone").value,
-        location: document.getElementById("adminLocation").value,
-        birthday: document.getElementById("adminBirthday").value,
-        gender: document.getElementById("adminGender").value,
-        address: document.getElementById("adminAddress").value,
-      };
-
-      try {
-        const res = await backend.post(API.UPDATE_PROFILE, profile);
-        if (res.success) {
-          // Update display
-          document.getElementById("displayName").textContent = profile.name;
-          document.getElementById("displayTitle").textContent = profile.title;
-          document.getElementById("displayEmail").textContent = profile.email;
-          document.getElementById("displayPhone").textContent = profile.phone;
-          document.getElementById("displayLocation").textContent =
-            profile.location;
-          document.getElementById("displayBirthday").textContent =
-            profile.birthday;
-          document.getElementById("displayGender").textContent = profile.gender;
-          document.getElementById("displayAddress").innerHTML =
-            profile.address.replace(/\n/g, "<br>");
-
-          showNotification("Profile updated successfully!", "success");
-        }
-      } catch (err) {
-        showNotification("Update failed: " + err.message, "error");
-      }
-    }
-
-    // HANDLE IMAGE UPLOAD
-    async function handleImageUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function (e) {
-        currentImageData = e.target.result;
-
-        const imgElement = document.getElementById("profileImage");
-        const defaultIcon = document.getElementById("defaultProfileIcon");
-        imgElement.src = currentImageData;
-        imgElement.classList.remove("hidden");
-        defaultIcon.classList.add("hidden");
-
-        // Upload to backend
-        const formData = new FormData();
-        formData.append("image", file);
-
-        try {
-          const res = await backend.postForm(API.UPLOAD_IMAGE, formData);
-          if (res.success && res.imageUrl) {
-            currentImageData = res.imageUrl;
-            imgElement.src = res.imageUrl;
-            showNotification("Profile picture updated!", "success");
-          }
-        } catch (err) {
-          showNotification("Image upload failed: " + err.message, "error");
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-
-    //  CHANGE PASSWORD
-    async function resetPassword() {
-      const current = document.getElementById("currentPassword").value;
-      const newPass = document.getElementById("newPassword").value;
-      const confirm = document.getElementById("confirmNewPassword").value;
-
-      if (!current || !newPass || !confirm) {
-        showNotification("Please fill in all password fields", "error");
-        return;
-      }
-      if (newPass !== confirm) {
-        showNotification("New passwords do not match", "error");
-        return;
-      }
-      if (newPass.length < 8) {
-        showNotification("Password must be at least 8 characters", "error");
-        return;
-      }
-
-      try {
-        const res = await backend.post(API.CHANGE_PASSWORD, {
-          currentPassword: current,
-          newPassword: newPass,
-        });
-
-        if (res.success) {
-          document.getElementById("currentPassword").value = "";
-          document.getElementById("newPassword").value = "";
-          document.getElementById("confirmNewPassword").value = "";
-          showNotification("Password changed successfully!", "success");
-        }
-      } catch (err) {
-        showNotification("Password change failed: " + err.message, "error");
-      }
-    }
-
-    // CANCEL EDIT
-    function cancelEdit() {
-      loadProfile();
-      showNotification("Changes cancelled", "info");
-    }
-
-    // TAB SWITCHING
-    function showTab(tab) {
-      const aboutContent = document.getElementById("aboutContent");
-      const timelineContent = document.getElementById("timelineContent");
-      const aboutTab = document.getElementById("aboutTab");
-      const timelineTab = document.getElementById("timelineTab");
-
-      if (tab === "about") {
-        aboutContent.classList.remove("hidden");
-        timelineContent.classList.add("hidden");
-        aboutTab.classList.remove("text-gray-500", "border-transparent");
-        aboutTab.classList.add("text-gray-900", "border-teal-600");
-        timelineTab.classList.remove("text-gray-900", "border-teal-600");
-        timelineTab.classList.add("text-gray-500", "border-transparent");
-      } else {
-        aboutContent.classList.add("hidden");
-        timelineContent.classList.remove("hidden");
-        timelineTab.classList.remove("text-gray-500", "border-transparent");
-        timelineTab.classList.add("text-gray-900", "border-teal-600");
-        aboutTab.classList.remove("text-gray-900", "border-teal-600");
-        aboutTab.classList.add("text-gray-500", "border-transparent");
-      }
-    }
-
-    // TRIGGER FILE INPUT
-    function triggerFileInput() {
-      document.getElementById("fileInput").click();
-    }
-
-    // INIT ON LOAD
-    document.addEventListener("DOMContentLoaded", () => {
-      loadProfile();
-    });
-  </script>
 </div>
+<script>
+  const API_BASE = "/api";
+  const $ = (id) => document.getElementById(id);
+  let currentImageData = null;
+  let cachedProfile = null;
+
+  // Notification
+  function showNotification(message, type = "info") {
+    const colors = {
+      success: "bg-green-500",
+      error: "bg-red-500",
+      info: "bg-blue-500",
+    };
+    const div = document.createElement("div");
+    div.className = `fixed top-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg ${colors[type]} z-50 transition-all`;
+    div.textContent = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+  }
+
+  async function loadProfile() {
+    try {
+      const res = await fetch(`${API_BASE}/profile`, {
+        headers: { "Cache-Control": "no-cache" },
+      });
+
+      let p = {};
+
+      if (res.status === 304) {
+        // Use cached data
+        if (!cachedProfile) {
+          throw new Error("No cached profile available");
+        }
+        p = cachedProfile;
+        console.log("Using cached profile (304)");
+      } else if (res.ok) {
+        const data = await res.json();
+        p = data.profile;
+        cachedProfile = p; // Update cache
+        console.log("Loaded fresh profile");
+      } else {
+        throw new Error("Failed to load profile");
+      }
+
+      const img = p.image || null;
+      currentImageData = img;
+
+      // === UPDATE DISPLAY ===
+      const setText = (id, value) => {
+        const el = $(id);
+        if (el) el.textContent = value || "N/A";
+      };
+
+      const setValue = (id, value) => {
+        const el = $(id);
+        if (el) el.value = value || "";
+      };
+
+      setText("displayName", p.name);
+      setText("displayTitle", p.position);
+      setText("displayPhone", p.phone);
+      setText("displayEmail", p.email);
+      setText("displayLocation", p.location);
+      $("displayAddress").innerHTML = (p.address || "").replace(/\n/g, "<br>");
+
+      // Update form
+      setValue("adminName", p.name);
+      setValue("adminTitle", p.position);
+      setValue("adminEmail", p.email);
+      setValue("adminPhone", p.phone);
+      setValue("adminLocation", p.location);
+      setValue("adminBirthday", p.birthday);
+      setValue("adminGender", p.gender);
+      setValue("adminAddress", p.address);
+
+      // Update image
+      if (img) {
+        $("profileImage").src = img;
+        $("profileImage").classList.remove("hidden");
+        $("defaultProfileIcon").classList.add("hidden");
+      } else {
+        $("profileImage").classList.add("hidden");
+        $("defaultProfileIcon").classList.remove("hidden");
+      }
+    } catch (err) {
+      console.error("loadProfile error:", err);
+      showNotification("Failed to load profile: " + err.message, "error");
+    }
+  }
+
+  // Save Profile
+  async function saveProfile() {
+    const profile = {
+      name: $("adminName").value.trim(),
+      title: $("adminTitle").value.trim(),
+      email: $("adminEmail").value.trim(),
+      phone: $("adminPhone").value.trim(),
+      location: $("adminLocation").value.trim(),
+      birthday: $("adminBirthday").value.trim(),
+      gender: $("adminGender").value,
+      address: $("adminAddress").value.trim(),
+    };
+
+    if (!profile.name || !profile.email) {
+      showNotification("Name and email are required", "error");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      loadProfile();
+      showNotification("Profile saved!", "success");
+    } catch (err) {
+      showNotification("Save failed: " + err.message, "error");
+    }
+  }
+
+  // Upload Image
+  async function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      currentImageData = reader.result;
+      $("profileImage").src = currentImageData;
+      $("profileImage").classList.remove("hidden");
+      $("defaultProfileIcon").classList.add("hidden");
+
+      const form = new FormData();
+      form.append("image", file);
+
+      try {
+        const res = await fetch(`${API_BASE}/upload-profile-image`, {
+          method: "POST",
+          body: form,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        currentImageData = data.imageUrl;
+        showNotification("Image uploaded!", "success");
+      } catch (err) {
+        showNotification("Upload failed: " + err.message, "error");
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Change Password
+  async function resetPassword() {
+    const current = $("currentPassword").value;
+    const newP = $("newPassword").value;
+    const confirm = $("confirmNewPassword").value;
+
+    if (!current || !newP || !confirm)
+      return showNotification("All fields required", "error");
+    if (newP !== confirm)
+      return showNotification("Passwords don't match", "error");
+    if (newP.length < 6) return showNotification("Password too short", "error");
+
+    try {
+      const res = await fetch(`${API_BASE}/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: current, newPassword: newP }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      $("currentPassword").value =
+        $("newPassword").value =
+        $("confirmNewPassword").value =
+          "";
+      showNotification("Password changed!", "success");
+    } catch (err) {
+      showNotification("Failed: " + err.message, "error");
+    }
+  }
+
+  function cancelEdit() {
+    loadProfile();
+    showNotification("Changes cancelled", "info");
+  }
+
+  function showTab(tab) {
+    const about = $("aboutContent"),
+      timeline = $("timelineContent");
+    const aTab = $("aboutTab"),
+      tTab = $("timelineTab");
+
+    if (tab === "about") {
+      about.classList.remove("hidden");
+      timeline.classList.add("hidden");
+      aTab.classList.replace("text-gray-500", "text-gray-900");
+      aTab.classList.replace("border-transparent", "border-teal-600");
+      tTab.classList.replace("text-gray-900", "text-gray-500");
+      tTab.classList.replace("border-teal-600", "border-transparent");
+    } else {
+      timeline.classList.remove("hidden");
+      about.classList.add("hidden");
+      tTab.classList.replace("text-gray-500", "text-gray-900");
+      tTab.classList.replace("border-transparent", "border-teal-600");
+      aTab.classList.replace("text-gray-900", "text-gray-500");
+      aTab.classList.replace("border-teal-600", "border-transparent");
+    }
+  }
+
+  function triggerFileInput() {
+    $("fileInput").click();
+  }
+
+  // Init
+  window.onload = loadProfile;
+</script>

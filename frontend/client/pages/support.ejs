@@ -1,678 +1,393 @@
-<div class="mb-8">
-  <h1 class="text-3xl font-bold text-gray-900 mb-2">Support Center</h1>
-  <p class="text-gray-600">
-    We're here to help! Create a ticket or chat with our support team
-  </p>
-</div>
+<style>
+  /* Skeleton Loading */
+  @keyframes skeleton {
+    0% {
+      background-color: #f3f4f6;
+    }
+    100% {
+      background-color: #e5e7eb;
+    }
+  }
+  .skeleton {
+    background: #e5e7eb;
+    animation: skeleton 1.2s ease-in-out infinite;
+    border-radius: 0.5rem;
+  }
+  .skeleton-text {
+    height: 1rem;
+  }
+  .skeleton-title {
+    height: 1.5rem;
+    width: 60%;
+  }
+  .skeleton-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+  }
+  .skeleton-card {
+    height: 8rem;
+  }
+  .skeleton-ticket {
+    height: 6rem;
+  }
+  .skeleton-chat {
+    height: 20rem;
+  }
+  .skeleton-input {
+    height: 3rem;
+  }
+</style>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-  <!-- Left Column - Tickets List -->
-  <div class="lg:col-span-1 space-y-6">
-    <!-- Create New Ticket -->
-    <div
-      class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl shadow-xl p-6 text-white"
-    >
-      <div class="flex items-center gap-3 mb-4">
-        <div class="bg-white bg-opacity-20 rounded-lg p-3">
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-        </div>
-        <h2 class="text-xl font-bold">Create New Ticket</h2>
-      </div>
-      <p class="text-teal-100 mb-4 text-sm">
-        Have an issue? Let us know and we'll help you right away
-      </p>
-      <button
-        onclick="showNewTicketForm()"
-        class="w-full bg-white text-teal-600 font-semibold py-3 rounded-xl hover:bg-teal-50 transition-all shadow-lg"
-      >
-        Create Ticket
-      </button>
+<div class="max-w-full mx-auto" id="app">
+  <!-- Loading Skeleton -->
+  <div id="skeleton" class="space-y-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="skeleton skeleton-title mb-2"></div>
+      <div class="skeleton skeleton-text w-96"></div>
     </div>
 
-    <!-- My Tickets -->
-    <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-gray-900">My Tickets</h2>
-        <select
-          class="px-3 py-1.5 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:border-teal-500"
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Column -->
+      <div class="lg:col-span-1 space-y-6">
+        <!-- Create Ticket -->
+        <div class="skeleton-card rounded-2xl"></div>
+        <!-- Tickets List -->
+        <div
+          class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100"
         >
-          <option>All Status</option>
-          <option>Open</option>
-          <option>In Progress</option>
-          <option>Resolved</option>
-        </select>
+          <div class="flex justify-between mb-6">
+            <div class="skeleton h-6 w-32"></div>
+            <div class="skeleton w-32 h-8 rounded-lg"></div>
+          </div>
+          <div class="space-y-3">
+            <div class="skeleton-ticket rounded-xl"></div>
+            <div class="skeleton-ticket rounded-xl"></div>
+            <div class="skeleton-ticket rounded-xl"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="space-y-3 max-h-[600px] overflow-y-auto">
-        <!-- Ticket 1 - Active -->
-        <div
-          onclick="showTicket(1)"
-          class="border-2 border-teal-500 bg-teal-50 rounded-xl p-4 cursor-pointer hover:shadow-md transition-all"
-        >
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-bold text-teal-700">#TKT-001</span>
-                <span
-                  class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full"
-                >
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  Open
-                </span>
-              </div>
-              <h3 class="font-bold text-gray-900 text-sm mb-1">
-                Payment not reflecting
-              </h3>
-              <p class="text-xs text-gray-600 mb-2">
-                I made a payment but it's not showing...
-              </p>
-              <div class="flex items-center gap-3 text-xs text-gray-500">
-                <span>Nov 7, 2025</span>
-                <span class="flex items-center gap-1">
-                  <svg
-                    class="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                    />
-                  </svg>
-                  3 messages
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ticket 2 -->
-        <div
-          onclick="showTicket(2)"
-          class="border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-teal-300 hover:shadow-md transition-all"
-        >
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-bold text-gray-700">#TKT-002</span>
-                <span
-                  class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full"
-                >
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  In Progress
-                </span>
-              </div>
-              <h3 class="font-bold text-gray-900 text-sm mb-1">
-                Unable to upgrade plan
-              </h3>
-              <p class="text-xs text-gray-600 mb-2">
-                Getting an error when trying to upgrade...
-              </p>
-              <div class="flex items-center gap-3 text-xs text-gray-500">
-                <span>Nov 6, 2025</span>
-                <span class="flex items-center gap-1">
-                  <svg
-                    class="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                    />
-                  </svg>
-                  5 messages
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ticket 3 -->
-        <div
-          onclick="showTicket(3)"
-          class="border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-teal-300 hover:shadow-md transition-all"
-        >
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-bold text-gray-700">#TKT-003</span>
-                <span
-                  class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
-                >
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  Resolved
-                </span>
-              </div>
-              <h3 class="font-bold text-gray-900 text-sm mb-1">Login issues</h3>
-              <p class="text-xs text-gray-600 mb-2">
-                Cannot access my account...
-              </p>
-              <div class="flex items-center gap-3 text-xs text-gray-500">
-                <span>Nov 5, 2025</span>
-                <span class="flex items-center gap-1">
-                  <svg
-                    class="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                    />
-                  </svg>
-                  4 messages
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ticket 4 -->
-        <div
-          onclick="showTicket(4)"
-          class="border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-teal-300 hover:shadow-md transition-all"
-        >
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-bold text-gray-700">#TKT-004</span>
-                <span
-                  class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full"
-                >
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  In Progress
-                </span>
-              </div>
-              <h3 class="font-bold text-gray-900 text-sm mb-1">
-                Subscription renewal query
-              </h3>
-              <p class="text-xs text-gray-600 mb-2">
-                Question about auto-renewal...
-              </p>
-              <div class="flex items-center gap-3 text-xs text-gray-500">
-                <span>Nov 4, 2025</span>
-                <span class="flex items-center gap-1">
-                  <svg
-                    class="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                    />
-                  </svg>
-                  2 messages
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Right Column -->
+      <div class="lg:col-span-2">
+        <div class="skeleton-chat rounded-2xl"></div>
       </div>
     </div>
   </div>
 
-  <!-- Right Column - Ticket Details / Chat -->
-  <div class="lg:col-span-2">
-    <!-- New Ticket Form (Hidden by default) -->
-    <div
-      id="newTicketForm"
-      class="hidden bg-white rounded-2xl shadow-xl p-8 border-2 border-gray-100"
-    >
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Create New Ticket</h2>
-        <button
-          onclick="hideNewTicketForm()"
-          class="text-gray-400 hover:text-gray-600"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-
-      <form class="space-y-6">
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Subject</label
-          >
-          <input
-            type="text"
-            placeholder="Briefly describe your issue"
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Category</label
-          >
-          <select
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
-          >
-            <option>Select a category</option>
-            <option>Billing & Payments</option>
-            <option>Subscription Issues</option>
-            <option>Technical Problems</option>
-            <option>Account Management</option>
-            <option>Other</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Priority</label
-          >
-          <div class="grid grid-cols-3 gap-3">
-            <button
-              type="button"
-              class="px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition font-medium"
-            >
-              Low
-            </button>
-            <button
-              type="button"
-              class="px-4 py-3 border-2 border-amber-500 bg-amber-50 rounded-xl font-medium text-amber-700"
-            >
-              Medium
-            </button>
-            <button
-              type="button"
-              class="px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition font-medium"
-            >
-              High
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Description</label
-          >
-          <textarea
-            rows="6"
-            placeholder="Please provide detailed information about your issue..."
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none"
-          ></textarea>
-        </div>
-
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Attachments (Optional)</label
-          >
-          <div
-            class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-teal-500 transition cursor-pointer"
-          >
-            <svg
-              class="w-12 h-12 text-gray-400 mx-auto mb-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-            <p class="text-sm text-gray-600 font-medium">
-              Click to upload or drag and drop
-            </p>
-            <p class="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 10MB</p>
-          </div>
-        </div>
-
-        <div class="flex gap-3">
-          <button
-            type="submit"
-            class="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold py-3 rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg"
-          >
-            Submit Ticket
-          </button>
-          <button
-            type="button"
-            onclick="hideNewTicketForm()"
-            class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+  <!-- Real Content -->
+  <div id="content" class="hidden space-y-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Support Center</h1>
+      <p class="text-gray-600">
+        We're here to help! Create a ticket or chat with our support team
+      </p>
     </div>
 
-    <!-- Ticket Chat View -->
-    <div
-      id="ticketChat"
-      class="bg-white rounded-2xl shadow-xl border-2 border-gray-100 flex flex-col h-[800px]"
-    >
-      <!-- Ticket Header -->
-      <div class="p-6 border-b-2 border-gray-100">
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-3 mb-2">
-              <h2 class="text-2xl font-bold text-gray-900">
-                Payment not reflecting
-              </h2>
-              <span
-                class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 text-sm font-semibold rounded-full"
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Column - Tickets List -->
+      <div class="lg:col-span-1 space-y-6">
+        <!-- Create New Ticket -->
+        <div
+          class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl shadow-xl p-6 text-white"
+        >
+          <div class="flex items-center gap-3 mb-4">
+            <div class="bg-white bg-opacity-20 rounded-lg p-3">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Open
-              </span>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
             </div>
-            <div class="flex items-center gap-4 text-sm text-gray-600">
-              <span class="font-semibold text-teal-600">#TKT-001</span>
-              <span>Created: Nov 7, 2025 at 10:30 AM</span>
-              <span
-                class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full"
-                >Billing & Payments</span
-              >
-            </div>
+            <h2 class="text-xl font-bold">Create New Ticket</h2>
           </div>
+          <p class="text-teal-100 mb-4 text-sm">
+            Have an issue? Let us know and we'll help you right away
+          </p>
           <button
-            class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+            onclick="showNewTicketForm()"
+            class="w-full bg-white text-teal-600 font-semibold py-3 rounded-xl hover:bg-teal-50 transition-all shadow-lg"
           >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            Mark as Resolved
+            Create Ticket
           </button>
         </div>
+
+        <!-- My Tickets -->
+        <div
+          class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-900">My Tickets</h2>
+            <select
+              id="filter-status"
+              onchange="filterTickets()"
+              class="px-3 py-1.5 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:border-teal-500"
+            >
+              <option value="all">All Status</option>
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+
+          <div
+            id="tickets-list"
+            class="space-y-3 max-h-[600px] overflow-y-auto"
+          >
+            <!-- Injected via JS -->
+          </div>
+        </div>
       </div>
 
-      <!-- Chat Messages -->
-      <div class="flex-1 overflow-y-auto p-6 space-y-4">
-        <!-- User Message -->
-        <div class="flex items-start gap-3">
-          <div
-            class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0"
-          >
-            <span class="text-teal-700 font-bold text-sm">JD</span>
-          </div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="font-semibold text-gray-900 text-sm">You</span>
-              <span class="text-xs text-gray-500">Nov 7, 2025 at 10:30 AM</span>
-            </div>
-            <div
-              class="bg-teal-50 border-2 border-teal-100 rounded-2xl rounded-tl-none p-4"
+      <!-- Right Column - Ticket Details / Chat -->
+      <div class="lg:col-span-2">
+        <!-- New Ticket Form -->
+        <div
+          id="newTicketForm"
+          class="hidden bg-white rounded-2xl shadow-xl p-8 border-2 border-gray-100"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Create New Ticket</h2>
+            <button
+              onclick="hideNewTicketForm()"
+              class="text-gray-400 hover:text-gray-600"
             >
-              <p class="text-gray-900">
-                Hi, I made a payment of KES 3,499 yesterday for my subscription
-                renewal, but it's not reflecting in my account. The payment was
-                successful from my M-PESA, and I have the transaction code:
-                ABC123XYZ. Can you please help me resolve this?
-              </p>
-            </div>
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
-        </div>
 
-        <!-- Support Response -->
-        <div class="flex items-start gap-3">
-          <div
-            class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"
-          >
-            <svg
-              class="w-5 h-5 text-blue-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
+          <form id="create-ticket-form" class="space-y-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2"
+                >Subject</label
+              >
+              <input
+                id="ticket-subject"
+                type="text"
+                placeholder="Briefly describe your issue"
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
               />
-            </svg>
-          </div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="font-semibold text-gray-900 text-sm"
-                >Support Agent - Sarah</span
-              >
-              <span
-                class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full"
-                >Staff</span
-              >
-              <span class="text-xs text-gray-500">Nov 7, 2025 at 10:45 AM</span>
             </div>
-            <div
-              class="bg-gray-50 border-2 border-gray-100 rounded-2xl rounded-tl-none p-4"
-            >
-              <p class="text-gray-900">
-                Hello! Thank you for reaching out. I apologize for the
-                inconvenience. I can definitely help you with this. I've located
-                your transaction with the M-PESA code ABC123XYZ. Let me check
-                the status of this payment and get back to you shortly.
-              </p>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2"
+                >Category</label
+              >
+              <select
+                id="ticket-category"
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition"
+              >
+                <option value="">Select a category</option>
+                <option value="billing">Billing & Payments</option>
+                <option value="subscription">Subscription Issues</option>
+                <option value="technical">Technical Problems</option>
+                <option value="account">Account Management</option>
+                <option value="other">Other</option>
+              </select>
             </div>
-          </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2"
+                >Priority</label
+              >
+              <div class="grid grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onclick="setPriority('low')"
+                  id="priority-low"
+                  class="px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition font-medium"
+                >
+                  Low
+                </button>
+                <button
+                  type="button"
+                  onclick="setPriority('medium')"
+                  id="priority-medium"
+                  class="px-4 py-3 border-2 border-amber-500 bg-amber-50 rounded-xl font-medium text-amber-700"
+                >
+                  Medium
+                </button>
+                <button
+                  type="button"
+                  onclick="setPriority('high')"
+                  id="priority-high"
+                  class="px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition font-medium"
+                >
+                  High
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2"
+                >Description</label
+              >
+              <textarea
+                id="ticket-description"
+                rows="6"
+                placeholder="Please provide detailed information about your issue..."
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none"
+              ></textarea>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                type="submit"
+                class="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold py-3 rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg"
+              >
+                Submit Ticket
+              </button>
+              <button
+                type="button"
+                onclick="hideNewTicketForm()"
+                class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
 
-        <!-- User Message -->
-        <div class="flex items-start gap-3">
-          <div
-            class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0"
-          >
-            <span class="text-teal-700 font-bold text-sm">JD</span>
-          </div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="font-semibold text-gray-900 text-sm">You</span>
-              <span class="text-xs text-gray-500">Nov 7, 2025 at 10:50 AM</span>
-            </div>
-            <div
-              class="bg-teal-50 border-2 border-teal-100 rounded-2xl rounded-tl-none p-4"
-            >
-              <p class="text-gray-900">
-                Thank you! I appreciate your quick response. Looking forward to
-                hearing back from you.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Support Response with Solution -->
-        <div class="flex items-start gap-3">
-          <div
-            class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"
-          >
-            <svg
-              class="w-5 h-5 text-blue-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-          </div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="font-semibold text-gray-900 text-sm"
-                >Support Agent - Sarah</span
-              >
-              <span
-                class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full"
-                >Staff</span
-              >
-              <span class="text-xs text-gray-500">Nov 7, 2025 at 11:15 AM</span>
-            </div>
-            <div
-              class="bg-gray-50 border-2 border-gray-100 rounded-2xl rounded-tl-none p-4"
-            >
-              <p class="text-gray-900 mb-3">
-                Good news! I've found the issue. Your payment was received
-                successfully, but there was a delay in processing due to a
-                system sync issue. I've manually processed your subscription
-                renewal.
-              </p>
-              <div
-                class="bg-green-50 border border-green-200 rounded-lg p-3 mt-3"
-              >
-                <div class="flex items-start gap-2">
-                  <svg
-                    class="w-5 h-5 text-green-600 mt-0.5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+        <!-- Ticket Chat View -->
+        <div
+          id="ticketChat"
+          class="bg-white rounded-2xl shadow-xl border-2 border-gray-100 flex flex-col h-[800px]"
+        >
+          <!-- Header -->
+          <div class="p-6 border-b-2 border-gray-100">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h2 id="chat-title" class="text-2xl font-bold text-gray-900">
+                    Payment not reflecting
+                  </h2>
+                  <span
+                    id="chat-status"
+                    class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 text-sm font-semibold rounded-full"
                   >
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                  <div class="flex-1">
-                    <p class="text-sm font-semibold text-green-900">
-                      Payment Confirmed
-                    </p>
-                    <p class="text-xs text-green-700 mt-1">
-                      Your Professional Business Plan is now active until
-                      December 7, 2025
-                    </p>
-                  </div>
+                    <svg
+                      class="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Open
+                  </span>
+                </div>
+                <div class="flex items-center gap-4 text-sm text-gray-600">
+                  <span id="chat-id" class="font-semibold text-teal-600"
+                    >#TKT-001</span
+                  >
+                  <span id="chat-created"
+                    >Created: Nov 7, 2025 at 10:30 AM</span
+                  >
+                  <span
+                    id="chat-category"
+                    class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full"
+                    >Billing & Payments</span
+                  >
                 </div>
               </div>
-              <p class="text-gray-900 mt-3">
-                Is there anything else I can help you with?
-              </p>
+              <div class="flex gap-2">
+                <!-- <button onclick="resolveTicket()" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Mark as Resolved
+                </button> -->
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Typing Indicator (optional) -->
-        <div class="flex items-start gap-3 hidden" id="typingIndicator">
-          <div
-            class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"
-          >
-            <svg
-              class="w-5 h-5 text-blue-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <!-- Messages -->
+          <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Typing Indicator -->
+          <div id="typingIndicator" class="flex items-start gap-3 hidden p-6">
+            <div
+              class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-          </div>
-          <div
-            class="bg-gray-50 border-2 border-gray-100 rounded-2xl rounded-tl-none p-4"
-          >
-            <div class="flex gap-1">
-              <div
-                class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-              ></div>
-              <div
-                class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style="animation-delay: 0.1s"
-              ></div>
-              <div
-                class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style="animation-delay: 0.2s"
-              ></div>
+              <svg
+                class="w-5 h-5 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+            </div>
+            <div
+              class="bg-gray-50 border-2 border-gray-100 rounded-2xl rounded-tl-none p-4"
+            >
+              <div class="flex gap-1">
+                <div
+                  class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                ></div>
+                <div
+                  class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style="animation-delay: 0.1s"
+                ></div>
+                <div
+                  class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style="animation-delay: 0.2s"
+                ></div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Message Input -->
-      <div class="p-6 border-t-2 border-gray-100">
-        <div class="flex items-end gap-3">
-          <div class="flex-1">
-            <textarea
-              rows="3"
-              placeholder="Type your message here..."
-              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none"
-            ></textarea>
-            <div class="flex items-center gap-4 mt-2">
+          <!-- Input -->
+          <div class="p-6 border-t-2 border-gray-100">
+            <div class="flex items-end gap-3">
+              <div class="flex-1">
+                <textarea
+                  id="message-input"
+                  rows="3"
+                  placeholder="Type your message here..."
+                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none"
+                ></textarea>
+                <div class="flex items-center gap-4 mt-2">
+                  <span class="text-xs text-gray-400">Press Enter to send</span>
+                </div>
+              </div>
               <button
-                class="text-gray-500 hover:text-teal-600 transition flex items-center gap-1 text-sm"
+                onclick="sendMessage()"
+                class="px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg flex items-center gap-2 mb-5"
               >
+                <span>Send</span>
                 <svg
                   class="w-5 h-5"
                   fill="none"
@@ -683,51 +398,390 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
                   />
                 </svg>
-                Attach File
               </button>
-              <span class="text-xs text-gray-400">Press Enter to send</span>
             </div>
           </div>
-          <button
-            class="px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg flex items-center gap-2"
-          >
-            <span>Send</span>
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 <script>
+  // === STATE ===
+  let tickets = [];
+  let currentTicket = null;
+  let messages = [];
+  let filteredTickets = [];
+  let priority = "medium";
+  const userId = 1; // Simulated logged-in user
+
+  // === DOM ELEMENTS ===
+  const skeleton = document.getElementById("skeleton");
+  const content = document.getElementById("content");
+  const ticketsList = document.getElementById("tickets-list");
+  const filterStatus = document.getElementById("filter-status");
+  const newTicketForm = document.getElementById("newTicketForm");
+  const ticketChat = document.getElementById("ticketChat");
+  const chatTitle = document.getElementById("chat-title");
+  const chatStatus = document.getElementById("chat-status");
+  const chatId = document.getElementById("chat-id");
+  const chatCreated = document.getElementById("chat-created");
+  const chatCategory = document.getElementById("chat-category");
+  const chatMessages = document.getElementById("chat-messages");
+  const typingIndicator = document.getElementById("typingIndicator");
+  const messageInput = document.getElementById("message-input");
+
+  // === HELPER: Format Date ===
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return (
+      date.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }) +
+      ` at ${date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`
+    );
+  }
+
+  // === FETCH DATA ===
+  async function loadData() {
+    skeleton.classList.remove("hidden");
+    content.classList.add("hidden");
+
+    try {
+      const [ticketsRes, messagesRes] = await Promise.all([
+        fetch("/api/my/tickets", {
+          credentials: "include",
+        }).then((r) => r.json()),
+
+        fetch("/api/my/messages", {
+          credentials: "include",
+        }).then((r) => r.json()),
+      ]);
+      tickets = ticketsRes.filter((t) => !t.is_archived);
+      messages = messagesRes;
+      filteredTickets = [...tickets];
+
+      renderTickets();
+      if (tickets.length > 0) {
+        showTicket(tickets[0].id);
+      } else {
+        document.getElementById("ticketChat").classList.add("hidden");
+      }
+    } catch (err) {
+      alert("Failed to load support data.");
+      console.error(err);
+    } finally {
+      skeleton.classList.add("hidden");
+      content.classList.remove("hidden");
+    }
+  }
+
+  // === RENDER TICKETS ===
+  function renderTickets() {
+    ticketsList.innerHTML =
+      filteredTickets
+        .map((ticket) => {
+          const statusColors = {
+            open: "amber",
+            in_progress: "blue",
+            resolved: "green",
+          };
+          const color = statusColors[ticket.status] || "gray";
+          const isActive = currentTicket && currentTicket.id === ticket.id;
+
+          return `
+          <div onclick="showTicket(${ticket.id})" class="border-2 ${
+            isActive ? "border-teal-500 bg-teal-50" : "border-gray-200"
+          } rounded-xl p-4 cursor-pointer hover:shadow-md transition-all">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs font-bold text-${
+                    isActive ? "teal" : "gray"
+                  }-700">#${ticket.ticket_number}</span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-${color}-100 text-${color}-700 text-xs font-semibold rounded-full">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      ${
+                        ticket.status === "open" ||
+                        ticket.status === "in_progress"
+                          ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>'
+                          : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>'
+                      }
+                    </svg>
+                    ${
+                      ticket.status.replace("_", " ").charAt(0).toUpperCase() +
+                      ticket.status.replace("_", " ").slice(1)
+                    }
+                  </span>
+                </div>
+                <h3 class="font-bold text-gray-900 text-sm mb-1">${
+                  ticket.subject
+                }</h3>
+                <p class="text-xs text-gray-600 mb-2">
+                  ${(
+                    (ticket.description ||
+                      ticket.subject ||
+                      "No details provided") + ""
+                  ).substring(0, 80)}...
+                </p>
+                <div class="flex items-center gap-3 text-xs text-gray-500">
+                  <span>${formatDate(ticket.created_at).split(" at ")[0]}</span>
+                  <span class="flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                    </svg>
+                    ${
+                      messages.filter((m) => m.ticket_id === ticket.id).length
+                    } messages
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        })
+        .join("") ||
+      '<p class="text-center text-gray-500 py-8">No tickets found.</p>';
+  }
+
+  // === FILTER TICKETS ===
+  function filterTickets() {
+    const status = filterStatus.value;
+    filteredTickets =
+      status === "all"
+        ? [...tickets]
+        : tickets.filter((t) => t.status === status);
+    renderTickets();
+  }
+
+  // === SHOW TICKET ===
+  function showTicket(ticketId) {
+    currentTicket = tickets.find((t) => t.id === ticketId);
+    if (!currentTicket) return;
+
+    chatTitle.textContent = currentTicket.subject;
+    const statusMap = {
+      open: "Open",
+      in_progress: "In Progress",
+      resolved: "Resolved",
+    };
+    const colorMap = { open: "amber", in_progress: "blue", resolved: "green" };
+    chatStatus.innerHTML = `
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        ${
+          currentTicket.status !== "resolved"
+            ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>'
+            : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>'
+        }
+      </svg>
+      ${statusMap[currentTicket.status]}
+    `;
+    chatStatus.className = `inline-flex items-center gap-1 px-3 py-1 bg-${
+      colorMap[currentTicket.status]
+    }-100 text-${
+      colorMap[currentTicket.status]
+    }-700 text-sm font-semibold rounded-full`;
+    chatId.textContent = `#${currentTicket.ticket_number}`;
+    chatCreated.textContent = `Created: ${formatDate(
+      currentTicket.created_at
+    )}`;
+    const catMap = {
+      billing: "Billing & Payments",
+      subscription: "Subscription Issues",
+      technical: "Technical Problems",
+      account: "Account Management",
+      other: "Other",
+    };
+    chatCategory.textContent = catMap[currentTicket.issue_type] || "Other";
+
+    const ticketMessages = messages.filter(
+      (m) => m.ticket_id === currentTicket.id
+    );
+    renderMessages(ticketMessages);
+
+    newTicketForm.classList.add("hidden");
+    ticketChat.classList.remove("hidden");
+    renderTickets();
+  }
+
+  // === RENDER MESSAGES ===
+  function renderMessages(msgs) {
+    chatMessages.innerHTML = msgs
+      .map((msg) => {
+        const isUser = msg.sender_user_id === userId;
+        return `
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 ${
+              isUser ? "bg-teal-100" : "bg-blue-100"
+            } rounded-full flex items-center justify-center flex-shrink-0">
+              ${
+                isUser
+                  ? '<span class="text-teal-700 font-bold text-sm">JD</span>'
+                  : '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>'
+              }
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-semibold text-gray-900 text-sm">${
+                  isUser ? "You" : "Support Agent"
+                }</span>
+                ${
+                  !isUser
+                    ? '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Staff</span>'
+                    : ""
+                }
+                <span class="text-xs text-gray-500">${formatDate(
+                  msg.created_at
+                )}</span>
+              </div>
+              <div class="bg-${isUser ? "teal" : "gray"}-50 border-2 border-${
+          isUser ? "teal" : "gray"
+        }-100 rounded-2xl rounded-tl-none p-4">
+                <p class="text-gray-900">${msg.message}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // === CREATE TICKET ===
+  document
+    .getElementById("create-ticket-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const subject = document.getElementById("ticket-subject").value.trim();
+      const category = document.getElementById("ticket-category").value;
+      const description = document
+        .getElementById("ticket-description")
+        .value.trim();
+
+      if (!subject || !category || !description) {
+        alert("Please fill all required fields.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/my/tickets", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subject,
+            issue_type: category,
+            priority,
+            description,
+          }),
+        });
+        const newTicket = await res.json();
+        tickets.unshift(newTicket);
+        filteredTickets = [...tickets];
+        renderTickets();
+        hideNewTicketForm();
+        showTicket(newTicket.id);
+        alert("Ticket created successfully!");
+      } catch (err) {
+        alert("Failed to create ticket.");
+      }
+    });
+
+  // === SEND MESSAGE ===
+  async function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content || !currentTicket) return;
+
+    try {
+      const res = await fetch("/api/my/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticket_id: currentTicket.id,
+          sender_user_id: userId,
+          message: content,
+        }),
+      });
+      const newMsg = await res.json();
+      messages.push(newMsg);
+      renderMessages(messages.filter((m) => m.ticket_id === currentTicket.id));
+      messageInput.value = "";
+    } catch (err) {
+      alert("Failed to send message.");
+    }
+  }
+
+  // === RESOLVE TICKET ===
+  async function resolveTicket() {
+    if (!currentTicket || currentTicket.status === "resolved") return;
+    if (!confirm("Mark this ticket as resolved?")) return;
+
+    try {
+      const res = await fetch(`/api/my/tickets/${currentTicket.id}/resolve`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const updated = await res.json();
+      const idx = tickets.findIndex((t) => t.id === updated.id);
+      tickets[idx] = updated;
+      currentTicket = updated;
+      filteredTickets = [...tickets];
+      renderTickets();
+      showTicket(currentTicket.id);
+      alert("Ticket resolved!");
+    } catch (err) {
+      alert("Failed to resolve ticket.");
+    }
+  }
+
+  // === FORM ACTIONS ===
   function showNewTicketForm() {
-    document.getElementById("newTicketForm").classList.remove("hidden");
-    document.getElementById("ticketChat").classList.add("hidden");
+    newTicketForm.classList.remove("hidden");
+    ticketChat.classList.add("hidden");
+    document.getElementById("create-ticket-form").reset();
+    setPriority("medium");
   }
 
   function hideNewTicketForm() {
-    document.getElementById("newTicketForm").classList.add("hidden");
-    document.getElementById("ticketChat").classList.remove("hidden");
+    newTicketForm.classList.add("hidden");
+    ticketChat.classList.remove("hidden");
   }
 
-  function showTicket(ticketId) {
-    document.getElementById("newTicketForm").classList.add("hidden");
-    document.getElementById("ticketChat").classList.remove("hidden");
-    // In a real application, this would load the specific ticket data
+  function setPriority(level) {
+    priority = level;
+    document.querySelectorAll('[id^="priority-"]').forEach((btn) => {
+      btn.className =
+        btn.id === `priority-${level}`
+          ? `px-4 py-3 border-2 border-${
+              level === "low" ? "gray" : level === "medium" ? "amber" : "red"
+            }-500 ${
+              level === "medium"
+                ? "bg-amber-50 text-amber-700"
+                : level === "high"
+                ? "bg-red-50 text-red-700"
+                : ""
+            } rounded-xl font-medium`
+          : "px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-teal-500 hover:bg-teal-50 transition font-medium";
+    });
   }
+
+  // === ENTER TO SEND ===
+  messageInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // === INIT ===
+  window.addEventListener("load", loadData);
 </script>

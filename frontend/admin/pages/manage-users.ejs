@@ -39,9 +39,46 @@
   .user-row:hover {
     background: linear-gradient(to right, #f0fdfa, #ccfbf1);
   }
+  /* Skeleton Loading */
+  @keyframes skeleton {
+    0% {
+      background-color: #f3f4f6;
+    }
+    100% {
+      background-color: #e5e7eb;
+    }
+  }
+  .skeleton {
+    background: #e5e7eb;
+    animation: skeleton 1.2s ease-in-out infinite;
+    border-radius: 0.5rem;
+  }
+  .skeleton-text {
+    height: 1rem;
+  }
+  .skeleton-title {
+    height: 1.5rem;
+    width: 60%;
+  }
+  .skeleton-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+  }
+
+  .scale-95 {
+    transform: scale(0.95);
+  }
+  .scale-100 {
+    transform: scale(1);
+  }
+  .transition-all {
+    transition: all 0.2s ease;
+  }
 </style>
+
 <!-- ==================== HEADER ==================== -->
-<div class="flex items-center justify-between mb-8 px-6">
+<div class="flex items-center justify-between mb-8 px-6 pt-6">
   <div>
     <h3 class="text-2xl font-bold text-teal-800">User Management</h3>
     <p class="text-teal-600 mt-1">
@@ -51,7 +88,6 @@
   <div class="flex gap-3">
     <button
       id="addClientBtn"
-      onclick="openAddUserModal('client')"
       class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
     >
       <i
@@ -61,8 +97,8 @@
     </button>
     <button
       id="addStaffBtn"
-      onclick="openAddUserModal('staff')"
-      class="hidden bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
+      class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
+      style="display: none"
     >
       <i class="fas fa-user-tie group-hover:scale-110 transition-transform"></i>
       <span>Add Staff</span>
@@ -77,14 +113,12 @@
   >
     <button
       id="clientsTab"
-      onclick="switchTab('clients')"
       class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md"
     >
       <i class="fas fa-users mr-2"></i>Clients (<span id="clientCount">0</span>)
     </button>
     <button
       id="staffTab"
-      onclick="switchTab('staff')"
       class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-gray-600 hover:bg-gray-50"
     >
       <i class="fas fa-user-tie mr-2"></i>Staff (<span id="staffCount">0</span>)
@@ -94,7 +128,6 @@
 
 <!-- ==================== CLIENTS SECTION ==================== -->
 <div id="clientsSection" class="space-y-6 px-6">
-  <!-- Filters -->
   <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
       <div>
@@ -104,7 +137,7 @@
         <input
           type="text"
           id="clientsSearch"
-          placeholder="Search name, email, phone..."
+          placeholder="Name, email, phone..."
           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
         />
       </div>
@@ -152,7 +185,6 @@
       </div>
     </div>
 
-    <!-- Clients Table -->
     <div class="px-6 py-4 border-b border-teal-200">
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-bold text-teal-800">
@@ -166,6 +198,7 @@
         </button>
       </div>
     </div>
+
     <div class="overflow-x-auto">
       <table class="w-full" id="clientsTable">
         <thead class="bg-gray-50 border-b border-gray-200">
@@ -207,9 +240,10 @@
             </th>
           </tr>
         </thead>
-        <tbody id="clientsTableBody" class="divide-y divide-gray-100"></tbody>
+        <tbody id="clientsTableBody"></tbody>
       </table>
     </div>
+
     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
         <p class="text-sm text-gray-600">
@@ -224,7 +258,6 @@
 
 <!-- ==================== STAFF SECTION ==================== -->
 <div id="staffSection" class="hidden space-y-6 px-6">
-  <!-- Filters -->
   <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-bold text-gray-800">
@@ -245,7 +278,7 @@
         <input
           type="text"
           id="staffSearch"
-          placeholder="Search staff members..."
+          placeholder="Search staff..."
           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
         />
       </div>
@@ -280,7 +313,6 @@
       </select>
     </div>
 
-    <!-- Staff Table -->
     <div class="px-6 py-4 border-b border-teal-200">
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-bold text-teal-800">
@@ -294,6 +326,7 @@
         </button>
       </div>
     </div>
+
     <div class="overflow-x-auto">
       <table class="w-full" id="staffTable">
         <thead class="bg-gray-50 border-b border-gray-200">
@@ -326,7 +359,7 @@
             <th
               class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
             >
-              Joined
+              Basic Salary
             </th>
             <th
               class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
@@ -335,9 +368,10 @@
             </th>
           </tr>
         </thead>
-        <tbody id="staffTableBody" class="divide-y divide-gray-100"></tbody>
+        <tbody id="staffTableBody"></tbody>
       </table>
     </div>
+
     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
         <p class="text-sm text-gray-600">
@@ -353,7 +387,7 @@
 <!-- ==================== MODAL ==================== -->
 <div
   id="addUserModal"
-  class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm"
+  class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
 >
   <div
     class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
@@ -369,6 +403,7 @@
         </p>
       </div>
       <button
+        type="button"
         onclick="closeAddUserModal()"
         class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
       >
@@ -381,11 +416,22 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Full Name *</label
+            >First Name *</label
           >
           <input
             type="text"
-            id="fullName"
+            id="first_name"
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Second Name *</label
+          >
+          <input
+            type="text"
+            id="second_name"
             required
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
           />
@@ -422,17 +468,16 @@
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
           />
         </div>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2"
-          >Address</label
-        >
-        <input
-          type="text"
-          id="address"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-        />
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Password *</label
+          >
+          <input
+            type="text"
+            id="password"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          />
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -445,7 +490,7 @@
             required
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
           >
-            <option value="">Select plan</option>
+            <option value="" disabled selected hidden>Select plan</option>
             <option>Premium 50Mbps</option>
             <option>Standard 20Mbps</option>
             <option>Basic 10Mbps</option>
@@ -453,17 +498,18 @@
         </div>
         <div id="roleContainer" class="hidden">
           <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Role *</label
+            >Position *</label
           >
           <select
             id="role"
+            required
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
           >
-            <option value="">Select role</option>
-            <option>Network Engineer</option>
-            <option>Support Agent</option>
-            <option>Sales Rep</option>
-            <option>Manager</option>
+            <option value="" disabled selected hidden>Select position</option>
+            <option value="Network Engineer">Network Engineer</option>
+            <option value="Support Agent">Support Agent</option>
+            <option value="Sales Rep">Sales Rep</option>
+            <option value="Manager">Manager</option>
           </select>
         </div>
         <div id="departmentContainer" class="hidden">
@@ -472,14 +518,28 @@
           >
           <select
             id="department"
+            required
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
           >
-            <option value="">Select department</option>
+            <option value="" disabled selected hidden>Select department</option>
             <option>Technical</option>
             <option>Support</option>
             <option>Sales</option>
             <option>Management</option>
           </select>
+        </div>
+        <div id="salaryContainer" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Basic Salary (KSh) *</label
+          >
+          <input
+            type="number"
+            id="basic_salary"
+            min="0"
+            step="100"
+            placeholder="e.g. 45000"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          />
         </div>
       </div>
 
@@ -508,108 +568,273 @@
   </div>
 </div>
 
-<!-- ==================== JAVASCRIPT ==================== -->
+<!-- ==================== VIEW USER MODAL ==================== -->
+<div
+  id="viewUserModal"
+  class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
+>
+  <div
+    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
+  >
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-bold text-teal-800 flex items-center">
+        <i class="fas fa-user-circle mr-3 text-teal-600"></i
+        ><span id="viewModalTitle">User Details</span>
+      </h3>
+      <button
+        type="button"
+        onclick="closeViewUserModal()"
+        class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+      >
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <div class="space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600 font-medium">Full Name</p>
+          <p id="viewFullName" class="text-lg font-semibold text-gray-900">-</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600 font-medium">Email</p>
+          <p id="viewEmail" class="text-lg font-semibold text-gray-900">-</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600 font-medium">Phone</p>
+          <p id="viewPhone" class="text-lg font-semibold text-gray-900">-</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-600 font-medium">ID Number</p>
+          <p id="viewIdNumber" class="text-lg font-semibold text-gray-900">-</p>
+        </div>
+      </div>
+
+      <div
+        id="clientFields"
+        class="grid grid-cols-1 md:grid-cols-2 gap-5 hidden"
+      >
+        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+          <p class="text-sm text-teal-700 font-medium">Service Plan</p>
+          <p id="viewPlan" class="text-lg font-bold text-teal-800">-</p>
+        </div>
+        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+          <p class="text-sm text-teal-700 font-medium">Status</p>
+          <p id="viewClientStatus" class="text-lg font-bold text-teal-800">-</p>
+        </div>
+        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+          <p class="text-sm text-teal-700 font-medium">Last Payment</p>
+          <p id="viewLastPayment" class="text-lg font-bold text-teal-800">-</p>
+        </div>
+        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+          <p class="text-sm text-teal-700 font-medium">Payment Status</p>
+          <p id="viewPaymentStatus" class="text-lg font-bold text-teal-800">
+            -
+          </p>
+        </div>
+      </div>
+
+      <div
+        id="staffFields"
+        class="grid grid-cols-1 md:grid-cols-2 gap-5 hidden"
+      >
+        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <p class="text-sm text-purple-700 font-medium">Role</p>
+          <p id="viewRole" class="text-lg font-bold text-purple-800">-</p>
+        </div>
+        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <p class="text-sm text-purple-700 font-medium">Department</p>
+          <p id="viewDepartment" class="text-lg font-bold text-purple-800">-</p>
+        </div>
+        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <p class="text-sm text-purple-700 font-medium">Basic Salary</p>
+          <p id="viewBasicSalary" class="text-lg font-bold text-purple-800">
+            -
+          </p>
+        </div>
+        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <p class="text-sm text-purple-700 font-medium">Status</p>
+          <p id="viewStaffStatus" class="text-lg font-bold text-purple-800">
+            -
+          </p>
+        </div>
+        <div
+          class="bg-purple-50 p-4 rounded-lg border border-purple-200 md:col-span-2"
+        >
+          <p class="text-sm text-purple-700 font-medium">Joined Date</p>
+          <p id="viewJoined" class="text-lg font-bold text-purple-800">-</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end mt-6">
+      <button
+        onclick="closeViewUserModal()"
+        class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition-all"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SUBSCRIPTION MODAL ==================== -->
+<div
+  id="subscriptionModal"
+  class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
+>
+  <div
+    class="bg-white shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
+  >
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-bold text-teal-800 flex items-center">
+        <i class="fas fa-wifi mr-3 text-indigo-600"></i>
+        <span>Manage Subscription</span>
+      </h3>
+      <button
+        type="button"
+        onclick="closeSubscriptionModal()"
+        class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+      >
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <div class="space-y-6">
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <p class="text-sm text-gray-600">Client</p>
+        <p id="subClientName" class="text-lg font-bold text-gray-900">-</p>
+      </div>
+
+      <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+        <p class="text-sm text-teal-700 font-medium">Current Plan</p>
+        <p id="currentPlanName" class="text-xl font-bold text-teal-800">-</p>
+        <p id="currentPlanExpiry" class="text-sm text-teal-600 mt-1">-</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2"
+          >Select New Plan</label
+        >
+        <select
+          id="subscriptionPlanSelect"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white"
+        >
+          <option value="">Loading plans...</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <button
+          onclick="assignPlan()"
+          class="py-2 px-4 bg-teal-400 text-white rounded-lg font-semibold hover:bg-teal-500 shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-1 text-sm"
+        >
+          <i class="fas fa-plus"></i>
+          <span>Subscribe</span>
+        </button>
+
+        <button
+          onclick="renewPlan()"
+          class="py-2 px-4 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-1 text-sm"
+        >
+          <i class="fas fa-sync"></i>
+          <span>Renew</span>
+        </button>
+
+        <button
+          onclick="upgradePlan()"
+          class="py-2 px-4 bg-teal-800 text-white rounded-lg font-semibold hover:bg-teal-900 shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-1 text-sm"
+        >
+          <i class="fas fa-arrow-up"></i>
+          <span>Upgrade</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-  /* ==================== MOCK DATA ==================== */
-  let clients = [
-    {
-      id: "CLT-001",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      phone: "+254 712 345 678",
-      idNumber: "12345678",
-      address: "Nairobi",
-      plan: "Premium 50Mbps",
-      status: "Active",
-      lastPayment: "Ksh 5,000 - 3 days ago",
-      paymentDate: Date.now() - 3 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: "CLT-002",
-      name: "Jane Smith",
-      email: "jane.smith@client.com",
-      phone: "+254 711 234 567",
-      idNumber: "87654321",
-      address: "Mombasa",
-      plan: "Basic 10Mbps",
-      status: "Expired",
-      lastPayment: "Ksh 1,500 - 15 days overdue",
-      paymentDate: Date.now() - 18 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: "CLT-003",
-      name: "Robert Wilson",
-      email: "robert.w@business.com",
-      phone: "+254 720 111 222",
-      idNumber: "11223344",
-      address: "Kisumu",
-      plan: "Standard 20Mbps",
-      status: "Active",
-      lastPayment: "Ksh 3,000 - 1 week ago",
-      paymentDate: Date.now() - 7 * 24 * 60 * 60 * 1000,
-    },
-  ];
-
-  let staff = [
-    {
-      id: "STF-101",
-      name: "Mike Kamau",
-      email: "mike.kamau@drnet.co",
-      phone: "+254 722 333 444",
-      idNumber: "22334455",
-      address: "HQ",
-      role: "Network Engineer",
-      department: "Technical",
-      status: "Active",
-      joined: "15 Jan 2023",
-    },
-    {
-      id: "STF-102",
-      name: "Sarah Akinyi",
-      email: "sarah.a@drnet.co",
-      phone: "+254 733 555 666",
-      idNumber: "33445566",
-      address: "Nairobi",
-      role: "Support Agent",
-      department: "Support",
-      status: "Active",
-      joined: "10 Mar 2024",
-    },
-    {
-      id: "STF-103",
-      name: "David Mwangi",
-      email: "david.m@drnet.co",
-      phone: "+254 744 777 888",
-      idNumber: "44556677",
-      address: "HQ",
-      role: "Sales Manager",
-      department: "Sales",
-      status: "On Leave",
-      joined: "20 Jun 2022",
-    },
-  ];
-
+  /* ---------- CONFIG & HELPERS ---------- */
+  let clientsCache = [];
+  let staffCache = [];
+  const API_BASE = "/api";
+  const PACKAGES_API = "/api/packages";
+  const $ = (id) => document.getElementById(id);
   let currentUserType = "clients";
   let currentPage = { clients: 1, staff: 1 };
   const itemsPerPage = 10;
 
-  /* ==================== HELPERS ==================== */
-  const $ = (id) => {
-    const el = document.getElementById(id);
-    if (!el) console.error(`Element with ID '${id}' not found.`);
-    return el;
+  let currentClientId = null;
+  let packagesCache = [];
+  let currentSubscription = null;
+
+  const api = {
+    async get(type) {
+      const res = await fetch(`${API_BASE}/${type}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    async create(type, data) {
+      const res = await fetch(`${API_BASE}/${type}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    async update(type, id, data) {
+      const res = await fetch(`${API_BASE}/${type}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    async delete(type, id) {
+      const res = await fetch(`${API_BASE}/${type}/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    async getPackages() {
+      const res = await fetch(PACKAGES_API);
+      if (!res.ok && res.status !== 304) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
   };
 
-  const saveData = () => {
-    localStorage.setItem("clients", JSON.stringify(clients));
-    localStorage.setItem("staff", JSON.stringify(staff));
-  };
-
-  const generateId = (type) => {
-    const list = type === "clients" ? clients : staff;
-    return `${type === "clients" ? "CLT" : "STF"}-${String(
-      list.length + 1
-    ).padStart(3, "0")}`;
+  const showSkeleton = (tbodyId, count = 5) => {
+    const tbody = $(tbodyId);
+    if (!tbody) return;
+    tbody.innerHTML = Array(count)
+      .fill("")
+      .map(
+        () => `
+      <tr>
+        <td class="p-4">
+          <div class="flex items-center space-x-3">
+            <div class="skeleton skeleton-circle"></div>
+            <div>
+              <div class="skeleton skeleton-title mb-1"></div>
+              <div class="skeleton skeleton-text w-20"></div>
+            </div>
+          </div>
+        </td>
+        <td class="p-4"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text w-24 mt-1"></div></td>
+        <td class="p-4"><div class="skeleton skeleton-text w-32"></div></td>
+        <td class="p-4"><div class="skeleton skeleton-text w-20"></div></td>
+        <td class="p-4"><div class="skeleton skeleton-text w-24"></div></td>
+        <td class="p-4"><div class="flex space-x-2">${Array(4)
+          .fill("")
+          .map(() => `<div class="skeleton w-9 h-9 rounded-lg"></div>`)
+          .join("")}</div></td>
+      </tr>
+    `
+      )
+      .join("");
   };
 
   const getPlanColor = (plan) =>
@@ -618,19 +843,7 @@
       "Standard 20Mbps": "from-blue-400 to-blue-600",
       "Basic 10Mbps": "from-pink-400 to-red-500",
     }[plan] || "from-gray-400 to-gray-600");
-  const getRoleColor = (role) =>
-    ({
-      "Network Engineer": "from-purple-400 to-purple-600",
-      "Support Agent": "from-green-400 to-green-600",
-      "Sales Rep": "from-orange-400 to-orange-600",
-      Manager: "from-indigo-400 to-indigo-600",
-    }[role] || "from-gray-400 to-gray-600");
-  const getPlanBadge = (plan) =>
-    ({
-      "Premium 50Mbps": "bg-blue-100 text-blue-700",
-      "Standard 20Mbps": "bg-purple-100 text-purple-700",
-      "Basic 10Mbps": "bg-yellow-100 text-yellow-700",
-    }[plan] || "bg-gray-100 text-gray-700");
+
   const getStatusBadge = (status) =>
     ({
       Active: "bg-green-100 text-green-700",
@@ -640,330 +853,23 @@
       Inactive: "bg-gray-100 text-gray-700",
     }[status] || "bg-gray-100 text-gray-700");
 
-  /* ==================== TAB SWITCHING ==================== */
-  const switchTab = (tab) => {
-    currentUserType = tab;
-    $("clientsSection").classList.toggle("hidden", tab !== "clients");
-    $("staffSection").classList.toggle("hidden", tab !== "staff");
-
-    const activeTab = tab === "clients" ? "clientsTab" : "staffTab";
-    const inactiveTab = tab === "clients" ? "staffTab" : "clientsTab";
-
-    $(activeTab).className =
-      "tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md";
-    $(inactiveTab).className =
-      "tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-gray-600 hover:bg-gray-50";
-
-    $("addClientBtn").classList.toggle("hidden", tab !== "clients");
-    $("addStaffBtn").classList.toggle("hidden", tab !== "staff");
-
-    renderTable(tab);
-    updateCounts();
-  };
-
-  /* ==================== MODAL ==================== */
-  const openAddUserModal = (type, user = null) => {
-    currentUserType = type;
-    const modal = $("addUserModal");
-    modal.classList.remove("hidden");
-    setTimeout(
-      () =>
-        modal.querySelector("div").classList.replace("scale-95", "scale-100"),
-      10
-    );
-
-    $("modalTitle").textContent = user
-      ? `Edit ${type === "clients" ? "Client" : "Staff"}`
-      : `Add New ${type === "clients" ? "Client" : "Staff"}`;
-    $("submitBtnText").textContent = user ? "Update" : "Create";
-
-    $("planContainer").classList.toggle("hidden", type !== "clients");
-    $("roleContainer").classList.toggle("hidden", type !== "staff");
-    $("departmentContainer").classList.toggle("hidden", type !== "staff");
-
-    if (user) {
-      $("editUserId").value = user.id;
-      $("fullName").value = user.name;
-      $("email").value = user.email;
-      $("phone").value = user.phone;
-      $("idNumber").value = user.idNumber || "";
-      $("address").value = user.address || "";
-      if (type === "clients") $("plan").value = user.plan;
-      if (type === "staff") {
-        $("role").value = user.role;
-        $("department").value = user.department;
-      }
-    } else {
-      $("addUserForm").reset();
-      $("editUserId").value = "";
-    }
-  };
-
-  const closeAddUserModal = () => {
-    const modal = $("addUserModal");
-    modal.querySelector("div").classList.replace("scale-100", "scale-95");
-    setTimeout(() => modal.classList.add("hidden"), 200);
-  };
-
-  /* ==================== FORM SUBMIT ==================== */
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    const formData = {
-      name: $("fullName").value.trim(),
-      email: $("email").value.trim(),
-      phone: $("phone").value.trim(),
-      idNumber: $("idNumber").value.trim(),
-      address: $("address").value.trim(),
-    };
-
-    const editId = $("editUserId").value;
-    if (currentUserType === "clients") {
-      formData.plan = $("plan").value;
-      formData.status = editId
-        ? getUserById("clients", editId).status
-        : "Active";
-      formData.lastPayment = editId
-        ? getUserById("clients", editId).lastPayment
-        : "Ksh 0 - Never";
-      formData.paymentDate = editId
-        ? getUserById("clients", editId).paymentDate
-        : Date.now();
-    } else {
-      formData.role = $("role").value;
-      formData.department = $("department").value;
-      formData.status = editId ? getUserById("staff", editId).status : "Active";
-      formData.joined = editId
-        ? getUserById("staff", editId).joined
-        : dayjs().format("DD MMM YYYY");
-    }
-
-    if (editId) {
-      const list = currentUserType === "clients" ? clients : staff;
-      const index = list.findIndex((u) => u.id === editId);
-      if (index > -1) list[index] = { ...formData, id: editId };
-      Swal.fire(
-        "Updated!",
-        `${currentUserType === "clients" ? "Client" : "Staff"} updated.`,
-        "success"
-      );
-    } else {
-      const newId = generateId(currentUserType);
-      (currentUserType === "clients" ? clients : staff).push({
-        ...formData,
-        id: newId,
-      });
-      Swal.fire(
-        "Created!",
-        `${currentUserType === "clients" ? "Client" : "Staff"} added.`,
-        "success"
-      );
-    }
-
-    saveData();
-    closeAddUserModal();
-    renderTable(currentUserType);
-    updateCounts();
-  };
-
-  /* ==================== CRUD ACTIONS ==================== */
-  const getUserById = (type, id) =>
-    (type === "clients" ? clients : staff).find((u) => u.id === id);
-
-  const viewUser = (id) => {
-    const user = getUserById(currentUserType, id);
-    if (!user) return;
-    const isClient = currentUserType === "clients";
-    Swal.fire({
-      title: `${isClient ? "Client" : "Staff"} Details`,
-      html: `
-        <div class="text-left space-y-2">
-          <p><strong>Name:</strong> ${user.name}</p>
-          <p><strong>Email:</strong> ${user.email}</p>
-          <p><strong>Phone:</strong> ${user.phone}</p>
-          ${user.idNumber ? `<p><strong>ID:</strong> ${user.idNumber}</p>` : ""}
-          ${
-            user.address
-              ? `<p><strong>Address:</strong> ${user.address}</p>`
-              : ""
-          }
-          ${
-            isClient
-              ? `<p><strong>Plan:</strong> ${user.plan}</p>`
-              : `<p><strong>Role:</strong> ${user.role} - ${user.department}</p>`
-          }
-          <p><strong>Status:</strong> <span class="px-2 py-1 rounded text-xs ${
-            getStatusBadge(user.status).split(" ")[1]
-          }">${user.status}</span></p>
-          ${
-            isClient
-              ? `<p><strong>Last Payment:</strong> ${user.lastPayment}</p>`
-              : `<p><strong>Joined:</strong> ${user.joined}</p>`
-          }
-        </div>
-      `,
-      icon: "info",
-      confirmButtonColor: "#0d9488",
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-KE", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
-  };
 
-  const editUser = (id) =>
-    openAddUserModal(currentUserType, getUserById(currentUserType, id));
-
-  const messageUser = (id) => {
-    const user = getUserById(currentUserType, id);
-    if (!user) return;
-    // Redirect to messaging page with user data
-    const url = `messaging.html?user=${
-      user.id
-    }&type=${currentUserType}&name=${encodeURIComponent(user.name)}&email=${
-      user.email
-    }`;
-    window.location.href = url;
-  };
-
-  const deleteUser = (id) => {
-    Swal.fire({
-      title: "Delete User?",
-      text: "This cannot be undone!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-    }).then((res) => {
-      if (res.isConfirmed) {
-        if (currentUserType === "clients")
-          clients = clients.filter((u) => u.id !== id);
-        else staff = staff.filter((u) => u.id !== id);
-        saveData();
-        renderTable(currentUserType);
-        updateCounts();
-        Swal.fire("Deleted!", "", "success");
-      }
-    });
-  };
-
-  /* ==================== RENDERING ==================== */
-  const renderTable = (type) => {
-    const data = type === "clients" ? clients : staff;
-    const filtered = applyFilters(type, data);
-    const paginated = paginate(filtered, currentPage[type], itemsPerPage);
-    const tbody = $(type + "TableBody");
-    if (!tbody) return;
-
-    const isClient = type === "clients";
-    tbody.innerHTML = paginated
-      .map(
-        (user) => `
-      <tr class="user-row transition-all duration-200 cursor-pointer" onclick="viewUser('${
-        user.id
-      }')">
-        <td class="p-4" onclick="event.stopPropagation()">
-          <div class="flex items-center space-x-3">
-            <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" value="${
-              user.id
-            }">
-            <div class="w-11 h-11 bg-gradient-to-br ${
-              isClient ? getPlanColor(user.plan) : getRoleColor(user.role)
-            } rounded-full flex items-center justify-center shadow-md">
-              <span class="text-white font-bold text-sm">${user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()}</span>
-            </div>
-            <div>
-              <p class="font-semibold text-gray-900">${user.name}</p>
-              <p class="text-xs text-gray-500">ID: #${user.id}</p>
-            </div>
-          </div>
-        </td>
-        <td class="p-4">
-          <div class="space-y-1">
-            <p class="text-gray-700 text-sm flex items-center"><i class="fas fa-envelope text-gray-400 mr-2 text-xs"></i>${
-              user.email
-            }</p>
-            <p class="text-gray-600 text-sm flex items-center"><i class="fas fa-phone text-gray-400 mr-2 text-xs"></i>${
-              user.phone
-            }</p>
-          </div>
-        </td>
-        ${
-          isClient
-            ? `
-        <td class="p-4">
-          <span class="px-3 py-1.5 ${getPlanBadge(
-            user.plan
-          )} rounded-lg text-sm font-semibold">${user.plan}</span>
-        </td>
-        `
-            : `
-        <td class="p-4">
-          <p class="font-semibold text-gray-800">${user.role}</p>
-          <p class="text-sm text-gray-500">${user.department}</p>
-        </td>
-        `
-        }
-        <td class="p-4">
-          <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(
-            user.status
-          )} rounded-lg text-sm font-semibold">
-            ${
-              user.status === "Active"
-                ? '<span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>'
-                : ""
-            }
-            ${
-              user.status === "On Leave"
-                ? '<span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>'
-                : ""
-            }
-            ${user.status}
-          </span>
-        </td>
-        <td class="p-4">
-          <div class="text-sm">
-            <p class="text-gray-700 font-medium">${
-              isClient ? user.lastPayment.split(" - ")[0] : user.joined
-            }</p>
-            <p class="text-gray-500 text-xs">${
-              isClient ? user.lastPayment.split(" - ")[1] : ""
-            }</p>
-          </div>
-        </td>
-        <td class="p-4" onclick="event.stopPropagation()">
-          <div class="flex items-center justify-end space-x-2">
-            <button onclick="viewUser('${
-              user.id
-            }')" class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="View"><i class="fas fa-eye"></i></button>
-            <button onclick="editUser('${
-              user.id
-            }')" class="w-9 h-9 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit"><i class="fas fa-edit"></i></button>
-            <button onclick="messageUser('${
-              user.id
-            }')" class="w-9 h-9 flex items-center justify-center text-purple-600 hover:bg-purple-50 rounded-lg transition-all" title="Message"><i class="fas fa-comment"></i></button>
-            <button onclick="deleteUser('${
-              user.id
-            }')" class="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete"><i class="fas fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>
-    `
-      )
-      .join("");
-
-    renderPagination(type, filtered.length);
-    updateRange(type, filtered.length);
-  };
-
+  /* ---------- FILTER & PAGINATION ---------- */
   const applyFilters = (type, data) => {
     let filtered = [...data];
-    const searchInput = $(type + "Search");
-    const search = searchInput ? searchInput.value.toLowerCase() : "";
+    const search = $(type + "Search")?.value.toLowerCase() || "";
     if (search) {
       filtered = filtered.filter(
         (u) =>
-          u.name.toLowerCase().includes(search) ||
-          u.email.toLowerCase().includes(search) ||
-          u.phone.includes(search)
+          `${u.first_name} ${u.second_name}`.toLowerCase().includes(search) ||
+          u.email?.toLowerCase().includes(search) ||
+          u.phone?.includes(search)
       );
     }
 
@@ -971,43 +877,43 @@
       const sub = $("clientSubFilter")?.value;
       const status = $("clientStatusFilter")?.value;
       const plan = $("clientPlanFilter")?.value;
-      if (sub)
-        filtered = filtered.filter((u) =>
-          sub === "Overdue"
-            ? u.lastPayment.includes("overdue")
-            : sub === "Paid"
-            ? !u.lastPayment.includes("overdue")
-            : true
-        );
-      if (status) filtered = filtered.filter((u) => u.status === status);
-      if (plan) filtered = filtered.filter((u) => u.plan === plan);
-    } else {
+      if (sub) filtered = filtered.filter((c) => c.paymentStatus === sub);
+      if (status) filtered = filtered.filter((c) => c.status === status);
+      if (plan) filtered = filtered.filter((c) => c.plan === plan);
+    }
+
+    if (type === "staff") {
       const dept = $("staffDeptFilter")?.value;
       const role = $("staffRoleFilter")?.value;
       const status = $("staffStatusFilter")?.value;
-      if (dept) filtered = filtered.filter((u) => u.department === dept);
-      if (role) filtered = filtered.filter((u) => u.role === role);
-      if (status) filtered = filtered.filter((u) => u.status === status);
+      if (dept) filtered = filtered.filter((s) => s.department === dept);
+      if (role) filtered = filtered.filter((s) => s.role === role);
+      if (status) filtered = filtered.filter((s) => s.status === status);
     }
+
     return filtered;
   };
 
-  const paginate = (array, page, size) =>
-    array.slice((page - 1) * size, page * size);
+  const paginate = (arr, page, size) =>
+    arr.slice((page - 1) * size, page * size);
 
   const renderPagination = (type, total) => {
     const pages = Math.ceil(total / itemsPerPage);
     const container = $(type + "Pagination");
-    if (!container) return;
-    container.innerHTML = "";
-    if (pages <= 1) return;
+    if (!container || pages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
 
-    const btn = (text, page, disabled = false) => {
+    const btn = (txt, page, disabled = false) => {
       const b = document.createElement("button");
-      b.innerHTML = text;
+      b.type = "button";
+      b.textContent = txt;
       b.disabled = disabled;
-      b.className = `px-4 py-2 border rounded text-sm font-medium ${
-        disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+      b.className = `px-4 py-2 rounded text-sm font-medium border ${
+        disabled
+          ? "opacity-50 cursor-not-allowed bg-gray-100"
+          : "hover:bg-gray-100"
       } ${
         page === currentPage[type] ? "bg-teal-600 text-white" : "text-gray-700"
       }`;
@@ -1019,6 +925,7 @@
       return b;
     };
 
+    container.innerHTML = "";
     container.appendChild(
       btn("Prev", currentPage[type] - 1, currentPage[type] === 1)
     );
@@ -1029,65 +936,691 @@
   };
 
   const updateRange = (type, total) => {
-    const el = $(type + "Range");
-    const totalEl = $(`total${type === "clients" ? "Clients" : "Staff"}`);
-    if (!el || !totalEl) return;
     const start = (currentPage[type] - 1) * itemsPerPage + 1;
     const end = Math.min(currentPage[type] * itemsPerPage, total);
-    el.textContent = total ? `${start}-${end}` : "0-0";
-    totalEl.textContent = total;
+    $(type + "Range").textContent = total ? `${start}-${end}` : "0-0";
+    $(`total${type === "clients" ? "Clients" : "Staff"}`).textContent = total;
   };
 
-  const updateCounts = () => {
-    const c = $("clientCount");
-    if (c) c.textContent = clients.length;
-    const s = $("staffCount");
-    if (s) s.textContent = staff.length;
+  /* ---------- TABLE RENDER ---------- */
+  const renderTable = async (type) => {
+    const tbody = $(type + "TableBody");
+    if (!tbody) return;
+
+    showSkeleton(type + "TableBody");
+
+    try {
+      const data = await api.get(type);
+
+      if (type === "clients") {
+        // Fetch current subscriptions
+        const subs = await Promise.all(
+          data.map(async (client) => {
+            try {
+              const res = await fetch(
+                `/api/subscribe/client/current?userId=${client.id}`,
+                {
+                  headers: { "X-Admin-Request": "true" },
+                }
+              );
+              if (res.ok) {
+                const sub = await res.json();
+                return { userId: client.id, plan: sub };
+              }
+              return { userId: client.id, plan: null };
+            } catch {
+              return { userId: client.id, plan: null };
+            }
+          })
+        );
+
+        // Merge subscription into user
+        data.forEach((user) => {
+          const sub = subs.find((s) => s.userId === user.id);
+          user.currentPlan = sub?.plan || null;
+        });
+      }
+      if (type === "clients") clientsCache = data;
+      else staffCache = data;
+
+      const filtered = applyFilters(type, data);
+      const paginated = paginate(filtered, currentPage[type], itemsPerPage);
+
+      tbody.innerHTML =
+        paginated
+          .map((user) => {
+            return `
+          <tr class="user-row transition-all duration-200 cursor-pointer" onclick="viewUser('${
+            user.id
+          }', '${type}')">
+            <td class="p-4" onclick="event.stopPropagation()">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" value="${
+                  user.id
+                }">
+                <div class="w-11 h-11 bg-gradient-to-br ${getPlanColor(
+                  type === "clients" ? user.plan : user.role
+                )} rounded-full flex items-center justify-center shadow-md">
+                  <span class="text-white font-bold text-sm truncate overflow-hidden whitespace-nowrap">${user.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()}</span>
+                </div>
+                <div class="flex flex-col w-40">
+                  <p class="font-semibold text-gray-900 truncate">${
+                    user.name
+                  }</p>
+                  <p class="text-xs text-gray-500">ID: ${user.employeeId}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-4">
+              <div class="space-y-1">
+                <p class="text-gray-700 text-sm flex items-center">
+                  <i class="fas fa-envelope text-gray-400 mr-2 text-xs"></i>
+                  <span class="truncate overflow-hidden whitespace-nowrap flex-1">${
+                    user.email
+                  }</span>
+                </p>
+                <p class="text-gray-600 text-sm flex items-center"><i class="fas fa-phone text-gray-400 mr-2 text-xs"></i>${
+                  user.phone
+                }</p>
+              </div>
+            </td>
+            ${
+              type === "clients"
+                ? `<td class="p-4">
+                  <span class="px-3 py-1.5 ${getStatusBadge(
+                    user.currentPlan?.package_name || "No Plan"
+                  )} rounded-lg text-sm font-semibold">
+                    ${user.currentPlan?.package_name || "No Plan"}
+                  </span>
+                  ${
+                    user.currentPlan?.expires
+                      ? `<p class="text-xs text-gray-500 mt-1">Expires: ${user.currentPlan.expires}</p>`
+                      : ""
+                  }
+                </td>`
+                : `<td class="p-4"><p class="font-semibold text-gray-800">${user.role}</p><p class="text-sm text-gray-500">${user.department}</p></td>`
+            }
+            <td class="p-4">
+              <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(
+                user.status
+              )} rounded-lg text-sm font-semibold">
+                ${
+                  user.status === "Active"
+                    ? '<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>'
+                    : ""
+                }${user.status}
+              </span>
+            </td>
+            ${
+              type === "staff"
+                ? `
+              <td class="p-4">
+                <p class="text-gray-700 font-medium text-xs">KSh ${
+                  user.salary.basic_salary
+                    ? Number(user.salary.basic_salary).toLocaleString()
+                    : "-"
+                }</p>
+              </td>
+            `
+                : ""
+            }
+
+            ${
+              type === "clients"
+                ? `
+              <td class="p-4">
+                <div class="text-sm">
+                  <p class="text-gray-700 font-medium">Ksh ${
+                    user.lastPayment || "-"
+                  }</p>
+                  <p class="text-gray-500 text-xs">${
+                    user.paymentStatus || ""
+                  }</p>
+                </div>
+              </td>
+              `
+                : ""
+            }
+            <td class="p-4" onclick="event.stopPropagation()">
+              <div class="flex items-center justify-end space-x-2">
+                <button type="button" onclick="viewUser('${
+                  user.id
+                }', '${type}')" class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="View details"><i class="fas fa-eye"></i></button>
+                ${
+                  type === "clients"
+                    ? `
+                  <button type="button" onclick="openSubscriptionModal('${user.id}')" class="w-9 h-9 flex items-center justify-center text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="Manage Plan">
+                    <i class="fas fa-wifi"></i>
+                  </button>
+                `
+                    : ""
+                }
+                <button type="button" onclick="editUser('${
+                  user.id
+                }', '${type}')" class="w-9 h-9 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit"><i class="fas fa-edit"></i></button>
+                <button type="button" onclick="messageUser('${
+                  user.id
+                }')" class="w-9 h-9 flex items-center justify-center text-purple-600 hover:bg-purple-50 rounded-lg transition-all" title="Message"><i class="fas fa-comment"></i></button>
+                <button type="button" onclick="deleteUser('${
+                  user.id
+                }', '${type}')" class="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>`;
+          })
+          .join("") ||
+        `<tr><td colspan="6" class="p-8 text-center text-gray-500">No ${type} found</td></tr>`;
+
+      renderPagination(type, filtered.length);
+      updateRange(type, filtered.length);
+      updateCounts();
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-600">Error: ${e.message}</td></tr>`;
+    }
   };
 
-  const resetFilters = (type) => {
-    const search = $(type + "Search");
-    if (search) search.value = "";
-    const filters =
-      type === "clients"
-        ? ["clientSubFilter", "clientStatusFilter", "clientPlanFilter"]
-        : ["staffDeptFilter", "staffRoleFilter", "staffStatusFilter"];
-    filters.forEach((id) => {
-      const el = $(id);
-      if (el) el.value = "";
+  const updateCounts = async () => {
+    try {
+      const [c, s] = await Promise.all([api.get("clients"), api.get("staff")]);
+      $("clientCount").textContent = c.length;
+      $("staffCount").textContent = s.length;
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadAllPackages = async () => {
+    try {
+      const res = await fetch("/api/packages");
+      if (!res.ok) throw new Error("Failed to load packages");
+      const data = await res.json();
+      packagesCache = Array.isArray(data) ? data : [];
+      return packagesCache;
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Failed to load packages", "error");
+      return [];
+    }
+  };
+
+  window.openSubscriptionModal = async (clientId) => {
+    currentClientId = clientId;
+    const modal = $("subscriptionModal");
+    modal.style.display = "flex";
+    modal.querySelector(".bg-white").classList.remove("scale-95");
+    modal.querySelector(".bg-white").classList.add("scale-100");
+
+    const client = clientsCache.find((u) => u.id === parseInt(clientId));
+    $(
+      "subClientName"
+    ).textContent = `${client.first_name} ${client.second_name}`;
+
+    // Load current subscription
+    try {
+      const res = await fetch(
+        `/api/subscribe/client/current?userId=${clientId}`,
+        {
+          headers: { "X-Admin-Request": "true" },
+        }
+      );
+      if (res.ok) {
+        currentSubscription = await res.json();
+        $("currentPlanName").textContent =
+          currentSubscription.package_name || "None";
+        $("currentPlanExpiry").textContent = currentSubscription.expires
+          ? `Expires: ${currentSubscription.expires}`
+          : "";
+      } else {
+        currentSubscription = null;
+        $("currentPlanName").textContent = "No Active Plan";
+        $("currentPlanExpiry").textContent = "";
+      }
+    } catch (err) {
+      currentSubscription = null;
+      $("currentPlanName").textContent = "Error loading plan";
+    }
+
+    // Load packages
+    const select = $("subscriptionPlanSelect");
+    select.innerHTML = '<option value="">Select a plan...</option>';
+    const pkgs = await loadAllPackages();
+    pkgs.forEach((pkg) => {
+      const opt = document.createElement("option");
+      opt.value = pkg.id;
+      opt.textContent = `${pkg.name} - KSh ${pkg.price} (${pkg.speed})`;
+      select.appendChild(opt);
     });
-    currentPage[type] = 1;
-    renderTable(type);
   };
 
-  const exportData = (type) => {
-    const data = type === "clients" ? clients : staff;
-    const csv = [
-      Object.keys(data[0]).join(","),
-      ...data.map((row) => Object.values(row).join(",")),
-    ].join("\n");
+  window.closeSubscriptionModal = () => {
+    const modal = $("subscriptionModal");
+    modal.querySelector(".bg-white").classList.remove("scale-100");
+    modal.querySelector(".bg-white").classList.add("scale-95");
+    setTimeout(() => (modal.style.display = "none"), 200);
+  };
+
+  // Assign
+  window.assignPlan = async () => {
+    const planId = $("subscriptionPlanSelect").value;
+    if (!planId)
+      return Swal.fire("Select Plan", "Please choose a plan", "warning");
+
+    try {
+      const res = await fetch(
+        `/api/subscribe/client/${planId}?userId=${currentClientId}`,
+        {
+          method: "POST",
+          headers: { "X-Admin-Request": "true" },
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      Swal.fire(
+        "Assigned!",
+        `${data.name} assigned. Expires: ${data.expires}`,
+        "success"
+      );
+      closeSubscriptionModal();
+      renderTable("clients");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+
+  // Renew
+  window.renewPlan = async () => {
+    if (!currentSubscription)
+      return Swal.fire(
+        "No Plan",
+        "User has no active plan to renew",
+        "warning"
+      );
+
+    try {
+      const res = await fetch(
+        `/api/subscribe/client/renew?userId=${currentClientId}`,
+        {
+          method: "POST",
+          headers: { "X-Admin-Request": "true" },
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      Swal.fire(
+        "Renewed!",
+        `Plan renewed. New expiry: ${data.expires}`,
+        "success"
+      );
+      closeSubscriptionModal();
+      renderTable("clients");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+
+  // Upgrade
+  window.upgradePlan = async () => {
+    const planId = $("subscriptionPlanSelect").value;
+    if (!planId)
+      return Swal.fire("Select Plan", "Choose a plan to upgrade to", "warning");
+    if (!currentSubscription)
+      return Swal.fire(
+        "No Plan",
+        "User must have a plan to upgrade",
+        "warning"
+      );
+
+    try {
+      const res = await fetch(
+        `/api/subscribe/client/upgrade/${planId}?userId=${currentClientId}`,
+        {
+          method: "POST",
+          headers: { "X-Admin-Request": "true" },
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      Swal.fire(
+        "Upgraded!",
+        `Upgraded to ${data.name}. Expires: ${data.expires}`,
+        "success"
+      );
+      closeSubscriptionModal();
+      renderTable("clients");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+
+  /* ---------- TAB SWITCH ---------- */
+  window.switchTab = (tab) => {
+    currentUserType = tab;
+    $("clientsSection").classList.toggle("hidden", tab !== "clients");
+    $("staffSection").classList.toggle("hidden", tab !== "staff");
+
+    document
+      .querySelectorAll(".tab-btn")
+      .forEach(
+        (b) =>
+          (b.className =
+            "tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-gray-600 hover:bg-gray-50")
+      );
+    $(tab + "Tab").className =
+      "tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md";
+
+    $("addClientBtn").style.display = tab === "clients" ? "flex" : "none";
+    $("addStaffBtn").style.display = tab === "staff" ? "flex" : "none";
+
+    currentPage[tab] = 1;
+    renderTable(tab);
+  };
+
+  /* ---------- FETCH & CACHE PACKAGES ---------- */
+  const loadPackages = async () => {
+    const select = $("plan");
+    if (!select) return;
+
+    // Show skeleton
+    select.innerHTML = `<option class="skeleton w-full h-10"></option>`.repeat(
+      3
+    );
+    select.disabled = true;
+
+    try {
+      const data = await api.getPackages();
+      packagesCache = Array.isArray(data) ? data : [];
+
+      select.innerHTML = `
+        <option value="" disabled selected hidden>Select plan</option>
+        ${packagesCache
+          .map(
+            (pkg) => `
+          <option value="${pkg.id}" data-name="${pkg.name}" data-price="${pkg.price}">
+            ${pkg.name} (Ksh ${pkg.price})
+          </option>
+        `
+          )
+          .join("")}
+      `;
+      select.disabled = false;
+    } catch (e) {
+      select.innerHTML = `<option value="">Error loading plans</option>`;
+      select.disabled = true;
+      console.error("Failed to load packages:", e);
+    }
+  };
+
+  /* ---------- MODAL ---------- */
+  window.openAddUserModal = (type, id = null) => {
+    currentUserType = type;
+    const modal = $("addUserModal");
+    modal.style.display = "flex";
+    modal.querySelector(".bg-white").classList.remove("scale-95");
+    modal.querySelector(".bg-white").classList.add("scale-100");
+
+    $("modalTitle").textContent = id
+      ? `Edit ${type.slice(0, -1)}`
+      : `Add New ${type.slice(0, -1)}`;
+    $("submitBtnText").textContent = id ? "Update" : "Create";
+
+    // Show/hide fields
+    $("planContainer").classList.toggle("hidden", type !== "clients");
+    $("roleContainer").classList.toggle("hidden", type !== "staff");
+    $("departmentContainer").classList.toggle("hidden", type !== "staff");
+    $("salaryContainer").classList.toggle("hidden", type !== "staff");
+    $("plan").required = type === "clients";
+    $("role").required = type === "staff";
+    $("department").required = type === "staff";
+    $("basic_salary").required = type === "staff";
+
+    $("addUserForm").reset();
+    $("editUserId").value = "";
+
+    // Load plans if adding/editing client
+    if (type === "clients") {
+      loadPackages(); // <-- DYNAMIC LOAD
+    }
+
+    if (id) {
+      const cache = type === "clients" ? clientsCache : staffCache;
+      const user = cache.find((u) => u.id === parseInt(id));
+      if (!user) {
+        Swal.fire("Error", "User not found.", "error");
+        return;
+      }
+
+      const fullName = user.name || "";
+      const nameParts = fullName.split(" ");
+      $("editUserId").value = user.id;
+      $("first_name").value = nameParts[0] || "";
+      $("second_name").value = nameParts.slice(1).join(" ") || "";
+      $("email").value = user.email || "";
+      $("phone").value = user.phone || "";
+      $("idNumber").value = user.employeeId || "";
+      const roleSelect = $("role");
+      const userPosition = user.position || "";
+
+      if (userPosition) {
+        let option = Array.from(roleSelect.options).find(
+          (o) => o.value === userPosition
+        );
+        if (!option) {
+          option = new Option(userPosition, userPosition);
+          roleSelect.add(option);
+        }
+        roleSelect.value = userPosition;
+      }
+      $("department").value = user.department || "";
+      if (type === "clients") {
+        const pkg = packagesCache.find(
+          (p) => p.id == user.currentPlan?.package_id
+        );
+        $("plan").value = pkg ? pkg.id : "";
+      }
+
+      if (type === "clients") {
+        // Match by ID or name fallback
+        const pkg =
+          packagesCache.find((p) => p.id == user.plan) ||
+          packagesCache.find((p) => p.name === user.plan);
+        $("plan").value = pkg ? pkg.id : "";
+      } else {
+        $("role").value = user.role || "";
+        $("department").value = user.department || "";
+        $("basic_salary").value = user.salary.basic_salary || "";
+      }
+    }
+  };
+
+  window.closeAddUserModal = () => {
+    const modal = $("addUserModal");
+    modal.querySelector(".bg-white").classList.remove("scale-100");
+    modal.querySelector(".bg-white").classList.add("scale-95");
+    setTimeout(() => (modal.style.display = "none"), 200);
+  };
+
+  window.openViewUserModal = (user, type) => {
+    const modal = $("viewUserModal");
+    modal.style.display = "flex";
+    modal.querySelector(".bg-white").classList.remove("scale-95");
+    modal.querySelector(".bg-white").classList.add("scale-100");
+
+    // Common fields
+    $("viewModalTitle").textContent = `${
+      type === "clients" ? "Client" : "Staff"
+    } Details #${user.id}`;
+    $("viewFullName").textContent = `${user.name}`;
+    $("viewEmail").textContent = user.email || "-";
+    $("viewPhone").textContent = user.phone || "-";
+    $("viewIdNumber").textContent = user.employeeId || "-";
+
+    // Toggle sections
+    $("clientFields").classList.toggle("hidden", type !== "clients");
+    $("staffFields").classList.toggle("hidden", type !== "staff");
+
+    if (type === "clients") {
+      if (type === "clients") {
+        if (user.currentPlan) {
+          $("viewPlan").textContent = user.currentPlan.package_name;
+          $("viewClientStatus").textContent = user.currentPlan.expires
+            ? `Expires ${user.currentPlan.expires}`
+            : "Active";
+        } else {
+          $("viewPlan").textContent = "No Active Plan";
+          $("viewClientStatus").textContent = "Not Subscribed";
+        }
+      }
+      $("viewClientStatus").textContent = user.status || "-";
+      $("viewLastPayment").textContent = user.lastPayment
+        ? `KSh ${user.lastPayment}`
+        : "-";
+      $("viewPaymentStatus").textContent = user.paymentStatus || "-";
+    } else {
+      $("viewRole").textContent = user.role || "-";
+      $("viewDepartment").textContent = user.department || "-";
+      $("viewBasicSalary").textContent = user.salary.basic_salary
+        ? `KSh ${Number(user.salary.basic_salary).toLocaleString()}`
+        : "-";
+      $("viewStaffStatus").textContent = user.status || "-";
+      $("viewJoined").textContent = user.joined ? formatDate(user.joined) : "-";
+    }
+  };
+
+  window.closeViewUserModal = () => {
+    const modal = $("viewUserModal");
+    modal.querySelector(".bg-white").classList.remove("scale-100");
+    modal.querySelector(".bg-white").classList.add("scale-95");
+    setTimeout(() => (modal.style.display = "none"), 200);
+  };
+
+  /* ---------- FORM SUBMIT ---------- */
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    if (currentUserType === "clients" && !$("plan").value)
+      return Swal.fire(
+        "Validation",
+        "Please select a Service Plan.",
+        "warning"
+      );
+    if (
+      currentUserType === "staff" &&
+      (!$("role").value || !$("department").value)
+    )
+      return Swal.fire(
+        "Validation",
+        "Please select Role and Department.",
+        "warning"
+      );
+
+    const id = $("editUserId").value;
+    const data = {
+      first_name: $("first_name").value.trim(),
+      second_name: $("second_name").value.trim(),
+      email: $("email").value.trim(),
+      phone: $("phone").value.trim(),
+      idNumber: $("idNumber").value.trim(),
+      password: $("password").value.trim(),
+    };
+
+    if (currentUserType === "clients") {
+      data.plan = $("plan").value;
+    } else {
+      data.role = $("role").value;
+      data.department = $("department").value;
+      data.basic_salary = $("basic_salary").value.trim();
+    }
+
+    try {
+      id
+        ? await api.update(currentUserType, id, data)
+        : await api.create(currentUserType, data);
+      closeAddUserModal();
+      renderTable(currentUserType);
+      updateCounts();
+      Swal.fire("Success!", id ? "User updated." : "User created.", "success");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+  /* ---------- USER ACTIONS ---------- */
+  window.viewUser = (id, type) => {
+    const list = type === "clients" ? clientsCache : staffCache;
+    const user = list.find((u) => u.id === parseInt(id));
+    if (!user) {
+      Swal.fire("Error", "User not found.", "error");
+      return;
+    }
+    openViewUserModal(user, type);
+  };
+
+  window.editUser = (id, type) => openAddUserModal(type, id);
+  window.messageUser = (id) =>
+    Swal.fire("Messaging", `Open chat with user #${id}`, "info");
+  window.deleteUser = async (id, type) => {
+    const confirm = await Swal.fire({
+      title: "Delete user?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+    });
+    if (!confirm.isConfirmed) return;
+    try {
+      await api.delete(type, id);
+      renderTable(type);
+      updateCounts();
+      Swal.fire("Deleted!", "", "success");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+
+  window.exportData = (type) => {
+    const data = type === "clients" ? clientsCache : staffCache;
+    if (!data.length) return;
+    const csv = [Object.keys(data[0]), ...data.map(Object.values)]
+      .map((e) => e.join(","))
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${type}_${dayjs().format("YYYY-MM-DD")}.csv`;
+    a.download = `${type}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
-  /* ==================== EVENT LISTENERS ==================== */
-  document.addEventListener("DOMContentLoaded", () => {
-    renderTable("clients");
-    updateCounts();
+  const debounce = (fn, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  };
 
-    ["clientsSearch", "staffSearch"].forEach((id) => {
-      const el = $(id);
-      if (el)
-        el.addEventListener("input", () => {
+  /* ---------- INIT ---------- */
+  document.addEventListener("DOMContentLoaded", () => {
+    // Attach button events
+    $("addClientBtn").onclick = () => openAddUserModal("clients");
+    $("addStaffBtn").onclick = () => openAddUserModal("staff");
+
+    // Tabs
+    $("clientsTab").onclick = () => switchTab("clients");
+    $("staffTab").onclick = () => switchTab("staff");
+
+    // Filters
+    ["clientsSearch", "staffSearch"].forEach((id) =>
+      $(id)?.addEventListener(
+        "input",
+        debounce(() => {
           currentPage[currentUserType] = 1;
           renderTable(currentUserType);
-        });
-    });
-
+        }, 300)
+      )
+    );
     [
       "clientSubFilter",
       "clientStatusFilter",
@@ -1095,32 +1628,18 @@
       "staffDeptFilter",
       "staffRoleFilter",
       "staffStatusFilter",
-    ].forEach((id) => {
-      const el = $(id);
-      if (el)
-        el.addEventListener("change", () => {
-          currentPage[currentUserType] = 1;
-          renderTable(currentUserType);
-        });
-    });
+    ].forEach((id) =>
+      $(id)?.addEventListener("change", () => {
+        currentPage[currentUserType] = 1;
+        renderTable(currentUserType);
+      })
+    );
 
-    const form = $("addUserForm");
-    if (form) form.addEventListener("submit", handleFormSubmit);
+    $("addUserForm").addEventListener("submit", handleFormSubmit);
 
-    const selectAllClients = $("selectAllClients");
-    if (selectAllClients)
-      selectAllClients.addEventListener("change", (e) =>
-        document
-          .querySelectorAll('#clientsTableBody input[type="checkbox"]')
-          .forEach((cb) => (cb.checked = e.target.checked))
-      );
-
-    const selectAllStaff = $("selectAllStaff");
-    if (selectAllStaff)
-      selectAllStaff.addEventListener("change", (e) =>
-        document
-          .querySelectorAll('#staffTableBody input[type="checkbox"]')
-          .forEach((cb) => (cb.checked = e.target.checked))
-      );
+    // Initial load
+    switchTab("clients");
+    renderTable("clients");
+    updateCounts();
   });
 </script>

@@ -1,377 +1,381 @@
-<div class="mb-6">
-  <h1 id="pageTitle" class="text-3xl font-bold text-teal-800">Dashboard</h1>
-  <p id="pageSubtitle" class="text-teal-600">
-    Welcome to Dr.Net Technology Labs Management System
-  </p>
-</div>
-<!-- Quick Stats Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-  <!-- Open Tickets -->
-  <div
-    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-teal-600 text-sm font-bold">Current Plan</p>
-        <h3 class="text-xl font-semibold text-gray-800 mt-2">
-          High-Speed Package(5 MBs)
-        </h3>
+<style>
+    /* Skeleton Loading */
+    @keyframes skeleton {
+      0% { background-color: #f3f4f6; }
+      100% { background-color: #e5e7eb; }
+    }
+    .skeleton {
+      background: #e5e7eb;
+      animation: skeleton 1.2s ease-in-out infinite;
+      border-radius: 0.5rem;
+    }
+    .skeleton-text { height: 1rem; }
+    .skeleton-title { height: 1.5rem; width: 60%; }
+    .skeleton-circle { width: 2.5rem; height: 2.5rem; border-radius: 9999px; }
+    .skeleton-card { height: 8rem; }
+    .skeleton-box { height: 6rem; }
+  </style>
+
+<div class="max-w-full mx-auto p-6" id="app">
+  <!-- Skeleton -->
+  <div id="skeleton" class="space-y-8">
+    <div class="mb-6">
+      <div class="skeleton skeleton-title mb-2"></div>
+      <div class="skeleton skeleton-text w-80"></div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2">
+        <div class="bg-white shadow-xl rounded-2xl p-8 border-2 border-teal-100 relative overflow-hidden">
+          <div class="absolute inset-0 flex flex-col gap-6 p-8">
+            <div class="skeleton skeleton-title"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="skeleton skeleton-box"></div>
+              <div class="skeleton skeleton-box"></div>
+              <div class="skeleton skeleton-box"></div>
+              <div class="skeleton skeleton-box"></div>
+            </div>
+            <div class="skeleton skeleton-text"></div>
+          </div>
+        </div>
       </div>
-      <div
-        class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center"
-      >
-        <i class="fas fa-ticket-alt text-teal-600 text-xl"></i>
+
+      <div class="bg-white shadow-lg p-6">
+        <div class="skeleton h-6 w-48 mb-6"></div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="skeleton h-20 rounded-lg"></div>
+          <div class="skeleton h-20 rounded-lg"></div>
+          <div class="skeleton h-20 rounded-lg"></div>
+          <div class="skeleton h-20 rounded-lg"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Pending Tasks / Active Tasks -->
-  <div
-    class="stat-card bg-blue-50 rounded-xl shadow-lg p-6 border border-blue-400"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-blue-600 text-sm font-bold">Next Payment</p>
-        <h3 class="text-xl font-semibold text-gray-800 mt-2">
-          December 1, 2025
-        </h3>
-      </div>
-      <div
-        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
-      >
-        <i class="fas fa-tasks text-blue-600 text-xl"></i>
-      </div>
+  <!-- Real Content -->
+  <div id="content" class="hidden space-y-8">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 id="pageTitle" class="text-3xl font-bold text-teal-800">Dashboard</h1>
+      <p id="pageSubtitle" class="text-teal-600">Welcome to Dr.Net Technology Labs Management System</p>
     </div>
-  </div>
 
-  <!-- Tasks Completed -->
-  <div
-    class="stat-card bg-green-50 rounded-xl shadow-lg p-6 border border-green-400"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-green-600 text-sm font-bold">Account Status</p>
-        <h3 class="text-3xl font-bold text-gray-800 mt-2">Active</h3>
-      </div>
-      <div
-        class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
-      >
-        <i class="fas fa-check-circle text-green-600 text-xl"></i>
-      </div>
+    <!-- Quick Stats -->
+    <div id="statsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Filled by JS -->
     </div>
-  </div>
 
-  <!-- Performance Score -->
-  <div
-    class="stat-card bg-orange-50 rounded-xl shadow-lg p-6 border border-orange-400"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-orange-600 text-sm font-bold">Outstanding Balance</p>
-        <h3 class="text-xl font-semibold text-gray-800 mt-2">600</h3>
-      </div>
-      <div
-        class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
-      >
-        <i class="fas fa-star-half-alt text-orange-600 text-xl"></i>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <div
-    class="lg:col-span-2 bg-white shadow-xl rounded-2xl p-8 border-2 border-teal-100 relative overflow-hidden"
-  >
-    <!-- Decorative background elements -->
-    <div
-      class="absolute top-0 right-0 w-40 h-40 bg-teal-50 rounded-full opacity-50 -mr-20 -mt-20"
-    ></div>
-    <div
-      class="absolute bottom-0 left-0 w-32 h-32 bg-blue-50 rounded-full opacity-50 -ml-16 -mb-16"
-    ></div>
-
-    <div class="relative">
-      <!-- Header -->
-      <div
-        class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4"
-      >
-        <div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-1">
-            Subscription Details
-          </h3>
-          <p class="text-sm text-gray-500">Your current plan information</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <button
-            class="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2"
-            id="renewBtn"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            Renew
-          </button>
-          <button
-            class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2"
-            id="upgradeBtn"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-              />
-            </svg>
-            Upgrade
-          </button>
-        </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Subscription Details -->
+      <div id="subscriptionCard" class="lg:col-span-2 bg-white p-8 border-2 border-teal-100 relative overflow-hidden">
+        <!-- Filled by JS -->
       </div>
 
-      <!-- Details Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <!-- Package Name -->
-        <div
-          class="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-5 border border-teal-200 hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-start gap-3">
-            <div class="bg-teal-500 rounded-lg p-2 mt-1">
-              <svg
-                class="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
+      <!-- Quick Actions -->
+      <div id="quickActions" class="bg-white shadow-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <a href="/payments" class="bg-teal-50 hover:bg-teal-100 rounded-lg p-4 text-center transition-colors group">
+            <div class="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-teal-600 transition-colors">
+              <i class="fas fa-credit-card text-white text-xl"></i>
             </div>
-            <div class="flex-1">
-              <p
-                class="text-xs font-medium text-teal-700 uppercase tracking-wide mb-1"
-              >
-                Package Name
-              </p>
-              <p class="font-bold text-gray-900 text-lg" id="subPackageName">
-                Professional Business Plan
-              </p>
-            </div>
-          </div>
-        </div>
+            <p class="font-medium text-teal-700">Make Payments</p>
+          </a>
 
-        <!-- Monthly Cost -->
-        <div
-          class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200 hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-start gap-3">
-            <div class="bg-blue-500 rounded-lg p-2 mt-1">
-              <svg
-                class="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                />
-              </svg>
+          <a href="/support/ticket" class="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 text-center transition-colors group">
+            <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition-colors">
+              <i class="fas fa-ticket-alt text-white text-xl"></i>
             </div>
-            <div class="flex-1">
-              <p
-                class="text-xs font-medium text-blue-700 uppercase tracking-wide mb-1"
-              >
-                Monthly Cost
-              </p>
-              <p class="font-bold text-gray-900 text-lg" id="subMonthlyCost">
-                KES 3,499 / month
-              </p>
-            </div>
-          </div>
-        </div>
+            <p class="font-medium text-blue-700">Create Support Ticket</p>
+          </a>
 
-        <!-- Start Date -->
-        <div
-          class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border border-green-200 hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-start gap-3">
-            <div class="bg-green-500 rounded-lg p-2 mt-1">
-              <svg
-                class="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+          <a href="/support/schedule" class="bg-green-50 hover:bg-green-100 rounded-lg p-4 text-center transition-colors group">
+            <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-green-600 transition-colors">
+              <i class="fas fa-headset text-white text-xl"></i>
             </div>
-            <div class="flex-1">
-              <p
-                class="text-xs font-medium text-green-700 uppercase tracking-wide mb-1"
-              >
-                Start Date
-              </p>
-              <p class="font-bold text-gray-900 text-lg" id="subStartDate">
-                02 Nov 2025
-              </p>
-            </div>
-          </div>
-        </div>
+            <p class="font-medium text-green-700">Contact Support</p>
+          </a>
 
-        <!-- Expiry Date -->
-        <div
-          class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 border border-amber-200 hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-start gap-3">
-            <div class="bg-amber-500 rounded-lg p-2 mt-1">
-              <svg
-                class="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+          <a href="/billing/invoice" class="bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-colors group">
+            <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-600 transition-colors">
+              <i class="fas fa-file-invoice-dollar text-white text-xl"></i>
             </div>
-            <div class="flex-1">
-              <p
-                class="text-xs font-medium text-amber-700 uppercase tracking-wide mb-1"
-              >
-                Expiry Date
-              </p>
-              <p class="font-bold text-gray-900 text-lg" id="subEndDate">
-                02 Dec 2025
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Status Badge -->
-      <div class="mt-6 pt-6 border-t border-gray-200">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 text-sm font-semibold rounded-full"
-            >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              Active
-            </span>
-            <span class="text-sm text-gray-600">30 days remaining</span>
-          </div>
-          <a
-            href="#"
-            class="text-sm font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1"
-          >
-            View billing history
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
+            <p class="font-medium text-purple-700">Download Invoice</p>
           </a>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Quick Actions -->
-  <div class="bg-white shadow-lg p-6">
-    <h3 class="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
-    <div class="grid grid-cols-2 gap-4">
-      <a
-        href="team-performance.html"
-        class="bg-teal-50 hover:bg-teal-100 rounded-lg p-4 text-center transition-colors group"
-      >
-        <div
-          class="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-teal-600 transition-colors"
-        >
-          <i class="fas fa-credit-card text-white text-xl"></i>
-        </div>
-        <p class="font-medium text-teal-700">Make Payments</p>
-      </a>
-
-      <a
-        href="/staff/communication-team"
-        class="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 text-center transition-colors group"
-      >
-        <div
-          class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition-colors"
-        >
-          <i class="fas fa-ticket-alt text-white text-xl"></i>
-        </div>
-        <p class="font-medium text-blue-700">Create Support Ticket</p>
-      </a>
-
-      <a
-        href="schedule.html"
-        class="bg-green-50 hover:bg-green-100 rounded-lg p-4 text-center transition-colors group"
-      >
-        <div
-          class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-green-600 transition-colors"
-        >
-          <i class="fas fa-headset text-white text-xl"></i>
-        </div>
-        <p class="font-medium text-green-700">Contact Support</p>
-      </a>
-
-      <a
-        href="financial-reports.html"
-        class="bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-colors group"
-      >
-        <div
-          class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-600 transition-colors"
-        >
-          <i class="fas fa-file-invoice-dollar text-white text-xl"></i>
-        </div>
-        <p class="font-medium text-purple-700">Download Invoice</p>
-      </a>
-    </div>
-  </div>
 </div>
+
+<script>
+  // === DOM ELEMENTS ===
+  const skeleton = document.getElementById("skeleton");
+  const content = document.getElementById("content");
+  const statsGrid = document.getElementById("statsGrid");
+  const subscriptionCard = document.getElementById("subscriptionCard");
+  const pageTitle = document.getElementById("pageTitle");
+  const pageSubtitle = document.getElementById("pageSubtitle");
+
+  // === HELPERS ===
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function daysRemaining(expiry) {
+    const diff = new Date(expiry) - new Date();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  // === FETCH DATA ===
+  async function fetchUser() {
+    const res = await fetch(`/api/users/${getUserId()}`);
+    if (!res.ok) return null;
+    return await res.json();
+  }
+
+  async function fetchCurrentSubscription() {
+    const res = await fetch("/api/subscription/current");
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && data.package_name && !data.name) data.name = data.package_name;
+    return data;
+  }
+
+  async function fetchPlans() {
+    const res = await fetch("/api/subscription/plans");
+    if (!res.ok) return [];
+    return await res.json();
+  }
+
+  function getUserId() {
+    // In real app: from JWT or session
+    return 3; // Hardcoded for demo
+  }
+
+  // === RENDER ===
+  async function renderDashboard() {
+    const [user, current, plans] = await Promise.all([
+      fetchUser(),
+      fetchCurrentSubscription(),
+      fetchPlans()
+    ]);
+
+    const plan = plans.find(p => p.id === current?.package_id) || {};
+    const daysLeft = current ? daysRemaining(current.expiry_date) : 0;
+
+    // Header
+    pageTitle.textContent = `Welcome back, ${user?.first_name || 'User'}!`;
+    pageSubtitle.textContent = "Manage your subscription and account";
+
+    // Stats
+    statsGrid.innerHTML = `
+      <div class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-teal-600 text-sm font-bold">Current Plan</p>
+            <h3 class="text-xl font-semibold text-gray-800 mt-2">${current?.name || 'No Plan'}</h3>
+          </div>
+          <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-ticket-alt text-teal-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-blue-50 rounded-xl shadow-lg p-6 border border-blue-400">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-blue-600 text-sm font-bold">Next Payment</p>
+            <h3 class="text-xl font-semibold text-gray-800 mt-2">${current ? formatDate(current.expiry_date) : 'N/A'}</h3>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-green-50 rounded-xl shadow-lg p-6 border border-green-400">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-green-600 text-sm font-bold">Account Status</p>
+            <h3 class="text-3xl font-bold text-gray-800 mt-2">${current?.status === 'active' ? 'Active' : 'Inactive'}</h3>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-orange-50 rounded-xl shadow-lg p-6 border border-orange-400">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-orange-600 text-sm font-bold">Outstanding Balance</p>
+            <h3 class="text-xl font-semibold text-gray-800 mt-2">KES ${(user?.debt || 0).toFixed(2)}</h3>
+          </div>
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-exclamation-triangle text-orange-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Subscription Card
+    subscriptionCard.innerHTML = current ? `
+      <div class="absolute top-0 right-0 w-40 h-40 bg-teal-50 rounded-full opacity-50 -mr-20 -mt-20"></div>
+      <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-50 rounded-full opacity-50 -ml-16 -mb-16"></div>
+
+      <div class="relative">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+          <div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-1">Subscription Details</h3>
+            <p class="text-sm text-gray-500">Your current plan information</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="renewPlan()" class="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Renew
+            </button>
+            <button onclick="upgradePlan()" class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+              Upgrade
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-5 border border-teal-200 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-3">
+              <div class="bg-teal-500 rounded-lg p-2 mt-1">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-medium text-teal-700 uppercase tracking-wide mb-1">Package Name</p>
+                <p class="font-bold text-gray-900 text-lg">${current.name}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-3">
+              <div class="bg-blue-500 rounded-lg p-2 mt-1">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-medium text-blue-700 uppercase tracking-wide mb-1">Monthly Cost</p>
+                <p class="font-bold text-gray-900 text-lg">KES ${parseFloat(current.price).toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border border-green-200 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-3">
+              <div class="bg-green-500 rounded-lg p-2 mt-1">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 n 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-medium text-green-700 uppercase tracking-wide mb-1">Start Date</p>
+                <p class="font-bold text-gray-900 text-lg">${formatDate(current.start_date)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 border border-amber-200 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-3">
+              <div class="bg-amber-500 rounded-lg p-2 mt-1">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-medium text-amber-700 uppercase tracking-wide mb-1">Expiry Date</p>
+                <p class="font-bold text-gray-900 text-lg">${formatDate(current.expiry_date)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 text-sm font-semibold rounded-full">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Active
+              </span>
+              <span class="text-sm text-gray-600">${daysLeft} days remaining</span>
+            </div>
+            <a href="/payments" class="text-sm font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+              View billing history
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    ` : `
+      <div class="text-center py-12">
+        <i class="fas fa-info-circle text-6xl text-gray-400 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Active Plan</h3>
+        <p class="text-gray-500 mb-6">Subscribe to a plan to get started.</p>
+        <a href="/plans" class="px-6 py-3 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700">
+          Explore Plans
+        </a>
+      </div>
+    `;
+  }
+
+  // === ACTIONS ===
+  async function renewPlan() {
+    if (!confirm("Renew your current plan?")) return;
+    try {
+      const res = await fetch("/api/subscription/renew", { method: "POST" });
+      if (!res.ok) throw new Error("Renew failed");
+      await renderDashboard();
+      alert("Plan renewed successfully!");
+    } catch (err) {
+      alert("Renewal failed.");
+    }
+  }
+
+  function upgradePlan() {
+    window.location.href = "/plans";
+  }
+
+  // === MAIN LOAD ===
+  async function loadData() {
+    skeleton.classList.remove("hidden");
+    content.classList.add("hidden");
+
+    try {
+      await renderDashboard();
+    } catch (err) {
+      alert("Failed to load dashboard.");
+      console.error(err);
+    } finally {
+      skeleton.classList.add("hidden");
+      content.classList.remove("hidden");
+    }
+  }
+
+  window.addEventListener("load", loadData);
+</script>
