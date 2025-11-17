@@ -123,6 +123,7 @@ router.post("/subscribe/client/:id", async (req, res) => {
   try {
     const userId = parseInt(req.query.userId, 10);
     const planId = parseInt(req.params.id, 10);
+    const startDateQuery = req.query.start_date;
 
     console.log("Admin Subscribe - User ID:", userId, "Plan ID:", planId);
 
@@ -144,8 +145,10 @@ router.post("/subscribe/client/:id", async (req, res) => {
       return res.status(404).json({ error: "Plan not found" });
     }
 
-    const startDate = dayjs().format("YYYY-MM-DD");
-    const expiryDate = dayjs()
+    const startDate = startDateQuery
+      ? dayjs(startDateQuery).format("YYYY-MM-DD")
+      : dayjs().format("YYYY-MM-DD");
+    const expiryDate = dayjs(startDate)
       .add(plan.validity_days, "day")
       .format("YYYY-MM-DD");
 
@@ -265,6 +268,63 @@ router.post("/subscribe/client/reverse/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to reverse subscription" });
+  }
+});
+
+// Update an existing subscription
+router.put("/subscribe/client/:id", async (req, res) => {
+  try {
+    const subId = parseInt(req.params.id, 10);
+    const { package_id, start_date } = req.body;
+
+    if (isNaN(subId)) {
+      return res.status(400).json({ error: "Invalid subscription ID" });
+    }
+
+    if (!package_id) {
+      return res.status(400).json({ error: "package_id is required" });
+    }
+
+    const subscription = await UserSubscription.getById(subId);
+    if (!subscription) {
+      return res.status(404).json({ error: "Subscription not found" });
+    }
+
+    const plan = await Package.findById(package_id);
+    if (!plan) {
+      return res.status(404).json({ error: "Package not found" });
+    }
+
+    // Use provided start date or keep old one
+    const newStartDate = start_date
+      ? dayjs(start_date).format("YYYY-MM-DD")
+      : dayjs(subscription.start_date).format("YYYY-MM-DD");
+
+    // Recalculate expiry based on the updated start date + package validity
+    const newExpiry = dayjs(newStartDate)
+      .add(plan.validity_days, "day")
+      .format("YYYY-MM-DD");
+
+    // Update subscription record
+    await UserSubscription.update(subId, {
+      package_id,
+      start_date: newStartDate,
+      expiry_date: newExpiry,
+    });
+
+    res.json({
+      success: true,
+      message: "Subscription updated",
+      subscription_id: subId,
+      package: plan.name,
+      start_date: newStartDate,
+      expiry_date: newExpiry,
+    });
+  } catch (err) {
+    console.error("Error updating subscription:", err);
+    res.status(500).json({
+      error: "Failed to update subscription: " + err.message,
+    });
   }
 });
 

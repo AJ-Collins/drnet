@@ -207,7 +207,7 @@
               </p>
             </div>
             <div>
-              <p class="text-sm text-gray-600">VAT (16%)</p>
+              <p class="text-sm text-gray-600">VAT (0%)</p>
               <p id="vat" class="text-xl font-bold text-gray-800">KES 0.00</p>
             </div>
             <div class="md:col-span-2">
@@ -1959,7 +1959,7 @@
             </p>
           </div>
           <div>
-            <p class="text-sm text-gray-600">VAT (16%)</p>
+            <p class="text-sm text-gray-600">VAT (0%)</p>
             <p id="modalVat" class="text-xl font-bold text-gray-800">
               KES 0.00
             </p>
@@ -2018,6 +2018,46 @@
     </div>
   </div>
 </div>
+
+<!-- SMS Preview / Edit Modal -->
+<div
+  id="smsPreviewModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+>
+  <div class="bg-white w-full max-w-3xl p-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-2xl font-semibold text-gray-800">SMS Preview</h4>
+      <button
+        onclick="closeSMSModal()"
+        class="text-gray-500 hover:text-gray-700 text-xl"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- SMS Area (full height, no borders inside) -->
+    <div id="smsPreviewContainer" class="h-80"></div>
+
+    <!-- Buttons -->
+    <div class="mt-4 flex justify-end space-x-3">
+      <button
+        id="copySMSBtn"
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center"
+      >
+        <i class="fas fa-copy mr-2"></i>Copy
+      </button>
+
+      <button
+        id="sendSMSBtn"
+        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm flex items-center"
+      >
+        <i class="fas fa-paper-plane mr-2"></i>Send
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
   // --------------------------------------------------------------
   //  GLOBAL CONFIG
@@ -2106,10 +2146,10 @@
       filtered
         .map(
           (c) => `
-    <option value="${c.id}">
-      ${c.first_name} ${c.second_name} – ${c.phone} (${c.email})
-    </option>
-  `
+      <option value="${c.id}">
+        ${c.first_name} ${c.second_name} – ${c.phone} (${c.email})
+      </option>
+    `
         )
         .join("") || "<option disabled>No clients found</option>";
   }
@@ -2171,9 +2211,9 @@
     const container = document.getElementById("invoiceItemsContainer");
     if (!invoiceItems.length) {
       container.innerHTML = `
-      <div class="p-4 bg-teal-50 border border-teal-200 text-sm text-teal-800 text-center rounded-lg">
-        No items added. Click "Add Item" to begin.
-      </div>`;
+        <div class="p-4 bg-teal-50 border border-teal-200 text-sm text-teal-800 text-center rounded-lg">
+          No items added. Click "Add Item" to begin.
+        </div>`;
       updateTotals();
       return;
     }
@@ -2190,65 +2230,67 @@
         const amountId = `amt-${item.id}`;
 
         return `
-      <div class="grid grid-cols-1 md:grid-cols-6 gap-3 p-3 bg-gray-50 border rounded-lg items-center"
-           data-item-id="${item.id}">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-3 p-3 bg-gray-50 border rounded-lg items-center"
+             data-item-id="${item.id}">
 
-        <!-- ==== DESCRIPTION ==== -->
-        <div class="col-span-2 flex flex-col">
-          <label for="${descId}" class="text-xs font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <input id="${descId}"
-                 value="${item.description}"
-                 onchange="updateInvoiceItem(${
-                   item.id
-                 }, 'description', this.value)"
-                 class="p-2 border rounded text-sm"
-                 placeholder="Item description" />
-        </div>
+          <!-- ==== DESCRIPTION ==== -->
+          <div class="col-span-2 flex flex-col">
+            <label for="${descId}" class="text-xs font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <input id="${descId}"
+                   value="${item.description}"
+                   onchange="updateInvoiceItem(${
+                     item.id
+                   }, 'description', this.value)"
+                   class="p-2 border rounded text-sm"
+                   placeholder="Item description" />
+          </div>
 
-        <!-- ==== QUANTITY ==== -->
-        <div class="flex flex-col">
-          <label for="${qtyId}" class="text-xs font-medium text-gray-700 mb-1">
-            Qty
-          </label>
-          <input id="${qtyId}"
-                 type="number"
-                 value="${item.quantity}"
-                 min="1"
-                 onchange="updateInvoiceItem(${
-                   item.id
-                 }, 'quantity', this.value)"
-                 class="p-2 border rounded text-sm w-20" />
-        </div>
+          <!-- ==== QUANTITY ==== -->
+          <div class="flex flex-col">
+            <label for="${qtyId}" class="text-xs font-medium text-gray-700 mb-1">
+              Qty
+            </label>
+            <input id="${qtyId}"
+                   type="number"
+                   value="${item.quantity}"
+                   min="1"
+                   onchange="updateInvoiceItem(${
+                     item.id
+                   }, 'quantity', this.value)"
+                   class="p-2 border rounded text-sm w-20" />
+          </div>
 
-        <!-- ==== AMOUNT ==== -->
-        <div class="flex flex-col">
-          <label for="${amountId}" class="text-xs font-medium text-gray-700 mb-1">
-            Amount (KES)
-          </label>
-          <input id="${amountId}"
-                 type="number"
-                 value="${item.amount}"
-                 min="0"
-                 step="0.01"
-                 onchange="updateInvoiceItem(${item.id}, 'amount', this.value)"
-                 class="p-2 border rounded text-sm w-28"
-                 placeholder="0.00" />
-        </div>
+          <!-- ==== AMOUNT ==== -->
+          <div class="flex flex-col">
+            <label for="${amountId}" class="text-xs font-medium text-gray-700 mb-1">
+              Amount (KES)
+            </label>
+            <input id="${amountId}"
+                   type="number"
+                   value="${item.amount}"
+                   min="0"
+                   step="0.01"
+                   onchange="updateInvoiceItem(${
+                     item.id
+                   }, 'amount', this.value)"
+                   class="p-2 border rounded text-sm w-28"
+                   placeholder="0.00" />
+          </div>
 
-        <!-- ==== LINE TOTAL ==== -->
-        <div class="text-right font-medium item-total">
-          KES ${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-        </div>
+          <!-- ==== LINE TOTAL ==== -->
+          <div class="text-right font-medium item-total">
+            KES ${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </div>
 
-        <!-- ==== REMOVE ==== -->
-        <button onclick="removeInvoiceItem(${item.id})"
-                class="text-red-600 hover:text-red-800 transition"
-                title="Remove item">
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>`;
+          <!-- ==== REMOVE ==== -->
+          <button onclick="removeInvoiceItem(${item.id})"
+                  class="text-red-600 hover:text-red-800 transition"
+                  title="Remove item">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>`;
       })
       .join("");
 
@@ -2256,28 +2298,30 @@
   }
 
   function updateTotals() {
-    // Recalculate subtotal from current invoiceItems
     const subtotal = invoiceItems.reduce(
-      (sum, item) => sum + item.quantity * item.amount,
+      (sum, item) => sum + (item.quantity || 0) * (item.amount || 0),
       0
     );
-    const vat = subtotal * 0.16;
+    const vat = 0; // You said VAT is 0
     const grand = subtotal + vat;
 
-    document.getElementById(
-      "subtotal"
-    ).textContent = `KES ${subtotal.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-    })}`;
-    document.getElementById("vat").textContent = `KES ${vat.toLocaleString(
-      undefined,
-      { minimumFractionDigits: 2 }
-    )}`;
-    document.getElementById(
-      "grandTotal"
-    ).textContent = `KES ${grand.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-    })}`;
+    // Update Subtotal
+    const subtotalEl = document.getElementById("subtotal");
+    if (subtotalEl) {
+      subtotalEl.textContent = formatKES(subtotal);
+    }
+
+    // Update VAT (make sure you have <span id="vatAmount">)
+    const vatEl = document.getElementById("vatAmount");
+    if (vatEl) {
+      vatEl.textContent = formatKES(vat);
+    }
+
+    // Update Grand Total
+    const grandTotalEl = document.getElementById("grandTotal");
+    if (grandTotalEl) {
+      grandTotalEl.textContent = formatKES(grand);
+    }
   }
 
   // Generate & Save Invoice
@@ -2295,7 +2339,7 @@
     };
 
     if (!clientData.name || !clientData.phone || !clientData.period) {
-      return alert("Client name, phone, and period are required");
+      return alert("Fill all fields");
     }
 
     const payload = {
@@ -2352,42 +2396,43 @@
       invoices
         .map(
           (inv) => `
-    <tr class="hover:bg-gray-50 transition">
-      <td class="px-6 py-4 text-sm font-medium">#${inv.invoice_number}</td>
-      <td class="px-6 py-4 text-sm">${
-        inv.client.name
-      }<br><small class="text-gray-500">${inv.client.phone}</small></td>
-      <td class="px-6 py-4 text-sm">${inv.client.period}</td>
-      <td class="px-6 py-4 text-sm font-semibold">KES ${Number(
-        inv.total
-      ).toLocaleString()}</td>
-      <td class="px-6 py-4 text-sm">${new Date(
-        inv.created_at
-      ).toLocaleDateString()}</td>
-      <td class="px-6 py-4 text-sm space-x-2">
-        <button onclick="downloadInvoice(${
-          inv.id
-        })" class="text-teal-600 hover:text-teal-800" title="Download PDF">
-          <i class="fas fa-download"></i>
-        </button>
-        <button onclick="editInvoice(${
-          inv.id
-        })" class="text-blue-600 hover:text-blue-800" title="Edit">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button onclick="deleteInvoice(${
-          inv.id
-        })" class="text-red-600 hover:text-red-800" title="Delete">
-          <i class="fas fa-trash"></i>
-        </button>
-        <button onclick="generateReceiptFromInvoice(${
-          inv.id
-        })" class="text-green-600 hover:text-green-800" title="Generate Receipt">
-          <i class="fas fa-receipt"></i>
-        </button>
-      </td>
-    </tr>
-  `
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-6 py-4 text-sm font-medium">#${inv.invoice_number}</td>
+        <td class="px-6 py-4 text-sm">${
+          inv.client.name
+        }<br><small class="text-gray-500">${inv.client.phone}</small></td>
+        <td class="px-6 py-4 text-sm">${inv.client.period}</td>
+        <td class="px-6 py-4 text-sm font-semibold">KES ${Number(
+          inv.total
+        ).toLocaleString()}</td>
+        <td class="px-6 py-4 text-sm">${new Date(
+          inv.created_at
+        ).toLocaleDateString()}</td>
+        <td class="px-6 py-4 text-sm space-x-2">
+          <button onclick="downloadInvoice(${
+            inv.id
+          })" class="text-teal-600 hover:text-teal-800" title="Download PDF">
+            <i class="fas fa-download"></i>
+          </button>
+          <!-- REMINDER SMS -->
+          <button onclick="openSMSModal(${inv.id}, 'reminder')"
+                  class="text-teal-600 hover:text-teal-800" title="Reminder SMS">
+            <i class="fas fa-bell"></i>
+          </button>
+
+          <!-- CONFIRMATION SMS -->
+          <button onclick="openSMSModal(${inv.id}, 'confirmation')"
+                  class="text-teal-600 hover:text-teal-800" title="Confirmation SMS">
+            <i class="fas fa-check-circle"></i>
+          </button>
+          <button onclick="deleteInvoice(${
+            inv.id
+          })" class="text-red-600 hover:text-red-800" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `
         )
         .join("") ||
       `<tr><td colspan="6" class="text-center py-8 text-gray-500">No invoices generated yet</td></tr>`;
@@ -2491,11 +2536,11 @@
       filtered
         .map(
           (c) => `
-      <option value="${c.id}" data-plan="${c.plan || ""}">
-        ${c.first_name} ${c.second_name} – ${c.phone} (${c.email || "—"}) [${
+        <option value="${c.id}" data-plan="${c.plan || ""}">
+          ${c.first_name} ${c.second_name} – ${c.phone} (${c.email || "—"}) [${
             c.plan || "No Plan"
           }]
-      </option>`
+        </option>`
         )
         .join("") || "<option disabled>No clients found</option>";
   }
@@ -2646,7 +2691,7 @@
         receipt.transactionRef || "—";
 
       // ---- Amounts (if backend sends subtotal/vat) ----
-      const subtotal = receipt.subtotal ?? receipt.amount / 1.16;
+      const subtotal = receipt.subtotal ?? receipt.amount;
       const vat = receipt.amount - subtotal;
       document.getElementById("modalSubtotal").textContent =
         formatKES(subtotal);
@@ -2704,30 +2749,32 @@
       tbody.insertAdjacentHTML(
         "beforeend",
         `<tr class="hover:bg-gray-50 transition">
-        <td class="px-6 py-4 text-sm font-medium">#${r.id}</td>
-        <td class="px-6 py-4 text-sm">${
-          r.clientName
-        }<br><small class="text-gray-500">${r.clientPhone}</small></td>
-        <td class="px-6 py-4 text-sm font-semibold">${formatKES(r.amount)}</td>
-        <td class="px-6 py-4 text-sm">${new Date(
-          r.paymentDate
-        ).toLocaleDateString()}</td>
-        <td class="px-6 py-4 text-sm">${r.paymentMethod}</td>
-        <td class="px-6 py-4 text-sm space-x-2">
-          <button onclick="viewReceiptModal('${
-            r.id
-          }')" class="text-teal-600 hover:text-teal-800" title="View"><i class="fas fa-eye"></i></button>
-          <button onclick="editReceipt('${
-            r.id
-          }')" class="text-blue-600 hover:text-blue-800" title="Edit"><i class="fas fa-edit"></i></button>
-          <button onclick="downloadReceipt('${
-            r.id
-          }')" class="text-green-600 hover:text-green-800" title="Download PDF"><i class="fas fa-download"></i></button>
-          <button onclick="deleteReceipt('${
-            r.id
-          }')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`
+          <td class="px-6 py-4 text-sm font-medium">#${r.id}</td>
+          <td class="px-6 py-4 text-sm">${
+            r.clientName
+          }<br><small class="text-gray-500">${r.clientPhone}</small></td>
+          <td class="px-6 py-4 text-sm font-semibold">${formatKES(
+            r.amount
+          )}</td>
+          <td class="px-6 py-4 text-sm">${new Date(
+            r.paymentDate
+          ).toLocaleDateString()}</td>
+          <td class="px-6 py-4 text-sm">${r.paymentMethod}</td>
+          <td class="px-6 py-4 text-sm space-x-2">
+            <button onclick="viewReceiptModal('${
+              r.id
+            }')" class="text-teal-600 hover:text-teal-800" title="View"><i class="fas fa-eye"></i></button>
+            <button onclick="editReceipt('${
+              r.id
+            }')" class="text-blue-600 hover:text-blue-800" title="Edit"><i class="fas fa-edit"></i></button>
+            <button onclick="downloadReceipt('${
+              r.id
+            }')" class="text-green-600 hover:text-green-800" title="Download PDF"><i class="fas fa-download"></i></button>
+            <button onclick="deleteReceipt('${
+              r.id
+            }')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`
       );
     });
   }
@@ -2905,10 +2952,10 @@
       filtered
         .map(
           (s) => `
-      <option value="${s.id}" data-dept="${s.department}" data-pos="${s.position}">
-        ${s.name} – ${s.phone} (${s.employeeId}) [${s.department}]
-      </option>
-    `
+        <option value="${s.id}" data-dept="${s.department}" data-pos="${s.position}">
+          ${s.name} – ${s.phone} (${s.employeeId}) [${s.department}]
+        </option>
+      `
         )
         .join("") || "<option disabled>No staff found</option>";
 
@@ -2994,79 +3041,81 @@
 
     // ---- Allowance / Deduction line template ----
     const lineHTML = (type, idx, item = { desc: "", amount: 0 }) => `
-    <div class="flex gap-2 items-center mt-1">
-      <input type="text" placeholder="Description"
-            class="flex-1 p-1 text-xs border rounded"
-            value="${item.desc}"
-            onchange="updateTemp('${staffId}','${type}',${idx},'desc',this.value); window.recalc('${staffId}');">
-      <input type="number" placeholder="0.00" min="0" step="0.01"
-            class="w-20 p-1 text-xs border rounded text-right"
-            value="${item.amount}"
-            onchange="updateTemp('${staffId}','${type}',${idx},'amount',this.value); window.recalc('${staffId}');">
-      <button type="button" class="text-red-600 hover:text-red-800 text-xs"
-              onclick="removeTemp('${staffId}','${type}',${idx}); renderSelectedStaffPreview();">
-        <i class="fas fa-trash"></i>
-      </button>
-    </div>`;
+      <div class="flex gap-2 items-center mt-1">
+        <input type="text" placeholder="Description"
+              class="flex-1 p-1 text-xs border rounded"
+              value="${item.desc}"
+              onchange="updateTemp('${staffId}','${type}',${idx},'desc',this.value); window.recalc('${staffId}');">
+        <input type="number" placeholder="0.00" min="0" step="0.01"
+              class="w-20 p-1 text-xs border rounded text-right"
+              value="${item.amount}"
+              onchange="updateTemp('${staffId}','${type}',${idx},'amount',this.value); window.recalc('${staffId}');">
+        <button type="button" class="text-red-600 hover:text-red-800 text-xs"
+                onclick="removeTemp('${staffId}','${type}',${idx}); renderSelectedStaffPreview();">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>`;
 
     // ---- Add new line buttons ----
     const addBtn = (type) => `
-    <button type="button"
-            class="mt-2 text-xs text-teal-600 hover:text-teal-800"
-            onclick="addTemp('${staffId}','${type}');renderSelectedStaffPreview();">
-      <i class="fas fa-plus"></i> Add ${
-        type === "allowances" ? "Allowance" : "Deduction"
-      }
-    </button>`;
+      <button type="button"
+              class="mt-2 text-xs text-teal-600 hover:text-teal-800"
+              onclick="addTemp('${staffId}','${type}');renderSelectedStaffPreview();">
+        <i class="fas fa-plus"></i> Add ${
+          type === "allowances" ? "Allowance" : "Deduction"
+        }
+      </button>`;
 
     return `
-    <div class="p-4 bg-teal-50 border border-teal-200 rounded-lg" data-staff="${staffId}">
-      <p class="font-bold text-teal-800">${staff.name}</p>
-      <p class="text-sm text-gray-600">${staff.position} • ${
+      <div class="p-4 bg-teal-50 border border-teal-200 rounded-lg" data-staff="${staffId}">
+        <p class="font-bold text-teal-800">${staff.name}</p>
+        <p class="text-sm text-gray-600">${staff.position} • ${
       staff.department
     }</p>
 
-      <div class="mt-2 space-y-1 text-sm">
-        <p><span class="font-medium">Basic:</span> ${formatKES(
-          salary.basic_salary
-        )}</p>
+        <div class="mt-2 space-y-1 text-sm">
+          <p><span class="font-medium">Basic:</span> ${formatKES(
+            salary.basic_salary
+          )}</p>
 
-        <!-- ALLOWANCES -->
-        <div class="mt-3">
-          <p class="font-medium text-green-700">Allowances</p>
-          ${temp.allowances
-            .map((a, i) => lineHTML("allowances", i, a))
-            .join("")}
-          ${addBtn("allowances")}
+          <!-- ALLOWANCES -->
+          <div class="mt-3">
+            <p class="font-medium text-green-700">Allowances</p>
+            ${temp.allowances
+              .map((a, i) => lineHTML("allowances", i, a))
+              .join("")}
+            ${addBtn("allowances")}
+          </div>
+
+          <!-- DEDUCTIONS -->
+          <div class="mt-3">
+            <p class="font-medium text-red-700">Deductions</p>
+            ${temp.deductions
+              .map((d, i) => lineHTML("deductions", i, d))
+              .join("")}
+            ${addBtn("deductions")}
+          </div>
+
+          <p class="mt-2">
+          <span class="font-medium">Net Pay:</span>
+          <strong class="net-pay">${(() => {
+            const basic = Number(salary.basic_salary) || 0;
+            const alw = temp.allowances.reduce(
+              (s, a) => s + Number(a.amount || 0),
+              0
+            );
+            const ded = temp.deductions.reduce(
+              (s, d) => s + Number(d.amount || 0),
+              0
+            );
+            return formatKES(basic + alw - ded);
+          })()}</strong>
+        </p>
+          <p class="text-xs text-gray-500">Effective: ${
+            salary.effective_from
+          }</p>
         </div>
-
-        <!-- DEDUCTIONS -->
-        <div class="mt-3">
-          <p class="font-medium text-red-700">Deductions</p>
-          ${temp.deductions
-            .map((d, i) => lineHTML("deductions", i, d))
-            .join("")}
-          ${addBtn("deductions")}
-        </div>
-
-        <p class="mt-2">
-        <span class="font-medium">Net Pay:</span>
-        <strong class="net-pay">${(() => {
-          const basic = Number(salary.basic_salary) || 0;
-          const alw = temp.allowances.reduce(
-            (s, a) => s + Number(a.amount || 0),
-            0
-          );
-          const ded = temp.deductions.reduce(
-            (s, d) => s + Number(d.amount || 0),
-            0
-          );
-          return formatKES(basic + alw - ded);
-        })()}</strong>
-      </p>
-        <p class="text-xs text-gray-500">Effective: ${salary.effective_from}</p>
-      </div>
-    </div>`;
+      </div>`;
   }
 
   /* ---- Temp data helpers ------------------------------------------------ */
@@ -3178,35 +3227,35 @@
     tbody.innerHTML = generatedPayslips
       .map(
         (p) => `
-    <tr class="hover:bg-gray-50 transition">
-      <td class="px-6 py-4 text-sm font-medium">#${p.id}</td>
-      <td class="px-6 py-4 text-sm">${p.staffName}</td>
-      <td class="px-6 py-4 text-sm">${p.period}</td>
-      <td class="px-6 py-4 text-sm font-semibold">${formatKES(p.netPay)}</td>
-      <td class="px-6 py-4 text-sm">
-        <span class="px-2 py-1 text-xs rounded-full ${
-          p.status === "Sent"
-            ? "bg-green-100 text-green-800"
-            : "bg-yellow-100 text-yellow-800"
-        }">
-          ${p.status}
-        </span>
-      </td>
-      <td class="px-6 py-4 text-sm space-x-2">
-        <button onclick="viewPayslip(${
-          p.id
-        })" class="text-teal-600 hover:text-teal-800" title="View"><i class="fas fa-eye"></i></button>
-        <button onclick="editPayslip(${
-          p.id
-        })" class="text-blue-600 hover:text-blue-800" title="Edit"><i class="fas fa-edit"></i></button>
-        <button onclick="sendPayslip(${
-          p.id
-        })" class="text-green-600 hover:text-green-800" title="Send"><i class="fas fa-paper-plane"></i></button>
-        <button onclick="deletePayslip(${
-          p.id
-        })" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
-      </td>
-    </tr>`
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-6 py-4 text-sm font-medium">#${p.id}</td>
+        <td class="px-6 py-4 text-sm">${p.staffName}</td>
+        <td class="px-6 py-4 text-sm">${p.period}</td>
+        <td class="px-6 py-4 text-sm font-semibold">${formatKES(p.netPay)}</td>
+        <td class="px-6 py-4 text-sm">
+          <span class="px-2 py-1 text-xs rounded-full ${
+            p.status === "Sent"
+              ? "bg-green-100 text-green-800"
+              : "bg-yellow-100 text-yellow-800"
+          }">
+            ${p.status}
+          </span>
+        </td>
+        <td class="px-6 py-4 text-sm space-x-2">
+          <button onclick="viewPayslip(${
+            p.id
+          })" class="text-teal-600 hover:text-teal-800" title="View"><i class="fas fa-eye"></i></button>
+          <button onclick="editPayslip(${
+            p.id
+          })" class="text-blue-600 hover:text-blue-800" title="Edit"><i class="fas fa-edit"></i></button>
+          <button onclick="sendPayslip(${
+            p.id
+          })" class="text-green-600 hover:text-green-800" title="Send"><i class="fas fa-paper-plane"></i></button>
+          <button onclick="deletePayslip(${
+            p.id
+          })" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`
       )
       .join("");
   }
@@ -3307,25 +3356,25 @@
     tbody.innerHTML = expensesCache
       .map(
         (e) => `
-    <tr class="hover:bg-gray-50 transition">
-      <td class="px-6 py-4 text-sm">${new Date(
-        e.date
-      ).toLocaleDateString()}</td>
-      <td class="px-6 py-4 text-sm">${e.category}</td>
-      <td class="px-6 py-4 text-sm">${e.payee}</td>
-      <td class="px-6 py-4 text-sm">${e.description}</td>
-      <td class="px-6 py-4 text-sm font-semibold">${formatKES(e.amount)}</td>
-      <td class="px-6 py-4 text-sm space-x-2">
-        <button onclick="openEditExpense(${e.id})"
-                class="text-blue-600 hover:text-blue-800" title="Edit">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button onclick="deleteExpense(${e.id})"
-                class="text-red-600 hover:text-red-800" title="Delete">
-          <i class="fas fa-trash"></i>
-        </button>
-      </td>
-    </tr>`
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-6 py-4 text-sm">${new Date(
+          e.date
+        ).toLocaleDateString()}</td>
+        <td class="px-6 py-4 text-sm">${e.category}</td>
+        <td class="px-6 py-4 text-sm">${e.payee}</td>
+        <td class="px-6 py-4 text-sm">${e.description}</td>
+        <td class="px-6 py-4 text-sm font-semibold">${formatKES(e.amount)}</td>
+        <td class="px-6 py-4 text-sm space-x-2">
+          <button onclick="openEditExpense(${e.id})"
+                  class="text-blue-600 hover:text-blue-800" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteExpense(${e.id})"
+                  class="text-red-600 hover:text-red-800" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>`
       )
       .join("");
   }
@@ -3468,26 +3517,26 @@
     tbody.innerHTML = salesCache
       .map(
         (s) => `
-    <tr class="hover:bg-gray-50 transition">
-      <td class="px-6 py-4 text-sm">${new Date(
-        s.date
-      ).toLocaleDateString()}</td>
-      <td class="px-6 py-4 text-sm">${s.type}</td>
-      <td class="px-6 py-4 text-sm">${s.customer}</td>
-      <td class="px-6 py-4 text-sm">${s.quantity}</td>
-      <td class="px-6 py-4 text-sm">${s.description || "-"}</td>
-      <td class="px-6 py-4 text-sm font-semibold">${formatKES(s.amount)}</td>
-      <td class="px-6 py-4 text-sm space-x-2">
-        <button onclick="openEditSale(${s.id})"
-                class="text-blue-600 hover:text-blue-800" title="Edit">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button onclick="deleteSale(${s.id})"
-                class="text-red-600 hover:text-red-800" title="Delete">
-          <i class="fas fa-trash"></i>
-        </button>
-      </td>
-    </tr>`
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-6 py-4 text-sm">${new Date(
+          s.date
+        ).toLocaleDateString()}</td>
+        <td class="px-6 py-4 text-sm">${s.type}</td>
+        <td class="px-6 py-4 text-sm">${s.customer}</td>
+        <td class="px-6 py-4 text-sm">${s.quantity}</td>
+        <td class="px-6 py-4 text-sm">${s.description || "-"}</td>
+        <td class="px-6 py-4 text-sm font-semibold">${formatKES(s.amount)}</td>
+        <td class="px-6 py-4 text-sm space-x-2">
+          <button onclick="openEditSale(${s.id})"
+                  class="text-blue-600 hover:text-blue-800" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteSale(${s.id})"
+                  class="text-red-600 hover:text-red-800" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>`
       )
       .join("");
   }
@@ -3610,20 +3659,20 @@
       tbody.insertAdjacentHTML(
         "beforeend",
         `<tr class="hover:bg-gray-50">
-          <td class="px-6 py-4 text-sm font-medium">${r.name}</td>
-          <td class="px-6 py-4 text-sm"><span class="px-2 inline-flex text-xs rounded-full bg-blue-100 text-blue-800">${
-            r.type
-          }</span></td>
-          <td class="px-6 py-4 text-sm">${r.priority || "-"}</td>
-          <td class="px-6 py-4 text-sm">${r.date}</td>
-          <td class="px-6 py-4 text-sm">${r.status || "-"}</td>
-          <td class="px-6 py-4"><button onclick="viewReport('${
-            r.id
-          }')" class="text-teal-600 mr-3">View</button>
-          <button onclick="deleteReport('${
-            r.id
-          }')" class="text-red-600">Delete</button></td>
-        </tr>`
+            <td class="px-6 py-4 text-sm font-medium">${r.name}</td>
+            <td class="px-6 py-4 text-sm"><span class="px-2 inline-flex text-xs rounded-full bg-blue-100 text-blue-800">${
+              r.type
+            }</span></td>
+            <td class="px-6 py-4 text-sm">${r.priority || "-"}</td>
+            <td class="px-6 py-4 text-sm">${r.date}</td>
+            <td class="px-6 py-4 text-sm">${r.status || "-"}</td>
+            <td class="px-6 py-4"><button onclick="viewReport('${
+              r.id
+            }')" class="text-teal-600 mr-3">View</button>
+            <button onclick="deleteReport('${
+              r.id
+            }')" class="text-red-600">Delete</button></td>
+          </tr>`
       );
     });
   }
@@ -3783,7 +3832,7 @@
       totalY
     );
 
-    pdf.text("VAT (16%):", 120, totalY + 8);
+    pdf.text("VAT (0%):", 120, totalY + 8);
     pdf.text(
       `KSH ${vat.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
       160,
@@ -3813,14 +3862,6 @@
       20,
       payY + 32
     );
-    pdf.text("• Payment due within 7 days of invoice date", 20, payY + 40);
-    pdf.text("• For assistance call: 0701782354", 20, payY + 48);
-
-    // ────── FOOTER ──────
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 100, 100);
-    pdf.text("Thank you for choosing DR.NET TECHNOLOGY LABS!", 20, 270);
-    pdf.text("For support: dr.netinnovations@gmail.com or 0701782354", 20, 277);
 
     // ────── SAVE ──────
     pdf.save(`DR-NET-Invoice-${invoice.invoice_number || invoice.id}.pdf`);
@@ -3832,5 +3873,123 @@
       timer: 2000,
       showConfirmButton: false,
     });
+  }
+
+  /* --------------------------------------------------------------
+     SMS PREVIEW / EDIT MODAL – now supports reminder & confirmation
+     -------------------------------------------------------------- */
+  let currentInvoiceId = null;
+  let currentSMS = "";
+  let currentPhone = ""; // phone number to send to
+
+  function openSMSModal(invoiceId, templateType = "generic") {
+    currentInvoiceId = invoiceId;
+    fetchInvoiceForSMS(invoiceId, templateType);
+  }
+
+  async function fetchInvoiceForSMS(id, templateType) {
+    try {
+      const inv = await api(`/invoices/${id}`);
+
+      const client = inv.client;
+      const amount = Number(inv.total).toLocaleString();
+      const ref = inv.invoice_number;
+      const dueDate = inv.due_date
+        ? dayjs(inv.due_date).format("DD MMM YYYY")
+        : "ASAP";
+
+      let sms = "";
+
+      if (templateType === "reminder") {
+        sms =
+          `REMINDER: ${client.name}\n\n` +
+          `Your DR.NET subscription payment is overdue.\n\n` +
+          `Invoice #${ref}\n` +
+          `Amount: KSH ${amount}\n\n` +
+          `Please pay immediately to avoid service suspension.\n\n` +
+          `Pay via M-PESA:\n` +
+          `• Lipa na M-Pesa Buy Goods\n` +
+          `• Till Number: 5626320\n` +
+          `• Reference: ${ref}\n\n` +
+          `DR.NET TECHNOLOGY LABS`;
+      } else if (templateType === "confirmation") {
+        sms =
+          `Payment Confirmed!\n\n` +
+          `Thank you ${client.name}!\n\n` +
+          `Invoice #${ref} - PAID\n` +
+          `Amount: KSH ${amount}\n\n` +
+          `Your DR.NET internet service has been renewed for 30 days.\n\n` +
+          `Questions? Call 0701782354\n` +
+          `DR.NET TECHNOLOGY LABS`;
+      } else {
+        // fallback – generic (keeps the old behaviour)
+        sms =
+          `Dear ${client.name},\n` +
+          `Invoice #${ref} – KES ${amount}. Due: ${dueDate}.\n` +
+          `Pay via M-PESA Till 5626320 (Ref: ${ref}).`;
+      }
+
+      currentSMS = sms;
+      currentPhone = client.phone;
+      renderSMSPreview(sms);
+      document.getElementById("smsPreviewModal").classList.remove("hidden");
+    } catch (e) {
+      Swal.fire("Error", e.message || "Could not load invoice", "error");
+    }
+  }
+
+  /* ---- Render the teal‑styled preview + textarea ---- */
+  function renderSMSPreview(text) {
+    const container = document.getElementById("smsPreviewContainer");
+
+    container.innerHTML = `
+    <textarea
+      id="smsTextarea"
+      class="w-full h-full p-4 bg-gray-50 rounded-xl resize-none text-gray-800 text-lg leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
+      oninput="currentSMS=this.value"
+    >${text}</textarea>
+  `;
+
+    // Re‑wire buttons
+    document.getElementById("copySMSBtn").onclick = () =>
+      copySMSTemplate(currentSMS);
+    document.getElementById("sendSMSBtn").onclick = () =>
+      sendSMS(currentPhone, currentSMS);
+  }
+
+  /* ---- Copy / Send helpers (unchanged) ---- */
+  function copySMSTemplate(txt) {
+    navigator.clipboard.writeText(txt).then(() => {
+      Swal.fire({
+        icon: "success",
+        title: "Copied!",
+        toast: true,
+        position: "top-end",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    });
+  }
+
+  async function sendSMS(phone, message) {
+    if (!confirm(`Send SMS to ${phone}?`)) return;
+
+    try {
+      await api("/sms", {
+        method: "POST",
+        body: JSON.stringify({ to: phone, body: message }),
+      });
+      Swal.fire("Sent!", "SMS dispatched.", "success");
+      closeSMSModal();
+    } catch (e) {
+      Swal.fire("Failed", e.message || "SMS could not be sent", "error");
+    }
+  }
+
+  function closeSMSModal() {
+    document.getElementById("smsPreviewModal").classList.add("hidden");
+    currentInvoiceId = null;
+    currentSMS = "";
+    currentPhone = "";
   }
 </script>

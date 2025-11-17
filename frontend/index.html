@@ -96,7 +96,7 @@
 
   <body class="relative">
     <video id="video-bg" autoplay muted loop playsinline>
-      <source src="assets/images/videos/11960445_3840_2160_24fps.mp4" type="video/mp4" />
+      <source src="/static/images/videos/11960445_3840_2160_24fps.mp4" type="video/mp4" />
       Your browser does not support the video tag.
     </video>
     <header>
@@ -107,7 +107,7 @@
         <div class="container mx-auto flex justify-between items-center">
           <div class="flex items-center space-x-4">
             <img
-              src="assets/images/logo_image.jpg"
+              src="/static/images/logo_image.jpg"
               alt="Company Logo"
               class="h-12 w-12 rounded-full"
             />
@@ -356,9 +356,9 @@
       <!-- Right Side: Fullscreen Image Slideshow (No Box) -->
       <div class="relative w-full h-[24rem] md:h-[32rem] overflow-hidden rounded-3xl shadow-xl ring-1 ring-gray-300"
            x-data="{ current: 0, images: [
-             { src: 'assets/images/Package 1.jpg' },
-             { src: 'assets/images/Package 2.jpg' },
-             { src: 'assets/images/Package 3.jpeg' }
+             { src: 'static/images/Package 1.jpg' },
+             { src: 'static/images/Package 2.jpg' },
+             { src: 'static/images/Package 3.jpeg' }
            ] }"
            x-init="setInterval(() => current = (current + 1) % images.length, 5000)"
            data-aos="fade-left" data-aos-duration="1000"
@@ -665,7 +665,7 @@
     
     <div class="relative group overflow-hidden rounded-lg shadow-md">
       <img
-        src="assets/images/antenna 1.jpeg"
+        src="static/images/antenna 1.jpeg"
         alt="Antenna"
         onclick="openGalleryModal(this)"
         class="cursor-pointer w-full h-80 object-cover transition duration-300 group-hover:scale-105"
@@ -676,7 +676,7 @@
 
     <div class="relative group overflow-hidden rounded-lg shadow-md">
       <img
-        src="assets/images/server.jpg"
+        src="static/images/server.jpg"
         alt="Server"
         onclick="openGalleryModal(this)"
         class="cursor-pointer w-full h-80 object-cover transition duration-300 group-hover:scale-105"
@@ -687,7 +687,7 @@
 
     <div class="relative group overflow-hidden rounded-lg shadow-md">
       <img
-        src="assets/images/tech team.jpeg"
+        src="static/images/tech team.jpeg"
         alt="Team"
         onclick="openGalleryModal(this)"
         class="cursor-pointer w-full h-80 object-cover transition duration-300 group-hover:scale-105"
@@ -698,7 +698,7 @@
 
     <div class="relative group overflow-hidden rounded-lg shadow-md">
       <img
-        src="assets/images/pexels-joshsorenson-1054397.jpg"
+        src="static/images/pexels-joshsorenson-1054397.jpg"
         alt="Equipment Setup"
         onclick="openGalleryModal(this)"
         class="cursor-pointer w-full h-80 object-cover transition duration-300 group-hover:scale-105"
@@ -709,7 +709,7 @@
 
     <div class="relative group overflow-hidden rounded-lg shadow-md">
       <img
-        src="assets/images/don.jpeg"
+        src="static/images/don.jpeg"
         alt="Engineer"
         onclick="openGalleryModal(this)"
         class="cursor-pointer w-full h-80 object-cover transition duration-300 group-hover:scale-105"
@@ -720,7 +720,7 @@
 
     <div class="relative group overflow-hidden rounded-lg shadow-md">
       <img
-        src="assets/images/ladder-alex.jpeg"
+        src="static/images/ladder-alex.jpeg"
         alt="Tower Work"
         onclick="openGalleryModal(this)"
         class="cursor-pointer w-full h-80 object-cover transition duration-300 group-hover:scale-105"
@@ -766,7 +766,7 @@
     <!-- Directors -->
     <div class="flex flex-col md:flex-row justify-center items-center gap-10 md:gap-20 mb-16 px-4">
       <div class="text-center transform hover:scale-105 transition-transform duration-300 w-full md:w-auto">
-        <img src="assets/images/director.jpeg" alt="Dr. Sam Oyugi"
+        <img src="static/images/director.jpeg" alt="Dr. Sam Oyugi"
           class="rounded-full mx-auto shadow-xl w-40 h-40 md:w-52 md:h-52 border-4 border-indigo-400" />
         <h3 class="text-xl md:text-2xl font-bold mt-4">Dr. Sam Oyugi</h3>
         <p onclick="openTeamModal('sam')"
@@ -775,7 +775,7 @@
         </p>
       </div>
       <div class="text-center transform hover:scale-105 transition-transform duration-300 w-full md:w-auto">
-        <img src="assets/images/4.jpg" alt="Julius Ojwang"
+        <img src="static/images/4.jpg" alt="Julius Ojwang"
           class="rounded-full mx-auto shadow-lg w-36 h-36 md:w-44 md:h-44 border-4 border-purple-400" />
         <h3 class="text-xl md:text-2xl font-bold mt-4">Julius Ojwang</h3>
         <p onclick="openTeamModal('julius')"
@@ -788,7 +788,7 @@
     <!-- Rest of the Team -->
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-10 text-center">
       <div class="transform hover:scale-105 transition duration-300 mb-6">
-        <img src="assets/images/don2.jpeg" alt="Joseph Martin"
+        <img src="static/images/don2.jpeg" alt="Joseph Martin"
           class="rounded-full mx-auto mb-3 w-28 h-28 shadow-lg border-4 border-indigo-300" />
         <h4 class="font-semibold text-lg mb-2">Joseph Martin</h4>
         <p onclick="openTeamModal('joseph')"
@@ -797,7 +797,7 @@
         </p>
       </div>
       <div class="transform hover:scale-105 transition duration-300 mb-6">
-        <img src="assets/images/alex.jpeg" alt="Alex Baraka"
+        <img src="static/images/alex.jpeg" alt="Alex Baraka"
           class="rounded-full mx-auto mb-3 w-28 h-28 shadow-lg border-4 border-indigo-300" />
         <h4 class="font-semibold text-lg mb-2">Alex Baraka</h4>
         <p onclick="openTeamModal('alex')"
@@ -806,7 +806,7 @@
         </p>
       </div>
       <div class="transform hover:scale-105 transition duration-300 mb-6">
-        <img src="assets/images/gift.jpeg" alt="Gift Hamilton"
+        <img src="static/images/gift.jpeg" alt="Gift Hamilton"
           class="rounded-full mx-auto mb-3 w-28 h-28 shadow-lg border-4 border-indigo-300" />
         <h4 class="font-semibold text-lg mb-2">Gift Hamilton</h4>
         <p onclick="openTeamModal('gift')"
@@ -815,7 +815,7 @@
         </p>
       </div>
       <div class="transform hover:scale-105 transition duration-300 mb-6">
-        <img src="assets/images/bree.jpg" alt="Bresbane"
+        <img src="static/images/bree.jpg" alt="Bresbane"
           class="rounded-full mx-auto mb-3 w-28 h-28 shadow-lg border-4 border-indigo-300" />
         <h4 class="font-semibold text-lg mb-2">Bresbane</h4>
         <p onclick="openTeamModal('bresbane')"
@@ -824,7 +824,7 @@
         </p>
       </div>
       <div class="transform hover:scale-105 transition duration-300 mb-6">
-        <img src="assets/images/Aileen.jpeg" alt="Aileen Ooko"
+        <img src="static/images/Aileen.jpeg" alt="Aileen Ooko"
           class="rounded-full mx-auto mb-3 w-28 h-28 shadow-lg border-4 border-indigo-300" />
         <h4 class="font-semibold text-lg mb-2">Aileen Ooko</h4>
         <p onclick="openTeamModal('aileen')"
@@ -833,7 +833,7 @@
         </p>
       </div>
       <div class="transform hover:scale-105 transition duration-300 mb-6">
-        <img src="assets/images/godwin.jpeg" alt="Godwin Ochieng"
+        <img src="static/images/godwin.jpeg" alt="Godwin Ochieng"
           class="rounded-full mx-auto mb-3 w-28 h-28 shadow-lg border-4 border-indigo-300" />
         <h4 class="font-semibold text-lg mb-2">Godwin Ochieng</h4>
         <p onclick="openTeamModal('godwin')"

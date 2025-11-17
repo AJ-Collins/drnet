@@ -14,7 +14,7 @@ router.post("/invoices/generate", async (req, res) => {
   try {
     // 1. Compute totals
     const subtotal = items.reduce((s, i) => s + i.quantity * i.amount, 0);
-    const vat = subtotal * 0.16;
+    const vat = subtotal * 0; // VAT 0%
     const grand_total = subtotal + vat;
 
     // 2. Create invoice record (no user_id)

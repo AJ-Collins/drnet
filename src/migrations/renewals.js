@@ -7,7 +7,7 @@ async function createRenewalsTable() {
       subscription_id INT NOT NULL,
       user_id INT NOT NULL,
       package_id INT NOT NULL,
-      old_package_id INT,
+      old_package_id INT NULL,
       amount DECIMAL(10,2) NOT NULL,
       old_amount DECIMAL(10,2),
       renewal_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

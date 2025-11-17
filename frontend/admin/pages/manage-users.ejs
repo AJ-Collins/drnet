@@ -481,21 +481,6 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div id="planContainer">
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Service Plan *</label
-          >
-          <select
-            id="plan"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
-          >
-            <option value="" disabled selected hidden>Select plan</option>
-            <option>Premium 50Mbps</option>
-            <option>Standard 20Mbps</option>
-            <option>Basic 10Mbps</option>
-          </select>
-        </div>
         <div id="roleContainer" class="hidden">
           <label class="block text-sm font-semibold text-gray-700 mb-2"
             >Position *</label
@@ -684,7 +669,7 @@
   class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
 >
   <div
-    class="bg-white shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
+    class="bg-white shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95 max-h-[90vh] overflow-y-auto rounded-xl"
   >
     <div class="flex items-center justify-between mb-6">
       <h3 class="text-2xl font-bold text-teal-800 flex items-center">
@@ -713,15 +698,39 @@
       </div>
 
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2"
-          >Select New Plan</label
-        >
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Select Plan
+        </label>
         <select
           id="subscriptionPlanSelect"
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white"
         >
           <option value="">Loading plans...</option>
         </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Start Date
+        </label>
+        <input
+          type="date"
+          id="subscriptionStartDate"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+          required
+        />
+      </div>
+
+      <div
+        class="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-4 mt-4"
+      >
+        <p class="text-sm text-teal-700 font-medium">Subscription Preview</p>
+        <p
+          id="subscriptionExpiryPreview"
+          class="text-lg font-bold text-teal-800 mt-1"
+        >
+          Select a plan and start date
+        </p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -1038,7 +1047,26 @@
                   </span>
                   ${
                     user.currentPlan?.expires
-                      ? `<p class="text-xs text-gray-500 mt-1">Expires: ${user.currentPlan.expires}</p>`
+                      ? (() => {
+                          const expiry = new Date(user.currentPlan.expires);
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const isExpired = expiry < today;
+                          const formatted = expiry.toLocaleDateString("en-KE", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          });
+                          return `<p class="text-xs mt-1 font-medium ${
+                            isExpired ? "text-red-600" : "text-gray-600"
+                          }">
+                            ${
+                              isExpired
+                                ? `Expired (${formatted})`
+                                : `Expires: ${formatted}`
+                            }
+                          </p>`;
+                        })()
                       : ""
                   }
                 </td>`
@@ -1159,7 +1187,14 @@
       "subClientName"
     ).textContent = `${client.first_name} ${client.second_name}`;
 
+    // Reset
+    $("subscriptionPlanSelect").innerHTML =
+      '<option value="">Loading plans...</option>';
+    $("subscriptionStartDate").value = new Date().toISOString().split("T")[0];
+    $("subscriptionExpiryPreview").textContent = "Select a plan and start date";
+
     // Load current subscription
+    let currentPlanStartDate = null;
     try {
       const res = await fetch(
         `/api/subscribe/client/current?userId=${clientId}`,
@@ -1174,6 +1209,9 @@
         $("currentPlanExpiry").textContent = currentSubscription.expires
           ? `Expires: ${currentSubscription.expires}`
           : "";
+
+        // Save start date for autofill
+        currentPlanStartDate = currentSubscription.start_date || null;
       } else {
         currentSubscription = null;
         $("currentPlanName").textContent = "No Active Plan";
@@ -1188,12 +1226,116 @@
     const select = $("subscriptionPlanSelect");
     select.innerHTML = '<option value="">Select a plan...</option>';
     const pkgs = await loadAllPackages();
+    let selectedPlanId = null;
+
     pkgs.forEach((pkg) => {
       const opt = document.createElement("option");
       opt.value = pkg.id;
       opt.textContent = `${pkg.name} - KSh ${pkg.price} (${pkg.speed})`;
+
+      // Auto-select current plan
+      if (currentSubscription && currentSubscription.package_id == pkg.id) {
+        opt.selected = true;
+        selectedPlanId = pkg.id;
+      }
       select.appendChild(opt);
     });
+
+    // Autofill Start Date
+    if (currentPlanStartDate) {
+      $("subscriptionStartDate").value = currentPlanStartDate;
+    } else {
+      $("subscriptionStartDate").value = new Date().toISOString().split("T")[0];
+    }
+
+    // === CHANGE BUTTON TEXT ===
+    const assignBtn = document.querySelector(
+      "#subscriptionModal button[onclick='assignPlan()']"
+    );
+    if (currentSubscription) {
+      assignBtn.innerHTML = `<i class="fas fa-save"></i><span>Update Plan</span>`;
+      assignBtn.onclick = updatePlan; // Switch to update
+    } else {
+      assignBtn.innerHTML = `<i class="fas fa-plus"></i><span>Subscribe</span>`;
+      assignBtn.onclick = assignPlan; // Keep assign
+    }
+
+    // Attach live preview
+    const updatePreview = () => {
+      const planId = $("subscriptionPlanSelect").value;
+      const startDate = $("subscriptionStartDate").value;
+      const previewEl = $("subscriptionExpiryPreview");
+
+      if (!planId || !startDate) {
+        previewEl.textContent = "Select a plan and start date";
+        previewEl.className = "text-lg font-bold text-teal-800 mt-1";
+        return;
+      }
+
+      const expiry = new Date(startDate);
+      expiry.setDate(expiry.getDate() + 30);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const formattedExpiry = expiry.toLocaleDateString("en-KE", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+
+      if (expiry < today) {
+        previewEl.innerHTML = `
+        <span class="text-red-600 font-bold">Expired</span>
+        <span class="text-red-500 text-sm"> (since ${formattedExpiry})</span>
+      `;
+      } else {
+        previewEl.textContent = `Expires: ${formattedExpiry}`;
+        previewEl.className = "text-lg font-bold text-teal-800 mt-1";
+      }
+    };
+
+    $("subscriptionPlanSelect").onchange = updatePreview;
+    $("subscriptionStartDate").oninput = updatePreview;
+
+    // Trigger preview immediately
+    updatePreview();
+  };
+
+  // UPDATE PLAN
+  window.updatePlan = async () => {
+    const planId = $("subscriptionPlanSelect").value;
+    const startDate = getStartDate();
+    if (!planId) return Swal.fire("Select Plan", "Choose a plan", "warning");
+
+    try {
+      const res = await fetch(
+        `/api/subscribe/client/${currentSubscription.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Request": "true",
+          },
+          body: JSON.stringify({
+            package_id: planId,
+            start_date: startDate,
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+
+      Swal.fire(
+        "Updated!",
+        `${data.package} updated. New expiry: ${data.expiry_date}`,
+        "success"
+      );
+      closeSubscriptionModal();
+      renderTable("clients");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
   };
 
   window.closeSubscriptionModal = () => {
@@ -1203,15 +1345,23 @@
     setTimeout(() => (modal.style.display = "none"), 200);
   };
 
+  //Date helper function
+  const getStartDate = () => {
+    const date = $("subscriptionStartDate").value;
+    if (!date) throw new Error("Please select a start date");
+    return date;
+  };
+
   // Assign
   window.assignPlan = async () => {
     const planId = $("subscriptionPlanSelect").value;
+    const startDate = getStartDate();
     if (!planId)
       return Swal.fire("Select Plan", "Please choose a plan", "warning");
 
     try {
       const res = await fetch(
-        `/api/subscribe/client/${planId}?userId=${currentClientId}`,
+        `/api/subscribe/client/${planId}?userId=${currentClientId}&start_date=${startDate}`,
         {
           method: "POST",
           headers: { "X-Admin-Request": "true" },
@@ -1221,7 +1371,7 @@
       const data = await res.json();
       Swal.fire(
         "Assigned!",
-        `${data.name} assigned. Expires: ${data.expires}`,
+        `${data.name} from ${startDate}. Expires: ${data.expires}`,
         "success"
       );
       closeSubscriptionModal();
@@ -1240,9 +1390,11 @@
         "warning"
       );
 
+    const startDate = getStartDate();
+
     try {
       const res = await fetch(
-        `/api/subscribe/client/renew?userId=${currentClientId}`,
+        `/api/subscribe/client/renew?userId=${currentClientId}&start_date=${startDate}`,
         {
           method: "POST",
           headers: { "X-Admin-Request": "true" },
@@ -1252,7 +1404,7 @@
       const data = await res.json();
       Swal.fire(
         "Renewed!",
-        `Plan renewed. New expiry: ${data.expires}`,
+        `Renewed from ${startDate}. New expiry: ${data.expires}`,
         "success"
       );
       closeSubscriptionModal();
@@ -1265,6 +1417,7 @@
   // Upgrade
   window.upgradePlan = async () => {
     const planId = $("subscriptionPlanSelect").value;
+    const startDate = getStartDate();
     if (!planId)
       return Swal.fire("Select Plan", "Choose a plan to upgrade to", "warning");
     if (!currentSubscription)
@@ -1276,7 +1429,7 @@
 
     try {
       const res = await fetch(
-        `/api/subscribe/client/upgrade/${planId}?userId=${currentClientId}`,
+        `/api/subscribe/client/upgrade/${planId}?userId=${currentClientId}&start_date=${startDate}`,
         {
           method: "POST",
           headers: { "X-Admin-Request": "true" },
@@ -1286,7 +1439,7 @@
       const data = await res.json();
       Swal.fire(
         "Upgraded!",
-        `Upgraded to ${data.name}. Expires: ${data.expires}`,
+        `Upgraded to ${data.name} from ${startDate}. Expires: ${data.expires}`,
         "success"
       );
       closeSubscriptionModal();
@@ -1368,22 +1521,15 @@
     $("submitBtnText").textContent = id ? "Update" : "Create";
 
     // Show/hide fields
-    $("planContainer").classList.toggle("hidden", type !== "clients");
     $("roleContainer").classList.toggle("hidden", type !== "staff");
     $("departmentContainer").classList.toggle("hidden", type !== "staff");
     $("salaryContainer").classList.toggle("hidden", type !== "staff");
-    $("plan").required = type === "clients";
     $("role").required = type === "staff";
     $("department").required = type === "staff";
     $("basic_salary").required = type === "staff";
 
     $("addUserForm").reset();
     $("editUserId").value = "";
-
-    // Load plans if adding/editing client
-    if (type === "clients") {
-      loadPackages(); // <-- DYNAMIC LOAD
-    }
 
     if (id) {
       const cache = type === "clients" ? clientsCache : staffCache;
@@ -1415,19 +1561,12 @@
         roleSelect.value = userPosition;
       }
       $("department").value = user.department || "";
-      if (type === "clients") {
-        const pkg = packagesCache.find(
-          (p) => p.id == user.currentPlan?.package_id
-        );
-        $("plan").value = pkg ? pkg.id : "";
-      }
 
       if (type === "clients") {
         // Match by ID or name fallback
         const pkg =
           packagesCache.find((p) => p.id == user.plan) ||
           packagesCache.find((p) => p.name === user.plan);
-        $("plan").value = pkg ? pkg.id : "";
       } else {
         $("role").value = user.role || "";
         $("department").value = user.department || "";
@@ -1500,12 +1639,7 @@
   /* ---------- FORM SUBMIT ---------- */
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (currentUserType === "clients" && !$("plan").value)
-      return Swal.fire(
-        "Validation",
-        "Please select a Service Plan.",
-        "warning"
-      );
+
     if (
       currentUserType === "staff" &&
       (!$("role").value || !$("department").value)
@@ -1526,9 +1660,7 @@
       password: $("password").value.trim(),
     };
 
-    if (currentUserType === "clients") {
-      data.plan = $("plan").value;
-    } else {
+    if (currentUserType !== "clients") {
       data.role = $("role").value;
       data.department = $("department").value;
       data.basic_salary = $("basic_salary").value.trim();

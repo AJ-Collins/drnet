@@ -20,6 +20,11 @@ const createUserSubscriptionsTable = require("./user_subscriptions");
 const seedRoles = require("../seeders/roles_seeder");
 const seedPermissions = require("../seeders/permissions_seeder");
 const seedRolePermissions = require("../seeders/role_permissions_seeder");
+const seedAdmin = require("../seeders/admin_seeder");
+const seedBookings = require("../seeders/bookings_seeder");
+const usersSeeder = require("../seeders/users_seeder");
+const seedUserSubscriptions = require("../seeders/seed_user_subscriptions");
+const seedRenewals = require("../seeders/renewals_seed");
 
 const {
   createInvoicesTable,
@@ -47,7 +52,6 @@ const createNotificationsTable = require("./notifications"); // added notificati
 
 async function runMigrations() {
   console.log("Running all migrations...");
-
   // Roles & permissions first
   await createRolesTable();
   await createPermissionsTable();
@@ -67,7 +71,6 @@ async function runMigrations() {
   await createClientItemPurchasesTable();
   await createClientItemPaymentsTable();
   await createClientPaymentsTable();
-  await createRenewalsTable();
   await createBookingsTable();
   await createClientPaymentReceiptsTable();
   await createInvoicesTable();
@@ -92,13 +95,18 @@ async function runMigrations() {
   await createNotificationsTable();
 
   await createUserSubscriptionsTable();
+  await createRenewalsTable();
 
   console.log("All migrations completed. Running seeders...");
 
-  await seedRoles();
-  await seedPermissions();
-  await seedRolePermissions();
-
+  //await seedRoles();
+  //await seedPermissions();
+  //await seedRolePermissions();
+  await seedAdmin();
+  //await seedBookings();
+  //await usersSeeder();
+  //await seedUserSubscriptions();
+  //await seedRenewals();
   console.log("Seeding complete!");
 }
 
