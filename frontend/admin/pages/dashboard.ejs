@@ -1,27 +1,70 @@
 <style>
   /* ---- Your original custom styles ---- */
-  .stat-card { transition: all 0.3s ease; }
-  .stat-card:hover { transform: translateY(-2px); }
-  .gradient-bg { background: linear-gradient(135deg, #0d9488 0%, #0f766e 50%, #115e59 100%); }
-  .pulse-ring { animation: pulse 2s infinite; }
+  .stat-card {
+    transition: all 0.3s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 50%, #115e59 100%);
+  }
+  .pulse-ring {
+    animation: pulse 2s infinite;
+  }
   @keyframes pulse {
-    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13,148,136,.7); }
-    70%  { transform: scale(1);   box-shadow: 0 0 0 10px rgba(13,148,136,0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13,148,136,0); }
+    0% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7);
+    }
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 10px rgba(13, 148, 136, 0);
+    }
+    100% {
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(13, 148, 136, 0);
+    }
   }
 
   /* ---- Skeleton loading ---- */
   @keyframes skeleton {
-    0%   { background-color:#f3f4f6; }
-    100% { background-color:#e5e7eb; }
+    0% {
+      background-color: #f3f4f6;
+    }
+    100% {
+      background-color: #e5e7eb;
+    }
   }
-  .skeleton { background:#e5e7eb; animation:skeleton 1.2s ease-in-out infinite; border-radius:.5rem; }
-  .skeleton-text   { height:1rem; }
-  .skeleton-title  { height:1.5rem; width:70%; }
-  .skeleton-circle { width:2.5rem; height:2.5rem; border-radius:9999px; }
-  .skeleton-btn    { width:6rem; height:2.5rem; }
-  .skeleton-line   { height:1rem; width:100%; }
-  .skeleton-sm     { height:.75rem; width:60%; }
+  .skeleton {
+    background: #e5e7eb;
+    animation: skeleton 1.2s ease-in-out infinite;
+    border-radius: 0.5rem;
+  }
+  .skeleton-text {
+    height: 1rem;
+  }
+  .skeleton-title {
+    height: 1.5rem;
+    width: 70%;
+  }
+  .skeleton-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+  }
+  .skeleton-btn {
+    width: 6rem;
+    height: 2.5rem;
+  }
+  .skeleton-line {
+    height: 1rem;
+    width: 100%;
+  }
+  .skeleton-sm {
+    height: 0.75rem;
+    width: 60%;
+  }
 </style>
 <div class="flex flex-1">
   <main id="mainContent" class="flex-1 p-4 lg:p-6 transition-all duration-300">
@@ -73,7 +116,7 @@
           <h3 class="text-lg font-semibold text-gray-800">My Staff</h3>
           <% const manageUsersSlug = "manage-users"; %>
           <a
-             href="/admin/<%= manageUsersSlug %>"
+            href="/admin/<%= manageUsersSlug %>"
             class="inline-flex items-center px-4 py-2 bg-teal-100 text-teal-700 font-semibold text-sm rounded-lg hover:bg-teal-200 transition"
           >
             View more<svg
@@ -131,7 +174,7 @@
         <h3 class="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
         <div class="grid grid-cols-2 gap-4">
           <a
-             href="/admin/<%= manageUsersSlug %>"
+            href="/admin/<%= manageUsersSlug %>"
             class="bg-teal-50 hover:bg-teal-100 rounded-lg p-4 text-center transition group"
           >
             <div
@@ -143,7 +186,7 @@
           </a>
           <% const supportTicketSlug = "support-tickets"; %>
           <a
-             href="/admin/<%= supportTicketSlug %>"
+            href="/admin/<%= supportTicketSlug %>"
             class="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 text-center transition group"
           >
             <div
@@ -234,12 +277,12 @@
 </template>
 
 <script>
-  const API_BASE = "/api/dashboard";               // adjust if needed
+  const API_BASE = "/api/dashboard"; // adjust if needed
   const CURRENCY = "Ksh";
-  const $  = s => document.querySelector(s);
-  const $$ = s => document.querySelectorAll(s);
-  const formatMoney = v => `${CURRENCY} ${Number(v).toLocaleString()}`;
-  const plural = (n,s,p) => n===1?s:p;
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+  const formatMoney = (v) => `${CURRENCY} ${Number(v).toLocaleString()}`;
+  const plural = (n, s, p) => (n === 1 ? s : p);
 
   /* --------------------------------------------------------------
      Helper – generic fetch
@@ -259,7 +302,10 @@
     /* ---- SKELETON ---- */
     container.innerHTML = `
       <div class="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        ${Array(4).fill('').map(() => `
+        ${Array(4)
+          .fill("")
+          .map(
+            () => `
           <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
             <div class="skeleton skeleton-title mb-4"></div>
             <div class="flex justify-between space-x-4">
@@ -275,7 +321,9 @@
               </div>
             </div>
           </div>
-        `).join('')}
+        `
+          )
+          .join("")}
       </div>`;
 
     try {
@@ -288,13 +336,13 @@
           </h3>
           <div class="flex justify-between space-x-4">
             <div class="flex-1 bg-teal-100 rounded-lg p-4 cursor-pointer hover:bg-teal-200 transition"
-                 onclick="location.href='/users/active'">
+                 ">
               <p class="text-teal-700 text-sm font-bold">Active Users</p>
               <h2 class="text-2xl font-bold text-gray-800 mt-1">${d.activeUsers}</h2>
               <p class="text-green-500 text-sm flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i>${d.activeGrowth}% increase</p>
             </div>
             <div class="flex-1 bg-red-100 rounded-lg p-4 cursor-pointer hover:bg-red-200 transition"
-                 onclick="location.href='/users/expired'">
+                 ">
               <p class="text-red-600 text-sm font-bold">Expired Users</p>
               <h2 class="text-2xl font-bold text-gray-800 mt-1">${d.expiredUsers}</h2>
               <p class="text-red-500 text-sm flex items-center mt-1"><i class="fas fa-arrow-down mr-1"></i>${d.expiredGrowth}% decrease</p>
@@ -307,8 +355,12 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-green-600 text-sm font-bold">Monthly Income</p>
-              <h3 class="text-3xl font-bold text-gray-800 mt-2">${formatMoney(d.monthlyIncome)}</h3>
-              <p class="text-green-500 text-sm mt-1"><i class="fas fa-arrow-up mr-1"></i>${d.incomeGrowth}% increase</p>
+              <h3 class="text-3xl font-bold text-gray-800 mt-2">${formatMoney(
+                d.monthlyIncome
+              )}</h3>
+              <p class="text-green-500 text-sm mt-1"><i class="fas fa-arrow-up mr-1"></i>${
+                d.incomeGrowth
+              }% increase</p>
             </div>
             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-green-600 text-xl"></i></div>
           </div>
@@ -319,7 +371,9 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-orange-600 text-sm font-bold">Accessory Revenue</p>
-              <h3 class="text-3xl font-bold text-gray-800 mt-2">${formatMoney(d.accessoryRevenue)}</h3>
+              <h3 class="text-3xl font-bold text-gray-800 mt-2">${formatMoney(
+                d.itemsSales
+              )}</h3>
               <p class="text-red-500 text-sm mt-1">Hardware & accessories</p>
             </div>
             <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"><i class="fas fa-box text-orange-600 text-xl"></i></div>
@@ -333,21 +387,30 @@
           </h3>
           <div class="flex justify-between space-x-4">
             <div class="flex-1 bg-blue-100 rounded-lg p-4 cursor-pointer hover:bg-blue-200 transition"
-                 onclick="location.href='/bookings'">
+                 ">
               <p class="text-blue-600 text-sm font-bold">Bookings</p>
-              <h2 class="text-2xl font-bold text-gray-800 mt-1">${d.bookings}</h2>
-              <p class="text-green-500 text-sm flex items-center mt-1"><i class="fas fa-clock mr-1"></i>Pending ${plural(d.bookings,'booking','bookings')}</p>
+              <h2 class="text-2xl font-bold text-gray-800 mt-1">${
+                d.bookings
+              }</h2>
+              <p class="text-green-500 text-sm flex items-center mt-1"><i class="fas fa-clock mr-1"></i>Pending ${plural(
+                d.bookings,
+                "booking",
+                "bookings"
+              )}</p>
             </div>
             <div class="flex-1 bg-purple-100 rounded-lg p-4 cursor-pointer hover:bg-purple-200 transition"
-                 onclick="location.href='/inquiries'">
+                ">
               <p class="text-purple-600 text-sm font-bold">Website Inquiries</p>
-              <h2 class="text-2xl font-bold text-gray-800 mt-1">${d.inquiries}</h2>
+              <h2 class="text-2xl font-bold text-gray-800 mt-1">${
+                d.inquiries
+              }</h2>
               <p class="text-purple-500 text-sm flex items-center mt-1"><i class="fas fa-envelope mr-1"></i>Pending responses</p>
             </div>
           </div>
         </div>`;
 
-      container.innerHTML = usersHTML + incomeHTML + accessoryHTML + requestsHTML;
+      container.innerHTML =
+        usersHTML + incomeHTML + accessoryHTML + requestsHTML;
     } catch (e) {
       container.innerHTML = `<div class="col-span-full text-center text-red-600 py-8">Failed to load stats: ${e.message}</div>`;
     }
@@ -360,7 +423,10 @@
     const container = $("#staffContainer");
 
     /* ---- SKELETON ---- */
-    container.innerHTML = Array(4).fill('').map(() => `
+    container.innerHTML = Array(4)
+      .fill("")
+      .map(
+        () => `
       <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
         <div class="flex items-center space-x-3 mb-2 md:mb-0">
           <div class="skeleton skeleton-circle"></div>
@@ -374,24 +440,29 @@
           <div class="skeleton skeleton-text w-24"></div>
           <div class="skeleton skeleton-text w-16"></div>
         </div>
-      </div>`).join('');
+      </div>`
+      )
+      .join("");
 
     try {
       const staff = await apiGet("/staff");
       const tmpl = document.getElementById("staffRowTemplate").content;
 
       container.innerHTML = "";
-      staff.forEach(s => {
+      staff.forEach((s) => {
         const node = tmpl.cloneNode(true);
         node.querySelector(".font-medium").textContent = s.name;
-        node.querySelector("p.text-gray-500").textContent = `${s.role} / ${s.department||'N/A'}`;
-        node.querySelector(".email").textContent   = s.email;
-        node.querySelector(".phone").textContent   = s.phone;
+        node.querySelector("p.text-gray-500").textContent = `${s.role} / ${
+          s.department || "N/A"
+        }`;
+        node.querySelector(".email").textContent = s.email;
+        node.querySelector(".phone").textContent = s.phone;
         const statusEl = node.querySelector(".status");
         statusEl.textContent = s.status;
-        statusEl.className = s.status==="Active"
-          ? "status font-semibold text-green-600"
-          : "status font-semibold text-red-500";
+        statusEl.className =
+          s.status === "Active"
+            ? "status font-semibold text-green-600"
+            : "status font-semibold text-red-500";
         container.appendChild(node);
       });
     } catch (e) {
@@ -406,7 +477,10 @@
     const container = $("#activityContainer");
 
     /* ---- SKELETON ---- */
-    container.innerHTML = Array(4).fill('').map(() => `
+    container.innerHTML = Array(4)
+      .fill("")
+      .map(
+        () => `
       <div class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-150 rounded-lg transition-colors">
         <div class="skeleton skeleton-circle"></div>
         <div class="flex-1">
@@ -414,21 +488,25 @@
           <div class="skeleton skeleton-sm"></div>
         </div>
         <div class="skeleton skeleton-text w-20"></div>
-      </div>`).join('');
+      </div>`
+      )
+      .join("");
 
     try {
       const items = await apiGet("/recent-activity");
       const tmpl = document.getElementById("activityItemTemplate").content;
 
       container.innerHTML = "";
-      items.forEach(it => {
+      items.forEach((it) => {
         const node = tmpl.cloneNode(true);
         const iconBox = node.querySelector(".icon-bg");
         iconBox.className = `w-10 h-10 rounded-full flex items-center justify-center ${it.iconBg}`;
-        node.querySelector(".icon-class").className = `fas ${it.icon} ${it.iconColor}`;
-        node.querySelector(".title").textContent       = it.title;
+        node.querySelector(
+          ".icon-class"
+        ).className = `fas ${it.icon} ${it.iconColor}`;
+        node.querySelector(".title").textContent = it.title;
         node.querySelector(".description").textContent = it.description;
-        node.querySelector(".time").textContent        = it.timeAgo;
+        node.querySelector(".time").textContent = it.timeAgo;
         container.appendChild(node);
       });
     } catch (e) {
@@ -442,19 +520,23 @@
   let revenueChart = null;
   async function renderRevenueChart(period = "monthly") {
     const canvas = $("#revenueChart");
-    const ctx    = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
 
-    canvas.classList.add("skeleton");   // skeleton over the canvas
+    canvas.classList.add("skeleton"); // skeleton over the canvas
 
     try {
-      const data = await apiGet(`/revenue-trend?period=${period}&_=${Date.now()}`);
+      const data = await apiGet(
+        `/revenue-trend?period=${period}&_=${Date.now()}`
+      );
       canvas.classList.remove("skeleton");
 
       const titleEl = canvas.closest(".bg-white").querySelector("h3");
-      titleEl.textContent = `Income Trend (${period==="monthly"?"Monthly":"Quarterly"})`;
+      titleEl.textContent = `Income Trend (${
+        period === "monthly" ? "Monthly" : "Quarterly"
+      })`;
 
-      const labels = data.map(d => d.month || d.quarter || "N/A");
-      const values = data.map(d => d.amount);
+      const labels = data.map((d) => d.month || d.quarter || "N/A");
+      const values = data.map((d) => d.amount);
 
       if (revenueChart) revenueChart.destroy();
 
@@ -462,23 +544,28 @@
         type: "line",
         data: {
           labels,
-          datasets: [{
-            label: "Income (Ksh)",
-            data: values,
-            borderColor: "#0d9488",
-            backgroundColor: "rgba(13,148,136,0.1)",
-            fill: true,
-            tension: 0.3,
-          }]
+          datasets: [
+            {
+              label: "Income (Ksh)",
+              data: values,
+              borderColor: "#0d9488",
+              backgroundColor: "rgba(13,148,136,0.1)",
+              fill: true,
+              tension: 0.3,
+            },
+          ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero:true, ticks:{ callback: v=>formatMoney(v) } }
-          }
-        }
+            y: {
+              beginAtZero: true,
+              ticks: { callback: (v) => formatMoney(v) },
+            },
+          },
+        },
       });
     } catch (e) {
       canvas.classList.remove("skeleton");
@@ -495,14 +582,14 @@
     renderActivity();
     renderRevenueChart();
 
-    $$(".period-btn").forEach(btn => {
+    $$(".period-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        $$(".period-btn").forEach(b => {
-          b.classList.remove("bg-teal-100","text-teal-700");
-          b.classList.add("bg-gray-100","text-gray-600");
+        $$(".period-btn").forEach((b) => {
+          b.classList.remove("bg-teal-100", "text-teal-700");
+          b.classList.add("bg-gray-100", "text-gray-600");
         });
-        btn.classList.add("bg-teal-100","text-teal-700");
-        btn.classList.remove("bg-gray-100","text-gray-600");
+        btn.classList.add("bg-teal-100", "text-teal-700");
+        btn.classList.remove("bg-gray-100", "text-gray-600");
         renderRevenueChart(btn.dataset.period);
       });
     });

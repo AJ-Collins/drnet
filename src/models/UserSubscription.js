@@ -22,14 +22,35 @@ const UserSubscription = {
   // Get current active subscription for a user
   getCurrent: async (userId) => {
     const [rows] = await db.query(
-      `SELECT us.*, p.name AS package_name, p.price, p.validity_days
-       FROM user_subscriptions us
-       LEFT JOIN packages p ON us.package_id = p.id
-       WHERE us.user_id=? AND us.status='active'
-       ORDER BY us.expiry_date DESC
-       LIMIT 1`,
+      `
+    SELECT 
+      us.*,
+      p.name AS package_name,
+      p.price,
+      p.validity_days,
+
+      pay.amount AS payment_amount,
+      pay.transaction_id,
+      pay.payment_method,
+      pay.status,
+      pay.payment_date
+
+    FROM user_subscriptions us
+    LEFT JOIN packages p 
+      ON us.package_id = p.id
+
+    LEFT JOIN payments pay 
+      ON pay.user_id = us.user_id
+     AND pay.package_id = us.package_id
+
+    WHERE us.user_id = ?
+
+    ORDER BY us.id DESC
+    LIMIT 1
+    `,
       [userId]
     );
+
     return rows[0];
   },
 
@@ -84,15 +105,34 @@ const UserSubscription = {
   },
 
   // Get all subscriptions for a user (history)
-  getHistory: async (userId) => {
+  getRenewalHistory: async (userId) => {
     const [rows] = await db.query(
-      `SELECT us.*, p.name AS package_name, p.price, p.validity_days
-       FROM user_subscriptions us
-       LEFT JOIN packages p ON us.package_id = p.id
-       WHERE us.user_id=?
-       ORDER BY us.start_date DESC`,
+      `
+    SELECT 
+      r.id,
+      r.subscription_id,
+      r.user_id,
+      r.package_id,
+      p.name AS package_name,
+      p.price AS package_price,
+      p.validity_days,
+      r.old_package_id,
+      op.name AS old_package_name,
+      r.amount,
+      r.old_amount,
+      r.renewal_date,
+      r.old_expiry_date,
+      r.new_expiry_date,
+      r.is_deleted
+    FROM renewals r
+    LEFT JOIN packages p ON r.package_id = p.id
+    LEFT JOIN packages op ON r.old_package_id = op.id
+    WHERE r.user_id = ?
+    ORDER BY r.renewal_date DESC
+    `,
       [userId]
     );
+
     return rows;
   },
 
@@ -113,6 +153,10 @@ const UserSubscription = {
       `DELETE FROM user_subscriptions WHERE id=?`,
       [id]
     );
+    return result;
+  },
+  deleteRenewalById: async (id) => {
+    const [result] = await db.query(`DELETE FROM renewals WHERE id = ?`, [id]);
     return result;
   },
 };

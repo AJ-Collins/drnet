@@ -12,11 +12,10 @@ async function createUserSubscriptionsTable() {
         payment_id INT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL,
-        FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL
+        FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL
     );
   `);
-  console.log("Renewals table created");
+  console.log("User subscriptions table created (without payment_id FK)");
 }
 
 module.exports = createUserSubscriptionsTable;

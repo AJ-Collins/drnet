@@ -5,21 +5,26 @@ const Payment = {
     const {
       user_id,
       package_id,
+      subscription_id = null, // ADD THIS
       transaction_id,
       amount,
       payment_method,
+      status,
       payment_date,
       notes,
     } = data;
+
     const [result] = await db.query(
-      `INSERT INTO payments (user_id, package_id, transaction_id, amount, payment_method, payment_date, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO payments (user_id, package_id, subscription_id, transaction_id, amount, payment_method, status, payment_date, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, // ADD ? for subscription_id
       [
         user_id,
         package_id,
+        subscription_id, // ADD THIS
         transaction_id,
         amount,
         payment_method,
+        status,
         payment_date,
         notes,
       ]
@@ -53,16 +58,26 @@ const Payment = {
     return rows[0];
   },
 
+  // ADD THIS METHOD to find payments by subscription_id
+  findBySubscriptionId: async (subscriptionId) => {
+    const [rows] = await db.query(
+      `SELECT * FROM payments WHERE subscription_id=?`,
+      [subscriptionId]
+    );
+    return rows;
+  },
+
   delete: async (id) => {
     const [result] = await db.query(`DELETE FROM payments WHERE id=?`, [id]);
     return result;
   },
-  //Helper function to get total payments in a month
+
+  // Helper function to get total payments in a month
   sumMonth: async (month) => {
     const [rows] = await db.query(
       `SELECT SUM(amount) AS total
-     FROM payments
-     WHERE MONTH(payment_date) = ? AND YEAR(payment_date) = YEAR(CURDATE())`,
+       FROM payments
+       WHERE MONTH(payment_date) = ? AND YEAR(payment_date) = YEAR(CURDATE())`,
       [month]
     );
     return rows[0].total || 0;
@@ -79,9 +94,9 @@ const Payment = {
 
     const [rows] = await db.query(
       `SELECT SUM(amount) AS total
-     FROM payments
-     WHERE MONTH(payment_date) BETWEEN ? AND ?
-       AND YEAR(payment_date) = YEAR(CURDATE())`,
+       FROM payments
+       WHERE MONTH(payment_date) BETWEEN ? AND ?
+         AND YEAR(payment_date) = YEAR(CURDATE())`,
       [startMonth, endMonth]
     );
     return rows[0].total || 0;

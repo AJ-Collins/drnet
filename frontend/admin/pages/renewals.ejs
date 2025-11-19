@@ -125,7 +125,7 @@
       <button
         onclick="openRenewModal()"
         id="btnRenew"
-        class="w-full bg-teal-700 hover:bg-teal-800 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors"
+        class="w-full bg-teal-700 hover:bg-teal-800 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors hidden"
       >
         <i class="fas fa-sync text-sm"></i>
         <span class="text-sm">Renew</span>
@@ -134,7 +134,7 @@
       <button
         onclick="openUpgradeModal()"
         id="btnUpgrade"
-        class="w-full bg-teal-800 hover:bg-teal-900 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors"
+        class="w-full bg-teal-800 hover:bg-teal-900 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors hidden"
       >
         <i class="fas fa-arrow-up text-sm"></i>
         <span class="text-sm">Upgrade</span>
@@ -176,11 +176,11 @@
   </div>
 </div>
 
-<!-- ==================== SUBSCRIPTION HISTORY ==================== -->
+<!-- ==================== Renewal History ==================== -->
 <div class="bg-white shadow-md p-6 rounded-xl mb-8 slide-in px-6">
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-bold text-teal-800">
-      <i class="fas fa-history mr-2"></i>Subscription History
+      <i class="fas fa-history mr-2"></i>Renewal History
     </h3>
   </div>
 
@@ -196,17 +196,27 @@
           <th
             class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
           >
-            Assigned
+            Renewed On
           </th>
           <th
             class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
           >
-            Expires
+            Old Expiry
           </th>
           <th
             class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
           >
-            Price
+            Expires On
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Old Amount
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Renewed Amount
           </th>
           <th
             class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
@@ -214,7 +224,7 @@
             Status
           </th>
           <th
-            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+            class="text-right p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider pr-6"
           >
             Actions
           </th>
@@ -296,21 +306,20 @@
 
 <script>
   /* ==============================================================
-   RENEWALS MANAGEMENT – FULLY RE-IMPLEMENTED (same API as User Mgmt)
-   ============================================================== */
+     RENEWALS MANAGEMENT – FINAL CLEAN & FULLY WORKING VERSION
+     ============================================================== */
   const RENEW = {
-    clientsCache: [], // all clients
-    packagesCache: [], // all packages
-    selectedClient: null, // {id, name, email, phone, currentSub}
-    historyCache: [], // historic subs for selected client
-    modalMode: "", // 'renew' | 'upgrade' | 'subscribe'
+    clientsCache: [],
+    packagesCache: [],
+    selectedClient: null,
+    historyCache: [],
+    modalMode: "",
   };
 
   const $r = (id) => document.getElementById(id);
   const API = "/api";
   const PKG_API = "/api/packages";
 
-  /* ---------- HELPERS ---------- */
   const formatDate = (d) =>
     new Date(d).toLocaleDateString("en-KE", {
       day: "numeric",
@@ -324,13 +333,12 @@
       Suspended: "bg-orange-100 text-orange-700",
     }[s] || "bg-gray-100 text-gray-700");
 
-  /* ---------- FETCH ---------- */
+  /* ---------- FETCH DATA ---------- */
   async function fetchClients() {
     const res = await fetch(`${API}/clients`);
-    if (!res.ok) throw new Error("Clients fetch failed");
+    if (!res.ok) throw new Error("Failed to load clients");
     const data = await res.json();
 
-    // enrich with current subscription
     const enriched = await Promise.all(
       data.map(async (c) => {
         try {
@@ -347,68 +355,78 @@
         }
       })
     );
+
     RENEW.clientsCache = enriched;
     return enriched;
   }
 
   async function fetchPackages() {
     const res = await fetch(PKG_API);
-    if (!res.ok) throw new Error("Packages fetch failed");
+    if (!res.ok) throw new Error("Failed to load packages");
     const data = await res.json();
     RENEW.packagesCache = Array.isArray(data) ? data : [];
-    return RENEW.packagesCache;
   }
 
   async function fetchHistory(clientId) {
-    const res = await fetch(
-      `${API}/subscribe/client/history?userId=${clientId}`,
-      {
-        headers: { "X-Admin-Request": "true" },
+    try {
+      const res = await fetch(
+        `${API}/subscribe/client/history?userId=${clientId}`,
+        {
+          headers: { "X-Admin-Request": "true" },
+        }
+      );
+
+      if (res.status === 404) {
+        RENEW.historyCache = [];
+        return;
       }
-    );
-    if (!res.ok) throw new Error("History fetch failed");
-    const data = await res.json();
-    RENEW.historyCache = Array.isArray(data) ? data : [];
-    return RENEW.historyCache;
+
+      if (!res.ok) throw new Error("Failed to load history");
+      const data = await res.json();
+      RENEW.historyCache = Array.isArray(data) ? data : [];
+    } catch {
+      RENEW.historyCache = [];
+    }
   }
 
-  /* ---------- UI POPULATION ---------- */
+  /* ---------- CLIENT SELECT ---------- */
   async function populateClientSelect(search = "") {
     const select = $r("renewClientSelect");
-    if (!select) return;
-
-    const clients = RENEW.clientsCache.filter(
+    const filtered = RENEW.clientsCache.filter(
       (c) =>
         `${c.first_name} ${c.second_name}`
           .toLowerCase()
           .includes(search.toLowerCase()) ||
-        c.phone?.includes(search) ||
-        c.email?.toLowerCase().includes(search.toLowerCase())
+        (c.phone && c.phone.includes(search)) ||
+        (c.email && c.email.toLowerCase().includes(search.toLowerCase()))
     );
 
-    select.innerHTML = clients
-      .map(
-        (c) => `
-    <option value="${c.id}">
-      ${c.first_name} ${c.second_name} – ${c.phone} ${
-          c.currentSub ? `(${c.currentSub.package_name})` : ""
-        }
-    </option>
-  `
-      )
-      .join("");
+    select.innerHTML = filtered.length
+      ? filtered
+          .map(
+            (c) => `
+          <option value="${c.id}">
+            ${c.first_name} ${c.second_name} – ${c.phone || "—"} ${
+              c.currentSub ? `(${c.currentSub.package_name})` : "(No Plan)"
+            }
+          </option>`
+          )
+          .join("")
+      : "<option disabled>No clients found</option>";
   }
 
-  /* ---------- SEARCH DEBOUNCE ---------- */
   let searchTimer;
   $r("renewClientSearch").addEventListener("input", (e) => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => populateClientSelect(e.target.value), 300);
   });
 
-  /* ---------- CLIENT SELECTED ---------- */
   window.loadClientSubscriptions = async (clientId) => {
-    if (!clientId) return;
+    if (!clientId) {
+      clearClientView();
+      return;
+    }
+
     const client = RENEW.clientsCache.find((c) => c.id == clientId);
     if (!client) return;
 
@@ -419,140 +437,183 @@
     toggleActionButtons();
   };
 
-  /* ---------- PREVIEW ---------- */
+  function clearClientView() {
+    RENEW.selectedClient = null;
+    RENEW.historyCache = [];
+    $r("clientPreview")?.classList.add("hidden");
+    $r(
+      "historyBody"
+    ).innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Select a client to view history</td></tr>`;
+    toggleActionButtons();
+  }
+
+  /* ---------- RENDER UI ---------- */
   function renderClientPreview() {
-    const p = $r("clientPreview");
     const c = RENEW.selectedClient;
     const sub = c.currentSub;
-
     $r("previewInitials").textContent =
       `${c.first_name[0]}${c.second_name[0]}`.toUpperCase();
     $r("previewName").textContent = `${c.first_name} ${c.second_name}`;
-    $r("previewContact").textContent = `${c.phone} • ${c.email}`;
+    $r("previewContact").textContent = `${c.phone || "—"} • ${c.email || "—"}`;
     $r("previewPlan").textContent = sub ? sub.package_name : "No active plan";
     $r("previewExpiry").textContent = sub
       ? `Expires ${formatDate(sub.expires)}`
       : "";
-
-    p.classList.remove("hidden");
+    $r("clientPreview").classList.remove("hidden");
   }
 
-  /* ---------- HISTORY TABLE ---------- */
   function renderHistory() {
     const tbody = $r("historyBody");
-    if (!RENEW.historyCache.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">No history</td></tr>`;
+
+    // If no client selected → show placeholder
+    if (!RENEW.selectedClient) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Select a client to view renewal history</td></tr>`;
       return;
     }
 
+    if (!RENEW.historyCache || RENEW.historyCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Client has no renewal history</td></tr>`;
+      return;
+    }
+
+    const sortedHistory = [...RENEW.historyCache].sort((a, b) => {
+      return new Date(b.renewal_date) - new Date(a.renewal_date);
+    });
+
+    // Find the LATEST ACTIVE renewal (by new_expiry_date)
+    const activeItems = sortedHistory.filter(
+      (h) => new Date(h.new_expiry_date) >= new Date()
+    );
+    const latestActive = activeItems.length > 0 ? activeItems[0] : null;
+
+    // Otherwise, show only real renewals
     tbody.innerHTML = RENEW.historyCache
-      .map((h, idx) => {
-        const status = new Date(h.expires) >= new Date() ? "Active" : "Expired";
-        const isActive = status === "Active";
-        const isLatest = idx === 0; // latest entry
+      .map((h, idx, arr) => {
+        const isActive = new Date(h.new_expiry_date) >= new Date();
+        const isLatestActive = latestActive && h.id === latestActive.id;
 
         return `
-    <tr class="hover:bg-gray-50 transition-all">
-      <td class="p-3">${h.package_name}</td>
-      <td class="p-3">${formatDate(h.assigned_at || h.created_at)}</td>
-      <td class="p-3">${formatDate(h.expires)}</td>
-      <td class="p-3">KSh ${Number(h.price).toLocaleString()}</td>
-      <td class="p-3"><span class="px-2 py-1 rounded text-xs font-medium ${getBadge(
-        status
-      )}">${status}</span></td>
-      <td class="p-3 text-right space-x-1">
-        ${
-          isActive && isLatest
-            ? `<button onclick="reverseRenewal(${h.id})" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 px-2 py-1 rounded" title="Reverse this renewal">
-                 <i class="fas fa-undo"></i> Reverse
-               </button>`
-            : ""
-        }
-        <button onclick="deleteRenewal(${
-          h.id
-        })" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded" title="Delete record">
-          <i class="fas fa-trash"></i>
-        </button>
-      </td>
-    </tr>`;
+          <tr class="hover:bg-gray-50">
+            <td class="p-3">${h.package_name || "Unknown Plan"}</td>            
+            <td class="p-3">${formatDate(h.renewal_date)}</td>
+            <td class="p-3">${formatDate(h.old_expiry_date)}</td>
+            <td class="p-3">${formatDate(h.new_expiry_date)}</td>
+            <td class="p-3">KSh ${Number(
+              h.old_amount || 0
+            ).toLocaleString()}</td>
+            <td class="p-3">KSh ${Number(h.amount || 0).toLocaleString()}</td>
+            <td class="p-3">
+              <span class="px-2 py-1 rounded text-xs font-medium ${getBadge(
+                isActive ? "Active" : "Expired"
+              )}">
+                ${isActive ? "Active" : "Expired"}
+              </span>
+            </td>
+            <td class="p-3 text-right">
+              <div class="flex justify-end items-center gap-2">
+                ${
+                  isLatestActive
+                    ? `<button onclick="reverseRenewal(${h.id})"
+                        class="text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white
+                        px-3 py-1.5 rounded-lg shadow-sm flex items-center space-x-1
+                        transition-all transform hover:scale-105">
+                        <i class="fas fa-undo"></i>
+                        <span>Undo</span>
+                      </button>`
+                    : ""
+                }
+
+                <button onclick="deleteRenewal(${h.id})"
+                  class="text-xs bg-red-100 hover:bg-red-200 text-red-700
+                  px-2 py-1 rounded flex items-center space-x-1">
+                  <i class="fas fa-trash"></i>
+                  <span>Delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>`;
       })
       .join("");
   }
 
-  /* ---------- ACTION BUTTON VISIBILITY ---------- */
   function toggleActionButtons() {
-    const hasCurrent = !!RENEW.selectedClient.currentSub;
-    $r("btnRenew").disabled = !hasCurrent;
-    $r("btnUpgrade").disabled = !hasCurrent;
-    $r("btnSubscribe").disabled = false;
+    const hasActivePlan =
+      !!RENEW.selectedClient?.currentSub &&
+      new Date(RENEW.selectedClient.currentSub.expiry_date) >= new Date();
+
+    const hasAnyPlanEver = !!RENEW.selectedClient?.currentSub; // even if expired
+
+    // CASE 1: Client has an ACTIVE plan → show Renew + Upgrade
+    if (hasActivePlan) {
+      $r("btnRenew").classList.remove("hidden");
+      $r("btnUpgrade").classList.remove("hidden");
+      $r("btnSubscribe").classList.add("hidden");
+
+      $r("btnRenew").disabled = false;
+      $r("btnUpgrade").disabled = false;
+    }
+    // CASE 2: Client has NO plan (or expired + no currentSub) → show ONLY Subscribe
+    else {
+      $r("btnRenew").classList.add("hidden");
+      $r("btnUpgrade").classList.add("hidden");
+      $r("btnSubscribe").classList.remove("hidden");
+
+      $r("btnRenew").disabled = true;
+      $r("btnUpgrade").disabled = true;
+    }
   }
 
-  /* ---------- MODAL HANDLERS ---------- */
+  /* ---------- MODAL ---------- */
   async function populateModalPlans() {
+    await fetchPackages();
     const sel = $r("modalPlanSelect");
-    sel.innerHTML = '<option value="">Select plan…</option>';
+    sel.innerHTML = '<option value="">Select a plan...</option>';
     RENEW.packagesCache.forEach((p) => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = `${p.name} – KSh ${p.price} (${p.speed})`;
+      const opt = new Option(
+        `${p.name} – KSh ${p.price} (${p.speed || ""})`,
+        p.id
+      );
       sel.appendChild(opt);
     });
   }
-  function autoSelectCurrentPlan() {
-    const cur = RENEW.selectedClient.currentSub;
-    if (!cur) return;
-
-    const sel = $r("modalPlanSelect");
-    const opt = sel.querySelector(`option[value="${cur.package_id}"]`);
-    if (opt) opt.selected = true;
-  }
 
   function openModal(mode) {
-    if (!RENEW.selectedClient) {
-      return Swal.fire(
-        "No Client Selected",
-        "Please select a client first",
-        "warning"
-      );
-    }
+    if (!RENEW.selectedClient)
+      return Swal.fire("No Client", "Select a client first", "warning");
 
     RENEW.modalMode = mode;
-    const header = {
+    $r("modalHeader").textContent = {
       renew: "Renew Subscription",
       upgrade: "Upgrade Plan",
-      subscribe: "Subscribe to New Plan",
+      subscribe: "New Subscription",
     }[mode];
-    $r("modalHeader").textContent = header;
     $r("modalActionText").textContent =
       mode === "renew" ? "Renew" : mode === "upgrade" ? "Upgrade" : "Subscribe";
-
     $r(
       "modalClientName"
     ).textContent = `${RENEW.selectedClient.first_name} ${RENEW.selectedClient.second_name}`;
 
-    // ---- Current plan box ----
-    const curBox = $r("currentPlanBox");
     const cur = RENEW.selectedClient.currentSub;
+    const curBox = $r("currentPlanBox");
     if (cur && mode !== "subscribe") {
       $r("currentPlanName").textContent = cur.package_name;
       $r("currentPlanExpiry").textContent = `Expires: ${formatDate(
         cur.expires
       )}`;
       curBox.classList.remove("hidden");
-    } else {
-      curBox.classList.add("hidden");
-    }
+    } else curBox.classList.add("hidden");
 
-    // ---- Plan selector visibility & auto-select ----
     const wrapper = $r("planSelectWrapper");
     if (mode === "renew") {
-      wrapper.classList.add("hidden"); // hide selector
-      populateModalPlans(); // still load options (for cache)
-      autoSelectCurrentPlan(); // pre-select current plan
-    } else {
-      wrapper.classList.remove("hidden"); // show for Upgrade/Subscribe
+      wrapper.classList.add("hidden");
       populateModalPlans();
-      // clear selection for safety
+      const opt = $r("modalPlanSelect").querySelector(
+        `option[value="${cur?.package_id}"]`
+      );
+      if (opt) opt.selected = true;
+    } else {
+      wrapper.classList.remove("hidden");
+      populateModalPlans();
       $r("modalPlanSelect").selectedIndex = 0;
     }
 
@@ -569,49 +630,40 @@
   window.openRenewModal = () => openModal("renew");
   window.openUpgradeModal = () => openModal("upgrade");
   window.openSubscribeModal = () => openModal("subscribe");
-
   window.closeRenewModal = () => {
-    const modal = $r("renewModal");
-    modal.querySelector(".bg-white").classList.replace("scale-100", "scale-95");
-    setTimeout(() => (modal.style.display = "none"), 200);
+    $r("renewModal")
+      .querySelector(".bg-white")
+      .classList.replace("scale-100", "scale-95");
+    setTimeout(() => ($r("renewModal").style.display = "none"), 200);
   };
 
-  /* ---------- MODAL ACTION ---------- */
+  /* ---------- MODAL SUBMIT ---------- */
   $r("modalActionBtn").onclick = async () => {
-    // For Renew we auto-selected the plan – no need to validate selection
-    if (RENEW.modalMode !== "renew") {
-      const planId = $r("modalPlanSelect").value;
-      if (!planId)
-        return Swal.fire("Select Plan", "Please choose a plan", "warning");
-    }
+    if (RENEW.modalMode !== "renew" && !$r("modalPlanSelect").value)
+      return Swal.fire("Select Plan", "Please choose a plan", "warning");
 
     const clientId = RENEW.selectedClient.id;
     let endpoint = "";
-    let method = "POST";
-    let msg = "";
 
     switch (RENEW.modalMode) {
       case "renew":
         endpoint = `${API}/subscribe/client/renew?userId=${clientId}`;
-        msg = "Renewed";
         break;
       case "upgrade":
         endpoint = `${API}/subscribe/client/upgrade/${
           $r("modalPlanSelect").value
         }?userId=${clientId}`;
-        msg = "Upgraded";
         break;
       case "subscribe":
         endpoint = `${API}/subscribe/client/${
           $r("modalPlanSelect").value
         }?userId=${clientId}`;
-        msg = "Subscribed";
         break;
     }
 
     try {
       const res = await fetch(endpoint, {
-        method,
+        method: "POST",
         headers: { "X-Admin-Request": "true" },
       });
       if (!res.ok) throw new Error(await res.text());
@@ -619,13 +671,20 @@
 
       Swal.fire(
         "Success!",
-        `${msg}: ${data.name}<br>Expires ${data.expires}`,
+        `${
+          RENEW.modalMode === "renew"
+            ? "Renewed"
+            : RENEW.modalMode === "upgrade"
+            ? "Upgraded"
+            : "Subscribed"
+        } successfully!`,
         "success"
       );
       closeRenewModal();
 
-      // refresh
+      // FULL REFRESH
       await fetchClients();
+      populateClientSelect();
       await loadClientSubscriptions(clientId);
       await updateStats();
     } catch (e) {
@@ -634,58 +693,60 @@
   };
 
   /* ---------- STATS ---------- */
+  /* ---------- STATS — NOW 100% ACCURATE USING REAL EXPIRY DATE ---------- */
   async function updateStats() {
     try {
       const res = await fetch(`${API}/renewals/stats`, {
         headers: { "X-Admin-Request": "true" },
       });
 
-      if (!res.ok) throw new Error("Failed to load stats");
+      let monthlyRenewals = 0;
+      let revenue = 0;
+      let avgRenewal = 0;
 
-      const { monthlyRenewals, revenue, avgRenewal, activeClients } =
-        await res.json();
+      if (res.ok) {
+        const s = await res.json();
+        monthlyRenewals = s.monthlyRenewals || 0;
+        revenue = s.revenue || 0;
+        avgRenewal = s.avgRenewal || 0;
+      }
 
-      // Optional: still calculate active clients from clientsCache if needed
-      const now = new Date();
-      const active = RENEW.clientsCache.filter(
-        (c) => c.currentSub && new Date(c.currentSub.expires) >= now
-      ).length;
+      // CORRECT: Use the actual expiry_date from current subscription
+      const activeClientsCount = RENEW.clientsCache.filter((c) => {
+        return (
+          c.currentSub &&
+          c.currentSub.expiry_date &&
+          new Date(c.currentSub.expiry_date) >= new Date()
+        );
+      }).length;
 
+      // Update all stats
       $r("statRenewals").textContent = monthlyRenewals;
       $r("statRevenue").textContent = `Ksh ${revenue.toLocaleString()}`;
       $r("statAvg").textContent = `Ksh ${avgRenewal.toLocaleString()}`;
-      $r("statActive").textContent = active; // still from clients
+      $r("statActive").textContent = activeClientsCount;
     } catch (e) {
-      console.error("Stats error:", e);
-      $r("statRenewals").textContent = "Error";
-      $r("statRevenue").textContent = "Error";
-      $r("statAvg").textContent = "Error";
+      console.error("Stats update failed:", e);
     }
   }
 
   /* ---------- EXPORT CSV ---------- */
   window.exportRenewalsCSV = () => {
-    if (!RENEW.selectedClient) {
+    if (!RENEW.selectedClient || RENEW.historyCache.length === 0)
       return Swal.fire(
-        "No Client Selected",
-        "Please select a client first to export their renewal history",
+        "No Data",
+        "Select a client with history to export",
         "info"
       );
-    }
 
     const rows = RENEW.historyCache.map((h) => [
-      RENEW.selectedClient
-        ? `${RENEW.selectedClient.first_name} ${RENEW.selectedClient.second_name}`
-        : "",
+      `${RENEW.selectedClient.first_name} ${RENEW.selectedClient.second_name}`,
       h.package_name,
       h.price,
       formatDate(h.assigned_at || h.created_at),
       formatDate(h.expires),
       new Date(h.expires) >= new Date() ? "Active" : "Expired",
     ]);
-
-    if (!rows.length)
-      return Swal.fire("No data", "No renewal history to export", "info");
 
     const csv = [
       ["Client", "Plan", "Price", "Assigned", "Expires", "Status"],
@@ -705,94 +766,70 @@
     URL.revokeObjectURL(url);
   };
 
-  /* ---------- REVERSE RENEWAL ---------- */
-  window.reverseRenewal = async (subscriptionId) => {
-    const client = RENEW.selectedClient;
-    if (!client) return;
-
-    const confirm = await Swal.fire({
-      title: "Reverse Renewal?",
-      text: "This will cancel the current plan and restore the previous one (if any).",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, reverse it",
-      cancelButtonText: "No, keep it",
-    });
-
-    if (!confirm.isConfirmed) return;
-
+  /* ---------- REVERSE & DELETE ---------- */
+  window.reverseRenewal = async (id) => {
+    if (
+      !(await Swal.fire({
+        title: "Reverse?",
+        text: "This will revert to previous plan",
+        icon: "warning",
+        showCancelButton: true,
+      }).then((r) => r.isConfirmed))
+    )
+      return;
     try {
       const res = await fetch(
-        `${API}/subscribe/client/reverse/${subscriptionId}?userId=${client.id}`,
+        `${API}/subscribe/client/reverse/${id}?userId=${RENEW.selectedClient.id}`,
         {
           method: "POST",
           headers: { "X-Admin-Request": "true" },
         }
       );
-
       if (!res.ok) throw new Error(await res.text());
-
-      const data = await res.json();
-
-      Swal.fire(
-        "Reversed!",
-        `Plan reverted to: ${data.previous?.package_name || "None"}`,
-        "success"
-      );
-
-      // Refresh
       await fetchClients();
-      await loadClientSubscriptions(client.id);
+      await loadClientSubscriptions(RENEW.selectedClient.id);
       await updateStats();
+      Swal.fire("Reversed!", "", "success");
     } catch (e) {
       Swal.fire("Error", e.message, "error");
     }
   };
 
-  /* ---------- DELETE RENEWAL ---------- */
-  window.deleteRenewal = async (subscriptionId) => {
-    const confirm = await Swal.fire({
-      title: "Delete Renewal Record?",
-      text: "This action cannot be undone.",
-      icon: "danger",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete",
-      cancelButtonText: "Cancel",
-    });
-
-    if (!confirm.isConfirmed) return;
-
+  window.deleteRenewal = async (id) => {
+    if (
+      !(await Swal.fire({
+        title: "Delete?",
+        text: "Cannot be undone",
+        icon: "danger",
+        showCancelButton: true,
+      }).then((r) => r.isConfirmed))
+    )
+      return;
     try {
-      const res = await fetch(
-        `${API}/subscribe/client/delete/${subscriptionId}`,
-        {
-          method: "DELETE",
-          headers: { "X-Admin-Request": "true" },
-        }
-      );
-
+      const res = await fetch(`${API}/subscribe/client/delete/${id}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Request": "true" },
+      });
       if (!res.ok) throw new Error(await res.text());
-
-      Swal.fire("Deleted!", "Renewal record removed.", "success");
-
-      const clientId = RENEW.selectedClient.id;
-      await fetchHistory(clientId);
+      await fetchHistory(RENEW.selectedClient.id);
       renderHistory();
       await updateStats();
+      Swal.fire("Deleted!", "", "success");
     } catch (e) {
       Swal.fire("Error", e.message, "error");
     }
   };
 
-  /* ---------- INITIAL LOAD ---------- */
+  /* ---------- INIT ---------- */
   (async () => {
     try {
       await Promise.all([fetchClients(), fetchPackages()]);
       populateClientSelect();
       updateStats();
+      clearClientView();
     } catch (e) {
       console.error(e);
-      Swal.fire("Load error", e.message, "error");
+      Swal.fire("Load Error", e.message, "error");
     }
   })();
 </script>

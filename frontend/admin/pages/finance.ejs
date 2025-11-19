@@ -1089,7 +1089,7 @@
               <h3 class="text-teal-600 text-sm font-bold mb-1">
                 Today's Sales
               </h3>
-              <h2 id="monthlyExpenses" class="text-2xl font-bold text-gray-800">
+              <h2 id="todaySales" class="text-2xl font-bold text-gray-800">
                 KES 0
               </h2>
             </div>
@@ -1107,7 +1107,7 @@
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-teal-600 text-sm font-bold mb-1">This Month</h3>
-              <h2 id="yearlyExpenses" class="text-2xl font-bold text-gray-800">
+              <h2 id="monthSales" class="text-2xl font-bold text-gray-800">
                 KES 0
               </h2>
             </div>
@@ -1125,7 +1125,7 @@
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-teal-600 text-sm font-bold mb-1">This Year</h3>
-              <h2 id="largestExpense" class="text-2xl font-bold text-gray-800">
+              <h2 id="yearSales" class="text-2xl font-bold text-gray-800">
                 KES 0
               </h2>
             </div>
@@ -1143,7 +1143,7 @@
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-teal-600 text-sm font-bold mb-1">Total Sales</h3>
-              <h2 id="totalExpenses" class="text-2xl font-bold text-gray-800">
+              <h2 id="totalSales" class="text-2xl font-bold text-gray-800">
                 KES 0
               </h2>
             </div>
@@ -1705,131 +1705,161 @@
   </div>
 </div>
 
-<!--Sales Modal-->
+<!--Sales Modal - REDESIGNED TO MATCH BACKEND-->
 <div
   id="addSalesModal"
   class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
 >
   <div
-    class="bg-white w-full max-w-4xl shadow-2xl border border-gray-200 overflow-hidden max-h-[90vh] flex flex-col"
+    class="bg-white w-full max-w-4xl shadow-2xl border border-gray-200 overflow-hidden max-h-[90vh] flex flex-col rounded-2xl"
   >
     <!-- HEADER -->
     <div
-      class="bg-teal-600 text-white px-8 py-6 flex items-center justify-between flex-shrink-0"
+      class="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-8 py-6 flex items-center justify-between flex-shrink-0"
     >
       <h3 class="text-3xl font-bold" id="salesModalTitle">Record New Sale</h3>
-      <button onclick="closeSalesModal()" class="hover:text-white/70">
+      <button
+        onclick="closeSalesModal()"
+        class="hover:text-white/70 transition"
+      >
         <i class="fas fa-times text-3xl"></i>
       </button>
     </div>
 
     <!-- CONTENT -->
     <div class="px-6 md:px-10 py-6 md:py-10 overflow-y-auto flex-1">
-      <form
-        id="salesForm"
-        onsubmit="saveSale(event)"
-        class="space-y-8 text-gray-700 text-base"
-      >
+      <form id="salesForm" onsubmit="saveSale(event)" class="space-y-8">
         <input type="hidden" id="saleId" />
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Row 1: Item Selection -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label class="font-semibold text-sm mb-1 block"
-              >Accessory Type *</label
-            >
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-box mr-1"></i> Item / Accessory *
+            </label>
             <select
-              id="saleType"
+              id="saleItemId"
               required
-              class="w-full bg-white p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600 bg-white"
             >
-              <option value="">Select type...</option>
-              <option value="router">Router</option>
-              <option value="cable">Cable</option>
-              <option value="adapter">Adapter</option>
-              <option value="switch">Switch</option>
-              <option value="modem">Modem</option>
-              <option value="antenna">Antenna</option>
-              <option value="connector">Connector</option>
-              <option value="splitter">Splitter</option>
-              <option value="extender">WiFi Extender</option>
-              <option value="other">Other</option>
+              <option value="">Select existing item...</option>
+              <!-- Populated via JS -->
             </select>
           </div>
 
           <div>
-            <label class="font-semibold text-sm mb-1 block"
-              >Sale Amount (KES) *</label
-            >
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-plus-circle mr-1"></i> Or Create New Item
+            </label>
             <input
-              type="number"
-              id="saleAmount"
-              min="0"
-              step="0.01"
-              required
+              type="text"
+              id="saleNewItemName"
+              placeholder="Enter new item name (e.g. TP-Link Router)"
               class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
-              placeholder="0.00"
             />
           </div>
 
           <div>
-            <label class="font-semibold text-sm mb-1 block">Sale Date *</label>
-            <input
-              type="date"
-              id="saleDate"
-              required
-              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
-            />
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-tags mr-1"></i> Category
+            </label>
+            <select
+              id="saleCategory"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600 bg-white"
+            >
+              <option value="router">Router</option>
+              <option value="cable">Cable</option>
+              <option value="adapter">Adapter</option>
+              <option value="switch" selected>Switch</option>
+              <option value="modem">Modem</option>
+              <option value="antenna">Antenna</option>
+              <option value="other">Other</option>
+            </select>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Row 2: Customer & Quantity -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label class="font-semibold text-sm mb-1 block"
-              >Customer Name *</label
-            >
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-user mr-1"></i> Customer Name *
+            </label>
             <input
               type="text"
               id="saleCustomer"
               required
+              placeholder="e.g. James Kamau"
               class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
-              placeholder="e.g., Jane Kamau"
             />
           </div>
 
           <div>
-            <label class="font-semibold text-sm mb-1 block">Quantity *</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-hashtag mr-1"></i> Quantity *
+            </label>
             <input
               type="number"
               id="saleQuantity"
-              min="1"
               required
+              min="1"
+              value="1"
               class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
-              placeholder="1"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-money-bill-wave mr-1"></i> Unit Price (KES) *
+            </label>
+            <input
+              type="number"
+              id="saleUnitPrice"
+              required
+              min="0"
+              step="0.01"
+              placeholder="300.00"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
             />
           </div>
         </div>
 
-        <div>
-          <label class="font-semibold text-sm mb-1 block"
-            >Item Description *</label
-          >
-          <input
-            type="text"
-            id="saleDescription"
-            class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
-            placeholder="e.g., TP-Link Archer C6 Router"
-          />
+        <!-- Row 3: Total & Date -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-calculator mr-1"></i> Total Amount (KES)
+            </label>
+            <div
+              class="p-4 bg-teal-50 border border-teal-300 rounded-xl text-2xl font-bold text-teal-700 text-center"
+            >
+              KES <span id="saleTotalDisplay">0.00</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-calendar mr-1"></i> Sale Date *
+            </label>
+            <input
+              type="date"
+              id="saleDate"
+              required
+              value="2025-11-18"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            />
+          </div>
         </div>
 
+        <!-- Notes -->
         <div>
-          <label class="font-semibold text-sm mb-1 block"
-            >Notes (Optional)</label
-          >
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-sticky-note mr-1"></i> Notes (Optional)
+          </label>
           <textarea
             id="saleNotes"
-            rows="2"
+            rows="3"
+            placeholder="Any additional info..."
             class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
-            placeholder="Any extra info..."
           ></textarea>
         </div>
       </form>
@@ -1839,13 +1869,14 @@
     <div class="px-8 py-6 bg-gray-50 flex justify-end gap-4 border-t">
       <button
         onclick="saveSale()"
-        class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md"
+        class="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
       >
+        <i class="fas fa-save"></i>
         <span id="salesSaveBtnText">Save Sale</span>
       </button>
       <button
         onclick="closeSalesModal()"
-        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition"
       >
         Cancel
       </button>
@@ -3490,23 +3521,24 @@
   //  SALES
   // --------------------------------------------------------------
   let salesCache = [];
-  let editingSaleId = null;
 
   async function setupSalesTab() {
     await loadSales();
+    updateSalesStats(); // initial stats
   }
 
-  /* ---------- FETCH ALL ---------- */
   async function loadSales() {
     try {
-      salesCache = await api("/sales");
+      const data = await api("/sales");
+      salesCache = Array.isArray(data) ? data : [];
       renderSalesTable();
+      updateSalesStats();
     } catch (e) {
-      Swal.fire("Load Error", e.message, "error");
+      console.error("Failed to load sales:", e);
+      Swal.fire("Error", "Could not load sales data", "error");
     }
   }
 
-  /* ---------- RENDER TABLE ---------- */
   function renderSalesTable() {
     const tbody = document.getElementById("salesTableBody");
     if (!salesCache.length) {
@@ -3517,41 +3549,70 @@
     tbody.innerHTML = salesCache
       .map(
         (s) => `
-      <tr class="hover:bg-gray-50 transition">
-        <td class="px-6 py-4 text-sm">${new Date(
-          s.date
-        ).toLocaleDateString()}</td>
-        <td class="px-6 py-4 text-sm">${s.type}</td>
-        <td class="px-6 py-4 text-sm">${s.customer}</td>
-        <td class="px-6 py-4 text-sm">${s.quantity}</td>
-        <td class="px-6 py-4 text-sm">${s.description || "-"}</td>
-        <td class="px-6 py-4 text-sm font-semibold">${formatKES(s.amount)}</td>
-        <td class="px-6 py-4 text-sm space-x-2">
-          <button onclick="openEditSale(${s.id})"
-                  class="text-blue-600 hover:text-blue-800" title="Edit">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button onclick="deleteSale(${s.id})"
-                  class="text-red-600 hover:text-red-800" title="Delete">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      </tr>`
+    <tr class="hover:bg-gray-50 transition">
+      <td class="px-6 py-4 text-sm">${new Date(
+        s.purchase_date || s.date
+      ).toLocaleDateString("en-KE")}</td>
+      <td class="px-6 py-4 text-sm capitalize">${(
+        s.category ||
+        s.item_name ||
+        "Accessory"
+      ).replace(/_/g, " ")}</td>
+      <td class="px-6 py-4 text-sm">${
+        s.first_name || s.customer || "Walk-in"
+      }</td>
+      <td class="px-6 py-4 text-sm text-center">${s.quantity || 1}</td>
+      <td class="px-6 py-4 text-sm">${s.notes || s.item_description || "-"}</td>
+      <td class="px-6 py-4 text-sm font-semibold">${formatKES(
+        s.total_amount || s.amount
+      )}</td>
+      <td class="px-6 py-4 text-sm space-x-2">
+        <button onclick="openEditSale(${
+          s.id
+        })" class="text-blue-600 hover:text-blue-800" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button onclick="deleteSale(${
+          s.id
+        })" class="text-red-600 hover:text-red-800" title="Delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    </tr>`
       )
       .join("");
   }
 
-  /* ---------- OPEN MODAL (Create) ---------- */
-  function openSalesModal() {
-    editingSaleId = null;
-    document.getElementById("salesModalTitle").textContent = "Record New Sale";
-    document.getElementById("salesSaveBtnText").textContent = "Save Sale";
-    document.getElementById("salesForm").reset();
-    document.getElementById("saleId").value = "";
-    document.getElementById("addSalesModal").classList.remove("hidden");
+  // ———————— UPDATE STATS (Today / Month / Year / Total) ————————
+  function updateSalesStats() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+
+    let todayTotal = 0,
+      monthTotal = 0,
+      yearTotal = 0,
+      grandTotal = 0;
+
+    salesCache.forEach((s) => {
+      const amount = Number(s.total_amount || s.amount || 0);
+      grandTotal += amount;
+
+      const saleDate = new Date(s.purchase_date || s.date);
+      if (saleDate >= today) todayTotal += amount;
+      if (saleDate >= monthStart) monthTotal += amount;
+      if (saleDate >= yearStart) yearTotal += amount;
+    });
+
+    // Update the cards
+    document.getElementById("todaySales").textContent = formatKES(todayTotal);
+    document.getElementById("monthSales").textContent = formatKES(monthTotal);
+    document.getElementById("yearSales").textContent = formatKES(yearTotal);
+    document.getElementById("totalSales").textContent = formatKES(grandTotal);
   }
 
-  /* ---------- OPEN MODAL (Edit) ---------- */
+  // ———————— MODAL: Open Edit ————————
   function openEditSale(id) {
     const sale = salesCache.find((s) => s.id === id);
     if (!sale) return;
@@ -3561,74 +3622,85 @@
     document.getElementById("salesSaveBtnText").textContent = "Update Sale";
 
     document.getElementById("saleId").value = sale.id;
-    document.getElementById("saleType").value = sale.type;
-    document.getElementById("saleAmount").value = sale.amount;
-    document.getElementById("saleDate").value = sale.date;
-    document.getElementById("saleCustomer").value = sale.customer;
-    document.getElementById("saleQuantity").value = sale.quantity;
-    document.getElementById("saleDescription").value = sale.description || "";
+    document.getElementById("saleType").value =
+      sale.category || sale.item_name || "";
+    document.getElementById("saleAmount").value =
+      sale.total_amount || sale.amount || "";
+    document.getElementById("saleDate").value = (
+      sale.purchase_date ||
+      sale.date ||
+      ""
+    ).split(" ")[0];
+    document.getElementById("saleCustomer").value =
+      sale.first_name || sale.customer || "";
+    document.getElementById("saleQuantity").value = sale.quantity || 1;
+    document.getElementById("saleDescription").value =
+      sale.notes || sale.item_description || "";
     document.getElementById("saleNotes").value = sale.notes || "";
 
     document.getElementById("addSalesModal").classList.remove("hidden");
   }
 
-  /* ---------- CLOSE MODAL ---------- */
   function closeSalesModal() {
     document.getElementById("addSalesModal").classList.add("hidden");
   }
 
-  /* ---------- SAVE (Create / Update) ---------- */
+  // ———————— SAVE (Create / Update) ————————
   async function saveSale(ev) {
     if (ev) ev.preventDefault();
 
+    const itemId = document.getElementById("saleItemId").value;
+    const newItemName = document.getElementById("saleNewItemName").value.trim();
+    const category = document.getElementById("saleCategory").value;
+
     const payload = {
-      type: document.getElementById("saleType").value,
-      amount: Number(document.getElementById("saleAmount").value),
-      date: document.getElementById("saleDate").value,
-      customer: document.getElementById("saleCustomer").value,
+      item_id: itemId || null,
+      description: newItemName || null,
+      type: category,
       quantity: Number(document.getElementById("saleQuantity").value),
-      description: document.getElementById("saleDescription").value || null,
-      notes: document.getElementById("saleNotes").value || null,
+      amount: Number(document.getElementById("saleUnitPrice").value),
+      total_amount:
+        Number(document.getElementById("saleQuantity").value) *
+        Number(document.getElementById("saleUnitPrice").value),
+      date: document.getElementById("saleDate").value,
+      customer: document.getElementById("saleCustomer").value.trim(),
+      notes: document.getElementById("saleNotes").value.trim() || null,
     };
 
-    if (
-      !payload.type ||
-      !payload.amount ||
-      !payload.date ||
-      !payload.customer ||
-      !payload.quantity
-    ) {
+    // Validation
+    if (!payload.customer)
+      return Swal.fire("Error", "Customer name is required", "error");
+    if (!payload.quantity || payload.quantity < 1)
+      return Swal.fire("Error", "Valid quantity required", "error");
+    if (!payload.amount || payload.amount <= 0)
+      return Swal.fire("Error", "Valid unit price required", "error");
+    if (!payload.date) return Swal.fire("Error", "Sale date required", "error");
+    if (!itemId && !newItemName)
       return Swal.fire(
-        "Missing fields",
-        "Please fill all required fields.",
-        "warning"
+        "Error",
+        "Select an item or enter a new item name",
+        "error"
       );
-    }
 
     try {
-      let res;
       if (editingSaleId) {
-        res = await api(`/sales/${editingSaleId}`, {
+        await api(`/sales/${editingSaleId}`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
         Swal.fire("Updated!", "Sale updated successfully.", "success");
       } else {
-        res = await api("/sales", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-        Swal.fire("Saved!", "Sale recorded.", "success");
+        await api("/sales", { method: "POST", body: JSON.stringify(payload) });
+        Swal.fire("Success!", "Sale recorded successfully.", "success");
       }
-
       closeSalesModal();
-      await loadSales();
+      loadSales();
     } catch (e) {
-      Swal.fire("Error", e.message, "error");
+      Swal.fire("Error", e.message || "Failed to save sale", "error");
     }
   }
 
-  /* ---------- DELETE ---------- */
+  // ———————— DELETE ————————
   async function deleteSale(id) {
     if (!confirm("Delete this sale permanently?")) return;
 
@@ -3636,10 +3708,82 @@
       await api(`/sales/${id}`, { method: "DELETE" });
       salesCache = salesCache.filter((s) => s.id !== id);
       renderSalesTable();
+      updateSalesStats();
       Swal.fire("Deleted!", "Sale removed.", "success");
     } catch (e) {
       Swal.fire("Error", e.message, "error");
     }
+  }
+
+  async function populateItemsSelect() {
+    try {
+      const items = await api("/inventory"); // ← This is your real route
+      const select = document.getElementById("saleItemId");
+
+      // Clear previous options
+      select.innerHTML = '<option value="">Select existing item...</option>';
+
+      if (!items || items.length === 0) {
+        select.innerHTML += "<option disabled>No items in inventory</option>";
+        return;
+      }
+
+      items.forEach((item) => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = `${item.name} (${
+          item.brand || "No Brand"
+        }) – KES ${Number(item.unit_price).toFixed(2)} [${
+          item.quantity
+        } in stock]`;
+        opt.dataset.unitPrice = item.unit_price; // Store price for auto-fill
+        select.appendChild(opt);
+      });
+
+      // Auto-fill unit price when an item is selected
+      select.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption && selectedOption.dataset.unitPrice) {
+          document.getElementById("saleUnitPrice").value =
+            selectedOption.dataset.unitPrice;
+          updateSaleTotal(); // Recalculate total
+        }
+      });
+    } catch (e) {
+      console.error("Failed to load inventory:", e);
+      Swal.fire("Error", "Could not load items from inventory", "error");
+    }
+  }
+
+  // Auto-calculate total when quantity or price changes
+  document
+    .getElementById("saleQuantity")
+    .addEventListener("input", updateSaleTotal);
+  document
+    .getElementById("saleUnitPrice")
+    .addEventListener("input", updateSaleTotal);
+
+  function updateSaleTotal() {
+    const qty = Number(document.getElementById("saleQuantity").value) || 0;
+    const price = Number(document.getElementById("saleUnitPrice").value) || 0;
+    const total = qty * price;
+    document.getElementById("saleTotalDisplay").textContent = total.toFixed(2);
+  }
+
+  // Call when opening modal
+  function openSalesModal() {
+    editingSaleId = null;
+    document.getElementById("salesModalTitle").textContent = "Record New Sale";
+    document.getElementById("salesSaveBtnText").textContent = "Save Sale";
+    document.getElementById("salesForm").reset();
+    document.getElementById("saleId").value = "";
+    document.getElementById("saleDate").value = new Date()
+      .toISOString()
+      .split("T")[0];
+    document.getElementById("saleTotalDisplay").textContent = "0.00";
+
+    populateItemsSelect(); // ← Load items
+    document.getElementById("addSalesModal").classList.remove("hidden");
   }
 
   // --------------------------------------------------------------

@@ -9,17 +9,89 @@ const SupportTicket = require("../models/SupportTicket");
 const Payment = require("../models/Payment");
 const Renewals = require("../models/Renewal");
 const StaffSalary = require("../models/StaffSalary");
+const UserSubscription = require("../models/UserSubscription");
+const db = require("../config/db");
+
+async function getActiveUsersCount(month, year) {
+  const [result] = await db.query(
+    `
+    SELECT COUNT(DISTINCT us.user_id) AS count
+    FROM user_subscriptions us
+    INNER JOIN payments pay
+      ON pay.user_id = us.user_id
+     AND pay.package_id = us.package_id
+     AND pay.status = 'paid'
+     AND MONTH(pay.payment_date) = ?
+     AND YEAR(pay.payment_date) = ?
+    `,
+    [month, year]
+  );
+  return result[0]?.count || 0;
+}
+
+// Get monthly subscription revenue from payments
+async function getMonthlySubscriptionRevenue(month, year) {
+  const [result] = await db.query(
+    `
+    SELECT COALESCE(SUM(amount), 0) as revenue
+    FROM payments
+    WHERE status = 'paid'
+      AND MONTH(payment_date) = ?
+      AND YEAR(payment_date) = ?
+    `,
+    [month, year]
+  );
+  return Number(result[0]?.revenue || 0);
+}
+
+// Get monthly items sales revenue using created_at timestamp
+async function getMonthlyItemsSales(month, year) {
+  const [result] = await db.query(
+    `
+    SELECT COALESCE(SUM(total_amount), 0) AS revenue
+    FROM client_item_purchases
+    WHERE MONTH(purchase_date) = ?
+      AND YEAR(purchase_date) = ?
+      AND payment_status = 'paid'
+    `,
+    [month, year]
+  );
+  return Number(result[0]?.revenue || 0);
+}
 
 router.get("/dashboard/stats", async (req, res) => {
   try {
-    // USERS
-    const allUsers = await User.findAll();
-    const activeUsers = allUsers.filter((u) => u.is_active).length;
-    const expiredUsers = allUsers.filter((u) => !u.is_active).length;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const prevMonth = month === 1 ? 12 : month - 1;
+    const prevMonthYear = month === 1 ? year - 1 : year;
 
-    // GROWTH placeholders (you can calculate by comparing previous month)
-    const activeGrowth = 12;
-    const expiredGrowth = 5;
+    // CURRENT active users
+    const activeUsers = await getActiveUsersCount(month, year);
+    const prevActiveUsers = await getActiveUsersCount(prevMonth, prevMonthYear);
+
+    // Calculate growth (%) - FIXED
+    let activeGrowth = 0;
+    if (prevActiveUsers === 0 && activeUsers > 0) {
+      activeGrowth = 100;
+    } else if (prevActiveUsers > 0) {
+      activeGrowth = ((activeUsers - prevActiveUsers) / prevActiveUsers) * 100;
+    }
+
+    // Expired users = total users - active users
+    const allUsers = await User.findAll();
+    const expiredUsers = allUsers.length - activeUsers;
+
+    // Expired users growth (%) - FIXED
+    const prevExpiredUsers = allUsers.length - prevActiveUsers;
+    let expiredGrowth = 0;
+    if (prevExpiredUsers === 0 && expiredUsers > 0) {
+      expiredGrowth = 100;
+    } else if (prevExpiredUsers > 0) {
+      expiredGrowth =
+        ((expiredUsers - prevExpiredUsers) / prevExpiredUsers) * 100;
+    }
 
     // BOOKINGS count
     const allBookings = await Booking.findAll();
@@ -29,36 +101,61 @@ router.get("/dashboard/stats", async (req, res) => {
     const allTickets = await SupportTicket.findAll();
     const inquiries = allTickets.length;
 
-    // REVENUE
-    // Sum of all renewals + item sales
-    let revenueFromRenewals = 0;
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
+    // ===== REVENUE CALCULATION - FIXED =====
 
+    // 1. Renewals revenue for current month
     const monthlyRenewals = await Renewals.getMonthlyStats(year, month);
-    revenueFromRenewals = monthlyRenewals.revenue || 0;
+    const revenueFromRenewals = Number(monthlyRenewals.revenue || 0);
 
-    // Sum of all item sales (assuming price * quantity sold)
-    const allItems = await Item.findAll();
-    const accessoryRevenue = allItems.reduce(
-      (sum, item) => sum + (item.price || 0),
-      0
+    // 2. Subscription payments revenue for current month
+    const subscriptionRevenue = await getMonthlySubscriptionRevenue(
+      month,
+      year
     );
 
-    const monthlyIncome = revenueFromRenewals + accessoryRevenue;
+    // 3. Items sales revenue for current month
+    const itemsSalesRevenue = await getMonthlyItemsSales(month, year);
 
-    // Placeholder for income growth
-    const incomeGrowth = 8;
+    // Total monthly income
+    const monthlyIncome =
+      revenueFromRenewals + subscriptionRevenue + itemsSalesRevenue;
+
+    // ===== PREVIOUS MONTH INCOME =====
+    const prevRenewals = await Renewals.getMonthlyStats(
+      prevMonthYear,
+      prevMonth
+    );
+    const prevRevenueFromRenewals = Number(prevRenewals.revenue || 0);
+    const prevSubscriptionRevenue = await getMonthlySubscriptionRevenue(
+      prevMonth,
+      prevMonthYear
+    );
+    const prevItemsSalesRevenue = await getMonthlyItemsSales(
+      prevMonth,
+      prevMonthYear
+    );
+
+    const prevMonthIncome =
+      prevRevenueFromRenewals + prevSubscriptionRevenue + prevItemsSalesRevenue;
+
+    // Income growth (%)
+    let incomeGrowth = 0;
+    if (prevMonthIncome === 0 && monthlyIncome > 0) {
+      incomeGrowth = 100;
+    } else if (prevMonthIncome > 0) {
+      incomeGrowth =
+        ((monthlyIncome - prevMonthIncome) / prevMonthIncome) * 100;
+    }
 
     res.json({
       activeUsers,
       expiredUsers,
-      activeGrowth,
-      expiredGrowth,
-      monthlyIncome,
-      incomeGrowth,
-      accessoryRevenue,
+      activeGrowth: activeGrowth.toFixed(2),
+      expiredGrowth: expiredGrowth.toFixed(2),
+      monthlyIncome: monthlyIncome.toFixed(3),
+      incomeGrowth: incomeGrowth.toFixed(2),
+      // Breakdown for debugging/frontend display
+      itemsSales: itemsSalesRevenue.toFixed(2),
       bookings,
       inquiries,
     });
@@ -120,6 +217,8 @@ router.get("/dashboard/recent-activity", async (req, res) => {
 router.get("/dashboard/revenue-trend", async (req, res) => {
   try {
     const period = req.query.period || "monthly";
+    const now = new Date();
+    const currentYear = now.getFullYear();
 
     if (period === "monthly") {
       const months = [
@@ -136,20 +235,73 @@ router.get("/dashboard/revenue-trend", async (req, res) => {
         "Nov",
         "Dec",
       ];
+
       const data = [];
+
       for (let i = 0; i < 12; i++) {
-        const amount = await Payment.sumMonth(i + 1);
-        data.push({ month: months[i], amount });
+        const month = i + 1;
+
+        // 1. Renewals revenue
+        const renewals = await Renewals.getMonthlyStats(currentYear, month);
+        const renewalsRevenue = Number(renewals.revenue || 0);
+
+        // 2. Subscription revenue
+        const subscriptionRevenue = await getMonthlySubscriptionRevenue(
+          month,
+          currentYear
+        );
+
+        // 3. Items sales revenue
+        const itemsSalesRevenue = await getMonthlyItemsSales(
+          month,
+          currentYear
+        );
+
+        // TOTAL for the month
+        const totalRevenue =
+          renewalsRevenue + subscriptionRevenue + itemsSalesRevenue;
+
+        data.push({
+          month: months[i],
+          amount: totalRevenue.toFixed(2),
+          breakdown: {
+            renewals: renewalsRevenue,
+            subscriptions: subscriptionRevenue,
+            items: itemsSalesRevenue,
+          },
+        });
       }
+
       return res.json(data);
     }
 
+    // QUARTERLY (same idea)
     if (period === "quarterly") {
       const data = [];
+
       for (let q = 1; q <= 4; q++) {
-        const amount = await Payment.sumQuarter(q);
-        data.push({ quarter: `Q${q}`, amount });
+        const startMonth = (q - 1) * 3 + 1;
+        const endMonth = startMonth + 2;
+
+        let total = 0;
+
+        for (let m = startMonth; m <= endMonth; m++) {
+          const renewals = await Renewals.getMonthlyStats(currentYear, m);
+          const renewalsRevenue = Number(renewals.revenue || 0);
+
+          const subscriptionRevenue = await getMonthlySubscriptionRevenue(
+            m,
+            currentYear
+          );
+
+          const itemsSalesRevenue = await getMonthlyItemsSales(m, currentYear);
+
+          total += renewalsRevenue + subscriptionRevenue + itemsSalesRevenue;
+        }
+
+        data.push({ quarter: `Q${q}`, amount: total.toFixed(2) });
       }
+
       return res.json(data);
     }
 

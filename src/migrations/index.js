@@ -15,6 +15,7 @@ const createRenewalsTable = require("./renewals");
 const createBookingsTable = require("./bookings");
 const createClientPaymentReceiptsTable = require("./client_payment_receipt");
 const createUserSubscriptionsTable = require("./user_subscriptions");
+const addSubscriptionColumns = require("./addSubscriptionColumns");
 
 //Seeders
 const seedRoles = require("../seeders/roles_seeder");
@@ -68,16 +69,6 @@ async function runMigrations() {
   await createItemsTable();
 
   // Client purchases, payments, invoices (dependent on users, items, packages)
-  await createClientItemPurchasesTable();
-  await createClientItemPaymentsTable();
-  await createClientPaymentsTable();
-  await createBookingsTable();
-  await createClientPaymentReceiptsTable();
-  await createInvoicesTable();
-  await createInvoiceItemsTable();
-  await createPurchaseInvoiceTable();
-  await createItemsPurchaseInvoiceTable();
-  await createExpensesTable();
 
   // Staff & related tables
 
@@ -95,7 +86,20 @@ async function runMigrations() {
   await createNotificationsTable();
 
   await createUserSubscriptionsTable();
+  await createClientPaymentsTable();
+  await createClientPaymentReceiptsTable();
   await createRenewalsTable();
+  // await addSubscriptionColumns();
+
+  await createClientItemPurchasesTable();
+  await createClientItemPaymentsTable();
+  await createBookingsTable();
+
+  await createInvoicesTable();
+  await createInvoiceItemsTable();
+  await createPurchaseInvoiceTable();
+  await createItemsPurchaseInvoiceTable();
+  await createExpensesTable();
 
   console.log("All migrations completed. Running seeders...");
 

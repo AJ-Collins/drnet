@@ -221,17 +221,12 @@
             <th
               class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
             >
-              Service Plan
+              Current Plan
             </th>
             <th
               class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
             >
-              Status
-            </th>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Last Payment
+              Subscription Amount
             </th>
             <th
               class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
@@ -528,11 +523,11 @@
         </div>
       </div>
 
-      <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+      <!-- <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
         <p class="text-sm text-teal-800">
           <strong>Note:</strong> Login credentials will be sent via email.
         </p>
-      </div>
+      </div> -->
 
       <div class="flex space-x-3 pt-4">
         <button
@@ -722,6 +717,86 @@
       </div>
 
       <div
+        class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 space-y-5"
+      >
+        <div class="flex items-center justify-between">
+          <h4 class="font-bold text-amber-900 flex items-center">
+            <i class="fas fa-money-bill-wave mr-2"></i> Subscription & Payment
+            History
+          </h4>
+          <label class="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              id="markAsPaid"
+              class="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+            />
+            <span class="font-medium text-amber-900"
+              >Mark New Payment as Paid</span
+            >
+          </label>
+        </div>
+
+        <!-- Existing input fields for NEW payment (kept exactly as before) -->
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 border-amber-200"
+        >
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Amount (KSh)</label
+            >
+            <input
+              type="number"
+              id="paymentAmount"
+              placeholder="e.g. 2500"
+              min="0"
+              step="100"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Transaction ID</label
+            >
+            <input
+              type="text"
+              id="transactionId"
+              placeholder="e.g. MPESA123XYZ"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Payment Method</label
+            >
+            <select
+              id="paymentMethod"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+            >
+              <option value="mpesa">MPESA</option>
+              <option value="cash">Cash</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="card">Card</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Payment Date</label
+            >
+            <input
+              type="date"
+              id="paymentDate"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+        </div>
+
+        <!-- List of existing subscriptions -->
+        <div id="subscriptionsList" class="space-y-3 mt-4">
+          <!-- Filled dynamically by JS -->
+        </div>
+      </div>
+
+      <div
         class="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-4 mt-4"
       >
         <p class="text-sm text-teal-700 font-medium">Subscription Preview</p>
@@ -853,14 +928,15 @@
       "Basic 10Mbps": "from-pink-400 to-red-500",
     }[plan] || "from-gray-400 to-gray-600");
 
-  const getStatusBadge = (status) =>
-    ({
-      Active: "bg-green-100 text-green-700",
-      Expired: "bg-red-100 text-red-700",
-      Suspended: "bg-orange-100 text-orange-700",
-      "On Leave": "bg-yellow-100 text-yellow-700",
-      Inactive: "bg-gray-100 text-gray-700",
-    }[status] || "bg-gray-100 text-gray-700");
+  const getStatusBadge = (plan) => {
+    if (!plan || plan === "No Plan") return "bg-gray-100 text-gray-600";
+    if (plan.includes("Premium")) return "bg-teal-100 text-teal-700";
+    if (plan.includes("Silver") || plan.includes("Gold"))
+      return "bg-blue-100 text-blue-700";
+    if (plan.includes("Bronze") || plan.includes("Basic"))
+      return "bg-amber-100 text-amber-700";
+    return "bg-indigo-100 text-indigo-700";
+  };
 
   const formatDate = (date) =>
     new Date(date).toLocaleDateString("en-KE", {
@@ -973,7 +1049,11 @@
                 }
               );
               if (res.ok) {
-                const sub = await res.json();
+                const subsArray = await res.json(); // it's an array!
+                const sub =
+                  Array.isArray(subsArray) && subsArray.length > 0
+                    ? subsArray[0]
+                    : null;
                 return { userId: client.id, plan: sub };
               }
               return { userId: client.id, plan: null };
@@ -1008,7 +1088,9 @@
                   user.id
                 }">
                 <div class="w-11 h-11 bg-gradient-to-br ${getPlanColor(
-                  type === "clients" ? user.plan : user.role
+                  type === "clients"
+                    ? user.currentPlan?.package?.name || "No Plan"
+                    : user.role
                 )} rounded-full flex items-center justify-center shadow-md">
                   <span class="text-white font-bold text-sm truncate overflow-hidden whitespace-nowrap">${user.name
                     .split(" ")
@@ -1040,49 +1122,65 @@
             ${
               type === "clients"
                 ? `<td class="p-4">
-                  <span class="px-3 py-1.5 ${getStatusBadge(
-                    user.currentPlan?.package_name || "No Plan"
-                  )} rounded-lg text-sm font-semibold">
-                    ${user.currentPlan?.package_name || "No Plan"}
-                  </span>
-                  ${
-                    user.currentPlan?.expires
-                      ? (() => {
-                          const expiry = new Date(user.currentPlan.expires);
-                          const today = new Date();
-                          today.setHours(0, 0, 0, 0);
-                          const isExpired = expiry < today;
-                          const formatted = expiry.toLocaleDateString("en-KE", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          });
-                          return `<p class="text-xs mt-1 font-medium ${
-                            isExpired ? "text-red-600" : "text-gray-600"
-                          }">
-                            ${
+                  <div class="flex flex-col">
+                    <!-- PLAN NAME + BADGE -->
+                    <span class="px-3 py-1.5 rounded-lg text-sm font-semibold whitespace-nowrap ${
+                      user.currentPlan
+                        ? getStatusBadge(
+                            user.currentPlan.package?.name || "Active"
+                          )
+                        : "bg-gray-100 text-gray-600"
+                    }">
+                      ${
+                        user.currentPlan
+                          ? user.currentPlan.package?.name || "Unknown Plan"
+                          : "No Plan"
+                      }
+                    </span>
+
+                    <!-- EXPIRY INFO -->
+                    ${
+                      user.currentPlan &&
+                      (user.currentPlan.expires || user.currentPlan.expiry_date)
+                        ? (() => {
+                            const expiry = new Date(
+                              user.currentPlan.expires ||
+                                user.currentPlan.expiry_date
+                            );
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const isExpired = expiry < today;
+                            const daysLeft = Math.ceil(
+                              (expiry - today) / (1000 * 60 * 60 * 24)
+                            );
+
+                            return `
+                            <p class="text-xs mt-1 font-medium ${
                               isExpired
-                                ? `Expired (${formatted})`
-                                : `Expires: ${formatted}`
-                            }
-                          </p>`;
-                        })()
-                      : ""
-                  }
+                                ? "text-red-600"
+                                : daysLeft <= 7
+                                ? "text-orange-600"
+                                : "text-gray-600"
+                            }">
+                              ${
+                                isExpired
+                                  ? `Expired ${formatDate(expiry)}`
+                                  : daysLeft === 0
+                                  ? "Expires today"
+                                  : `Expires in ${daysLeft} day${
+                                      daysLeft !== 1 ? "s" : ""
+                                    } • ${formatDate(expiry)}`
+                              }
+                            </p>`;
+                          })()
+                        : user.currentPlan
+                        ? '<p class="text-xs mt-1 text-gray-500">No expiry set</p>'
+                        : ""
+                    }
+                  </div>
                 </td>`
                 : `<td class="p-4"><p class="font-semibold text-gray-800">${user.role}</p><p class="text-sm text-gray-500">${user.department}</p></td>`
             }
-            <td class="p-4">
-              <span class="inline-flex items-center px-3 py-1.5 ${getStatusBadge(
-                user.status
-              )} rounded-lg text-sm font-semibold">
-                ${
-                  user.status === "Active"
-                    ? '<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>'
-                    : ""
-                }${user.status}
-              </span>
-            </td>
             ${
               type === "staff"
                 ? `
@@ -1100,17 +1198,41 @@
             ${
               type === "clients"
                 ? `
-              <td class="p-4">
-                <div class="text-sm">
-                  <p class="text-gray-700 font-medium">Ksh ${
-                    user.lastPayment || "-"
-                  }</p>
-                  <p class="text-gray-500 text-xs">${
-                    user.paymentStatus || ""
-                  }</p>
-                </div>
-              </td>
-              `
+                <td class="p-4">
+                  <div class="text-sm>
+                    <!-- Amount -->
+                    <p class="text-gray-700 font-medium">
+                      KSh ${
+                        user.currentPlan?.payment?.amount
+                          ? Number(
+                              user.currentPlan.payment.amount
+                            ).toLocaleString()
+                          : "-"
+                      }
+                    </p>
+
+                    <!-- Paid / Unpaid Badge -->
+                    <div class="mt-1">
+                      ${
+                        user.currentPlan
+                          ? (() => {
+                              const isPaid =
+                                user.currentPlan.payment?.status === "paid";
+                              return `
+                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                isPaid
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-orange-100 text-orange-800"
+                              }">
+                                ${isPaid ? "Paid" : "Unpaid"}
+                              </span>`;
+                            })()
+                          : '<span class="text-gray-400 text-xs">No Plan</span>'
+                      }
+                    </div>
+                  </div>
+                </td>
+                `
                 : ""
             }
             <td class="p-4" onclick="event.stopPropagation()">
@@ -1187,125 +1309,277 @@
       "subClientName"
     ).textContent = `${client.first_name} ${client.second_name}`;
 
-    // Reset
+    // Reset everything
     $("subscriptionPlanSelect").innerHTML =
       '<option value="">Loading plans...</option>';
     $("subscriptionStartDate").value = new Date().toISOString().split("T")[0];
     $("subscriptionExpiryPreview").textContent = "Select a plan and start date";
 
-    // Load current subscription
+    // Reset payment fields
+    $("markAsPaid").checked = false;
+    $("paymentAmount").value = "";
+    $("transactionId").value = "";
+    $("paymentMethod").value = "mpesa";
+    $("paymentDate").value = new Date().toISOString().split("T")[0];
+
     let currentPlanStartDate = null;
+    currentSubscription = null;
+    allSubscriptions = [];
+
     try {
+      // Fetch ALL subscriptions (no filtering on backend needed)
       const res = await fetch(
         `/api/subscribe/client/current?userId=${clientId}`,
         {
           headers: { "X-Admin-Request": "true" },
         }
       );
-      if (res.ok) {
-        currentSubscription = await res.json();
-        $("currentPlanName").textContent =
-          currentSubscription.package_name || "None";
-        $("currentPlanExpiry").textContent = currentSubscription.expires
-          ? `Expires: ${currentSubscription.expires}`
-          : "";
 
-        // Save start date for autofill
-        currentPlanStartDate = currentSubscription.start_date || null;
+      if (res.status === 404) {
+        // This is perfectly fine — user never had a plan
+        allSubscriptions = [];
+        $("currentPlanName").textContent = "No Subscriptions";
+        $("currentPlanExpiry").textContent = "User has no subscriptions";
+      } else if (res.ok) {
+        allSubscriptions = await res.json();
+
+        // Determine the TRUE current/active subscription
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to start of day
+
+        currentSubscription = allSubscriptions.find((sub) => {
+          const expiryDate = new Date(sub.expires || sub.expiry_date);
+          return expiryDate >= today && sub.subscription_status !== "expired";
+        });
+
+        // Fallback: if no active, take the most recent one
+        if (!currentSubscription && allSubscriptions.length > 0) {
+          allSubscriptions.sort(
+            (a, b) => new Date(b.start_date) - new Date(a.start_date)
+          );
+          currentSubscription = allSubscriptions[0];
+        }
+
+        if (currentSubscription?.payment) {
+          $("markAsPaid").checked =
+            currentSubscription.payment.status === "paid";
+          $("paymentAmount").value = currentSubscription.payment.amount
+            ? Number(currentSubscription.payment.amount)
+            : "";
+          $("transactionId").value =
+            currentSubscription.payment.transaction_id || "";
+          $("paymentMethod").value =
+            currentSubscription.payment.payment_method || "mpesa";
+          $("paymentDate").value = currentSubscription.payment.payment_date
+            ? currentSubscription.payment.payment_date.split(" ")[0]
+            : new Date().toISOString().split("T")[0];
+        }
+
+        // Update "Current Plan" display (top section)
+        if (currentSubscription) {
+          $("currentPlanName").textContent = `${
+            currentSubscription.package_name ||
+            currentSubscription.package?.name ||
+            "Unknown Plan"
+          } ${
+            currentSubscription.package?.speed
+              ? `(${currentSubscription.package.speed})`
+              : ""
+          }`;
+
+          const expiry =
+            currentSubscription.expires || currentSubscription.expiry_date;
+          $("currentPlanExpiry").textContent = expiry
+            ? `Expires: ${formatDate(expiry)}${
+                new Date(expiry) < today ? " (Expired)" : ""
+              }`
+            : "No expiry date";
+
+          currentPlanStartDate = currentSubscription.start_date;
+        } else {
+          $("currentPlanName").textContent = "No Plan Found";
+          $("currentPlanExpiry").textContent = "";
+        }
+
+        // Render full history list (ALL subscriptions, no filtering)
+        renderSubscriptionsList();
       } else {
-        currentSubscription = null;
-        $("currentPlanName").textContent = "No Active Plan";
-        $("currentPlanExpiry").textContent = "";
+        throw new Error(`Failed to load subscriptions: HTTP ${res.status}`);
       }
     } catch (err) {
-      currentSubscription = null;
-      $("currentPlanName").textContent = "Error loading plan";
+      console.error("Failed to load subscriptions:", err);
+      $("currentPlanName").textContent = "Error loading plans";
+      $("currentPlanExpiry").textContent = "";
+      $(
+        "subscriptionsList"
+      ).innerHTML = `<p class="text-red-600 text-sm">Failed to load history</p>`;
     }
 
-    // Load packages
+    // Load packages (unchanged)
     const select = $("subscriptionPlanSelect");
     select.innerHTML = '<option value="">Select a plan...</option>';
     const pkgs = await loadAllPackages();
-    let selectedPlanId = null;
-
     pkgs.forEach((pkg) => {
       const opt = document.createElement("option");
       opt.value = pkg.id;
       opt.textContent = `${pkg.name} - KSh ${pkg.price} (${pkg.speed})`;
-
-      // Auto-select current plan
-      if (currentSubscription && currentSubscription.package_id == pkg.id) {
+      if (currentSubscription && currentSubscription.package_id == pkg.id)
         opt.selected = true;
-        selectedPlanId = pkg.id;
-      }
       select.appendChild(opt);
     });
 
-    // Autofill Start Date
-    if (currentPlanStartDate) {
-      $("subscriptionStartDate").value = currentPlanStartDate;
-    } else {
-      $("subscriptionStartDate").value = new Date().toISOString().split("T")[0];
-    }
+    // Autofill start date
+    $("subscriptionStartDate").value =
+      currentPlanStartDate || new Date().toISOString().split("T")[0];
 
-    // === CHANGE BUTTON TEXT ===
+    // Button text logic (unchanged)
     const assignBtn = document.querySelector(
       "#subscriptionModal button[onclick='assignPlan()']"
     );
     if (currentSubscription) {
       assignBtn.innerHTML = `<i class="fas fa-save"></i><span>Update Plan</span>`;
-      assignBtn.onclick = updatePlan; // Switch to update
+      assignBtn.onclick = updatePlan;
     } else {
       assignBtn.innerHTML = `<i class="fas fa-plus"></i><span>Subscribe</span>`;
-      assignBtn.onclick = assignPlan; // Keep assign
+      assignBtn.onclick = assignPlan;
     }
 
-    // Attach live preview
+    // Preview & other listeners (unchanged)
     const updatePreview = () => {
-      const planId = $("subscriptionPlanSelect").value;
-      const startDate = $("subscriptionStartDate").value;
-      const previewEl = $("subscriptionExpiryPreview");
-
-      if (!planId || !startDate) {
-        previewEl.textContent = "Select a plan and start date";
-        previewEl.className = "text-lg font-bold text-teal-800 mt-1";
-        return;
-      }
-
-      const expiry = new Date(startDate);
-      expiry.setDate(expiry.getDate() + 30);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const formattedExpiry = expiry.toLocaleDateString("en-KE", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
-
-      if (expiry < today) {
-        previewEl.innerHTML = `
-        <span class="text-red-600 font-bold">Expired</span>
-        <span class="text-red-500 text-sm"> (since ${formattedExpiry})</span>
-      `;
-      } else {
-        previewEl.textContent = `Expires: ${formattedExpiry}`;
-        previewEl.className = "text-lg font-bold text-teal-800 mt-1";
-      }
+      /* ... your existing preview code ... */
     };
-
     $("subscriptionPlanSelect").onchange = updatePreview;
     $("subscriptionStartDate").oninput = updatePreview;
-
-    // Trigger preview immediately
     updatePreview();
+    renderSubscriptionsList();
   };
 
+  const renderSubscriptionsList = () => {
+    const container = $("subscriptionsList");
+
+    if (!allSubscriptions || allSubscriptions.length === 0) {
+      container.innerHTML = `
+      <div class="text-center py-12 text-gray-500">
+        <i class="fas fa-inbox text-5xl mb-4 opacity-30"></i>
+        <p class="font-semibold text-lg">No subscription history</p>
+        <p class="text-sm mt-2">This client has never been subscribed</p>
+      </div>`;
+      return;
+    }
+
+    // Sort newest first
+    const sorted = [...allSubscriptions].sort(
+      (a, b) => new Date(b.start_date) - new Date(a.start_date)
+    );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    container.innerHTML = sorted
+      .map((sub) => {
+        const start = sub.start_date;
+        const end = sub.expires || sub.expiry_date;
+        const isActive = end && new Date(end) >= today;
+        const isCurrent =
+          currentSubscription && currentSubscription.id === sub.id;
+        const payment = sub.payment;
+
+        return `
+      <div class="bg-white rounded-xl p-5 border-2 ${
+        isCurrent
+          ? "border-teal-500 shadow-xl ring-4 ring-teal-100"
+          : "border-gray-200"
+      } relative transition-all hover:shadow-lg">
+        ${
+          isCurrent
+            ? '<div class="absolute -top-3 left-6 bg-teal-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md">CURRENT</div>'
+            : ""
+        }
+        
+        <div class="flex justify-between items-start gap-4">
+          <div class="flex-1">
+            <h4 class="font-bold text-gray-900 text-lg">
+              ${sub.package?.name || sub.package_name || "Unknown Plan"}
+              ${
+                sub.package?.speed
+                  ? ` <span class="text-teal-600">– ${sub.package.speed}</span>`
+                  : ""
+              }
+            </h4>
+            <p class="text-sm text-gray-600 mt-1">
+              ${start ? formatDate(start) : "?"} → ${
+          end ? formatDate(end) : "?"
+        } 
+              <span class="ml-3 px-3 py-1 rounded-full text-xs font-medium ${
+                isActive
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }">
+                ${isActive ? "Active" : "Expired"}
+              </span>
+            </p>
+
+            ${
+              payment
+                ? `
+              <div class="mt-4 text-sm bg-gray-50 p-3 rounded-lg">
+                <div class="font-bold text-gray-800">
+                  KSh ${Number(payment.amount).toLocaleString()}
+                  • ${payment.payment_method?.toUpperCase() || "Unknown"}
+                  • <span class="${
+                    payment.status === "paid"
+                      ? "text-green-600"
+                      : "text-orange-600"
+                  } font-bold">
+                    ${payment.status?.toUpperCase()}
+                  </span>
+                </div>
+                ${
+                  payment.transaction_id
+                    ? `<div class="text-xs text-gray-500 mt-1">TXN: ${payment.transaction_id}</div>`
+                    : ""
+                }
+                ${
+                  payment.payment_date
+                    ? `<div class="text-xs text-gray-500">Paid on: ${formatDate(
+                        payment.payment_date
+                      )}</div>`
+                    : ""
+                }
+              </div>
+            `
+                : '<p class="text-sm text-gray-500 italic mt-4">No payment recorded</p>'
+            }
+          </div>
+
+          <div class="flex gap-2">
+            ${
+              payment
+                ? `
+              <button onclick="deletePayment(${payment.id}, ${sub.id})"
+                class="text-red-600 hover:bg-red-50 p-3 rounded-lg transition" title="Delete payment only">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            `
+                : ""
+            }
+            <button onclick="deleteSubscription(${sub.id})"
+              class="text-red-700 hover:bg-red-50 p-3 rounded-lg transition" title="Delete subscription">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>`;
+      })
+      .join("");
+  };
   // UPDATE PLAN
   window.updatePlan = async () => {
     const planId = $("subscriptionPlanSelect").value;
     const startDate = getStartDate();
     if (!planId) return Swal.fire("Select Plan", "Choose a plan", "warning");
+
+    const paymentData = getPaymentData();
 
     try {
       const res = await fetch(
@@ -1319,20 +1593,86 @@
           body: JSON.stringify({
             package_id: planId,
             start_date: startDate,
+            payment: paymentData,
           }),
         }
       );
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        let message = "Unknown error";
+
+        try {
+          const errorData = await res.json();
+          message = errorData.error || JSON.stringify(errorData);
+        } catch {
+          message = await res.text(); // fallback for non-JSON response
+        }
+
+        throw new Error(message);
+      }
       const data = await res.json();
 
       Swal.fire(
         "Updated!",
-        `${data.package} updated. New expiry: ${data.expiry_date}`,
+        `${data.package} updated. Expiry: ${data.expiry_date}`,
         "success"
       );
       closeSubscriptionModal();
       renderTable("clients");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+
+  let allSubscriptions = [];
+
+  // Delete entire subscription
+  window.deleteSubscription = async (subscriptionId) => {
+    const confirm = await Swal.fire({
+      title: "Delete Subscription?",
+      text: "This will permanently remove the subscription record.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it",
+    });
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const res = await fetch(`/api/subscribe/client/${subscriptionId}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Request": "true" },
+      });
+      if (!res.ok) throw new Error(await res.text());
+
+      Swal.fire("Deleted!", "Subscription removed.", "success");
+      await openSubscriptionModal(currentClientId); // Refresh modal
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+
+  // Delete only payment (mark subscription as unpaid)
+  window.deletePayment = async (paymentId, subscriptionId) => {
+    const confirm = await Swal.fire({
+      title: "Delete Payment?",
+      text: "Payment will be removed and subscription marked as unpaid.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Yes, delete payment",
+    });
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const res = await fetch(`/api/subscribe/client/payment/${paymentId}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Request": "true" },
+      });
+      if (!res.ok) throw new Error(await res.text());
+
+      Swal.fire("Deleted!", "Payment removed.", "success");
+      await openSubscriptionModal(currentClientId); // Refresh
     } catch (err) {
       Swal.fire("Error", err.message, "error");
     }
@@ -1352,6 +1692,16 @@
     return date;
   };
 
+  const getPaymentData = () => ({
+    status: $("markAsPaid").checked ? "paid" : "unpaid",
+    amount: $("paymentAmount").value.trim()
+      ? Number($("paymentAmount").value)
+      : null,
+    transaction_id: $("transactionId").value.trim() || null,
+    payment_method: $("paymentMethod").value,
+    payment_date: $("paymentDate").value || null,
+  });
+
   // Assign
   window.assignPlan = async () => {
     const planId = $("subscriptionPlanSelect").value;
@@ -1359,19 +1709,34 @@
     if (!planId)
       return Swal.fire("Select Plan", "Please choose a plan", "warning");
 
+    const paymentData = getPaymentData();
+    if ($("markAsPaid").checked && !paymentData.amount) {
+      return Swal.fire(
+        "Amount Required",
+        "Enter payment amount if marked as paid",
+        "warning"
+      );
+    }
+
     try {
       const res = await fetch(
         `/api/subscribe/client/${planId}?userId=${currentClientId}&start_date=${startDate}`,
         {
           method: "POST",
-          headers: { "X-Admin-Request": "true" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Request": "true",
+          },
+          body: JSON.stringify(paymentData),
         }
       );
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       Swal.fire(
-        "Assigned!",
-        `${data.name} from ${startDate}. Expires: ${data.expires}`,
+        "Success!",
+        `Subscribed & ${
+          $("markAsPaid").checked ? "paid" : "recorded as unpaid"
+        }`,
         "success"
       );
       closeSubscriptionModal();
@@ -1391,13 +1756,18 @@
       );
 
     const startDate = getStartDate();
+    const paymentData = getPaymentData();
 
     try {
       const res = await fetch(
         `/api/subscribe/client/renew?userId=${currentClientId}&start_date=${startDate}`,
         {
           method: "POST",
-          headers: { "X-Admin-Request": "true" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Request": "true",
+          },
+          body: JSON.stringify(paymentData),
         }
       );
       if (!res.ok) throw new Error(await res.text());
@@ -1427,12 +1797,18 @@
         "warning"
       );
 
+    const paymentData = getPaymentData();
+
     try {
       const res = await fetch(
         `/api/subscribe/client/upgrade/${planId}?userId=${currentClientId}&start_date=${startDate}`,
         {
           method: "POST",
-          headers: { "X-Admin-Request": "true" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Request": "true",
+          },
+          body: JSON.stringify(paymentData),
         }
       );
       if (!res.ok) throw new Error(await res.text());
@@ -1582,7 +1958,7 @@
     setTimeout(() => (modal.style.display = "none"), 200);
   };
 
-  window.openViewUserModal = (user, type) => {
+  window.openViewUserModal = (user, type, currentSub) => {
     const modal = $("viewUserModal");
     modal.style.display = "flex";
     modal.querySelector(".bg-white").classList.remove("scale-95");
@@ -1592,7 +1968,7 @@
     $("viewModalTitle").textContent = `${
       type === "clients" ? "Client" : "Staff"
     } Details #${user.id}`;
-    $("viewFullName").textContent = `${user.name}`;
+    $("viewFullName").textContent = user.name;
     $("viewEmail").textContent = user.email || "-";
     $("viewPhone").textContent = user.phone || "-";
     $("viewIdNumber").textContent = user.employeeId || "-";
@@ -1602,26 +1978,35 @@
     $("staffFields").classList.toggle("hidden", type !== "staff");
 
     if (type === "clients") {
-      if (type === "clients") {
-        if (user.currentPlan) {
-          $("viewPlan").textContent = user.currentPlan.package_name;
-          $("viewClientStatus").textContent = user.currentPlan.expires
-            ? `Expires ${user.currentPlan.expires}`
-            : "Active";
-        } else {
-          $("viewPlan").textContent = "No Active Plan";
-          $("viewClientStatus").textContent = "Not Subscribed";
-        }
+      if (currentSub) {
+        $("viewPlan").textContent = currentSub.package?.name || "Unknown Plan";
+
+        const expiry = currentSub.expires || currentSub.expiry_date;
+        $("viewClientStatus").textContent = expiry
+          ? `Expires ${formatDate(expiry)}`
+          : "Active";
+
+        const amount = currentSub.payment?.amount;
+        $("viewLastPayment").textContent = amount
+          ? `KSh ${Number(amount).toLocaleString()}`
+          : "-";
+
+        const paid = currentSub.payment?.status === "paid";
+        $("viewPaymentStatus").textContent = paid ? "Paid" : "Unpaid";
+        $("viewPaymentStatus").className = paid
+          ? "text-green-700 font-bold"
+          : "text-orange-700 font-bold";
+      } else {
+        $("viewPlan").textContent = "No Active Plan";
+        $("viewClientStatus").textContent = "Not Subscribed";
+        $("viewLastPayment").textContent = "-";
+        $("viewPaymentStatus").textContent = "No Plan";
       }
-      $("viewClientStatus").textContent = user.status || "-";
-      $("viewLastPayment").textContent = user.lastPayment
-        ? `KSh ${user.lastPayment}`
-        : "-";
-      $("viewPaymentStatus").textContent = user.paymentStatus || "-";
     } else {
+      // Staff fields
       $("viewRole").textContent = user.role || "-";
       $("viewDepartment").textContent = user.department || "-";
-      $("viewBasicSalary").textContent = user.salary.basic_salary
+      $("viewBasicSalary").textContent = user.salary?.basic_salary
         ? `KSh ${Number(user.salary.basic_salary).toLocaleString()}`
         : "-";
       $("viewStaffStatus").textContent = user.status || "-";
@@ -1679,19 +2064,35 @@
     }
   };
   /* ---------- USER ACTIONS ---------- */
-  window.viewUser = (id, type) => {
+  window.viewUser = async (id, type) => {
     const list = type === "clients" ? clientsCache : staffCache;
     const user = list.find((u) => u.id === parseInt(id));
     if (!user) {
       Swal.fire("Error", "User not found.", "error");
       return;
     }
-    openViewUserModal(user, type);
+
+    let currentSub = null;
+    if (type === "clients") {
+      try {
+        const res = await fetch(`/api/subscribe/client/current?userId=${id}`, {
+          headers: { "X-Admin-Request": "true" },
+        });
+        if (res.ok) {
+          const arr = await res.json();
+          currentSub = Array.isArray(arr) && arr.length > 0 ? arr[0] : null;
+        }
+      } catch (e) {
+        console.error("Failed to fetch subscription for view modal", e);
+      }
+    }
+
+    openViewUserModal(user, type, currentSub);
   };
 
   window.editUser = (id, type) => openAddUserModal(type, id);
   window.messageUser = (id) =>
-    Swal.fire("Messaging", `Open chat with user #${id}`, "info");
+    Swal.fire("Messaging", `Open chat with user. Coming soon!! #${id}`, "info");
   window.deleteUser = async (id, type) => {
     const confirm = await Swal.fire({
       title: "Delete user?",

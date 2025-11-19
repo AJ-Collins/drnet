@@ -38,21 +38,26 @@ const Renewals = {
     return result;
   },
 
+  // Get renewal by ID
+  getById: async (id) => {
+    const [rows] = await db.query(`SELECT * FROM renewals WHERE id=?`, [id]);
+    return rows[0];
+  },
+
   getMonthlyStats: async (year, month) => {
     const [rows] = await db.query(
       `
-      SELECT 
-        COUNT(*) as count,
-        COALESCE(SUM(amount), 0) as revenue,
-        COALESCE(AVG(amount), 0) as avg_amount
-      FROM renewals
-      WHERE YEAR(renewal_date) = ? 
-        AND MONTH(renewal_date) = ?
-        AND is_deleted = FALSE
-      `,
+    SELECT 
+      COUNT(*) as count,
+      COALESCE(SUM(amount + COALESCE(old_amount, 0)), 0) as revenue,
+      COALESCE(AVG(amount + COALESCE(old_amount, 0)), 0) as avg_amount
+    FROM renewals
+    WHERE YEAR(renewal_date) = ? 
+      AND MONTH(renewal_date) = ?
+      AND is_deleted = FALSE
+    `,
       [year, month]
     );
-
     return rows[0] || { count: 0, revenue: 0, avg_amount: 0 };
   },
 };
