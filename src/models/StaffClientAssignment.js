@@ -4,6 +4,13 @@ const TABLE = "assignments";
 
 const StaffClientAssignment = {
   create: async (data) => {
+    const input = { ...data };
+    if (input.serviceAddress) {
+      input.address = input.serviceAddress;
+      delete input.serviceAddress;
+    }
+    if (!input.status) input.status = "assigned";
+
     const fields = [
       "clientName",
       "clientContact",
@@ -19,16 +26,11 @@ const StaffClientAssignment = {
       "address",
     ];
 
-    const values = fields.map((f) => {
-      if (f === "status") return data[f] || "assigned";
-      if (f === "address") return data.serviceAddress || data.address || null;
-      return data[f] ?? null;
-    });
-
+    const values = fields.map((field) => input[field] ?? null);
     const placeholders = fields.map(() => "?").join(",");
 
     const [result] = await db.query(
-      `INSERT INTO ${TABLE} (${fields.join(",")}) VALUES (${placeholders})`,
+      `INSERT INTO ${TABLE} (${fields.join(", ")}) VALUES (${placeholders})`,
       values
     );
 
@@ -43,10 +45,7 @@ const StaffClientAssignment = {
   },
 
   findById: async (id) => {
-    const [rows] = await db.query(
-      `SELECT * FROM ${TABLE} WHERE id = ?`,
-      [id]
-    );
+    const [rows] = await db.query(`SELECT * FROM ${TABLE} WHERE id = ?`, [id]);
     return rows[0] || null;
   },
 
@@ -80,7 +79,9 @@ const StaffClientAssignment = {
       [userId]
     );
 
-    console.log(`Query returned ${rows.length} assignments for technician ${userId}`);
+    console.log(
+      `Query returned ${rows.length} assignments for technician ${userId}`
+    );
     return rows;
   },
 
@@ -108,10 +109,7 @@ const StaffClientAssignment = {
   },
 
   delete: async (id) => {
-    const [result] = await db.query(
-      `DELETE FROM ${TABLE} WHERE id = ?`,
-      [id]
-    );
+    const [result] = await db.query(`DELETE FROM ${TABLE} WHERE id = ?`, [id]);
     return result;
   },
 };

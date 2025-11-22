@@ -81,6 +81,20 @@ const SupportTicket = {
     return rows.map((row) => SupportTicket.mapToFrontend(row, usersMap));
   },
 
+  findAllByStaff: async (staffId = null) => {
+    if (!staffId) return [];
+
+    const [rows] = await db.query(
+      `SELECT * 
+     FROM support_tickets 
+     WHERE assigned_to = ? 
+     ORDER BY created_at DESC`,
+      [staffId]
+    );
+
+    return rows;
+  },
+
   // Get single ticket
   findById: async (id, usersMap = {}) => {
     const [rows] = await db.query(

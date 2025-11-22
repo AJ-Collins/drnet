@@ -551,7 +551,7 @@ router.get("/assignments/:id", async (req, res) => {
 });
 
 // POST create
-router.post("/assignments/", async (req, res) => {
+router.post("/assignments", async (req, res) => {
   try {
     const result = await StaffClientAssignment.create(req.body);
     res.json({ id: result.insertId });

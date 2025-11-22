@@ -121,14 +121,58 @@
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   }
-
   function getPackageBadge(plan) {
-    const map = {
-      "Bronze Plan": { label: "Home Package", color: "bg-green-500" },
-      "Silver Plan": { label: "Business Package", color: "bg-teal-500", gradient: "bg-gradient-to-r from-teal-500 to-teal-600" },
-      "Gold Plan": { label: "Enterprise Package", color: "bg-purple-600" }
+    const badgeMap = {
+      // HOME PLANS
+      "Bronze": {
+        label: "Home Basic",
+        color: "bg-orange-600",
+        gradient: "bg-gradient-to-r from-orange-500 to-orange-700",
+        text: "text-white"
+      },
+      "Silver": {
+        label: "Home Standard",
+        color: "bg-gray-500",
+        gradient: "bg-gradient-to-r from-gray-400 to-gray-600",
+        text: "text-white"
+      },
+      "Gold": {
+        label: "Home Premium",
+        color: "bg-yellow-500",
+        gradient: "bg-gradient-to-r from-yellow-400 to-yellow-600",
+        text: "text-gray-900"
+      },
+
+      // BUSINESS / ENTERPRISE PLANS
+      "Platinum": {
+        label: "Business Pro",
+        color: "bg-indigo-600",
+        gradient: "bg-gradient-to-r from-indigo-500 to-indigo-700",
+        text: "text-white"
+      },
+      "Super": {
+        label: "Business Elite",
+        color: "bg-purple-600",
+        gradient: "bg-gradient-to-r from-purple-500 to-purple-700",
+        text: "text-white"
+      },
+      "Dedicated": {
+        label: "Enterprise Dedicated",
+        color: "bg-red-700",
+        gradient: "bg-gradient-to-r from-red-600 to-red-800",
+        text: "text-white"
+      }
     };
-    return map[plan.name] || { label: plan.name, color: "bg-gray-500" };
+
+    // Fallback for any new/unexpected plan
+    const defaultBadge = {
+      label: plan.classification === "home" ? "Home Package" : "Business Package",
+      color: "bg-gray-500",
+      gradient: "bg-gradient-to-r from-gray-400 to-gray-600",
+      text: "text-white"
+    };
+
+    return badgeMap[plan.name] || defaultBadge;
   }
 
   function scrollToPlans() {

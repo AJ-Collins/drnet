@@ -226,7 +226,8 @@
     </div>
   </div>
 </div>
-<!-- Modal (same as before, no changes) -->
+
+<!--Modal-->
 <div
   id="ticketModal"
   class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50"
@@ -288,18 +289,20 @@
                   class="inline-block px-3 py-1 rounded-full text-xs font-bold"
                 ></span>
               </div>
-              <div>
-                <p class="text-gray-500 text-xs font-semibold mb-1">Status</p>
-                <select
-                  id="modalStatus"
-                  onchange="updateTicketStatus()"
-                  class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg font-semibold focus:outline-none focus:border-teal-500"
+
+              <div class="flex items-center space-x-3">
+                <span
+                  id="ticketStatusBadge"
+                  class="px-3 py-1 rounded-full text-white font-semibold bg-yellow-500"
                 >
-                  <option value="Pending">Pending</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Resolved">Resolved</option>
-                  <option value="Closed">Closed</option>
-                </select>
+                </span>
+                <button
+                  id="markResolvedBtn"
+                  onclick="updateTicketStatus()"
+                  class="px-3 py-1 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 focus:outline-none"
+                >
+                  Mark as Resolved
+                </button>
               </div>
               <div>
                 <p class="text-gray-500 text-xs font-semibold mb-1">Created</p>
@@ -337,12 +340,6 @@
       class="p-6 border-t-2 border-gray-100 bg-gray-50 flex justify-between items-center"
     >
       <button
-        onclick="deleteTicket()"
-        class="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition flex items-center gap-2"
-      >
-        <i class="fas fa-trash"></i> Delete Ticket
-      </button>
-      <button
         onclick="closeTicketModal()"
         class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-xl hover:bg-gray-700 transition"
       >
@@ -354,63 +351,119 @@
 
 <script>
   const API_BASE = "/api";
-  const $ = (id) => document.getElementById(id);
   let tickets = [];
   let currentTicket = null;
+  let currentStaffId = null; // Will get from meta tag
 
-  // Load Tickets
+  // Utility: Get element safely
+  const $ = (id) => document.getElementById(id);
+
+  // Escape HTML
+  function escapeHtml(text) {
+    if (!text) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Get current staff ID from meta tag (add this in your layout!)
+  // <meta name="staff-id" content="{{ auth()->user()->id }}">
+  currentStaffId =
+    document.querySelector('meta[name="staff-id"]')?.content || null;
+
+  // Load assigned tickets
   const loadTickets = async () => {
     try {
-      const res = await fetch(`${API_BASE}/tickets`);
-      if (!res.ok) throw new Error("Failed to load");
-      tickets = await res.json();
-      tickets = tickets.map((ticket) => {
-        if (!ticket.messages && ticket.message) {
-          return {
-            ...ticket,
-            messages: [
-              {
-                from: ticket.fullName || "customer",
-                message: ticket.message,
-                time: ticket.created || "N/A",
-              },
-            ],
-          };
-        }
-        return ticket;
-      });
+      const res = await fetch(`${API_BASE}/assigned/tickets`);
+      if (!res.ok) throw new Error("Failed to load tickets");
+
+      const data = await res.json();
+      if (!data.success || !Array.isArray(data.tickets))
+        throw new Error("Invalid data");
+
+      tickets = data.tickets.map((t) => ({
+        ...t,
+        ticket_id: t.ticket_number,
+        fullName: t.user?.name || "Unknown Customer",
+        phone: t.user?.phone || "N/A",
+        issueType: t.issue_type || "Other",
+        priority:
+          t.priority?.charAt(0).toUpperCase() +
+            t.priority?.slice(1).toLowerCase() || "Medium",
+        status:
+          t.status
+            ?.replace("_", " ")
+            ?.replace(/\b\w/g, (l) => l.toUpperCase()) || "Open",
+        created: new Date(t.created_at).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }));
+
       renderTickets();
       updateStats();
     } catch (err) {
-      $(
-        "allTicketsList"
-      ).innerHTML = `<p class="text-center text-red-600 py-8">Error: ${err.message}</p>`;
+      $("allTicketsList").innerHTML = `
+        <div class="text-center py-16 text-red-600">
+          <i class="fas fa-exclamation-triangle text-6xl mb-4"></i>
+          <p class="text-xl font-bold">Failed to load tickets</p>
+          <p class="text-sm mt-2">${escapeHtml(err.message)}</p>
+          <button onclick="loadTickets()" class="mt-6 px-8 py-3 bg-red-600 text-white rounded-xl">Retry</button>
+        </div>`;
     }
   };
 
-  // Render Stats
+  // Update stats
   const updateStats = () => {
-    const active = tickets.filter((t) => !t.is_deleted);
-    $("totalTickets").textContent = active.length;
-    $("openTickets").textContent = active.filter(
-      (t) => t.status === "Pending"
+    $("totalTickets").textContent = tickets.length;
+    $("openTickets").textContent = tickets.filter(
+      (t) => t.status === "Open"
     ).length;
-    $("inProgressTickets").textContent = active.filter(
+    $("inProgressTickets").textContent = tickets.filter(
       (t) => t.status === "In Progress"
     ).length;
-    $("resolvedTickets").textContent = active.filter(
+    $("resolvedTickets").textContent = tickets.filter(
       (t) => t.status === "Resolved"
     ).length;
   };
 
-  // Render Tickets
+  // Apply filters
+  const applyFilters = () => {
+    let list = [...tickets];
+    const search = $("searchInput")?.value.toLowerCase() || "";
+    const priority = $("priorityFilter")?.value || "";
+    const issueType = $("issueTypeFilter")?.value || "";
+    const status = $("statusFilter")?.value || "";
+
+    if (search) {
+      list = list.filter(
+        (t) =>
+          t.fullName.toLowerCase().includes(search) ||
+          t.ticket_id.includes(search) ||
+          (t.description || "").toLowerCase().includes(search)
+      );
+    }
+    if (priority) list = list.filter((t) => t.priority === priority);
+    if (issueType) list = list.filter((t) => t.issueType === issueType);
+    if (status) list = list.filter((t) => t.status === status);
+    return list;
+  };
+
+  // Render tickets list
   const renderTickets = () => {
     const container = $("allTicketsList");
     const filtered = applyFilters();
 
     if (!filtered.length) {
-      container.innerHTML =
-        '<p class="text-center text-gray-500 py-8">No tickets found</p>';
+      container.innerHTML = `
+        <div class="text-center py-20 text-gray-500">
+          <i class="fas fa-inbox text-9xl text-gray-200 mb-6"></i>
+          <p class="text-2xl font-bold">No tickets assigned</p>
+          <p class="text-lg mt-2">You're all caught up!</p>
+        </div>`;
       return;
     }
 
@@ -421,7 +474,7 @@
       Critical: "bg-red-100 text-red-700",
     };
     const statusColors = {
-      Pending: "bg-yellow-100 text-yellow-700",
+      Open: "bg-yellow-100 text-yellow-700",
       "In Progress": "bg-blue-100 text-blue-700",
       Resolved: "bg-green-100 text-green-700",
       Closed: "bg-gray-100 text-gray-700",
@@ -430,42 +483,50 @@
     container.innerHTML = filtered
       .map(
         (t) => `
-      <div class="bg-white border-2 border-gray-200 hover:border-teal-300 rounded-xl p-5 transition-all cursor-pointer" onclick="viewTicket(${
-        t.id
-      })">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex-1 grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <p class="text-xs text-gray-500 font-semibold mb-1">Customer</p>
-              <p class="font-bold text-gray-900">${t.fullName}</p>
-              <p class="text-sm text-gray-600">${t.phone}</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-500 font-semibold mb-1">Ticket ID</p>
-              <p class="font-semibold text-teal-600">#${t.ticket_id}</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-500 font-semibold mb-1">Issue Type</p>
-              <p class="text-sm font-semibold text-gray-900">${t.issueType}</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-500 font-semibold mb-1">Priority</p>
-              <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                priorityColors[t.priority]
-              }">${t.priority}</span>
-            </div>
-            <div>
-              <p class="text-xs text-gray-500 font-semibold mb-1">Status</p>
-              <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                statusColors[t.status]
-              }">${t.status}</span>
-            </div>
+      <div onclick="viewTicket(${t.id})" 
+           class="bg-white border-2 border-gray-200 hover:border-teal-500 rounded-2xl p-6 transition-all duration-300 cursor-pointer hover:shadow-2xl group">
+        <div class="flex justify-between items-start mb-5">
+          <div>
+            <h4 class="text-xl font-bold text-gray-900">${escapeHtml(
+              t.fullName
+            )}</h4>
+            <p class="text-teal-600 font-mono text-lg font-bold mt-1">#${
+              t.ticket_id
+            }</p>
           </div>
-          <div class="flex-shrink-0">
-            <button class="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition flex items-center gap-2">
-              <i class="fas fa-eye"></i> View Details
-            </button>
+          <div class="flex gap-3">
+            <span class="px-4 py-2 rounded-full text-xs font-bold ${
+              priorityColors[t.priority] || "bg-gray-100 text-gray-700"
+            }">
+              ${t.priority}
+            </span>
+            <span class="px-4 py-2 rounded-full text-xs font-bold ${
+              statusColors[t.status] || "bg-gray-100 text-gray-700"
+            }">
+              ${t.status}
+            </span>
           </div>
+        </div>
+
+        <div class="mb-5">
+          <p class="text-sm font-medium text-gray-600 mb-2">Issue:</p>
+          <p class="text-gray-800 leading-relaxed">${escapeHtml(
+            t.description || "No description"
+          )}</p>
+        </div>
+
+        <div class="flex items-center justify-between text-sm text-gray-600">
+          <div class="flex items-center gap-5">
+            <span><i class="fas fa-tag text-teal-600 mr-2"></i>${
+              t.issueType
+            }</span>
+            <span><i class="fas fa-clock text-gray-500 mr-2"></i>${
+              t.created
+            }</span>
+          </div>
+          <button class="px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+            <i class="fas fa-comments"></i> Open Chat
+          </button>
         </div>
       </div>
     `
@@ -473,174 +534,244 @@
       .join("");
   };
 
-  // Filters
-  const applyFilters = () => {
-    let list = tickets.filter((t) => !t.is_deleted);
-    const search = $("searchInput").value.toLowerCase();
-    const priority = $("priorityFilter").value;
-    const issueType = $("issueTypeFilter").value;
-    const status = $("statusFilter").value;
-
-    if (search) {
-      list = list.filter(
-        (t) =>
-          t.fullName.toLowerCase().includes(search) ||
-          t.phone.includes(search) ||
-          t.ticket_id.toLowerCase().includes(search)
-      );
-    }
-    if (priority) list = list.filter((t) => t.priority === priority);
-    if (issueType) list = list.filter((t) => t.issueType === issueType);
-    if (status) list = list.filter((t) => t.status === status);
-    return list;
-  };
-
-  // Modal Actions
+  // View ticket modal
   const viewTicket = async (id) => {
     currentTicket = tickets.find((t) => t.id === id);
     if (!currentTicket) return;
 
-    $("modalTicketId").textContent = `Ticket #${currentTicket.ticket_id}`;
-    $("modalFullName").textContent = currentTicket.fullName;
-    $("modalPhone").textContent = currentTicket.phone;
-    $("modalIssueType").textContent = currentTicket.issueType;
-    $("modalCreated").textContent = currentTicket.created;
-    $("modalStatus").value = currentTicket.status;
+    // Safe access to elements
+    if ($("modalTicketId"))
+      $("modalTicketId").textContent = `#${currentTicket.ticket_id}`;
+    if ($("modalFullName"))
+      $("modalFullName").textContent = currentTicket.fullName;
+    if ($("modalPhone"))
+      $("modalPhone").textContent = currentTicket.phone || "N/A";
+    if ($("modalIssueType"))
+      $("modalIssueType").textContent = currentTicket.issueType;
+    if ($("modalCreated"))
+      $("modalCreated").textContent = currentTicket.created;
 
-    const priorityColors = {
-      Low: "bg-green-100 text-green-700",
-      Medium: "bg-amber-100 text-amber-700",
-      High: "bg-orange-100 text-orange-700",
-      Critical: "bg-red-100 text-red-700",
-    };
-    $("modalPriority").textContent = currentTicket.priority;
-    $(
-      "modalPriority"
-    ).className = `inline-block px-3 py-1 rounded-full text-xs font-bold ${
-      priorityColors[currentTicket.priority]
-    }`;
+    // Priority badge
+    const pEl = $("modalPriority");
+    if (pEl) {
+      pEl.textContent = currentTicket.priority;
+      pEl.className = `inline-block px-4 py-2 rounded-full text-xs font-bold ${
+        currentTicket.priority === "Critical"
+          ? "bg-red-100 text-red-800"
+          : currentTicket.priority === "High"
+          ? "bg-orange-100 text-orange-800"
+          : currentTicket.priority === "Medium"
+          ? "bg-amber-100 text-amber-800"
+          : "bg-green-100 text-green-800"
+      }`;
+    }
 
-    renderConversation();
-    $("ticketModal").classList.remove("hidden");
+    // Status badge
+    const statusBadge = $("ticketStatusBadge");
+    if (statusBadge) {
+      statusBadge.textContent = currentTicket.status;
+      statusBadge.className =
+        currentTicket.status === "Resolved"
+          ? "px-3 py-1 rounded-full text-white font-semibold bg-green-500"
+          : "px-3 py-1 rounded-full text-white font-semibold bg-yellow-500";
+    }
+
+    // Mark as Resolved button
+    updateResolvedButton();
+
+    await loadMessagesForTicket(id);
+    $("ticketModal")?.classList.remove("hidden");
   };
 
+  // Load messages
+  const loadMessagesForTicket = async (ticketId) => {
+    try {
+      const res = await fetch(`${API_BASE}/messages/ticket/${ticketId}`);
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      currentTicket.messages = Array.isArray(data) ? data : data.messages || [];
+      renderConversation();
+    } catch (err) {
+      currentTicket.messages = [];
+      renderConversation();
+    }
+  };
+
+  // RENDER CONVERSATION — PERFECT SENDER IDENTIFICATION
   const renderConversation = () => {
     const container = $("conversationMessages");
-    if (!currentTicket.messages?.length) {
-      container.innerHTML =
-        '<p class="text-center text-gray-500 py-8">No responses yet.</p>';
+    if (!container || !currentTicket.messages?.length) {
+      container.innerHTML = `<p class="text-center text-gray-500 py-16">No messages yet. Start the conversation!</p>`;
       return;
     }
 
     container.innerHTML = currentTicket.messages
-      .map((m) =>
-        m.from === "staff"
-          ? `
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-user-tie text-blue-600"></i>
-        </div>
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="font-semibold text-gray-900 text-sm">Support Staff</span>
-            <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Staff</span>
-            <span class="text-xs text-gray-500">${m.time}</span>
+      .map((m) => {
+        const isCustomer = m.sender_user_id !== null;
+        const isCurrentStaff =
+          m.sender_staff_id && String(m.sender_staff_id) === currentStaffId;
+        const isAdmin = m.sender_staff_id === 4; // Your admin ID
+        const isOtherStaff = m.sender_staff_id && !isCurrentStaff && !isAdmin;
+
+        let senderName = "Unknown";
+        let bubbleClass = "bg-gray-100 border-gray-300";
+        let avatarClass = "bg-gray-600";
+        let avatarLetter = "?";
+        let align = "flex-row-reverse";
+
+        if (isCustomer) {
+          senderName = "Customer";
+          bubbleClass = "bg-teal-50 border-teal-200";
+          avatarClass = "bg-teal-600";
+          avatarLetter = "C";
+          align = "flex-row-reverse";
+        } else if (isCurrentStaff) {
+          senderName = "You";
+          bubbleClass = "bg-blue-50 border-blue-200";
+          avatarClass = "bg-blue-600";
+          avatarLetter = "Y";
+          align = "";
+        } else if (isAdmin) {
+          senderName = "Admin";
+          bubbleClass = "bg-purple-50 border-purple-200";
+          avatarClass = "bg-purple-600";
+          avatarLetter = "A";
+          align = "";
+        } else if (isOtherStaff) {
+          senderName = "Staff";
+          bubbleClass = "bg-orange-50 border-orange-200";
+          avatarClass = "bg-orange-600";
+          avatarLetter = "S";
+          align = "";
+        }
+
+        return `
+        <div class="flex items-start gap-4 ${align}">
+          <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-lg ${avatarClass}">
+            ${avatarLetter}
           </div>
-          <div class="bg-blue-50 border-2 border-blue-100 rounded-2xl rounded-tl-none p-4">
-            <p class="text-gray-900 text-sm">${m.message}</p>
+          <div class="flex-1 max-w-2xl">
+            <div class="mb-2 text-xs text-gray-500 flex items-center gap-2 ${
+              align === "" ? "" : "justify-end"
+            }">
+              <span class="font-bold ${
+                isCustomer
+                  ? "text-teal-700"
+                  : isCurrentStaff
+                  ? "text-blue-700"
+                  : isAdmin
+                  ? "text-purple-700"
+                  : "text-orange-700"
+              }">
+                ${senderName}
+                ${
+                  isAdmin
+                    ? '<span class="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">Admin</span>'
+                    : ""
+                }
+                ${
+                  isOtherStaff
+                    ? '<span class="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">Staff</span>'
+                    : ""
+                }
+              </span>
+              <span>${new Date(m.created_at).toLocaleString()}</span>
+            </div>
+            <div class="p-5 rounded-2xl ${bubbleClass} border-2">
+              <p class="text-gray-900 leading-relaxed">${escapeHtml(
+                m.message
+              )}</p>
+            </div>
           </div>
-        </div>
-      </div>
-    `
-          : `
-      <div class="flex items-start gap-3 flex-row-reverse">
-        <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-user text-teal-600"></i>
-        </div>
-        <div class="flex-1 text-right">
-          <div class="flex items-center gap-2 mb-1 justify-end">
-            <span class="text-xs text-gray-500">${m.time}</span>
-            <span class="font-semibold text-gray-900 text-sm">Customer</span>
-          </div>
-          <div class="bg-teal-50 border-2 border-teal-100 rounded-2xl rounded-tr-none p-4 text-left">
-            <p class="text-gray-900 text-sm">${m.message}</p>
-          </div>
-        </div>
-      </div>
-    `
-      )
+        </div>`;
+      })
       .join("");
+
     container.scrollTop = container.scrollHeight;
   };
 
+  // Send response
   const sendResponse = async () => {
-    const msg = $("responseMessage").value.trim();
+    const input = $("responseMessage");
+    const msg = input.value.trim();
     if (!msg || !currentTicket) return;
 
-    const now = dayjs().format("MMM D, YYYY h:mm A");
-    const newMsg = { from: "staff", message: msg, time: now };
-
     try {
-      await fetch(`${API_BASE}/${currentTicket.id}/respond`, {
+      await fetch(`${API_BASE}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg, time: now }),
+        body: JSON.stringify({ ticket_id: currentTicket.id, message: msg }),
       });
-      currentTicket.messages.push(newMsg);
-      if (currentTicket.status === "Pending")
-        currentTicket.status = "In Progress";
-      $("responseMessage").value = "";
-      renderConversation();
-      renderTickets();
+
+      input.value = "";
+      await loadMessagesForTicket(currentTicket.id);
+      loadTickets();
     } catch (err) {
-      alert("Failed to send response");
+      alert("Failed to send");
     }
   };
 
+  // Mark as Resolved
   const updateTicketStatus = async () => {
     if (!currentTicket) return;
-    const newStatus = $("modalStatus").value;
+
     try {
-      await fetch(`${API_BASE}/${currentTicket.id}/status`, {
-        method: "POST",
+      await fetch(`${API_BASE}/tickets/${currentTicket.id}/status`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: "resolved" }),
       });
-      currentTicket.status = newStatus;
+
+      currentTicket.status = "Resolved";
       renderTickets();
+      updateStats();
+      updateResolvedButton();
     } catch (err) {
-      alert("Failed to update status");
+      alert("Failed to resolve");
     }
   };
 
-  const deleteTicket = async () => {
-    if (!currentTicket || !confirm("Delete this ticket?")) return;
-    try {
-      await fetch(`${API_BASE}/${currentTicket.id}`, { method: "DELETE" });
-      currentTicket.is_deleted = true;
-      closeTicketModal();
-      renderTickets();
-    } catch (err) {
-      alert("Failed to delete");
+  // Update "Mark as Resolved" button state
+  const updateResolvedButton = () => {
+    const btn = $("markResolvedBtn");
+    const badge = $("ticketStatusBadge");
+
+    if (currentTicket.status === "Resolved") {
+      btn.textContent = "Resolved";
+      btn.disabled = true;
+      btn.className =
+        "px-3 py-1 bg-gray-400 text-white font-semibold rounded-lg cursor-not-allowed";
+      badge.className =
+        "px-3 py-1 rounded-full text-white font-semibold bg-green-500";
+      badge.textContent = "Resolved";
+    } else {
+      btn.textContent = "Mark as Resolved";
+      btn.disabled = false;
+      btn.className =
+        "px-3 py-1 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 focus:outline-none";
+      badge.className =
+        "px-3 py-1 rounded-full text-white font-semibold bg-yellow-500";
+      badge.textContent = currentTicket.status;
     }
   };
 
+  // Close modal
   const closeTicketModal = () => {
-    $("ticketModal").classList.add("hidden");
+    $("ticketModal")?.classList.add("hidden");
     currentTicket = null;
     $("responseMessage").value = "";
   };
 
-  const refreshTickets = () => loadTickets();
-
-  // Filters
+  // Filters (FIXED — no more ReferenceError)
   ["searchInput", "priorityFilter", "issueTypeFilter", "statusFilter"].forEach(
-    (id) =>
-      $(id)?.addEventListener("input", () => setTimeout(renderTickets, 300))
+    (id) => {
+      $(id)?.addEventListener("input", () => setTimeout(renderTickets, 300));
+      $(id)?.addEventListener("change", renderTickets);
+    }
   );
-  ["priorityFilter", "issueTypeFilter", "statusFilter"].forEach((id) =>
-    $(id)?.addEventListener("change", renderTickets)
-  );
+
+  // Refresh
+  const refreshTickets = () => loadTickets();
 
   // Init
   window.onload = loadTickets;

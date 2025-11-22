@@ -7,19 +7,18 @@ const dayjs = require("dayjs");
 // GET: My Assignments
 router.get("/my/assignments", async (req, res) => {
   try {
-    // Debug: Check if user session exists
     console.log("Session user:", req.session.user);
-    
+
     if (!req.session.user || !req.session.user.id) {
       return res.status(401).json({ error: "Not authenticated" });
     }
-    
+
     const userId = req.session.user.id;
     console.log("Fetching assignments for user ID:", userId);
-    
+
     const assignments = await StaffClientAssignment.findMyAssignments(userId);
     console.log("Found assignments:", assignments.length);
-    
+
     res.json(assignments);
   } catch (err) {
     console.error("Error fetching assignments:", err);

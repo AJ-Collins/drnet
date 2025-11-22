@@ -409,6 +409,11 @@
     </div>
   </div>
 </div>
+<div
+  id="current-user-id"
+  data-user-id="{{ auth()->user()->id }}"
+  class="hidden"
+></div>
 
 <script>
   // === STATE ===
@@ -417,7 +422,12 @@
   let messages = [];
   let filteredTickets = [];
   let priority = "medium";
-  const userId = 1; // Simulated logged-in user
+  const userId = parseInt(
+    document.querySelector('meta[name="user-id"]')?.content ||
+      document.getElementById("current-user-id")?.dataset.userId ||
+      localStorage.getItem("userId"),
+    10
+  );
 
   // === DOM ELEMENTS ===
   const skeleton = document.getElementById("skeleton");
@@ -617,25 +627,30 @@
   function renderMessages(msgs) {
     chatMessages.innerHTML = msgs
       .map((msg) => {
-        const isUser = msg.sender_user_id === userId;
+        const isFromUser = msg.sender_user_id !== null;
+        const isFromStaff = msg.sender_staff_id !== null;
+
+        const senderName = isFromUser ? "You" : "Support Team";
+        const bubbleColor = isFromUser ? "teal" : "gray";
+        const avatarBg = isFromUser ? "bg-teal-100" : "bg-blue-100";
+        const avatarIcon = isFromUser
+          ? '<span class="text-teal-700 font-bold text-sm">You</span>'
+          : '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>';
+
         return `
-          <div class="flex items-start gap-3">
-            <div class="w-10 h-10 ${
-              isUser ? "bg-teal-100" : "bg-blue-100"
-            } rounded-full flex items-center justify-center flex-shrink-0">
-              ${
-                isUser
-                  ? '<span class="text-teal-700 font-bold text-sm">JD</span>'
-                  : '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>'
-              }
+          <div class="flex items-start gap-3 ${
+            !isFromUser ? "flex-row-reverse" : ""
+          }">
+            <div class="${avatarBg} rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+              ${avatarIcon}
             </div>
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="font-semibold text-gray-900 text-sm">${
-                  isUser ? "You" : "Support Agent"
-                }</span>
+            <div class="flex-1 ${!isFromUser ? "text-right" : ""}">
+              <div class="flex items-center gap-2 mb-1 ${
+                !isFromUser ? "justify-end" : ""
+              }">
+                <span class="font-semibold text-gray-900 text-sm">${senderName}</span>
                 ${
-                  !isUser
+                  !isFromUser
                     ? '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Staff</span>'
                     : ""
                 }
@@ -643,16 +658,17 @@
                   msg.created_at
                 )}</span>
               </div>
-              <div class="bg-${isUser ? "teal" : "gray"}-50 border-2 border-${
-          isUser ? "teal" : "gray"
-        }-100 rounded-2xl rounded-tl-none p-4">
-                <p class="text-gray-900">${msg.message}</p>
+              <div class="inline-block bg-${bubbleColor}-50 border-2 border-${bubbleColor}-100 rounded-2xl ${
+          isFromUser ? "rounded-tl-none" : "rounded-tr-none"
+        } p-4 max-w-lg">
+                <p class="text-gray-900 whitespace-pre-wrap">${msg.message}</p>
               </div>
             </div>
           </div>
         `;
       })
       .join("");
+
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
@@ -707,7 +723,6 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ticket_id: currentTicket.id,
-          sender_user_id: userId,
           message: content,
         }),
       });

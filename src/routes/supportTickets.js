@@ -3,6 +3,8 @@ const router = express.Router();
 
 const SupportTicket = require("../models/SupportTicket");
 const SupportTicketMessage = require("../models/SupportTicketMessage");
+const Staff = require("../models/Staff");
+const db = require("../config/db");
 
 router.get("/my/tickets", async (req, res) => {
   try {
@@ -73,7 +75,23 @@ router.get("/my/messages", async (req, res) => {
 
 router.post("/my/messages", async (req, res) => {
   try {
-    const { ticket_id, sender_user_id, sender_staff_id, message } = req.body;
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({
+        error: "Unauthorized",
+        message: "Please log in to view messages",
+      });
+    }
+    const { ticket_id, message } = req.body;
+    const u = req.session.user;
+
+    let sender_user_id = null;
+    let sender_staff_id = null;
+
+    if (u.userType === "staff") {
+      sender_staff_id = u.id;
+    } else {
+      sender_user_id = u.id;
+    }
 
     const result = await SupportTicketMessage.create({
       ticket_id,
@@ -97,6 +115,24 @@ router.get("/tickets", async (req, res) => {
     res.json(tickets);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+//Staff get specific tickets assigned
+router.get("/assigned/tickets", async (req, res) => {
+  try {
+    const user = req.session.user;
+
+    if (!user || user.userType !== "staff") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const tickets = await SupportTicket.findAllByStaff(user.id);
+
+    res.json({ success: true, tickets });
+  } catch (err) {
+    console.error("Error fetching assigned tickets:", err);
+    res.status(500).json({ error: "Failed to fetch assigned tickets" });
   }
 });
 
@@ -275,4 +311,55 @@ router.delete("/messages/ticket/:ticket_id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+//Get Staff
+router.get("/tickets/staff", async (req, res) => {
+  try {
+    const allStaff = await Staff.findAll();
+    res.json(allStaff);
+  } catch (err) {
+    console.error("Error fetching staff:", err);
+    res.status(500).json({ error: "Failed to fetch staff" });
+  }
+});
+
+// Assign / Reassign / Unassign ticket
+router.post("/tickets/:id/assign", async (req, res) => {
+  const { id } = req.params;
+  const { assigned_to } = req.body;
+
+  try {
+    const assignedToValue =
+      assigned_to === "" || assigned_to === null || assigned_to === undefined
+        ? null
+        : parseInt(assigned_to, 10);
+
+    await db.query(`UPDATE support_tickets SET assigned_to = ? WHERE id = ?`, [
+      assignedToValue,
+      id,
+    ]);
+
+    if (assignedToValue !== null) {
+      await db.query(
+        `UPDATE support_tickets SET status = 'in_progress' WHERE id = ? AND status = 'open'`,
+        [id]
+      );
+    } else {
+      await db.query(
+        `UPDATE support_tickets SET status = 'open' WHERE id = ? AND status = 'in_progress' AND assigned_to IS NULL`,
+        [id]
+      );
+    }
+
+    const ticket = await SupportTicket.findById(id);
+    res.json(ticket);
+  } catch (err) {
+    console.error("Assign error:", err);
+    res.status(500).json({
+      error: "Failed to assign ticket",
+      details: err.message,
+    });
+  }
+});
+
 module.exports = router;

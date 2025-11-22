@@ -15,6 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <meta name="staff-id" content="{{ auth()->user()->id }}" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -219,13 +220,13 @@
                 </button>
 
                 <!-- User Dropdown -->
-                 <% const profilePageSlug = "profile"; %>
+                <% const profilePageSlug = "profile"; %>
                 <div
                   id="userDropdown"
                   class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-50 hidden border border-teal-100"
                 >
                   <a
-                   href="/staff/<%= profilePageSlug %>"
+                    href="/staff/<%= profilePageSlug %>"
                     class="flex items-center px-4 py-2 text-gray-700 hover:bg-teal-50 transition"
                   >
                     <i class="fas fa-user mr-3 text-teal-600"></i> My Profile
@@ -461,65 +462,64 @@
         }, 3000);
       }
       async function loadUserMenu() {
-    const avatarCircle = document.querySelector('#userMenuBtn .w-9.h-9');
-    const nameSpan     = document.querySelector('#userMenuBtn .font-medium');
+        const avatarCircle = document.querySelector("#userMenuBtn .w-9.h-9");
+        const nameSpan = document.querySelector("#userMenuBtn .font-medium");
 
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'GET',
-        credentials: 'include',               // keep session cookies
-        headers: { 'Cache-Control': 'no-cache' }
-      });
+        try {
+          const res = await fetch("/api/profile", {
+            method: "GET",
+            credentials: "include", // keep session cookies
+            headers: { "Cache-Control": "no-cache" },
+          });
 
-      if (!res.ok) throw new Error('Failed to fetch profile');
+          if (!res.ok) throw new Error("Failed to fetch profile");
 
-      const data = await res.json();
-      const profile = data.profile;           // <-- your API shape
+          const data = await res.json();
+          const profile = data.profile; // <-- your API shape
 
-      // ---- 1. Avatar -------------------------------------------------
-      if (profile.image) {
-        // create an <img> inside the circle
-        const img = document.createElement('img');
-        img.src = profile.image;
-        img.alt = 'Profile';
-        img.className = 'w-full h-full rounded-full object-cover';
+          // ---- 1. Avatar -------------------------------------------------
+          if (profile.image) {
+            // create an <img> inside the circle
+            const img = document.createElement("img");
+            img.src = profile.image;
+            img.alt = "Profile";
+            img.className = "w-full h-full rounded-full object-cover";
 
-        // replace the placeholder <div> with the image
-        avatarCircle.innerHTML = '';
-        avatarCircle.appendChild(img);
-      } else {
-        // keep the initials fallback
-        const initials = (profile.name || 'U')
-          .split(' ')
-          .map(n => n[0])
-          .join('')
-          .toUpperCase()
-          .substring(0, 2);
-        avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">${initials}</span>`;
+            // replace the placeholder <div> with the image
+            avatarCircle.innerHTML = "";
+            avatarCircle.appendChild(img);
+          } else {
+            // keep the initials fallback
+            const initials = (profile.name || "U")
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+              .substring(0, 2);
+            avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">${initials}</span>`;
+          }
+
+          // ---- 2. Name ---------------------------------------------------
+          nameSpan.textContent = profile.name || "User";
+
+          // optional: tiny success toast
+          // showNotification('Profile loaded', 'success');
+        } catch (err) {
+          console.error("loadUserMenu error:", err);
+          showNotification("Could not load user info", "error");
+
+          // keep the static placeholder when everything fails
+          avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">JO</span>`;
+          nameSpan.textContent = "Julius Ojwang";
+        }
       }
 
-      // ---- 2. Name ---------------------------------------------------
-      nameSpan.textContent = profile.name || 'User';
-
-      // optional: tiny success toast
-      // showNotification('Profile loaded', 'success');
-
-    } catch (err) {
-      console.error('loadUserMenu error:', err);
-      showNotification('Could not load user info', 'error');
-
-      // keep the static placeholder when everything fails
-      avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">JO</span>`;
-      nameSpan.textContent = 'Julius Ojwang';
-    }
-  }
-
-  // -----------------------------------------------------------------
-  // Run on DOM ready (you already have DOMContentLoaded elsewhere)
-  // -----------------------------------------------------------------
-  document.addEventListener('DOMContentLoaded', () => {
-    loadUserMenu();
-  });
+      // -----------------------------------------------------------------
+      // Run on DOM ready (you already have DOMContentLoaded elsewhere)
+      // -----------------------------------------------------------------
+      document.addEventListener("DOMContentLoaded", () => {
+        loadUserMenu();
+      });
     </script>
   </body>
 </html>
