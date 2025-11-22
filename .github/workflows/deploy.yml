@@ -31,19 +31,11 @@ jobs:
             .github/**
             restart/**
 
-      - name: Restart Node.js app via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: drnet.co.ke
-          username: drnetcok
-          password: ${{ secrets.CPANEL_PASSWORD }}
-          port: 21098
-          script: |
-            source /home/drnetcok/nodevenv/app/22/bin/activate
-            cd /home/drnetcok/app
-            pkill -u $USER node || true
-            npm install --production
-            echo "✅ Node app restarted and modules installed!"
+      - name: Restart Node.js app via cPanel API
+        run: |
+          curl -k -X POST "https://drnet.co.ke:2083/execute/NodeJS/restart_application" \
+            -u "drnetcok:${{ secrets.CPANEL_PASSWORD }}" \
+            -d "app_uri=/app"
 
       - name: Notify deployment complete
-        run: echo "✅ Deployment completed to /home/drnetcok/app/"
+        run: echo "✅ Deployment completed to /home/drnetcok/app/
