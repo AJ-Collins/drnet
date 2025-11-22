@@ -31,15 +31,19 @@ jobs:
             .github/**
             restart/**
 
-      - name: Create restart trigger file
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      - name: Restart Node.js app via SSH
+        uses: appleboy/ssh-action@master
         with:
-          server: ftp.drnet.co.ke
-          username: deploy@drnet.co.ke
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 21
-          server-dir: /tmp/
-          local-dir: ./
+          host: drnet.co.ke
+          username: drnetcok
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          port: 21098
+          script: |
+            source /home/drnetcok/nodevenv/app/22/bin/activate
+            cd /home/drnetcok/app
+            pkill -u $USER node || true
+            npm install --production
+            echo "✅ Node app restarted and modules installed!"
 
       - name: Notify deployment complete
         run: echo "✅ Deployment completed to /home/drnetcok/app/"
