@@ -20,7 +20,7 @@ jobs:
           username: deploy@drnet.co.ke
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          server-dir: /drnet.co.ke/app/app/
+          server-dir: /app/
           exclude: |
             **/.git*
             **/.git*/**
@@ -37,8 +37,24 @@ jobs:
           username: deploy@drnet.co.ke
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          server-dir: /../../app/tmp/
-          local-dir: ./restart/
+          server-dir: /app/tmp/
+          local-dir: ./
+
+      - name: Run npm install and restart via SSH
+        uses: appleboy/ssh-action@master
+        continue-on-error: true
+        with:
+          host: drnet.co.ke
+          username: drnetcok
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          port: 21098
+          script: |
+            source /home/drnetcok/nodevenv/drnetcok/drnet.co.ke/app/22/bin/activate
+            cd /home/drnetcok/drnet.co.ke/app/app
+            npm install --production
+            mkdir -p tmp
+            touch tmp/restart.txt
+            echo "✅ NPM modules installed and app restarted!"
 
       - name: Notify deployment complete
         run: echo "✅ Deployment completed to /home/drnetcok/app/"
