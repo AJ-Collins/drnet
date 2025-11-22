@@ -20,7 +20,7 @@ jobs:
           username: deploy@drnet.co.ke
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          server-dir: /home/drnetcok/app/
+          server-dir: /drnetcok/drnet.co.ke/app/
           exclude: |
             **/.git*
             **/.git*/**
@@ -28,16 +28,14 @@ jobs:
             **/.env
             .github/**
 
-      - name: Install dependencies and restart app
-        uses: appleboy/ssh-action@master
-        with:
-          host: drnet.co.ke
-          username: drnetcok
-          password: ${{ secrets.CPANEL_PASSWORD }}
-          port: 21098
-          script: |
-            source /home/drnetcok/nodevenv/app/22/bin/activate
-            cd /home/drnetcok/app
-            npm install --production
-            touch /home/drnetcok/app/tmp/restart.txt
-            echo "✔ Dependencies installed and app restarted!"
+      - name: Install dependencies via cPanel API
+        run: |
+          curl -k -X POST "https://drnet.co.ke:2083/execute/NodeJS/install_dependencies" \
+            -u "drnetcok:${{ secrets.CPANEL_PASSWORD }}" \
+            -d "app_uri=drnet.co.ke"
+
+      - name: Restart app via cPanel API
+        run: |
+          curl -k -X POST "https://drnet.co.ke:2083/execute/NodeJS/restart_application" \
+            -u "drnetcok:${{ secrets.CPANEL_PASSWORD }}" \
+            -d "app_uri=drnet.co.ke"
