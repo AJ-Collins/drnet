@@ -27,3 +27,17 @@ jobs:
             **/node_modules/**
             **/.env
             .github/**
+
+      - name: Install dependencies and restart app
+        uses: appleboy/ssh-action@master
+        with:
+          host: drnet.co.ke
+          username: drnetcok
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          port: 21098
+          script: |
+            source /home/drnetcok/nodevenv/app/22/bin/activate
+            cd /home/drnetcok/app
+            npm install --production
+            touch /home/drnetcok/app/tmp/restart.txt
+            echo "✔ Dependencies installed and app restarted!"
