@@ -13,7 +13,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy via FTP
+      # Step 1: Deploy application files
+      - name: Deploy application files via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ftp.drnet.co.ke
@@ -22,6 +23,7 @@ jobs:
           port: 21
           server-dir: /
           local-dir: ./
+          state-name: .ftp-deploy-sync-state.json
           exclude: |
             **/.git*
             **/.git*/**
@@ -29,12 +31,13 @@ jobs:
             **/package-lock.json
             **/.env
             .github/**
-            **/tmp/**
+            **/tmp/restart.txt
 
+      # Step 2: Create and upload restart trigger
       - name: Create restart trigger file
         run: |
           mkdir -p tmp
-          date > tmp/restart.txt
+          echo "Deployed at $(date)" > tmp/restart.txt
 
       - name: Upload restart.txt to trigger Passenger restart
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
@@ -43,12 +46,13 @@ jobs:
           username: deploy@drnet.co.ke
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          server-dir: /
+          server-dir: /tmp/
           local-dir: ./tmp/
+          state-name: .ftp-deploy-restart-state.json
           dangerous-clean-slate: false
 
       - name: Notify deployment complete
         run: |
-          echo "✅ Files deployed to /home/drnetcok/app/"
+          echo "✅ Application files deployed"
           echo "✅ Passenger restart triggered via tmp/restart.txt"
           echo "🌐 Check your app at: https://drnet.co.ke"
