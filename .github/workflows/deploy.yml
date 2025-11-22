@@ -21,6 +21,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           server-dir: /../../app/
+          dangerous-clean-slate: true
           exclude: |
             **/.git*
             **/.git*/**
@@ -29,16 +30,7 @@ jobs:
             **/.env
             .github/**
             restart/**
-
-      - name: Create restart trigger file
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
-        with:
-          server: ftp.drnet.co.ke
-          username: deploy@drnet.co.ke
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 21
-          server-dir: /../../app/tmp/
-          local-dir: ./restart/
+            uploads/**
 
       - name: Notify deployment complete
         run: echo "✅ Deployment completed to /home/drnetcok/app/"
