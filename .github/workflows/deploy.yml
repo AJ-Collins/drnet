@@ -1,4 +1,4 @@
-name: Deploy to cPanel via FTP
+name: Deploy to cPanel Node.js App
 
 on:
   push:
@@ -29,13 +29,26 @@ jobs:
             **/package-lock.json
             **/.env
             .github/**
-            restart/**
+            **/tmp/**
 
-      - name: Restart Node.js app via cPanel API
+      - name: Create restart trigger file
         run: |
-          curl -k -X POST "https://drnet.co.ke:2083/execute/NodeJS/restart_application" \
-            -u "drnetcok:${{ secrets.CPANEL_PASSWORD }}" \
-            -d "app_uri=/app"
+          mkdir -p tmp
+          date > tmp/restart.txt
+
+      - name: Upload restart.txt to trigger Passenger restart
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ftp.drnet.co.ke
+          username: deploy@drnet.co.ke
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          server-dir: /
+          local-dir: ./tmp/
+          dangerous-clean-slate: false
 
       - name: Notify deployment complete
-        run: echo "✅ Deployment completed to /home/drnetcok/app/
+        run: |
+          echo "✅ Files deployed to /home/drnetcok/app/"
+          echo "✅ Passenger restart triggered via tmp/restart.txt"
+          echo "🌐 Check your app at: https://drnet.co.ke"
