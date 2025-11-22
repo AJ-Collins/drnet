@@ -20,7 +20,7 @@ jobs:
           username: deploy@drnet.co.ke
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          server-dir: ./app/
+          server-dir: /home/drnetcok/app/
           exclude: |
             **/.git*
             **/.git*/**
@@ -28,14 +28,15 @@ jobs:
             **/.env
             .github/**
 
-      - name: Install dependencies via cPanel API
-        run: |
-          curl -k -X POST "https://drnet.co.ke:2083/execute/NodeJS/install_dependencies" \
-            -u "drnetcok:${{ secrets.CPANEL_PASSWORD }}" \
-            -d "app_uri=drnet.co.ke"
+      - name: Create restart trigger file
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ftp.drnet.co.ke
+          username: deploy@drnet.co.ke
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          server-dir: /home/drnetcok/app/tmp/
+          local-dir: ./restart/
 
-      - name: Restart app via cPanel API
-        run: |
-          curl -k -X POST "https://drnet.co.ke:2083/execute/NodeJS/restart_application" \
-            -u "drnetcok:${{ secrets.CPANEL_PASSWORD }}" \
-            -d "app_uri=drnet.co.ke"
+      - name: Notify deployment complete
+        run: echo "✅ Deployment completed to /home/drnetcok/app/"
