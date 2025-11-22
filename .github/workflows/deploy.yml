@@ -13,14 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-
-      - name: Install dependencies
-        run: npm install --production
-
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
@@ -35,18 +27,3 @@ jobs:
             **/node_modules/**
             **/.env
             .github/**
-
-      - name: Restart app via SSH (if SSH enabled)
-        uses: appleboy/ssh-action@master
-        continue-on-error: true
-        with:
-          host: drnet.co.ke
-          username: drnetcok
-          password: ${{ secrets.CPANEL_PASSWORD }}
-          port: 22
-          script: |
-            cd ~/app
-            npm install --production
-            mkdir -p tmp
-            touch tmp/restart.txt
-            echo "✔ App restarted!"
