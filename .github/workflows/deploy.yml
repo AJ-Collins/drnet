@@ -13,36 +13,21 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p ${{ secrets.CPANEL_SSH_PORT }} ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Upload project (exclude node_modules & lockfile)
-        run: |
-          rsync -avz --delete \
-            --exclude=node_modules \
-            --exclude=package-lock.json \
-            --exclude=.git \
-            -e "ssh -p ${{ secrets.CPANEL_SSH_PORT }}" \
-            ./ \
-            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:/home/${{ secrets.CPANEL_USER }}/public_html/
-
-      - name: Install Node modules on cPanel
-        run: |
-          ssh -p ${{ secrets.CPANEL_SSH_PORT }} \
-            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
-            "
-            cd /home/${{ secrets.CPANEL_USER }}/public_html &&
-            export NODE_ENV=production &&
-            npm install &&
-            echo '✔ Node modules installed'
-            "
-
-      - name: Restart Node app (Passenger)
-        run: |
-          ssh -p ${{ secrets.CPANEL_SSH_PORT }} \
-            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
-            "touch /home/${{ secrets.CPANEL_USER }}/public_html/tmp/restart.txt"
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USER }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          port: ${{ secrets.CPANEL_SSH_PORT }}
+          script: |
+            cd /home/${{ secrets.CPANEL_USER }}/public_html
+            git init
+            git remote add origin https://github.com/AJ-Collins/drnet.git || true
+            git fetch origin
+            git reset --hard origin/main
+            git clean -fd
+            export NODE_ENV=production
+            npm install
+            touch tmp/restart.txt
+            echo "✔ Deployment completed successfully!"
