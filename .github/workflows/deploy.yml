@@ -20,7 +20,7 @@ jobs:
           username: deploy@drnet.co.ke
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          server-dir: /home/drnetcok/app/
+          server-dir: /../../app/
           exclude: |
             **/.git*
             **/.git*/**
