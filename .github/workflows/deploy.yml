@@ -17,10 +17,10 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ftp.drnet.co.ke
-          username: deploy@drnet.co.ke
-          password: ${{ secrets.FTP_PASSWORD }}
+          username: drnetcok
+          password: ${{ secrets.CPANEL_PASSWORD }}
           port: 21
-          server-dir: /app/
+          server-dir: /drnet.co.ke/app/app/
           exclude: |
             **/.git*
             **/.git*/**
@@ -35,11 +35,11 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ftp.drnet.co.ke
-          username: deploy@drnet.co.ke
-          password: ${{ secrets.FTP_PASSWORD }}
+          username: drnetcok
+          password: ${{ secrets.CPANEL_PASSWORD }}
           port: 21
-          server-dir: /app/tmp/
+          server-dir: /drnet.co.ke/app/app/tmp/
           local-dir: ./restart/
 
       - name: Notify deployment complete
-        run: echo "✅ Deployment completed!"
+        run: echo "✅ Deployment completed to /home/drnetcok/drnet.co.ke/app/app/"
