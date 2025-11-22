@@ -1,4 +1,4 @@
-name: Deploy Node App to cPanel via SSH
+name: Deploy to cPanel via FTP
 
 on:
   push:
@@ -10,24 +10,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@master
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          host: ${{ secrets.CPANEL_HOST }}
-          username: ${{ secrets.CPANEL_USER }}
-          key: ${{ secrets.CPANEL_SSH_KEY }}
-          port: ${{ secrets.CPANEL_SSH_PORT }}
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install --production
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ftp.drnet.co.ke
+          username: deploy@drnet.co.ke
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          server-dir: /app/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            .github/**
+
+      - name: Restart app via SSH (if SSH enabled)
+        uses: appleboy/ssh-action@master
+        continue-on-error: true
+        with:
+          host: drnet.co.ke
+          username: drnetcok
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          port: 22
           script: |
-            cd /home/${{ secrets.CPANEL_USER }}/public_html
-            git init
-            git remote add origin https://github.com/AJ-Collins/drnet.git || true
-            git fetch origin
-            git reset --hard origin/main
-            git clean -fd
-            export NODE_ENV=production
-            npm install
+            cd ~/app
+            npm install --production
+            mkdir -p tmp
             touch tmp/restart.txt
-            echo "✔ Deployment completed successfully!"
+            echo "✔ App restarted!"
