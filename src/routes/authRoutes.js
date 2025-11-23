@@ -92,8 +92,13 @@ router.post("/login", async (req, res) => {
 
     if (userRows.length > 0) {
       user = userRows[0];
-      userType = 'user';
-      console.log("User found in users table:", user.email, "Role ID:", user.role_id);
+      userType = "user";
+      console.log(
+        "User found in users table:",
+        user.email,
+        "Role ID:",
+        user.role_id
+      );
     }
 
     // Step 2: If not found in users, check staff table
@@ -105,8 +110,13 @@ router.post("/login", async (req, res) => {
 
       if (staffRows.length > 0) {
         user = staffRows[0];
-        userType = 'staff';
-        console.log("Staff found in staff table:", user.email, "Role ID:", user.role_id);
+        userType = "staff";
+        console.log(
+          "Staff found in staff table:",
+          user.email,
+          "Role ID:",
+          user.role_id
+        );
       }
     }
 
@@ -119,12 +129,11 @@ router.post("/login", async (req, res) => {
 
     // Step 4: Check if password exists (staff might not have password set yet)
     if (!user.password) {
-      return res
-        .status(403)
-        .json({ 
-          success: false, 
-          error: "Account not activated. Please contact admin to set up your password." 
-        });
+      return res.status(403).json({
+        success: false,
+        error:
+          "Account not activated. Please contact admin to set up your password.",
+      });
     }
 
     // Step 5: Compare passwords
@@ -141,6 +150,13 @@ router.post("/login", async (req, res) => {
         .status(403)
         .json({ success: false, error: "Account is not activated" });
     }
+
+    const [roleRows] = await db.query(
+      "SELECT name FROM roles WHERE id = ? LIMIT 1",
+      [user.role_id]
+    );
+
+    const role_name = roleRows.length ? roleRows[0].name.toLowerCase() : null;
 
     // Step 7: Determine redirect URL based on role_id
     let redirectUrl;
@@ -182,12 +198,13 @@ router.post("/login", async (req, res) => {
         id: user.id,
         email: user.email,
         role_id: user.role_id,
+        role_name: role_name,
         phone: user.phone,
         id_number: user.id_number,
         employee_id: user.employee_id,
         userType: userType,
         first_name: user.first_name,
-        second_name: user.second_name
+        second_name: user.second_name,
       };
 
       // Force session save before responding
@@ -212,7 +229,7 @@ router.post("/login", async (req, res) => {
             email: user.email,
             role_id: user.role_id,
             userType: userType,
-            name: `${user.first_name || ''} ${user.second_name || ''}`.trim()
+            name: `${user.first_name || ""} ${user.second_name || ""}`.trim(),
           },
         });
       });

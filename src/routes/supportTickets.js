@@ -142,9 +142,9 @@ router.post("/tickets", async (req, res) => {
     const { fullName, phone, issue_type, priority, status, ticket_number } =
       req.body;
 
-    const result = await SupportTicket.create({
+    const ticket = await SupportTicket.create({
       ticket_number,
-      user_id: 1, // placeholder
+      user_id: null,
       subject: `${issue_type} - ${fullName}`,
       issue_type,
       priority,
@@ -153,7 +153,6 @@ router.post("/tickets", async (req, res) => {
       assigned_to: null,
     });
 
-    const ticket = await SupportTicket.findById(result.insertId);
     res.json(ticket);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -122,7 +122,7 @@ const Staff = {
     }));
   },
 
-  // 🔹 Update staff
+  // Update staff
   update: async (id, data) => {
     // Map frontend fields to DB columns
     if (data.idNumber) {
@@ -130,14 +130,23 @@ const Staff = {
       delete data.idNumber;
     }
 
-    if (data.role) {
+    // Map role_legacy to position
+    if (data.role_legacy) {
+      data.position = data.role_legacy;
+      delete data.role_legacy;
+    } else if (data.role) {
       data.position = data.role;
       delete data.role;
     }
 
-    // Remove fields that are not in staff table
+    // Only include role_id if provided
+    if (data.role_id !== undefined) {
+      data.role_id = Number(data.role_id); // ensure it's a number
+    }
+
+    let salaryNum;
     if (data.basic_salary !== undefined) {
-      var basicSalary = data.basic_salary;
+      salaryNum = Number(data.basic_salary);
       delete data.basic_salary;
     }
 
@@ -159,14 +168,15 @@ const Staff = {
       values
     );
 
-    // Update salary if sent
-    if (basicSalary !== undefined) {
-      // Insert or update staff_salaries
+    if (salaryNum !== undefined) {
+      // Delete any existing salary record
+      await db.query(`DELETE FROM staff_salaries WHERE staff_id = ?`, [id]);
+
+      // Insert new salary record
       await db.query(
         `INSERT INTO staff_salaries (staff_id, basic_salary, effective_from)
-       VALUES (?, ?, NOW())
-       ON DUPLICATE KEY UPDATE basic_salary = VALUES(basic_salary), effective_to = NULL`,
-        [id, basicSalary]
+       VALUES (?, ?, NOW())`,
+        [id, salaryNum]
       );
     }
 

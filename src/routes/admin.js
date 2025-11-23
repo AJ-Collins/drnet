@@ -323,6 +323,19 @@ router.get("/staff", async (req, res) => {
   }
 });
 
+//Get staff roles
+router.get("/roles", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT id, name FROM roles ORDER BY name
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching roles:", err);
+    res.status(500).json({ success: false, message: "Failed to load roles" });
+  }
+});
+
 // Create a new staff member
 router.post("/staff", async (req, res) => {
   try {

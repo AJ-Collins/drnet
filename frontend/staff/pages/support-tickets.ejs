@@ -384,7 +384,7 @@
       tickets = data.tickets.map((t) => ({
         ...t,
         ticket_id: t.ticket_number,
-        fullName: t.user?.name || "Unknown Customer",
+        fullName: t.fullName || "Unknown Customer",
         phone: t.user?.phone || "N/A",
         issueType: t.issue_type || "Other",
         priority:

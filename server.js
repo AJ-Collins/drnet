@@ -28,6 +28,8 @@ const expenses = require("./src/routes/expenses");
 const payslips = require("./src/routes/payslips");
 const profile = require("./src/routes/profile");
 const userProfile = require("./src/routes/userProfile");
+const teamChat = require("./src/routes/teamChat");
+const announcement = require("./src/routes/announcements");
 // Session Configuration
 app.use(
   session({
@@ -56,6 +58,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.set("view engine", "ejs");
 app.set("views", [
   path.join(__dirname, "frontend/admin"),
+  path.join(__dirname, "frontend/supervisor"),
   path.join(__dirname, "frontend/staff"),
   path.join(__dirname, "frontend/client"),
 ]);
@@ -89,7 +92,8 @@ app.use(
 
 function requireAdminAuth(req, res, next) {
   console.log("Admin Auth Check:", req.session?.user);
-  if (req.session && req.session.user && req.session.user.role_id === 1) {
+
+  if (req.session?.user?.role_name === "admin") {
     return next();
   }
 
@@ -106,12 +110,14 @@ function requireAdminAuth(req, res, next) {
 
 function requireSupervisorAuth(req, res, next) {
   console.log("Supervisor Auth Check:", req.session?.user);
-  if (req.session && req.session.user && req.session.user.role_id === 2) {
-    console.log("✅ Supervisor auth passed");
+
+  if (req.session?.user?.role_name === "supervisor") {
+    console.log("Supervisor auth passed");
     return next();
   }
 
   console.log("Supervisor auth failed");
+
   if (req.path.startsWith("/api/")) {
     return res.status(401).json({
       success: false,
@@ -125,9 +131,12 @@ function requireSupervisorAuth(req, res, next) {
 
 function requireStaffAuth(req, res, next) {
   console.log("Staff Auth Check:", req.session?.user);
-  if (req.session && req.session.user && req.session.user.role_id === 3) {
+  if (req.session?.user?.role_name === "staff") {
+    console.log("Staff auth passed");
     return next();
   }
+
+  console.log("Staff auth failed");
 
   if (req.path.startsWith("/api/")) {
     return res.status(401).json({
@@ -142,9 +151,12 @@ function requireStaffAuth(req, res, next) {
 
 function requireClientAuth(req, res, next) {
   console.log("Client Auth Check:", req.session?.user);
-  if (req.session && req.session.user && req.session.user.role_id === 4) {
+  if (req.session?.user?.role_name === "client") {
+    console.log("Client auth passed");
     return next();
   }
+
+  console.log("CLient auth failed");
 
   if (req.path.startsWith("/api/")) {
     return res.status(401).json({
@@ -178,6 +190,8 @@ app.use("/api", apiSessionAuth, payslips);
 app.use("/api", apiSessionAuth, profile);
 app.use("/api", apiSessionAuth, userProfile);
 app.use("/api/client", bookings);
+app.use("/api", apiSessionAuth, teamChat);
+app.use("/api", apiSessionAuth, announcement);
 
 // Create uploads folder
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
@@ -246,6 +260,55 @@ app.get("/admin/:page", requireAdminAuth, (req, res) => {
 
 app.get("/admin", requireAdminAuth, (req, res) => {
   res.redirect("/admin/dashboard");
+});
+
+//Supervisor Routes
+const supervisorPages = [
+  "dashboard",
+  "staff-attendance",
+  "my-packages",
+  "manage-users",
+  "service-management",
+  "support-tickets",
+  "finance",
+  "reports",
+  "profile",
+  "register-user",
+  "renewals",
+  "website-bookings",
+  "invoice-generator",
+  "service-assignments",
+  "equipment-inventory",
+  "admin-assistant-dashboard",
+  "supervisor-dashboard",
+  "deleted-users",
+  "attendance",
+  "communication-team",
+  "equipments",
+  "my-customers",
+  "work-schedule",
+];
+
+app.get("/supervisor/:page", requireSupervisorAuth, (req, res) => {
+  let page = req.params.page;
+  if (!supervisorPages.includes(page)) {
+    return res.redirect("/supervisor/dashboard");
+  }
+
+  const title = page
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  res.render("supervisor_layout", {
+    pageTitle: title,
+    pageSubtitle: `Manage ${title.toLowerCase()}`,
+    currentPage: page,
+  });
+});
+
+app.get("/supervisor", requireSupervisorAuth, (req, res) => {
+  res.redirect("/supervisor/dashboard");
 });
 
 // STAFF ROUTES

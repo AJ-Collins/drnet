@@ -1,8 +1,24 @@
+<style>
+  .skeleton {
+    background: #e5e7eb;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>
+
 <div class="flex items-center justify-between mb-8">
   <div>
-    <h3 class="text-2xl font-bold text-teal-800">Team Communication</h3>
+    <h3 class="text-3xl font-bold text-teal-800">Team Communication</h3>
     <p class="text-teal-600 mt-1">
-      Real-time Messaging, announcements, and team collaborations.
+      Real-time chat, announcements, and collaboration
     </p>
   </div>
 </div>
@@ -10,435 +26,406 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
   <!-- Chat Panel -->
   <section
-    class="lg:col-span-2 bg-white rounded-t-2xl border border-teal-100 shadow-md overflow-hidden flex flex-col min-h-[40vh] max-h-[80vh]"
+    class="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-teal-100 overflow-hidden flex flex-col h-[80vh]"
   >
     <div
-      class="p-4 bg-teal-100 border-b border-teal-300 flex items-center justify-between"
+      class="p-5 bg-gradient-to-r from-teal-600 to-teal-700 text-white flex items-center justify-between"
     >
-      <div class="flex items-center gap-3">
-        <i class="fas fa-comments text-teal-600 text-xl md:text-3xl"></i>
+      <div class="flex items-center gap-4">
+        <i class="fas fa-comments text-3xl"></i>
         <div>
-          <h2 class="font-semibold text-gray-900">team-chat</h2>
-          <div id="onlineCount" class="text-xs text-teal-700">
-            0 members online
+          <h2 class="text-xl font-bold">#team-chat</h2>
+          <div id="onlineCount" class="text-sm opacity-90">
+            Loading members...
           </div>
         </div>
       </div>
-
-      <div class="flex items-center gap-2">
-        <button
-          onclick="clearChat()"
-          class="p-2 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition"
-        >
-          <i class="fas fa-trash"></i>
-        </button>
+      <div class="flex items-center gap-3">
         <button
           onclick="refreshChat()"
-          class="p-2 rounded-lg text-gray-500 hover:text-teal-600 hover:bg-teal-50 transition"
+          class="p-2 hover:bg-white/20 rounded-lg transition"
         >
           <i class="fas fa-sync-alt"></i>
         </button>
       </div>
     </div>
 
-    <!-- Messages (bubble style) -->
+    <!-- Messages -->
     <div
       id="chatMessages"
-      class="p-5 overflow-y-auto flex flex-col gap-4 flex-1"
+      class="flex-1 overflow-y-auto p-6 space-y-5 bg-gray-50"
     >
-      <!-- bubbles go here -->
+      <div class="text-center text-gray-500 py-20">
+        <i class="fas fa-comment-slash text-8xl text-gray-200 mb-4"></i>
+        <p class="text-xl font-semibold">No messages yet</p>
+        <p class="text-sm">Start the conversation!</p>
+      </div>
     </div>
 
     <!-- Input -->
-    <div class="p-4 border-t border-teal-100">
-      <form
-        id="slackMessageForm"
-        class="flex items-end gap-3"
-        onsubmit="sendMessage(event)"
-      >
+    <div class="p-5 border-t-2 border-teal-100 bg-white">
+      <form onsubmit="sendMessage(event)" class="flex items-end gap-3">
         <textarea
           id="messageInput"
           rows="1"
-          class="flex-1 px-4 py-3 border border-teal-200 rounded-lg resize-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 overflow-hidden transition-all duration-100 min-h-[20px] max-h-[160px] text-base"
-          placeholder="Message #team-chat"
+          placeholder="Type a message..."
+          class="flex-1 px-5 py-3 border-2 border-teal-200 rounded-2xl resize-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all text-base"
+          oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px'"
         ></textarea>
-
         <button
           type="submit"
-          class="bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-lg shadow mb-1"
+          class="bg-teal-600 hover:bg-teal-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all"
         >
-          <i class="fas fa-paper-plane"></i>
+          <i class="fas fa-paper-plane text-xl"></i>
         </button>
       </form>
     </div>
   </section>
 
-  <!-- Right Pane -->
+  <!-- Right Sidebar -->
   <aside class="space-y-6">
-    <div
-      class="bg-white border border-teal-100 shadow-md p-4 max-h-[500px] overflow-y-auto"
-    >
-      <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-        <i class="fas fa-user-friends text-teal-600"></i> Team Members
+    <!-- Team Members -->
+    <div class="bg-white rounded-2xl shadow-xl border border-teal-100 p-5">
+      <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <i class="fas fa-users text-teal-600"></i> Team Members
       </h3>
-      <div id="teamMembers" class="mt-4 space-y-3"></div>
+      <div id="teamMembers" class="space-y-3">
+        <div class="skeleton h-16 rounded-xl"></div>
+        <div class="skeleton h-16 rounded-xl"></div>
+      </div>
     </div>
 
-    <div
-      class="bg-white border border-teal-100 shadow-md p-4 max-h-[500px] overflow-y-auto"
-    >
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+    <!-- Announcements -->
+    <div class="bg-white rounded-2xl shadow-xl border border-teal-100 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
           <i class="fas fa-bullhorn text-teal-600"></i> Announcements
         </h3>
-        <button
-          onclick="createAnnouncement()"
-          class="text-teal-600 hover:text-teal-700"
-        >
-          <i class="fas fa-plus"></i>
-        </button>
       </div>
-      <div id="announcements" class="mt-4 space-y-3"></div>
+      <div id="announcementsList" class="space-y-3 max-h-96 overflow-y-auto">
+        <div class="skeleton h-24 rounded-xl"></div>
+      </div>
     </div>
   </aside>
 </div>
 
-<!-- Edit / View Announcement Modal -->
-<div id="announcementModal" class="fixed inset-0 z-50 hidden">
-  <div class="flex items-center justify-center min-h-screen p-4">
-    <div
-      class="fixed inset-0 bg-black/50"
-      onclick="closeAnnouncementModal()"
-    ></div>
-
-    <div
-      class="relative bg-white w-full max-w-2xl rounded-xl shadow-2xl border border-teal-100"
-    >
-      <!-- Header -->
-      <div
-        class="p-6 border-b border-teal-100 flex items-center justify-between"
-      >
-        <h3 id="modalHeader" class="text-xl font-bold text-teal-700">
-          New Announcement
-        </h3>
-        <button
-          onclick="closeAnnouncementModal()"
-          class="text-teal-600 hover:text-teal-800"
-        >
-          <i class="fas fa-times text-xl"></i>
-        </button>
-      </div>
-
-      <!-- Form -->
-      <form
-        id="announcementForm"
-        onsubmit="saveAnnouncement(event)"
-        class="p-6 space-y-5"
-      >
-        <input type="hidden" id="editId" value="" />
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Title</label
-          >
-          <input
-            type="text"
-            id="annTitle"
-            required
-            class="w-full px-4 py-2 border border-teal-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-            placeholder="e.g. Planned maintenance"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Message</label
-          >
-          <textarea
-            id="annBody"
-            rows="4"
-            required
-            class="w-full px-4 py-2 border border-teal-200 rounded-lg resize-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-            placeholder="Details of the announcement…"
-          ></textarea>
-        </div>
-
-        <div class="flex justify-end gap-3">
-          <button
-            type="button"
-            onclick="closeAnnouncementModal()"
-            class="px-5 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="px-5 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700"
-          >
-            <span id="submitBtnText">Publish</span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
 <script>
-  // Mock data for slack style
-  const messages = [
-    {
-      id: "m1",
-      from: "Alice Kim",
-      avatarIcon: "fa-user",
-      text: "Morning team! Router update deployed.",
-      time: "09:05",
-      me: false,
-    },
-    {
-      id: "m2",
-      from: "You",
-      avatarIcon: "fa-user",
-      text: "Thanks — I will verify logs.",
-      time: "09:07",
-      me: true,
-    },
-    {
-      id: "m3",
-      from: "John Doe",
-      avatarIcon: "fa-user",
-      text: "Ticket #T100 closed.",
-      time: "09:10",
-      me: false,
-    },
-  ];
-
-  const members = [
-    { id: 1, name: "Alice Kim", role: "Engineer", online: true },
-    { id: 2, name: "John Doe", role: "Support", online: true },
-    { id: 3, name: "Sarah Njeri", role: "QA", online: false },
-  ];
-
-  const announcements = [
-    {
-      id: "a1",
-      title: "Planned maintenance",
-      body: "Network maintenance on Friday 2AM-4AM.",
-    },
-  ];
+  const API_BASE = "/api";
+  let messages = [];
+  let teamMembers = [];
+  let announcements = [];
+  let currentUser = null;
 
   const $ = (id) => document.getElementById(id);
-  const txt = document.getElementById("messageInput");
-  let currentEditId = null;
 
-  txt.addEventListener("input", () => {
-    txt.style.height = "auto";
-    txt.style.height = txt.scrollHeight + "px";
-  });
+  // Load everything
+  const loadData = async () => {
+    try {
+      const [msgRes, memberRes, annRes, userRes] = await Promise.all([
+        fetch(`${API_BASE}/team/messages`),
+        fetch(`${API_BASE}/team/members`),
+        fetch(`${API_BASE}/team/announcements`),
+        fetch(`${API_BASE}/auth/me`),
+      ]);
 
-  function renderMembers() {
-    const el = $("teamMembers");
-    el.innerHTML = "";
-    members.forEach((m) => {
-      const node = document.createElement("div");
-      node.className = "flex items-center justify-between";
-      node.innerHTML = `
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center shadow">
-              <i class="fas fa-user"></i>
+      const msgData = msgRes.ok ? await msgRes.json() : {};
+      const annData = annRes.ok ? await annRes.json() : {};
+
+      messages = Array.isArray(msgData.messages) ? msgData.messages : [];
+      teamMembers = memberRes.ok ? await memberRes.json() : [];
+      announcements = Array.isArray(annData.announcements)
+        ? annData.announcements
+        : [];
+      currentUser = userRes.ok ? await userRes.json() : null;
+
+      renderMessages();
+      renderMembers();
+      renderAnnouncements();
+    } catch (err) {
+      alert("Failed to load team data");
+    }
+  };
+
+  // Render Messages
+  const renderMessages = () => {
+    const container = $("chatMessages");
+    if (!messages.length) {
+      container.innerHTML = `
+        <div class="text-center py-20 text-gray-500">
+          <i class="fas fa-comments text-9xl text-gray-200 mb-6"></i>
+          <p class="text-2xl font-bold">No messages yet</p>
+          <p class="text-lg">Be the first to say something!</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = messages
+      .map((m) => {
+        const isMe = currentUser && m.sender_id === currentUser.id;
+        const sender = m.sender_name || "Unknown";
+        const role = m.sender_role || "Staff";
+
+        return `
+        <div class="flex items-start gap-4 ${isMe ? "flex-row-reverse" : ""}">
+          <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-lg
+            ${
+              isMe
+                ? "bg-blue-600"
+                : role === "Admin"
+                ? "bg-purple-600"
+                : "bg-teal-600"
+            }">
+            ${sender.charAt(0).toUpperCase()}
+          </div>
+
+          <div class="flex-1 max-w-xl">
+            <div class="mb-2 text-xs text-gray-500 flex items-center gap-2 ${
+              isMe ? "justify-end" : ""
+            }">
+              <span class="font-bold ${
+                isMe
+                  ? "text-blue-700"
+                  : role === "Admin"
+                  ? "text-purple-700"
+                  : "text-teal-700"
+              }">
+                ${isMe ? "You" : sender}
+                ${
+                  role === "Admin"
+                    ? '<span class="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">Admin</span>'
+                    : ""
+                }
+              </span>
+              <span>${new Date(m.created_at).toLocaleString()}</span>
             </div>
-            <div>
-              <div class="text-sm font-semibold text-gray-900">${m.name}</div>
-              <div class="text-xs text-gray-500">${m.role}</div>
+
+            <!-- MESSAGE BUBBLE -->
+            <div class="p-5 
+              ${
+                isMe
+                  ? "rounded-2xl rounded-tr-none bg-blue-50 border-2 border-blue-200"
+                  : "rounded-2xl rounded-tl-none bg-gray-100 border-2 border-gray-300"
+              }">
+              <p class="text-gray-900 leading-relaxed">${escapeHtml(
+                m.message
+              )}</p>
             </div>
           </div>
-          <div class="text-xs ${
-            m.online ? "text-teal-600" : "text-gray-400"
-          }">${m.online ? "Online" : "Offline"}</div>`;
-      el.appendChild(node);
-    });
-    $("onlineCount").textContent =
-      members.filter((x) => x.online).length + " members online";
-  }
+        </div>`;
+      })
+      .join("");
 
-  function renderAnnouncements() {
-    const el = $("announcements");
-    el.innerHTML = "";
+    container.scrollTop = container.scrollHeight;
+  };
 
-    announcements.forEach((a) => {
-      const card = document.createElement("div");
-      card.className =
-        "p-3 border rounded-lg bg-teal-50 border-teal-100 relative group cursor-pointer hover:shadow-md transition-shadow";
+  // Render Team Members
+  const renderMembers = () => {
+    const container = $("teamMembers");
+    const onlineCount = teamMembers.filter((m) => m.online).length;
+    $("onlineCount").textContent = `${onlineCount} member${
+      onlineCount !== 1 ? "s" : ""
+    } online`;
 
-      card.onclick = (e) => {
-        if (e.target.closest("button")) return;
-        openEditAnnouncement(a.id);
-      };
-
-      card.innerHTML = `
-      <div class="pr-8">
-        <div class="text-sm font-semibold text-gray-800">${a.title}</div>
-        <div class="text-sm text-gray-600 mt-1">${a.body}</div>
+    container.innerHTML = teamMembers
+      .map(
+        (m) => `
+      <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-lg">
+              ${m.name.charAt(0).toUpperCase()}
+            </div>
+            ${
+              m.online
+                ? '<div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>'
+                : ""
+            }
+          </div>
+          <div>
+            <div class="font-semibold text-gray-900">${escapeHtml(m.name)}</div>
+            <div class="text-xs text-gray-500">${m.role || "Staff"}</div>
+          </div>
+        </div>
+        <div class="text-sm ${m.online ? "text-green-600" : "text-gray-400"}">
+          ${m.online ? "Online" : "Offline"}
+        </div>
       </div>
+    `
+      )
+      .join("");
+  };
 
-      <!-- Delete button (stops click propagation) -->
-      <button
-        onclick="event.stopPropagation(); deleteAnnouncement('${a.id}')"
-        class="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">
-        <i class="fas fa-times text-sm"></i>
-      </button>
+  function truncateText(text, limit = 120) {
+    if (text.length <= limit)
+      return { truncated: text, full: text, isTruncated: false };
+
+    return {
+      truncated: text.substring(0, limit) + "...",
+      full: text,
+      isTruncated: true,
+    };
+  }
+
+  function toggleAnnouncement(id) {
+    const el = document.getElementById(`announcement-msg-${id}`);
+    const btn = document.getElementById(`announcement-btn-${id}`);
+
+    const isExpanded = el.dataset.expanded === "true";
+
+    if (isExpanded) {
+      el.textContent = el.dataset.truncated;
+      el.dataset.expanded = "false";
+      btn.textContent = "Read more";
+    } else {
+      el.textContent = el.dataset.full;
+      el.dataset.expanded = "true";
+      btn.textContent = "Show less";
+    }
+  }
+
+  // Render Announcements
+  const renderAnnouncements = () => {
+    const container = $("announcementsList");
+
+    if (!announcements.length) {
+      container.innerHTML = `<p class="text-center text-gray-500 py-8">No announcements</p>`;
+      return;
+    }
+
+    container.innerHTML = announcements
+      .map((a) => {
+        const trunc = truncateText(a.message, 120);
+
+        return `
+      <div class="p-5 bg-teal-50 border-2 border-teal-200 rounded-xl relative group">
+        <div class="pr-10">
+          <h4 class="font-bold text-teal-800 text-lg">${escapeHtml(
+            a.title
+          )}</h4>
+
+          <p class="text-gray-700 mt-2">
+            <span 
+              id="announcement-msg-${a.id}"
+              data-full="${escapeHtml(trunc.full)}"
+              data-truncated="${escapeHtml(trunc.truncated)}"
+              data-expanded="false"
+            >
+              ${escapeHtml(trunc.isTruncated ? trunc.truncated : trunc.full)}
+            </span>
+
+            ${
+              trunc.isTruncated
+                ? `<button 
+                    id="announcement-btn-${a.id}" 
+                    onclick="toggleAnnouncement(${a.id})" 
+                    class="text-teal-700 ml-2 underline text-sm"
+                  >
+                    Read more
+                  </button>`
+                : ""
+            }
+          </p>
+
+          <p class="text-xs text-gray-500 mt-3">
+            Posted ${new Date(a.created_at).toLocaleDateString()}
+          </p>
+        </div>
+
+        ${
+          currentUser?.role === "Admin"
+            ? `
+          <button onclick="deleteAnnouncement(${a.id})" 
+            class="absolute top-3 right-3 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">
+            <i class="fas fa-trash"></i>
+          </button>`
+            : ""
+        }
+      </div>
     `;
+      })
+      .join("");
+  };
 
-      el.appendChild(card);
-    });
-  }
-
-  function renderMessages() {
-    const wrap = document.getElementById("chatMessages");
-    wrap.innerHTML = "";
-
-    messages.forEach((m) => {
-      const row = document.createElement("div");
-      row.className = `flex w-full ${m.me ? "justify-end" : "justify-start"}`;
-
-      const bubbleWrap = document.createElement("div");
-      bubbleWrap.className = m.me
-        ? "flex items-end gap-2 max-w-[70%]"
-        : "flex items-start gap-2 max-w-[70%]";
-
-      const avatar = document.createElement("div");
-      avatar.className =
-        "w-9 h-9 rounded-full bg-teal-600 text-white flex-shrink-0 flex items-center justify-center text-sm";
-      avatar.innerHTML = `<i class="fas ${m.avatarIcon}"></i>`;
-
-      const bubble = document.createElement("div");
-      bubble.className = `bubble px-4 py-2 rounded-2xl text-sm break-words ${
-        m.me
-          ? "bg-teal-600 text-white rounded-br-none"
-          : "bg-gray-100 text-gray-800 rounded-tl-none"
-      }`;
-
-      bubble.innerHTML = `
-      <div class="font-semibold">${m.from}</div>
-      <div class="mt-1">${m.text}</div>
-      <div class="text-xs mt-1 opacity-70">${m.time}</div>
-    `;
-
-      if (m.me) {
-        bubbleWrap.appendChild(bubble);
-        bubbleWrap.appendChild(avatar);
-      } else {
-        bubbleWrap.appendChild(avatar);
-        bubbleWrap.appendChild(bubble);
-      }
-
-      row.appendChild(bubbleWrap);
-      wrap.appendChild(row);
-    });
-
-    // ---- auto-scroll to bottom ----
-    wrap.scrollTop = wrap.scrollHeight;
-  }
-
-  function sendMessage(e) {
-    if (e) e.preventDefault();
-    const txt = $("messageInput").value.trim();
-    if (!txt) return;
-    const now = new Date();
-    messages.push({
-      id: "m" + Date.now(),
-      from: "You",
-      avatarIcon: "fa-user",
-      text: txt,
-      time: now.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      me: true,
-    });
-    $("messageInput").value = "";
-    renderMessages();
-  }
-
-  function refreshChat() {
-    renderMessages();
-    renderMembers();
-    renderAnnouncements();
-  }
-
-  function clearChat() {
-    if (!confirm("Clear all messages?")) return;
-    messages.length = 0;
-    renderMessages();
-  }
-
-  function createAnnouncement() {
-    currentEditId = null;
-    document.getElementById("modalHeader").textContent = "New Announcement";
-    document.getElementById("submitBtnText").textContent = "Publish";
-    document.getElementById("editId").value = "";
-    document.getElementById("annTitle").value = "";
-    document.getElementById("annBody").value = "";
-    document.getElementById("announcementModal").classList.remove("hidden");
-  }
-
-  function openEditAnnouncement(id) {
-    const ann = announcements.find((a) => a.id === id);
-    if (!ann) return;
-
-    currentEditId = id;
-    document.getElementById("modalHeader").textContent = "Edit Announcement";
-    document.getElementById("submitBtnText").textContent = "Save Changes";
-    document.getElementById("editId").value = id;
-    document.getElementById("annTitle").value = ann.title;
-    document.getElementById("annBody").value = ann.body;
-    document.getElementById("announcementModal").classList.remove("hidden");
-  }
-
-  function closeAnnouncementModal() {
-    document.getElementById("announcementModal").classList.add("hidden");
-    currentEditId = null;
-  }
-
-  function saveAnnouncement(e) {
+  // Send Message
+  const sendMessage = async (e) => {
     e.preventDefault();
+    const input = $("messageInput");
+    const msg = input.value.trim();
+    if (!msg) return;
 
-    const title = document.getElementById("annTitle").value.trim();
-    const body = document.getElementById("annBody").value.trim();
-    const editId = document.getElementById("editId").value;
+    try {
+      await fetch(`${API_BASE}/team/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }),
+      });
+      input.value = "";
+      loadData();
+    } catch (err) {
+      alert("Failed to send message");
+    }
+  };
+
+  const closeAnnouncementModal = () => {
+    $("announcementModal").classList.add("hidden");
+  };
+
+  const saveAnnouncement = async (e) => {
+    e.preventDefault();
+    const title = $("annTitle").value.trim();
+    const body = $("annBody").value.trim();
+    const editId = $("annEditId").value;
 
     if (!title || !body) return;
 
-    if (editId && currentEditId) {
-      // === EDIT EXISTING ===
-      const ann = announcements.find((a) => a.id === editId);
-      if (ann) {
-        ann.title = title;
-        ann.body = body;
-      }
-    } else {
-      // === CREATE NEW ===
-      announcements.unshift({
-        id: "a" + Date.now(),
-        title,
-        body,
+    try {
+      const url = editId
+        ? `${API_BASE}/team/announcements/${editId}`
+        : `${API_BASE}/team/announcements`;
+      const method = editId ? "PUT" : "POST";
+
+      await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, body }),
       });
+
+      closeAnnouncementModal();
+      loadData();
+    } catch (err) {
+      alert("Failed to save announcement");
     }
+  };
 
-    renderAnnouncements();
-    closeAnnouncementModal();
-  }
-
-  function deleteAnnouncement(id) {
+  const deleteAnnouncement = async (id) => {
     if (!confirm("Delete this announcement?")) return;
-    const index = announcements.findIndex((a) => a.id === id);
-    if (index !== -1) announcements.splice(index, 1);
-    renderAnnouncements();
+    try {
+      await fetch(`${API_BASE}/team/announcements/${id}`, { method: "DELETE" });
+      loadData();
+    } catch (err) {
+      alert("Failed to delete");
+    }
+  };
+
+  // Refresh
+  const refreshChat = () => loadData();
+
+  // Escape HTML
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
   }
 
-  // init
-  window.addEventListener("load", () => {
-    renderMessages();
-    renderMembers();
-    renderAnnouncements();
-  });
+  // Auto-resize textarea
+  document
+    .getElementById("messageInput")
+    ?.addEventListener("input", function () {
+      this.style.height = "auto";
+      this.style.height = this.scrollHeight + "px";
+    });
+
+  // Init
+  window.onload = loadData;
+  setInterval(loadData, 10000); // Auto-refresh every 10s
 </script>

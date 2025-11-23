@@ -1,25 +1,34 @@
 const db = require("../config/db");
 
 const SupportTicket = {
-  // Map DB row to frontend-friendly format
-  mapToFrontend: (row, usersMap = {}) => {
-    const user = usersMap[row.user_id] || {};
+  mapToFrontend: (row) => {
+    let userName = "";
+
+    if (row.user_id) {
+      if (row.first_name || row.last_name) {
+        userName = `${row.first_name || ""} ${row.second_name || ""}`.trim();
+      } else {
+        userName = row.email || "Unknown User";
+      }
+    }
+
     return {
       id: row.id,
-      ticket_number: row.ticket_number || `TKT-${row.id}`,
-      fullName: user.name || user.first_name || row.subject || "Unknown User",
-      phone: user.phone || "N/A",
-      issue_type: row.issue_type || "technical",
-      priority: (row.priority || "medium").toLowerCase(),
-      status: row.status || "open",
+      ticket_number: row.ticket_number,
+      fullName: row.user_id ? `${row.subject} - ${userName}` : row.subject,
+      phone: row.phone || "N/A",
+      issue_type: row.issue_type,
+      priority: row.priority,
+      status: row.status,
       subject: row.subject,
-      description: row.description || "", // ← NEW
-      created_at: row.created_at,
+      description: row.description || "",
       assigned_to: row.assigned_to,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
     };
   },
 
-  // Create a new ticket
+  // Create new ticket
   create: async (data) => {
     const {
       ticket_number,
@@ -34,8 +43,8 @@ const SupportTicket = {
 
     const [result] = await db.query(
       `INSERT INTO support_tickets 
-      (ticket_number, user_id, subject, issue_type, priority, description, status, assigned_to)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    (ticket_number, user_id, subject, issue_type, priority, description, status, assigned_to)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         ticket_number,
         user_id,
@@ -48,71 +57,91 @@ const SupportTicket = {
       ]
     );
 
-    // No second query – just map the inserted data
-    return {
+    // RETURN DIRECTLY — DO NOT USE findById()
+    return SupportTicket.mapToFrontend({
       id: result.insertId,
       ticket_number,
       user_id,
       subject,
       issue_type,
       priority,
-      description: description || "", // ← ALWAYS present
+      description,
       status,
       assigned_to,
-      created_at: new Date().toISOString(),
-    };
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
   },
 
-  // Get all tickets
-  findAll: async (usersMap = {}) => {
-    const [rows] = await db.query(
-      `SELECT * FROM support_tickets ORDER BY created_at DESC`
-    );
-    return rows.map((row) => SupportTicket.mapToFrontend(row, usersMap));
+  // Get ALL tickets
+  findAll: async () => {
+    const [rows] = await db.query(`
+    SELECT st.*, u.first_name, u.second_name, u.email, u.phone
+    FROM support_tickets st
+    LEFT JOIN users u ON st.user_id = u.id
+    ORDER BY st.created_at DESC
+  `);
+
+    return rows.map(SupportTicket.mapToFrontend);
   },
 
-  // Get tickets by user ID (or all)
-  findAllByUser: async (userId = null, usersMap = {}) => {
-    if (!userId) return SupportTicket.findAll(usersMap);
+  // Get tickets by USER
+  findAllByUser: async (userId = null) => {
+    if (!userId) return SupportTicket.findAll();
+
     const [rows] = await db.query(
-      `SELECT * FROM support_tickets WHERE user_id = ? ORDER BY created_at DESC`,
+      `
+    SELECT st.*, u.first_name, u.second_name, u.email, u.phone
+    FROM support_tickets st
+    LEFT JOIN users u ON st.user_id = u.id
+    WHERE st.user_id = ?
+    ORDER BY st.created_at DESC
+  `,
       [userId]
     );
-    return rows.map((row) => SupportTicket.mapToFrontend(row, usersMap));
+
+    return rows.map(SupportTicket.mapToFrontend);
   },
 
+  // Get tickets assigned to STAFF
   findAllByStaff: async (staffId = null) => {
     if (!staffId) return [];
 
     const [rows] = await db.query(
-      `SELECT * 
-     FROM support_tickets 
-     WHERE assigned_to = ? 
-     ORDER BY created_at DESC`,
+      `
+    SELECT st.*, u.first_name, u.second_name, u.email, u.phone
+    FROM support_tickets st
+    LEFT JOIN users u ON st.user_id = u.id
+    WHERE st.assigned_to = ?
+    ORDER BY st.created_at DESC
+    `,
       [staffId]
     );
 
-    return rows;
+    return rows.map(SupportTicket.mapToFrontend);
   },
 
-  // Get single ticket
-  findById: async (id, usersMap = {}) => {
+  // Get one ticket by ID
+  findById: async (id) => {
     const [rows] = await db.query(
       `SELECT * FROM support_tickets WHERE id = ?`,
       [id]
     );
+
     if (!rows.length) return null;
-    return SupportTicket.mapToFrontend(rows[0], usersMap);
+    return SupportTicket.mapToFrontend(rows[0]);
   },
 
-  // Update ticket
+  // Generic update
   update: async (id, data) => {
     const fields = Object.keys(data)
       .map((k) => `${k} = ?`)
       .join(", ");
-    const values = Object.values(data);
-    values.push(id);
+
+    const values = [...Object.values(data), id];
+
     await db.query(`UPDATE support_tickets SET ${fields} WHERE id = ?`, values);
+
     return SupportTicket.findById(id);
   },
 
