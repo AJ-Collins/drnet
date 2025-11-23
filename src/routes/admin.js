@@ -617,4 +617,29 @@ router.get("/supervisors", async (req, res) => {
   }
 });
 
+router.delete("/staff/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if staff exists
+    const existing = await Staff.findById(id);
+    if (!existing) {
+      return res.status(404).json({ error: "Staff member not found" });
+    }
+
+    // Delete staff
+    const result = await Staff.delete(id);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ error: "Failed to delete staff member" });
+    }
+
+    res.json({ success: true, message: "Staff member deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting staff:", err);
+    res.status(500).json({ error: "Server error while deleting staff" });
+  }
+});
+
+
 module.exports = router;
