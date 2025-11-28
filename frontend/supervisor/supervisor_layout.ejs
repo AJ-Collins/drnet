@@ -31,8 +31,20 @@
         height: 100%;
         overflow: hidden;
       }
+     @keyframes pulse {
+        0% { transform: translateX(50%) translateY(-50%) scale(1); }
+        50% { transform: translateX(50%) translateY(-50%) scale(1.2); }
+        100% { transform: translateX(50%) translateY(-50%) scale(1); }
+      }
+
+      #notificationBadge:not(.hidden) {
+        animation: pulse 2s infinite;
+      }
     </style>
   </head>
+  <script>
+  dayjs.extend(dayjs_plugin_relativeTime);
+</script>
   <body class="bg-gradient-to-br from-white via-teal-50 to-teal-100">
     <!-- Main Layout Container -->
     <div class="flex h-screen overflow-hidden">
@@ -136,52 +148,51 @@
             <!-- Header Actions -->
             <div class="flex items-center space-x-2">
               <!-- Notifications -->
-              <div class="relative">
+              <div class="relative inline-block">
                 <button
                   id="notificationBtn"
                   class="p-2 rounded-lg hover:bg-teal-50 text-teal-700 transition relative"
                 >
+                  <!-- Bell Icon -->
                   <i class="fas fa-bell text-xl"></i>
-                  <span
-                    class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"
-                  ></span>
+
+                  <!-- Unread Count Badge -->
+                  <span 
+                    id="notificationBadge"
+                    class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 
+                          min-w-5 h-5 bg-red-600 text-white text-xs font-bold 
+                          rounded-full flex items-center justify-center shadow-lg
+                          border-2 border-white
+                          hidden"
+                  >
+                    0
+                  </span>
                 </button>
 
                 <!-- Notification Dropdown -->
                 <div
                   id="notificationDropdown"
-                  class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl z-50 hidden border border-teal-100"
+                  class="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl z-50 hidden border border-gray-100 overflow-hidden"
                 >
-                  <div class="p-4 border-b border-gray-200">
-                    <h3 class="font-semibold text-gray-800">Notifications</h3>
+                  <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800 text-lg">Notifications</h3>
+                    <button id="markAllReadBtn" class="text-sm text-teal-600 hover:text-teal-700 font-medium">
+                      Mark all as read
+                    </button>
                   </div>
-                  <div class="max-h-96 overflow-y-auto">
-                    <a
-                      href="#"
-                      class="flex items-start px-4 py-3 hover:bg-teal-50 transition border-b border-gray-100"
-                    >
-                      <div
-                        class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0"
-                      >
-                        <i class="fas fa-user text-blue-600"></i>
-                      </div>
-                      <div class="flex-1">
-                        <p class="text-sm text-gray-800 font-medium">
-                          Coming soon
-                        </p>
-                        <!-- <p class="text-xs text-gray-500">
-                          John Doe joined the platform
-                        </p>
-                        <p class="text-xs text-gray-400 mt-1">2 hours ago</p> -->
-                      </div>
+
+                  <div id="notificationsList" class="max-h-96 overflow-y-auto">
+                    <!-- JS will populate here -->
+                    <div class="p-8 text-center text-gray-400">
+                      <i class="fas fa-bell-slash text-4xl mb-3"></i>
+                      <p>No notifications yet</p>
+                    </div>
+                  </div>
+
+                  <div class="p-4 border-t border-gray-200 text-center">
+                    <a href="#" class="text-teal-600 hover:text-teal-700 font-medium">
+                      View all notifications →
                     </a>
-                  </div>
-                  <div class="p-3 border-t border-gray-200">
-                    <a
-                      href="#"
-                      class="text-sm text-teal-600 hover:text-teal-700 font-medium block text-center"
-                      >View all notifications</a
-                    >
                   </div>
                 </div>
               </div>
@@ -322,15 +333,15 @@
       });
 
       // Notification dropdown
-      document
-        .getElementById("notificationBtn")
-        .addEventListener("click", function (e) {
-          e.stopPropagation();
-          const dropdown = document.getElementById("notificationDropdown");
-          const userDropdown = document.getElementById("userDropdown");
-          userDropdown.classList.add("hidden");
-          dropdown.classList.toggle("hidden");
-        });
+      // document
+      //   .getElementById("notificationBtn")
+      //   .addEventListener("click", function (e) {
+      //     e.stopPropagation();
+      //     const dropdown = document.getElementById("notificationDropdown");
+      //     const userDropdown = document.getElementById("userDropdown");
+      //     userDropdown.classList.add("hidden");
+      //     dropdown.classList.toggle("hidden");
+      //   });
 
       // User dropdown
       document
@@ -499,6 +510,137 @@
       nameSpan.textContent = 'Julius Ojwang';
     }
   }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const dropdown = document.getElementById('notificationDropdown');
+    const listContainer = document.getElementById('notificationsList');
+    const markAllBtn = document.getElementById('markAllReadBtn');
+    const badge = document.getElementById('notificationBadge');
+
+    // Load and render notifications
+    async function loadNotifications() {
+    try {
+      const res = await fetch('/api/notifications');
+      if (!res.ok && res.status !== 304) throw new Error('Failed');
+
+      const json = await res.json();
+      const notifications = json.data || json.notifications || [];
+
+      // Count unread ones
+      const unreadCount = notifications.filter(n => n.is_read == 0).length;
+
+      // Update badge
+      const badge = document.getElementById('notificationBadge');
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      // Clear list
+      listContainer.innerHTML = '';
+
+      if (notifications.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-8 text-center text-gray-400">
+            <i class="fas fa-bell-slash text-4xl mb-3"></i>
+            <p>No notifications yet</p>
+          </div>`;
+        return;
+      }
+
+      // Sort newest first
+      notifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      notifications.forEach(notif => {
+        const isUnread = notif.is_read == 0;
+        const timeAgo = dayjs(notif.created_at).fromNow(); // "2 minutes ago"
+
+        const item = document.createElement('div');
+        item.className = `p-4 border-b border-gray-100 hover:bg-teal-50 transition-all ${isUnread ? 'bg-teal-50' : ''}`;
+
+        item.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div class="flex-1 pr-3">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-gray-900">${notif.title}</span>
+                ${isUnread ? '<span class="w-2 h-2 bg-teal-500 rounded-full"></span>' : ''}
+              </div>
+              <p class="text-sm text-gray-600 leading-relaxed">${notif.message}</p>
+              <p class="text-xs text-gray-400 mt-2">${timeAgo}</p>
+            </div>
+            ${isUnread ? `
+              <button 
+                class="mark-read-btn text-xs text-teal-600 hover:text-teal-800 font-medium whitespace-nowrap"
+                data-id="${notif.id}"
+              >
+                Mark read
+              </button>
+            ` : ''}
+          </div>
+        `;
+
+        // Optional: click whole item to go somewhere
+        // if (notif.link) item.onclick = () => location.href = notif.link;
+
+        listContainer.appendChild(item);
+      });
+
+      // Re-attach mark read buttons
+      document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.onclick = async (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          try {
+            await fetch(`/api/notifications/${id}/read`, { 
+              method: 'PATCH',
+              credentials: 'include'
+            });
+            loadNotifications();
+          } catch {
+            showNotification('Failed to mark as read', 'error');
+          }
+        };
+      });
+
+    } catch (err) {
+      console.error('Load notifications failed:', err);
+      listContainer.innerHTML = `<div class="p-4 text-center text-red-500">Failed to load notifications</div>`;
+    }
+  }
+    // Mark all as read
+    markAllBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/api/notifications/mark-all-read', { method: 'PATCH' });
+        loadNotifications();
+        showNotification('All notifications marked as read', 'success');
+      } catch (err) {
+        showNotification('Failed to mark all as read', 'error');
+      }
+    });
+
+    // Toggle dropdown
+    document.getElementById('notificationBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('hidden');
+      if (!dropdown.classList.contains('hidden')) {
+        loadNotifications(); // Reload when opening
+      }
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('notificationBtn').contains(e.target) && 
+          !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    // Initial load
+    loadNotifications();
+  });
+
 
   // -----------------------------------------------------------------
   // Run on DOM ready (you already have DOMContentLoaded elsewhere)

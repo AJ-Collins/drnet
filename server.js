@@ -30,6 +30,7 @@ const profile = require("./src/routes/profile");
 const userProfile = require("./src/routes/userProfile");
 const teamChat = require("./src/routes/teamChat");
 const announcement = require("./src/routes/announcements");
+const notificationsRoutes = require("./src/routes/notifications");
 // Session Configuration
 app.use(
   session({
@@ -192,6 +193,7 @@ app.use("/api", apiSessionAuth, userProfile);
 app.use("/api/client", bookings);
 app.use("/api", apiSessionAuth, teamChat);
 app.use("/api", apiSessionAuth, announcement);
+app.use("/api/notifications", apiSessionAuth, notificationsRoutes);
 
 // Create uploads folder
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
@@ -239,7 +241,7 @@ const adminPages = [
   "communication-team",
   "equipments",
   "expired-users",
-  "active-users"
+  "active-users",
 ];
 
 app.get("/admin/:page", requireAdminAuth, (req, res) => {

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Announcement = require("../models/Announcement");
+const Notification = require("../models/Notification");
 const db = require("../config/db");
 
 // GET all active announcements (everyone)
@@ -44,7 +45,8 @@ router.post("/team/announcements", async (req, res) => {
   }
 
   try {
-    await Announcement.create({
+    // Create the announcement
+    const result = await Announcement.create({
       title: title.trim(),
       message: body.trim(),
       posted_by_id: req.session.user.id,
@@ -52,7 +54,30 @@ router.post("/team/announcements", async (req, res) => {
       is_active: true,
     });
 
-    res.json({ success: true, message: "Announcement published" });
+    const announcementId = result.insertId;
+    const posterName = req.session.user.first_name 
+      ? `${req.session.user.first_name} ${req.session.user.second_name || ''}`.trim()
+      : req.session.user.email || 'Admin';
+
+    // Get role id of the user executing
+    const roleId = req.session.user.role_id; 
+
+    // Create notifications for all roles
+    if (roleId) {
+      await Notification.create({
+        type: 'announcement',
+        reference_id: announcementId,
+        title: 'New Announcement',
+        message: `${posterName} posted: "${title.trim()}"`,
+        role_id: roleId,
+        is_read: false,
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Announcement published and notifications sent" 
+    });
   } catch (err) {
     console.error("Error creating announcement:", err);
     res.status(500).json({ success: false, message: "Failed to publish" });
