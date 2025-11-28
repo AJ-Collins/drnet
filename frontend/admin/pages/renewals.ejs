@@ -140,14 +140,14 @@
         <span class="text-sm">Upgrade</span>
       </button>
 
-      <button
+      <!-- <button
         onclick="openSubscribeModal()"
         id="btnSubscribe"
         class="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors"
       >
         <i class="fas fa-plus text-sm"></i>
         <span class="text-sm">Subscribe</span>
-      </button>
+      </button> -->
     </div>
   </div>
 
@@ -306,8 +306,8 @@
 
 <script>
   /* ==============================================================
-     RENEWALS MANAGEMENT – FINAL CLEAN & FULLY WORKING VERSION
-     ============================================================== */
+   RENEWALS MANAGEMENT – FIXED VERSION
+   ============================================================== */
   const RENEW = {
     clientsCache: [],
     packagesCache: [],
@@ -348,7 +348,11 @@
               headers: { "X-Admin-Request": "true" },
             }
           );
-          const sub = subRes.ok ? await subRes.json() : null;
+          let sub = subRes.ok ? await subRes.json() : null;
+          // API returns an array, get first item
+          if (Array.isArray(sub) && sub.length > 0) {
+            sub = sub[0];
+          }
           return { ...c, currentSub: sub };
         } catch {
           return { ...c, currentSub: null };
@@ -403,14 +407,25 @@
 
     select.innerHTML = filtered.length
       ? filtered
-          .map(
-            (c) => `
-          <option value="${c.id}">
-            ${c.first_name} ${c.second_name} – ${c.phone || "—"} ${
-              c.currentSub ? `(${c.currentSub.package_name})` : "(No Plan)"
+          .map((c) => {
+            // Debug: log the structure
+            console.log("Client:", c.first_name, "currentSub:", c.currentSub);
+
+            // Get package name with fallbacks
+            let planName = "(No Plan)";
+            if (c.currentSub) {
+              if (c.currentSub.package?.name) {
+                planName = `(${c.currentSub.package.name})`;
+              } else if (c.currentSub.package_name) {
+                planName = `(${c.currentSub.package_name})`;
+              }
             }
-          </option>`
-          )
+
+            return `
+        <option value="${c.id}">
+          ${c.first_name} ${c.second_name} – ${c.phone || "—"} ${planName}
+        </option>`;
+          })
           .join("")
       : "<option disabled>No clients found</option>";
   }
@@ -451,14 +466,35 @@
   function renderClientPreview() {
     const c = RENEW.selectedClient;
     const sub = c.currentSub;
+
+    console.log("Rendering preview for:", c.first_name, "Sub:", sub);
+
     $r("previewInitials").textContent =
       `${c.first_name[0]}${c.second_name[0]}`.toUpperCase();
     $r("previewName").textContent = `${c.first_name} ${c.second_name}`;
     $r("previewContact").textContent = `${c.phone || "—"} • ${c.email || "—"}`;
-    $r("previewPlan").textContent = sub ? sub.package_name : "No active plan";
-    $r("previewExpiry").textContent = sub
-      ? `Expires ${formatDate(sub.expires)}`
-      : "";
+
+    // Get plan name
+    let planName = "No active plan";
+    if (sub) {
+      if (sub.package?.name) {
+        planName = sub.package.name;
+      } else if (sub.package_name) {
+        planName = sub.package_name;
+      }
+    }
+    $r("previewPlan").textContent = planName;
+
+    // Get expiry date
+    let expiryText = "";
+    if (sub) {
+      const expiryDate = sub.expiry_date || sub.expires;
+      if (expiryDate) {
+        expiryText = `Expires ${formatDate(expiryDate)}`;
+      }
+    }
+    $r("previewExpiry").textContent = expiryText;
+
     $r("clientPreview").classList.remove("hidden");
   }
 
@@ -493,45 +529,41 @@
         const isLatestActive = latestActive && h.id === latestActive.id;
 
         return `
-          <tr class="hover:bg-gray-50">
-            <td class="p-3">${h.package_name || "Unknown Plan"}</td>            
-            <td class="p-3">${formatDate(h.renewal_date)}</td>
-            <td class="p-3">${formatDate(h.old_expiry_date)}</td>
-            <td class="p-3">${formatDate(h.new_expiry_date)}</td>
-            <td class="p-3">KSh ${Number(
-              h.old_amount || 0
-            ).toLocaleString()}</td>
-            <td class="p-3">KSh ${Number(h.amount || 0).toLocaleString()}</td>
-            <td class="p-3">
-              <span class="px-2 py-1 rounded text-xs font-medium ${getBadge(
-                isActive ? "Active" : "Expired"
-              )}">
-                ${isActive ? "Active" : "Expired"}
-              </span>
-            </td>
-            <td class="p-3 text-right">
-              <div class="flex justify-end items-center gap-2">
-                ${
-                  isLatestActive
-                    ? `<button onclick="reverseRenewal(${h.id})"
-                        class="text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white
-                        px-3 py-1.5 rounded-lg shadow-sm flex items-center space-x-1
-                        transition-all transform hover:scale-105">
-                        <i class="fas fa-undo"></i>
-                        <span>Undo</span>
-                      </button>`
-                    : ""
-                }
-
-                <button onclick="deleteRenewal(${h.id})"
-                  class="text-xs bg-red-100 hover:bg-red-200 text-red-700
-                  px-2 py-1 rounded flex items-center space-x-1">
-                  <i class="fas fa-trash"></i>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>`;
+        <tr class="hover:bg-gray-50">
+          <td class="p-3">${h.package_name || "Unknown Plan"}</td>
+          <td class="p-3">${formatDate(h.renewal_date)}</td>
+          <td class="p-3">${formatDate(h.old_expiry_date)}</td>
+          <td class="p-3">${formatDate(h.new_expiry_date)}</td>
+          <td class="p-3">KSh ${Number(h.old_amount || 0).toLocaleString()}</td>
+          <td class="p-3">KSh ${Number(h.amount || 0).toLocaleString()}</td>
+          <td class="p-3">
+            <span class="px-2 py-1 rounded text-xs font-medium ${getBadge(
+              isActive ? "Active" : "Expired"
+            )}">
+              ${isActive ? "Active" : "Expired"}
+            </span>
+          </td>
+          <td class="p-3 text-right">
+            <div class="flex justify-end items-center gap-2">
+              ${
+                isLatestActive
+                  ? `<button onclick="reverseRenewal(${h.id})"
+                      class="text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white
+                      px-3 py-1.5 rounded-lg shadow-sm flex items-center space-x-1
+                      transition-all transform hover:scale-105">
+                      <i class="fas fa-undo"></i>
+                      <span>Undo</span>
+                    </button>`
+                  : `<button onclick="deleteRenewal(${h.id})"
+                      class="text-xs bg-red-100 hover:bg-red-200 text-red-700
+                      px-2 py-1 rounded flex items-center space-x-1">
+                      <i class="fas fa-trash"></i>
+                      <span>Delete</span>
+                    </button>`
+              }
+            </div>
+          </td>
+        </tr>`;
       })
       .join("");
   }
@@ -539,7 +571,10 @@
   function toggleActionButtons() {
     const hasActivePlan =
       !!RENEW.selectedClient?.currentSub &&
-      new Date(RENEW.selectedClient.currentSub.expiry_date) >= new Date();
+      new Date(
+        RENEW.selectedClient.currentSub.expiry_date ||
+          RENEW.selectedClient.currentSub.expires
+      ) >= new Date();
 
     const hasAnyPlanEver = !!RENEW.selectedClient?.currentSub; // even if expired
 
@@ -547,7 +582,7 @@
     if (hasActivePlan) {
       $r("btnRenew").classList.remove("hidden");
       $r("btnUpgrade").classList.remove("hidden");
-      $r("btnSubscribe").classList.add("hidden");
+      // $r("btnSubscribe").classList.add("hidden");
 
       $r("btnRenew").disabled = false;
       $r("btnUpgrade").disabled = false;
@@ -556,7 +591,7 @@
     else {
       $r("btnRenew").classList.add("hidden");
       $r("btnUpgrade").classList.add("hidden");
-      $r("btnSubscribe").classList.remove("hidden");
+      // $r("btnSubscribe").classList.remove("hidden");
 
       $r("btnRenew").disabled = true;
       $r("btnUpgrade").disabled = true;
@@ -596,9 +631,10 @@
     const cur = RENEW.selectedClient.currentSub;
     const curBox = $r("currentPlanBox");
     if (cur && mode !== "subscribe") {
-      $r("currentPlanName").textContent = cur.package_name;
+      $r("currentPlanName").textContent =
+        cur.package?.name || cur.package_name || "Unknown Plan";
       $r("currentPlanExpiry").textContent = `Expires: ${formatDate(
-        cur.expires
+        cur.expiry_date || cur.expires
       )}`;
       curBox.classList.remove("hidden");
     } else curBox.classList.add("hidden");
@@ -693,7 +729,6 @@
   };
 
   /* ---------- STATS ---------- */
-  /* ---------- STATS — NOW 100% ACCURATE USING REAL EXPIRY DATE ---------- */
   async function updateStats() {
     try {
       const res = await fetch(`${API}/renewals/stats`, {
@@ -711,12 +746,13 @@
         avgRenewal = s.avgRenewal || 0;
       }
 
-      // CORRECT: Use the actual expiry_date from current subscription
+      // Use the actual expiry_date from current subscription
       const activeClientsCount = RENEW.clientsCache.filter((c) => {
         return (
           c.currentSub &&
-          c.currentSub.expiry_date &&
-          new Date(c.currentSub.expiry_date) >= new Date()
+          (c.currentSub.expiry_date || c.currentSub.expires) &&
+          new Date(c.currentSub.expiry_date || c.currentSub.expires) >=
+            new Date()
         );
       }).length;
 

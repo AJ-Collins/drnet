@@ -49,8 +49,8 @@ const Renewals = {
       `
     SELECT 
       COUNT(*) as count,
-      COALESCE(SUM(amount + COALESCE(old_amount, 0)), 0) as revenue,
-      COALESCE(AVG(amount + COALESCE(old_amount, 0)), 0) as avg_amount
+      COALESCE(SUM(amount), 0) as revenue,
+      COALESCE(AVG(amount), 0) as avg_amount
     FROM renewals
     WHERE YEAR(renewal_date) = ? 
       AND MONTH(renewal_date) = ?

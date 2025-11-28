@@ -238,6 +238,8 @@ const adminPages = [
   "attendance",
   "communication-team",
   "equipments",
+  "expired-users",
+  "active-users"
 ];
 
 app.get("/admin/:page", requireAdminAuth, (req, res) => {

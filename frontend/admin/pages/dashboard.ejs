@@ -335,18 +335,24 @@
             <span>Users Overview</span><i class="fas fa-users text-teal-600 ml-2"></i>
           </h3>
           <div class="flex justify-between space-x-4">
-            <div class="flex-1 bg-teal-100 rounded-lg p-4 cursor-pointer hover:bg-teal-200 transition"
-                 ">
-              <p class="text-teal-700 text-sm font-bold">Active Users</p>
-              <h2 class="text-2xl font-bold text-gray-800 mt-1">${d.activeUsers}</h2>
-              <p class="text-green-500 text-sm flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i>${d.activeGrowth}% increase</p>
-            </div>
-            <div class="flex-1 bg-red-100 rounded-lg p-4 cursor-pointer hover:bg-red-200 transition"
-                 ">
-              <p class="text-red-600 text-sm font-bold">Expired Users</p>
-              <h2 class="text-2xl font-bold text-gray-800 mt-1">${d.expiredUsers}</h2>
-              <p class="text-red-500 text-sm flex items-center mt-1"><i class="fas fa-arrow-down mr-1"></i>${d.expiredGrowth}% decrease</p>
-            </div>
+            <% const activeUsersSlug = "active-users"; %>
+            <a href="/admin/<%= activeUsersSlug %>" class="block">
+              <div class="flex-1 bg-teal-100 rounded-lg p-4 cursor-pointer hover:bg-teal-200 transition"
+                  ">
+                <p class="text-teal-700 text-sm font-bold">Active Users</p>
+                <h2 class="text-2xl font-bold text-gray-800 mt-1">${d.activeUsers}</h2>
+                <p class="text-green-500 text-sm flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i>${d.activeGrowth}% increase</p>
+              </div>
+            </a>
+            <% const expiredUsersSlug = "expired-users"; %>
+            <a href="/admin/<%= expiredUsersSlug %>" class="block">
+              <div class="flex-1 bg-red-100 rounded-lg p-4 cursor-pointer hover:bg-red-200 transition"
+                  ">
+                <p class="text-red-600 text-sm font-bold">Expired Users</p>
+                <h2 class="text-2xl font-bold text-gray-800 mt-1">${d.expiredUsers}</h2>
+                <p class="text-red-500 text-sm flex items-center mt-1"><i class="fas fa-arrow-down mr-1"></i>${d.expiredGrowth}% decrease</p>
+              </div>
+            </a>
           </div>
         </div>`;
 
@@ -386,26 +392,31 @@
             <span>Requests Overview</span><i class="fas fa-calendar-alt text-teal-600 ml-2"></i>
           </h3>
           <div class="flex justify-between space-x-4">
-            <div class="flex-1 bg-blue-100 rounded-lg p-4 cursor-pointer hover:bg-blue-200 transition"
-                 ">
-              <p class="text-blue-600 text-sm font-bold">Bookings</p>
-              <h2 class="text-2xl font-bold text-gray-800 mt-1">${
-                d.bookings
-              }</h2>
-              <p class="text-green-500 text-sm flex items-center mt-1"><i class="fas fa-clock mr-1"></i>Pending ${plural(
-                d.bookings,
-                "booking",
-                "bookings"
-              )}</p>
-            </div>
-            <div class="flex-1 bg-purple-100 rounded-lg p-4 cursor-pointer hover:bg-purple-200 transition"
-                ">
-              <p class="text-purple-600 text-sm font-bold">Website Inquiries</p>
-              <h2 class="text-2xl font-bold text-gray-800 mt-1">${
-                d.inquiries
-              }</h2>
-              <p class="text-purple-500 text-sm flex items-center mt-1"><i class="fas fa-envelope mr-1"></i>Pending responses</p>
-            </div>
+            <% const bookingsSlug = "website-bookings"; %>
+            <a href="/admin/<%= bookingsSlug %>" class="block">
+              <div class="flex-1 bg-blue-100 rounded-lg p-4 cursor-pointer hover:bg-blue-200 transition"
+                  ">
+                <p class="text-blue-600 text-sm font-bold">Bookings</p>
+                <h2 class="text-2xl font-bold text-gray-800 mt-1">${
+                  d.bookings
+                }</h2>
+                <p class="text-green-500 text-sm flex items-center mt-1"><i class="fas fa-clock mr-1"></i>Pending ${plural(
+                  d.bookings,
+                  "booking",
+                  "bookings"
+                )}</p>
+              </div>
+            </a>
+            <a href="#" class="block">
+              <div class="flex-1 bg-purple-100 rounded-lg p-4 cursor-pointer hover:bg-purple-200 transition"
+                  ">
+                <p class="text-purple-600 text-sm font-bold">Website Inquiries</p>
+                <h2 class="text-2xl font-bold text-gray-800 mt-1">${
+                  d.inquiries
+                }</h2>
+                <p class="text-purple-500 text-sm flex items-center mt-1"><i class="fas fa-envelope mr-1"></i>Pending responses</p>
+              </div>
+            </a>
           </div>
         </div>`;
 
