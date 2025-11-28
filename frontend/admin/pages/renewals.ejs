@@ -569,34 +569,87 @@
   }
 
   function toggleActionButtons() {
-    const hasActivePlan =
-      !!RENEW.selectedClient?.currentSub &&
-      new Date(
-        RENEW.selectedClient.currentSub.expiry_date ||
-          RENEW.selectedClient.currentSub.expires
-      ) >= new Date();
+    const client = RENEW.selectedClient;
 
-    const hasAnyPlanEver = !!RENEW.selectedClient?.currentSub; // even if expired
+    console.log("=== TOGGLE ACTION BUTTONS DEBUG ===");
+    console.log("Selected Client:", client?.first_name);
+    console.log("Current Sub:", client?.currentSub);
 
-    // CASE 1: Client has an ACTIVE plan → show Renew + Upgrade
-    if (hasActivePlan) {
-      $r("btnRenew").classList.remove("hidden");
-      $r("btnUpgrade").classList.remove("hidden");
-      // $r("btnSubscribe").classList.add("hidden");
-
-      $r("btnRenew").disabled = false;
-      $r("btnUpgrade").disabled = false;
+    if (!client) {
+      console.log("No client selected - hiding all buttons");
+      return;
     }
-    // CASE 2: Client has NO plan (or expired + no currentSub) → show ONLY Subscribe
-    else {
-      $r("btnRenew").classList.add("hidden");
-      $r("btnUpgrade").classList.add("hidden");
-      // $r("btnSubscribe").classList.remove("hidden");
 
-      $r("btnRenew").disabled = true;
-      $r("btnUpgrade").disabled = true;
+    const sub = client.currentSub;
+    const expiryDate = sub?.expiry_date || sub?.expires;
+
+    console.log("Expiry Date:", expiryDate);
+
+    if (!sub || !expiryDate) {
+      console.log("No subscription or expiry date - hiding Renew/Upgrade");
+      document.getElementById("btnRenew")?.classList.add("hidden");
+      document.getElementById("btnUpgrade")?.classList.add("hidden");
+      return;
     }
+
+    const isActive = new Date(expiryDate) >= new Date();
+    console.log(
+      "Is Active?",
+      isActive,
+      "Expiry:",
+      new Date(expiryDate),
+      "Now:",
+      new Date()
+    );
+
+    if (isActive) {
+      console.log("ACTIVE PLAN - Showing Renew & Upgrade buttons");
+      document.getElementById("btnRenew")?.classList.remove("hidden");
+      document.getElementById("btnUpgrade")?.classList.remove("hidden");
+
+      document.getElementById("btnRenew").disabled = false;
+      document.getElementById("btnUpgrade").disabled = false;
+    } else {
+      console.log("EXPIRED PLAN - Hiding Renew & Upgrade buttons");
+      document.getElementById("btnRenew")?.classList.add("hidden");
+      document.getElementById("btnUpgrade")?.classList.add("hidden");
+
+      document.getElementById("btnRenew").disabled = true;
+      document.getElementById("btnUpgrade").disabled = true;
+    }
+
+    console.log("=== END DEBUG ===");
   }
+
+  // function toggleActionButtons() {
+  //   const hasActivePlan =
+  //     !!RENEW.selectedClient?.currentSub &&
+  //     new Date(
+  //       RENEW.selectedClient.currentSub.expiry_date ||
+  //         RENEW.selectedClient.currentSub.expires
+  //     ) >= new Date();
+
+  //   const hasAnyPlanEver = !!RENEW.selectedClient?.currentSub; // even if expired
+
+  //   // CASE 1: Client has an ACTIVE plan → show Renew + Upgrade
+  //   if (hasActivePlan) {
+  //     $r("btnRenew").classList.remove("hidden");
+  //     $r("btnUpgrade").classList.remove("hidden");
+  //     // $r("btnSubscribe").classList.add("hidden");
+
+  //     $r("btnRenew").disabled = false;
+  //     $r("btnUpgrade").disabled = false;
+  //   }
+  //   // CASE 2: Client has NO plan (or expired + no currentSub) → show ONLY Subscribe
+  //   else {
+  //     $r("btnRenew").classList.add("hidden");
+  //     $r("btnUpgrade").classList.add("hidden");
+  //     // $r("btnSubscribe").classList.remove("hidden");
+
+  //     $r("btnRenew").disabled = true;
+  //     $r("btnUpgrade").disabled = true;
+  //   }
+  // }
 
   /* ---------- MODAL ---------- */
   async function populateModalPlans() {
