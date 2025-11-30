@@ -729,14 +729,29 @@
         avgRenewal = s.avgRenewal || 0;
       }
 
-      // Use the actual expiry_date from current subscription
-      const activeClientsCount = RENEW.clientsCache.filter((c) => {
-        return (
-          c.currentSub &&
-          (c.currentSub.expiry_date || c.currentSub.expires) &&
-          new Date(c.currentSub.expiry_date || c.currentSub.expires) >=
-            new Date()
-        );
+      // Use the actual expiry_date
+      function formatDateForMySQL(date = new Date()) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      // Today in YYYY-MM-DD
+      const todayStr = formatDateForMySQL();
+
+      // Active clients count
+      const activeClientsCount = RENEW.clientsCache.filter(c => {
+        if (!c.currentSub) return false;
+
+        const start = c.currentSub.start_date;
+        const expiry = c.currentSub.expiry_date || c.currentSub.expires;
+
+        if (!start || !expiry) return false;
+
+        // Compare as YYYY-MM-DD strings
+        return start <= todayStr && expiry >= todayStr;
       }).length;
 
       // Update all stats
