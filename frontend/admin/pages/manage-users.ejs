@@ -129,7 +129,7 @@
 <!-- ==================== CLIENTS SECTION ==================== -->
 <div id="clientsSection" class="space-y-6 px-6">
   <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2"
           >Search</label
@@ -143,19 +143,18 @@
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Subscriptions</label
+          >Payment Status</label
         >
         <select
           id="clientSubFilter"
           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
         >
-          <option value="">All Subscriptions</option>
+          <option value="">All Payments</option>
           <option>Paid</option>
           <option>Unpaid</option>
-          <option>Overdue</option>
         </select>
       </div>
-      <div>
+      <!-- <div>
         <label class="block text-sm font-medium text-gray-700 mb-2"
           >Status</label
         >
@@ -168,7 +167,7 @@
           <option>Expired</option>
           <option>Suspended</option>
         </select>
-      </div>
+      </div> -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2"
           >Plans</label
@@ -178,9 +177,6 @@
           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
         >
           <option value="">All Plans</option>
-          <option>Premium 50Mbps</option>
-          <option>Standard 20Mbps</option>
-          <option>Basic 10Mbps</option>
         </select>
       </div>
     </div>
@@ -259,7 +255,7 @@
         <i class="fas fa-filter text-teal-600 mr-2"></i>Staff Filters
       </h3>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
       <div class="relative">
         <i
           class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -281,7 +277,7 @@
         <option>Sales</option>
         <option>Management</option>
       </select>
-      <select
+      <!-- <select
         id="staffRoleFilter"
         class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white"
       >
@@ -290,7 +286,7 @@
         <option>Support Agent</option>
         <option>Sales Rep</option>
         <option>Manager</option>
-      </select>
+      </select> -->
       <select
         id="staffStatusFilter"
         class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white"
@@ -907,6 +903,25 @@
       .join("");
   };
 
+  const loadPackages = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/packages`);
+      if (!res.ok) throw new Error("Failed");
+      allPackages = await res.json();
+
+      const select = $("clientPlanFilter");
+      select.innerHTML = `<option value="">All Plans</option>`;
+      allPackages.forEach(pkg => {
+        const opt = document.createElement("option");
+        opt.value = pkg.id;
+        opt.textContent = `${pkg.name} (${pkg.speed || "?"}Mbps)`;
+        select.appendChild(opt);
+      });
+    } catch (err) {
+      $("planFilter").innerHTML = `<option value="">Error loading plans</option>`;
+    }
+  };
+
   const getPlanColor = (plan) =>
     ({
       "Premium 50Mbps": "from-teal-400 to-teal-600",
@@ -935,31 +950,43 @@
   const applyFilters = (type, data) => {
     let filtered = [...data];
     const search = $(type + "Search")?.value.toLowerCase() || "";
+
     if (search) {
-      filtered = filtered.filter(
-        (u) =>
-          `${u.first_name} ${u.second_name}`.toLowerCase().includes(search) ||
-          u.email?.toLowerCase().includes(search) ||
-          u.phone?.includes(search)
+      filtered = filtered.filter(u =>
+        `${u.first_name} ${u.second_name}`.toLowerCase().includes(search) ||
+        u.email?.toLowerCase().includes(search) ||
+        u.phone?.includes(search)
       );
     }
 
     if (type === "clients") {
       const sub = $("clientSubFilter")?.value;
-      const status = $("clientStatusFilter")?.value;
-      const plan = $("clientPlanFilter")?.value;
-      if (sub) filtered = filtered.filter((c) => c.paymentStatus === sub);
-      if (status) filtered = filtered.filter((c) => c.status === status);
-      if (plan) filtered = filtered.filter((c) => c.plan === plan);
+      const planId = $("clientPlanFilter")?.value; // This is now package_id
+
+      // Payment status filter
+      if (sub) {
+        filtered = filtered.filter(c => {
+          if (!c.currentPlan || !c.currentPlan.payment) return sub === "Unpaid";
+          const isPaid = c.currentPlan.payment.status === "paid";
+          const status = isPaid ? "Paid" : "Unpaid";
+          return status === sub;
+        });
+      }
+
+      // Plan filter — using real currentPlan.package_id
+      if (planId) {
+        filtered = filtered.filter(c => {
+          return c.currentPlan?.package_id == planId || c.currentPlan?.package?.id == planId;
+        });
+      }
     }
 
+    // Staff filters (unchanged)
     if (type === "staff") {
       const dept = $("staffDeptFilter")?.value;
-      const role = $("staffRoleFilter")?.value;
       const status = $("staffStatusFilter")?.value;
-      if (dept) filtered = filtered.filter((s) => s.department === dept);
-      if (role) filtered = filtered.filter((s) => s.role === role);
-      if (status) filtered = filtered.filter((s) => s.status === status);
+      if (dept) filtered = filtered.filter(s => s.department === dept);
+      if (status) filtered = filtered.filter(s => s.status === status);
     }
 
     return filtered;
@@ -1834,41 +1861,6 @@
     renderTable(tab);
   };
 
-  /* ---------- FETCH & CACHE PACKAGES ---------- */
-  const loadPackages = async () => {
-    const select = $("plan");
-    if (!select) return;
-
-    // Show skeleton
-    select.innerHTML = `<option class="skeleton w-full h-10"></option>`.repeat(
-      3
-    );
-    select.disabled = true;
-
-    try {
-      const data = await api.getPackages();
-      packagesCache = Array.isArray(data) ? data : [];
-
-      select.innerHTML = `
-        <option value="" disabled selected hidden>Select plan</option>
-        ${packagesCache
-          .map(
-            (pkg) => `
-          <option value="${pkg.id}" data-name="${pkg.name}" data-price="${pkg.price}">
-            ${pkg.name} (Ksh ${pkg.price})
-          </option>
-        `
-          )
-          .join("")}
-      `;
-      select.disabled = false;
-    } catch (e) {
-      select.innerHTML = `<option value="">Error loading plans</option>`;
-      select.disabled = true;
-      console.error("Failed to load packages:", e);
-    }
-  };
-
   const loadRoles = async () => {
     try {
       const res = await fetch(`${API_BASE}/roles`);
@@ -2286,6 +2278,7 @@
     loadAllPackages();
     switchTab("clients");
     renderTable("clients");
+    loadPackages();
     updateCounts();
   });
 </script>

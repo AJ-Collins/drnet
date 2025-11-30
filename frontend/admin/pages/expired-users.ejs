@@ -39,12 +39,8 @@
         <input type="text" id="searchInput" placeholder="Search by name, email, phone..."
                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
       </div>
-      <select id="planFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white">
-        <option value="">All Expired Plans</option>
-        <option>Silver</option>
-        <option>Gold</option>
-        <option>Platinum</option>
-        <option>Bronze</option>
+      <select id="planFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white">
+        <option value="">All Active Plans</option>
       </select>
     </div>
   </div>
@@ -110,6 +106,26 @@
         <td class="p-4"><div class="skeleton skeleton-text w-28"></div></td>
         <td class="p-4"><div class="skeleton skeleton-text w-20"></div></td>
       </tr>`).join("");
+  };
+
+  // Load packages for filter dropdown
+  const loadPackages = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/packages`);
+      if (!res.ok) throw new Error("Failed");
+      allPackages = await res.json();
+
+      const select = $("planFilter");
+      select.innerHTML = `<option value="">All Active Plans</option>`;
+      allPackages.forEach(pkg => {
+        const opt = document.createElement("option");
+        opt.value = pkg.id;
+        opt.textContent = `${pkg.name} (${pkg.speed || "?"}Mbps)`;
+        select.appendChild(opt);
+      });
+    } catch (err) {
+      $("planFilter").innerHTML = `<option value="">Error loading plans</option>`;
+    }
   };
 
   // MAIN FUNCTION: Get all clients + their current subscription status
@@ -251,5 +267,7 @@
   $("planFilter").addEventListener("change", renderTable);
 
   // Load on start
-  window.addEventListener("DOMContentLoaded", loadExpiredClients);
+  window.addEventListener("DOMContentLoaded", () => {
+    Promise.all([loadExpiredClients(), loadPackages()]);
+  });
 </script>
