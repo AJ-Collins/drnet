@@ -109,6 +109,7 @@ const Staff = {
         FROM staff_salaries 
         WHERE staff_id = s.id
       )
+    WHERE r.name != 'Admin' OR r.name IS NULL
     ORDER BY s.created_at DESC
   `);
 
