@@ -1913,6 +1913,16 @@
     });
   };
 
+  const setStaffFieldsRequired = (required) => {
+    ['role', 'assignedRole', 'department', 'basic_salary'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        if (required) el.setAttribute('required', '');
+        else el.removeAttribute('required');
+      }
+    });
+  };
+
   /* ---------- MODAL ---------- */
   window.openAddUserModal = async (type, id = null) => {
     currentUserType = type;
@@ -1933,6 +1943,7 @@
     $("assignedRoleContainer").classList.toggle("hidden", !isStaff);
     $("departmentContainer").classList.toggle("hidden", !isStaff);
     $("salaryContainer").classList.toggle("hidden", !isStaff);
+    setStaffFieldsRequired(isStaff);
 
     $("addUserForm").reset();
     $("editUserId").value = "";

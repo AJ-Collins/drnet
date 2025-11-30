@@ -21,10 +21,10 @@
         Expired Subscriptions
       </h3>
       <p class="text-gray-600 mt-1">
-        Clients whose current plan has expired (<span id="expiredCount">0</span>)
+        Clients with expired or no active subscription (<span id="expiredCount">0</span>)
       </p>
     </div>
-    <button onclick="location.reload()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition">
+    <button onclick="loadExpiredClients()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition">
       <i class="fas fa-sync-alt mr-2"></i> Refresh
     </button>
   </div>
@@ -40,13 +40,12 @@
                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
       </div>
       <select id="planFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white">
-  <option value="">All Expired Plans</option>
-  <option>Bronze</option>
-  <option>Silver</option>
-  <option>Gold</option>
-  <option>Platinum</option>
-</select>
-
+        <option value="">All Expired Plans</option>
+        <option>Silver</option>
+        <option>Gold</option>
+        <option>Platinum</option>
+        <option>Bronze</option>
+      </select>
     </div>
   </div>
 
@@ -54,7 +53,7 @@
   <div class="bg-white shadow-md overflow-hidden">
     <div class="px-6 py-4 border-b border-red-200 bg-red-50">
       <h3 class="text-lg font-bold text-red-800">
-        <i class="fas fa-list mr-2"></i> Expired Clients List
+        <i class="fas fa-exclamation-triangle mr-2"></i> Expired Clients List
       </h3>
     </div>
 
@@ -64,8 +63,8 @@
           <tr>
             <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">User</th>
             <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Contact</th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Expired Plan</th>
-            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Expiry Date</th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Last Plan</th>
+            <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Expired On</th>
             <th class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Days Expired</th>
             <!-- <th class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Actions</th> -->
           </tr>
@@ -83,18 +82,24 @@
 <script>
   const API_BASE = "/api";
   let allClients = [];
-  let filtered = [];
+  let expiredClients = [];
 
   const $ = (id) => document.getElementById(id);
 
-  const formatDate = (d) => new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
-  const daysAgo = (date) => {
+  const formatDate = (d) => {
+    if (!d) return "-";
+    return new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+  };
+
+  const daysExpired = (date) => {
+    if (!date) return "No subscriptions";
     const diff = (new Date().setHours(0,0,0,0) - new Date(date).setHours(0,0,0,0)) / 86400000;
-    return Math.floor(diff);
+    const days = Math.floor(diff);
+    return days === 0 ? "Today" : `${days} day${days > 1 ? 's' : ''} ago`;
   };
 
   const showSkeleton = () => {
-    $("expiredTableBody").innerHTML = Array(8).fill("").map(() => `
+    $("expiredTableBody").innerHTML = Array(10).fill("").map(() => `
       <tr>
         <td class="p-4"><div class="flex items-center space-x-3">
           <div class="skeleton skeleton-circle"></div>
@@ -104,46 +109,97 @@
         <td class="p-4"><div class="skeleton skeleton-text w-40"></div></td>
         <td class="p-4"><div class="skeleton skeleton-text w-28"></div></td>
         <td class="p-4"><div class="skeleton skeleton-text w-20"></div></td>
-        <td class="p-4 text-right"><div class="flex justify-end space-x-2">${"<div class='skeleton w-9 h-9 rounded'></div>".repeat(3)}</div></td>
       </tr>`).join("");
   };
 
+  // MAIN FUNCTION: Get all clients + their current subscription status
   const loadExpiredClients = async () => {
     showSkeleton();
+    $("expiredCount").textContent = "Loading...";
+
     try {
-      const res = await fetch(`${API_BASE}/clients`);
-      if (!res.ok) throw new Error("Failed to load clients");
-      const clients = await res.json();
+      // 1. Get all clients
+      const clientsRes = await fetch(`${API_BASE}/clients`);
+      if (!clientsRes.ok) throw new Error("Failed to load clients");
+      const clients = await clientsRes.json();
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Filter expired clients using expiry_date from clients list
-      allClients = clients.filter(c => {
-        if (!c.expiry_date || c.expiry_date === "0000-00-00") return false;
-        return new Date(c.expiry_date) < today;
+      const expired = [];
+
+      // 2. Check each client's current subscription
+      for (const client of clients) {
+        try {
+          const subRes = await fetch(`${API_BASE}/subscribe/client/current?userId=${client.id}`);
+          
+          let isExpired = true;
+          let lastPlan = "No subscriptions";
+          let expiryDate = null;
+
+          if (subRes.ok) {
+            const subs = await subRes.json();
+            const currentSub = Array.isArray(subs) ? subs[0] : subs;
+
+            if (currentSub && currentSub.expires) {
+              const expiry = new Date(currentSub.expires || currentSub.expiry_date);
+              isExpired = expiry < today;
+              if (!isExpired) continue; // Skip active users
+
+              lastPlan = currentSub.package?.name || currentSub.package_name || "Unknown Plan";
+              expiryDate = expiry;
+            }
+          }
+          // If 404 or no valid expiry → treat as expired
+
+          expired.push({
+            ...client,
+            lastPlan,
+            expiryDate,
+            daysExpired: expiryDate ? daysExpired(expiryDate) : "-",
+            expiryDisplay: expiryDate ? formatDate(expiryDate) : "-"
+          });
+
+        } catch (err) {
+          console.warn(`Failed to check subscription for user ${client.id}`, err);
+          // If API fails for one user, still count as expired
+          expired.push({
+            ...client,
+            lastPlan: "Unknown",
+            expiryDate: null,
+            daysExpired: "Unknown",
+            expiryDisplay: "Unknown"
+          });
+        }
+      }
+
+      expiredClients = expired.sort((a, b) => {
+        if (!a.expiryDate) return 1;
+        if (!b.expiryDate) return -1;
+        return new Date(b.expiryDate) - new Date(a.expiryDate);
       });
 
-      filtered = [...allClients];
+      allClients = clients;
       renderTable();
-      $("expiredCount").textContent = allClients.length;
-      $("totalExpired").textContent = allClients.length;
+      $("expiredCount").textContent = expiredClients.length;
+      $("totalExpired").textContent = expiredClients.length;
+
     } catch (err) {
-      console.error(err);
-      $("expiredTableBody").innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-600">Failed to load data</td></tr>`;
+      console.error("Load failed:", err);
+      $("expiredTableBody").innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-600">Failed to load expired clients: ${err.message}</td></tr>`;
     }
   };
 
   const renderTable = () => {
     const search = $("searchInput").value.toLowerCase().trim();
-    const planFilter = $("planFilter").value;
+    const planFilter = $("planFilter").value.toLowerCase();
 
-    let data = filtered.filter(c => {
-      const fullName = `${c.first_name || ""} ${c.second_name || ""}`.toLowerCase();
-      const matchesSearch = fullName.includes(search) ||
+    let data = expiredClients.filter(c => {
+      const name = `${c.first_name || ""} ${c.second_name || ""}`.toLowerCase();
+      const matchesSearch = name.includes(search) ||
                           (c.email && c.email.toLowerCase().includes(search)) ||
                           (c.phone && c.phone.includes(search));
-      const matchesPlan = !planFilter || (c.plan || "").toLowerCase().includes(planFilter.toLowerCase());
+      const matchesPlan = !planFilter || (c.lastPlan || "").toLowerCase().includes(planFilter);
       return matchesSearch && matchesPlan;
     });
 
@@ -152,18 +208,12 @@
 
     if (data.length === 0) {
       $("expiredTableBody").innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-500">
-        ${allClients.length === 0 ? "No expired subscriptions found" : "No clients match your search or filter"}
+        ${expiredClients.length === 0 ? "No expired subscriptions found" : "No clients match your search"}
       </td></tr>`;
       return;
     }
 
-    $("expiredTableBody").innerHTML = data.map(client => {
-      const planName = client.plan || "Unknown Plan";
-      const expiry = client.expiry_date;
-      const days = daysAgo(expiry);
-      const daysText = days === 0 ? "Today" : `${days} day${days > 1 ? 's' : ''} ago`;
-
-      return `
+    $("expiredTableBody").innerHTML = data.map(client => `
       <tr class="user-row border-b hover:bg-red-50 transition">
         <td class="p-4">
           <div class="flex items-center space-x-3">
@@ -171,7 +221,7 @@
               ${(client.first_name?.[0] || "?")}${(client.second_name?.[0] || "?")}
             </div>
             <div>
-              <p class="font-semibold text-gray-900">${client.first_name || ""} ${client.second_name || ""}</p>
+              <p class="font-semibold text-gray-900">${client.first_name} ${client.second_name}</p>
               <p class="text-xs text-gray-500">ID: ${client.id}</p>
             </div>
           </div>
@@ -182,24 +232,22 @@
         </td>
         <td class="p-4">
           <span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-red-100 text-red-800">
-            ${planName}
+            ${client.lastPlan}
           </span>
         </td>
-        <td class="p-4 text-gray-700 font-medium">${formatDate(expiry)}</td>
+        <td class="p-4 text-gray-700 font-medium">${client.expiryDisplay}</td>
         <td class="p-4">
-          <span class="text-red-700 font-bold">${daysText}</span>
+          <span class="text-red-700 font-bold">${client.daysExpired}</span>
         </td>
-      </tr>`;
-    }).join("");
+      </tr>`).join("");
   };
 
   // Actions
   window.openSubscription = (id) => window.location.href = `/admin/users?openSubscription=${id}`;
-  window.sendReminder = (id) => Swal.fire("Success", `Renewal reminder sent to client #${id}`, "success");
   window.viewClient = (id) => window.location.href = `/admin/users?view=${id}`;
 
   // Search & Filter
-  $("searchInput").addEventListener("input", () => setTimeout(renderTable, 200));
+  $("searchInput").addEventListener("input", () => setTimeout(renderTable, 300));
   $("planFilter").addEventListener("change", renderTable);
 
   // Load on start
