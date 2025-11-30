@@ -1088,7 +1088,7 @@
                   <p class="font-semibold text-gray-900 truncate">${
                     user.name
                   }</p>
-                  <p class="text-xs text-gray-500">ID: ${user.employeeId}</p>
+                  <p class="text-xs text-gray-500">ID: ${user.employeeId || user.id || '-'}</p>
                 </div>
               </div>
             </td>

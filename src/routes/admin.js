@@ -12,16 +12,26 @@ const StaffSalary = require("../models/StaffSalary");
 const UserSubscription = require("../models/UserSubscription");
 const db = require("../config/db");
 
-async function getActiveUsersCount(startDate, endDate) {
+function formatDateForMySQL(date) {
+  const d = date || new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+async function getActiveUsersCount(date = null) {
+  const checkDate = formatDateForMySQL(date);
+  
   const [result] = await db.query(
     `
     SELECT COUNT(DISTINCT us.user_id) AS count
     FROM user_subscriptions us
-    WHERE us.start_date <= ?
-      AND us.expiry_date >= ?
-      AND us.status = 'active'
+    WHERE us.status = 'active'
+      AND DATE(us.start_date) <= ?
+      AND DATE(us.expiry_date) >= ?
     `,
-    [endDate, startDate]
+    [checkDate, checkDate]
   );
   return result[0]?.count || 0;
 }
@@ -73,6 +83,7 @@ async function getMonthlyBookingsCount(startDate, endDate) {
   );
   return result[0]?.count || 0;
 }
+
 
 async function getMonthlyInquiriesCount(startDate, endDate) {
   const [result] = await db.query(
@@ -130,17 +141,11 @@ router.get("/dashboard/stats", async (req, res) => {
       999
     );
 
-    // CURRENT active users (subscriptions active within current calendar month)
-    const activeUsers = await getActiveUsersCount(
-      currentMonthStart,
-      currentMonthEnd
-    );
-    const prevActiveUsers = await getActiveUsersCount(
-      prevMonthStart,
-      prevMonthEnd
-    );
+    // ACTIVE USERS - Current (right now) vs Previous month (snapshot at end of last month)
+    const activeUsers = await getActiveUsersCount(); // Uses current date
+    const prevActiveUsers = await getActiveUsersCount(prevMonthEnd); // Snapshot at end of prev month
 
-    // Calculate growth (%)
+    // Calculate active users growth (%)
     let activeGrowth = 0;
     if (prevActiveUsers === 0 && activeUsers > 0) {
       activeGrowth = 100;
@@ -148,11 +153,11 @@ router.get("/dashboard/stats", async (req, res) => {
       activeGrowth = ((activeUsers - prevActiveUsers) / prevActiveUsers) * 100;
     }
 
-    // Expired users = total users - active users
+    // EXPIRED/INACTIVE USERS = total users - active users
     const allUsers = await User.findAll();
     const expiredUsers = allUsers.length - activeUsers;
 
-    // Expired users growth (%)
+    // Previous month expired users
     const prevExpiredUsers = allUsers.length - prevActiveUsers;
     let expiredGrowth = 0;
     if (prevExpiredUsers === 0 && expiredUsers > 0) {
@@ -174,7 +179,7 @@ router.get("/dashboard/stats", async (req, res) => {
       currentMonthEnd
     );
 
-    // ===== REVENUE CALCULATION - FIXED =====
+    // ===== REVENUE CALCULATION =====
     // 1. Renewals revenue for current month
     const revenueFromRenewals = await getMonthlyRenewalsRevenue(
       currentMonthStart,
