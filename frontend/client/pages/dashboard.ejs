@@ -207,8 +207,8 @@
       <div class="bg-green-50 rounded-xl shadow-lg p-6 border border-green-400">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-green-600 text-sm font-bold">Account Status</p>
-            <h3 class="text-3xl font-bold text-gray-800 mt-2">${current?.status === 'active' ? 'Active' : 'Inactive'}</h3>
+            <p class="text-green-600 text-sm font-bold">Payment Status</p>
+            <h3 class="text-3xl font-bold text-gray-800 mt-2">${current?.status === 'paid' ? 'Paid' : 'Unpaid'}</h3>
           </div>
           <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
             <i class="fas fa-check-circle text-green-600 text-xl"></i>
@@ -239,20 +239,6 @@
           <div>
             <h3 class="text-2xl font-bold text-gray-900 mb-1">Subscription Details</h3>
             <p class="text-sm text-gray-500">Your current plan information</p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button onclick="renewPlan()" class="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-              </svg>
-              Renew
-            </button>
-            <button onclick="upgradePlan()" class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-              </svg>
-              Upgrade
-            </button>
           </div>
         </div>
 
@@ -325,12 +311,6 @@
               </span>
               <span class="text-sm text-gray-600">${daysLeft} days remaining</span>
             </div>
-            <a href="/payments" class="text-sm font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1">
-              View billing history
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
           </div>
         </div>
       </div>

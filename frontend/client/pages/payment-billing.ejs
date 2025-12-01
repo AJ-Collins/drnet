@@ -126,12 +126,12 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <h2 class="text-xl font-bold text-gray-900">Transaction History</h2>
             <div class="flex items-center gap-3">
-              <select id="filter-status" onchange="filterTransactions()" class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:border-teal-500 transition">
+              <!-- <select id="filter-status" onchange="filterTransactions()" class="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:border-teal-500 transition">
                 <option value="all">All Transactions</option>
                 <option value="successful">Successful</option>
                 <option value="pending">Pending</option>
                 <option value="failed">Failed</option>
-              </select>
+              </select> -->
               <button onclick="exportTransactions()" class="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -331,7 +331,47 @@
   }
 
   async function downloadReceipt(id) {
-    window.location.href = `/api/payment/transactions/receipt/${id}`;
+    try {
+      showNotification('Generating receipt PDF...', 'info');
+
+      const response = await fetch(`/api/payment/transactions/receipt/${id}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Receipt not found or server error");
+      }
+
+      const blob = await response.blob();
+      if (blob.size === 0) throw new Error("Empty PDF received");
+
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.style.display = 'none';
+      const contentDisposition = response.headers.get('content-disposition');
+      let fileName = `receipt_${id}.pdf`;
+
+      if (contentDisposition && contentDisposition.includes('filename=')) {
+        const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (matches && matches[1]) {
+          fileName = matches[1];
+        }
+      }
+
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      showNotification('Receipt downloaded successfully!', 'success');
+    } catch (err) {
+      console.error("Download receipt failed:", err);
+      showNotification(err.message || 'Failed to download receipt. Please try again.', 'error');
+    }
   }
 
   async function exportTransactions() {

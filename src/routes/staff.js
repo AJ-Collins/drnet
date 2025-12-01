@@ -432,42 +432,6 @@ router.get("/staff/payslips/:id", async (req, res) => {
   }
 });
 
-// Get all payslips for staff member
-router.get("/payslips", async (req, res) => {
-  try {
-    const userId = req.session.user?.id;
-    if (!userId) return res.status(401).json({ error: "Unauthorized" });
-
-    const [rows] = await db.query(
-      `SELECT 
-        id,
-        DATE_FORMAT(pay_period, '%M %Y') AS month,
-        pay_period AS date,
-        net_pay,
-        gross_pay,
-        payment_date
-      FROM staff_payslips 
-      WHERE staff_id = ?
-      ORDER BY pay_period DESC`,
-      [userId]
-    );
-
-    res.json(
-      rows.map((p) => ({
-        id: p.id,
-        month: p.month,
-        date: p.date,
-        net_pay: p.net_pay,
-        gross_pay: p.gross_pay,
-        payment_date: p.payment_date,
-      }))
-    );
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to load payslips" });
-  }
-});
-
 router.get("/performance/weekly", async (req, res) => {
   try {
     const userId = req.session.user?.id;

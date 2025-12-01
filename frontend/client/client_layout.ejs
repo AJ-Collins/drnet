@@ -181,10 +181,10 @@
                   <div
                     class="w-9 h-9 bg-teal-200 rounded-full flex items-center justify-center"
                   >
-                    <span class="text-teal-800 font-bold text-sm">JO</span>
+                    <span class="text-teal-800 font-bold text-sm"></span>
                   </div>
                   <span class="hidden sm:block font-medium text-gray-800"
-                    >Julius Ojwang</span
+                    ></span
                   >
                   <i class="fas fa-chevron-down text-sm text-gray-600"></i>
                 </button>
@@ -445,7 +445,7 @@
       if (!res.ok) throw new Error('Failed to fetch profile');
 
       const data = await res.json();
-      const profile = data.profile;           // <-- your API shape
+      const profile = data.profile; 
 
       // ---- 1. Avatar -------------------------------------------------
       if (profile.image) {
@@ -470,7 +470,7 @@
       }
 
       // ---- 2. Name ---------------------------------------------------
-      nameSpan.textContent = profile.name || 'User';
+      nameSpan.textContent = profile.first_name+ ' ' +profile.second_name || 'User';
 
       // optional: tiny success toast
       // showNotification('Profile loaded', 'success');
@@ -480,8 +480,8 @@
       showNotification('Could not load user info', 'error');
 
       // keep the static placeholder when everything fails
-      avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">JO</span>`;
-      nameSpan.textContent = 'Julius Ojwang';
+      avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm"></span>`;
+      nameSpan.textContent = '';
     }
   }
 

@@ -1865,18 +1865,24 @@
     try {
       const res = await fetch(`${API_BASE}/roles`);
       if (!res.ok) throw new Error("Failed to fetch roles");
-      rolesCache = await res.json();
 
-      // Ensure it's an array of objects with id and name
-      if (!Array.isArray(rolesCache)) rolesCache = [];
+      const allRoles = await res.json();
+      if (!Array.isArray(allRoles)) return;
 
-      populateRoleDropdown(); // Populate immediately
+      rolesCache = allRoles.filter(role => 
+        role.id !== 1 && role.id !== 4
+      );
+
+      // Optional fallback by name
+      rolesCache = allRoles.filter(r => 
+        !["admin", "client"].includes((r.name||"").toLowerCase().trim())
+      );
+
+      populateRoleDropdown();
     } catch (err) {
-      console.error("Failed to load roles:", err);
-      const select = $("role");
-      if (select) {
-        select.innerHTML = '<option value="">Error loading roles</option>';
-      }
+      console.error(err);
+      const select = $("assignedRole");
+      if (select) select.innerHTML = '<option disabled>Failed to load roles</option>';
     }
   };
 
@@ -1930,7 +1936,6 @@
 
     const isStaff = type === "staff";
 
-    // Show both role fields + department + salary for staff
     $("roleContainer").classList.toggle("hidden", !isStaff);
     $("assignedRoleContainer").classList.toggle("hidden", !isStaff);
     $("departmentContainer").classList.toggle("hidden", !isStaff);
@@ -1940,21 +1945,13 @@
     $("addUserForm").reset();
     $("editUserId").value = "";
 
-    // Load dynamic roles when opening staff modal
     if (isStaff) {
-      const assignedRoleSelect = $("assignedRole");
-      assignedRoleSelect.innerHTML =
-        '<option value="" disabled selected hidden>Loading roles...</option>';
-
-      try {
-        await loadRoles(); // This now correctly populates assignedRole
-      } catch (err) {
-        assignedRoleSelect.innerHTML =
-          '<option value="" disabled>Failed to load roles</option>';
-      }
+      $("role").value = "";
+      $("assignedRole").innerHTML = '<option value="" disabled selected hidden>Loading roles...</option>';
+      $("department").value = "";
+      $("basic_salary").value = "";
     }
 
-    // Editing existing user
     if (id) {
       const cache = type === "clients" ? clientsCache : staffCache;
       const user = cache.find((u) => u.id === parseInt(id));
@@ -1967,40 +1964,49 @@
 
       // Fill common fields
       $("first_name").value = user.first_name || user.name?.split(" ")[0] || "";
-      $("second_name").value =
-        user.second_name || user.name?.split(" ").slice(1).join(" ") || "";
+      $("second_name").value = user.second_name || user.name?.split(" ").slice(1).join(" ") || "";
       $("email").value = user.email || "";
       $("phone").value = user.phone || "";
       $("idNumber").value = user.idNumber || user.employeeId || "";
 
       if (isStaff) {
-        $("department").value = user.department || "";
-        $("basic_salary").value =
-          user.basic_salary || user.salary?.basic_salary || "";
-
-        // Get role info
-        const userRoleId = user.role_id || user.role?.id || user.role;
-        const userRoleName =
-          user.role?.name || user.role || user.position || "";
-
-        // Set legacy dropdown (hardcoded)
+        const legacyRole = user.position || user.role || "Support Agent";
         const legacySelect = $("role");
-        if (legacySelect && userRoleName) {
-          legacySelect.value = userRoleName;
-          if (legacySelect.selectedIndex === 0) {
-            const opt = new Option(userRoleName, userRoleName, true, true);
+        if (legacySelect) {
+          legacySelect.value = legacyRole;
+          if ([...legacySelect.options].every(opt => opt.value !== legacyRole)) {
+            const opt = new Option(legacyRole, legacyRole, true, true);
             legacySelect.appendChild(opt);
           }
         }
 
-        // Set dynamic dropdown — THIS IS THE FIX
+        $("department").value = user.department || "";
+
+        $("basic_salary").value = user.basic_salary || user.salary?.basic_salary || "";
+
+        const userRoleId = user.role_id || user.role?.id;
+
         if (userRoleId) {
-          // Wait a tick for roles to load, then select
-          setTimeout(() => {
-            populateRoleDropdown(userRoleId);
-          }, 100);
+          $("assignedRole").innerHTML = '<option value="" disabled selected hidden>Loading roles...</option>';
+
+          try {
+            await loadRoles();
+
+            const select = $("assignedRole");
+            select.value = userRoleId;
+
+            if (select.value !== String(userRoleId)) {
+              select.innerHTML += `<option value="${userRoleId}" selected>[Missing Role ID: ${userRoleId}]</option>`;
+            }
+          } catch (err) {
+            $("assignedRole").innerHTML = '<option value="" disabled>Failed to load roles</option>';
+          }
+        } else {
+          await loadRoles();
         }
       }
+    } else if (isStaff) {
+      await loadRoles();
     }
   };
 

@@ -128,81 +128,36 @@
     }
   };
 
-  // MAIN FUNCTION: Get all clients + their current subscription status
   const loadExpiredClients = async () => {
     showSkeleton();
     $("expiredCount").textContent = "Loading...";
 
     try {
-      // 1. Get all clients
-      const clientsRes = await fetch(`${API_BASE}/clients`);
-      if (!clientsRes.ok) throw new Error("Failed to load clients");
-      const clients = await clientsRes.json();
+      const response = await fetch(`${API_BASE}/clients/expired-subscriptions`);
+      if (!response.ok) throw new Error("Failed to load expired clients");
+      
+      const data = await response.json();
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      expiredClients = data.map(client => ({
+        id: client.id,
+        first_name: client.first_name,
+        second_name: client.second_name,
+        email: client.email,
+        phone: client.phone,
+        lastPlan: client.package?.name || "No subscriptions",
+        packageId: client.package?.id || null,
+        expiryDate: client.subscription?.expiry_date || null,
+        daysExpired: client.subscription?.days_expired || "No subscriptions",
+        expiryDisplay: formatDate(client.subscription?.expiry_date)
+      }));
 
-      const expired = [];
-
-      // 2. Check each client's current subscription
-      for (const client of clients) {
-        try {
-          const subRes = await fetch(`${API_BASE}/subscribe/client/current?userId=${client.id}`);
-          
-          let isExpired = true;
-          let lastPlan = "No subscriptions";
-          let expiryDate = null;
-
-          if (subRes.ok) {
-            const subs = await subRes.json();
-            const currentSub = Array.isArray(subs) ? subs[0] : subs;
-
-            if (currentSub && currentSub.expires) {
-              const expiry = new Date(currentSub.expires || currentSub.expiry_date);
-              isExpired = expiry < today;
-              if (!isExpired) continue; // Skip active users
-
-              lastPlan = currentSub.package?.name || currentSub.package_name || "Unknown Plan";
-              expiryDate = expiry;
-            }
-          }
-          // If 404 or no valid expiry → treat as expired
-
-          expired.push({
-            ...client,
-            lastPlan,
-            expiryDate,
-            daysExpired: expiryDate ? daysExpired(expiryDate) : "-",
-            expiryDisplay: expiryDate ? formatDate(expiryDate) : "-"
-          });
-
-        } catch (err) {
-          console.warn(`Failed to check subscription for user ${client.id}`, err);
-          // If API fails for one user, still count as expired
-          expired.push({
-            ...client,
-            lastPlan: "Unknown",
-            expiryDate: null,
-            daysExpired: "Unknown",
-            expiryDisplay: "Unknown"
-          });
-        }
-      }
-
-      expiredClients = expired.sort((a, b) => {
-        if (!a.expiryDate) return 1;
-        if (!b.expiryDate) return -1;
-        return new Date(b.expiryDate) - new Date(a.expiryDate);
-      });
-
-      allClients = clients;
       renderTable();
       $("expiredCount").textContent = expiredClients.length;
       $("totalExpired").textContent = expiredClients.length;
 
     } catch (err) {
-      console.error("Load failed:", err);
-      $("expiredTableBody").innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-600">Failed to load expired clients: ${err.message}</td></tr>`;
+      console.error(err);
+      $("expiredTableBody").innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-600">Failed to load expired clients</td></tr>`;
     }
   };
 

@@ -130,52 +130,30 @@
     }
   };
 
-  // MAIN: Load only truly active clients using real subscription API
   const loadActiveClients = async () => {
     showSkeleton();
     $("activeCount").textContent = "Loading...";
 
     try {
-      const clientsRes = await fetch(`${API_BASE}/clients`);
-      if (!clientsRes.ok) throw new Error("Failed to load clients");
-      const clients = await clientsRes.json();
+      const response = await fetch(`${API_BASE}/clients/active-subscriptions`);
+      if (!response.ok) throw new Error("Failed to load active clients");
+      
+      const data = await response.json();
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      activeClients = data.map(client => ({
+        id: client.id,
+        first_name: client.first_name,
+        second_name: client.second_name,
+        email: client.email,
+        phone: client.phone,
+        packageName: client.package?.name || "Unknown",
+        packageId: client.package?.id || client.subscription?.package_id,
+        expiryDate: new Date(client.subscription?.expiry_date),
+        daysLeft: client.subscription?.days_left || daysLeft(client.subscription?.expiry_date),
+        expiryDisplay: formatDate(client.subscription?.expiry_date)
+      }));
 
-      const active = [];
-
-      for (const client of clients) {
-        try {
-          const subRes = await fetch(`${API_BASE}/subscribe/client/current?userId=${client.id}`);
-          
-          if (subRes.ok) {
-            const subs = await subRes.json();
-            const currentSub = Array.isArray(subs) ? subs[0] : subs;
-
-            if (currentSub && currentSub.expires) {
-              const expiry = new Date(currentSub.expires || currentSub.expiry_date);
-              if (expiry >= today) {
-                active.push({
-                  ...client,
-                  packageName: currentSub.package?.name || currentSub.package_name || "Unknown",
-                  packageId: currentSub.package_id || currentSub.package?.id,
-                  expiryDate: expiry,
-                  daysLeft: daysLeft(expiry),
-                  expiryDisplay: formatDate(expiry)
-                });
-              }
-            }
-          }
-          // If 404 → no active plan → skip
-        } catch (err) {
-          console.warn(`Subscription check failed for user ${client.id}`, err);
-        }
-      }
-
-      // Sort by soonest expiry first
-      activeClients = active.sort((a, b) => a.expiryDate - b.expiryDate);
-
+      // Already sorted by expiry date from backend
       renderTable();
       $("activeCount").textContent = activeClients.length;
       $("totalActive").textContent = activeClients.length;

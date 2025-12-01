@@ -268,6 +268,235 @@ router.get("/subscribe/client/current", async (req, res) => {
   }
 });
 
+//Get active users
+router.get("/clients/active-subscriptions", async (req, res) => {
+  try {
+    // console.log("Fetching all clients with active subscriptions");
+
+    // Get current date at midnight for comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+
+    // Single optimized query to get all clients with active subscriptions
+    const [activeClients] = await db.query(
+      `
+      SELECT 
+        u.id as user_id,
+        u.first_name,
+        u.second_name,
+        u.email,
+        u.phone,
+        us.id as subscription_id,
+        us.package_id,
+        us.start_date,
+        us.expiry_date,
+        us.status as subscription_status,
+        us.payment_id,
+        us.created_at as subscription_created_at,
+        pkg.name as package_name,
+        pkg.speed as package_speed,
+        pkg.price as package_price,
+        pkg.validity_days,
+        p.id as payment_id,
+        p.amount as payment_amount,
+        p.status as payment_status,
+        p.payment_method,
+        p.payment_date,
+        p.transaction_id
+      FROM users u
+      INNER JOIN user_subscriptions us ON u.id = us.user_id
+      LEFT JOIN packages pkg ON us.package_id = pkg.id
+      LEFT JOIN payments p ON p.subscription_id = us.id
+      WHERE us.expiry_date >= ?
+        AND us.status = 'active'
+      ORDER BY us.expiry_date ASC
+      `,
+      [todayStr]
+    );
+
+    if (!activeClients || activeClients.length === 0) {
+      return res.json([]);
+    }
+
+    // Calculate days left for each subscription
+    const calculateDaysLeft = (expiryDate) => {
+      const expiry = new Date(expiryDate);
+      expiry.setHours(0, 0, 0, 0);
+      const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+      
+      if (diff < 0) return "Expired";
+      if (diff === 0) return "Today";
+      if (diff === 1) return "1 day";
+      return `${diff} days`;
+    };
+
+    // Format the response
+    const formattedClients = activeClients.map((client) => ({
+      // User info
+      id: client.user_id,
+      first_name: client.first_name,
+      second_name: client.second_name,
+      email: client.email,
+      phone: client.phone,
+      
+      // Subscription info
+      subscription: {
+        id: client.subscription_id,
+        package_id: client.package_id,
+        start_date: client.start_date,
+        expiry_date: client.expiry_date,
+        expires: dayjs(client.expiry_date).format("YYYY-MM-DD"),
+        status: client.subscription_status,
+        created_at: client.subscription_created_at,
+        days_left: calculateDaysLeft(client.expiry_date),
+      },
+      
+      // Package info
+      package: {
+        id: client.package_id,
+        name: client.package_name,
+        speed: client.package_speed,
+        price: client.package_price,
+        validity_days: client.validity_days,
+      },
+      
+      // Payment info (if exists)
+      payment: client.payment_id ? {
+        id: client.payment_id,
+        amount: client.payment_amount,
+        status: client.payment_status,
+        payment_method: client.payment_method,
+        payment_date: client.payment_date,
+        transaction_id: client.transaction_id,
+      } : null,
+    }));
+
+    console.log(`Found ${formattedClients.length} clients with active subscriptions`);
+    res.json(formattedClients);
+
+  } catch (err) {
+    console.error("Error fetching active clients:", err);
+    res.status(500).json({ 
+      error: "Failed to fetch active clients: " + err.message 
+    });
+  }
+});
+
+router.get("/clients/expired-subscriptions", async (req, res) => {
+  try {
+    console.log("Fetching all clients with expired subscriptions");
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+
+    // Query to get clients with expired subscriptions OR no subscriptions at all
+    const [expiredClients] = await db.query(
+      `
+      SELECT 
+        u.id as user_id,
+        u.first_name,
+        u.second_name,
+        u.email,
+        u.phone,
+        us.id as subscription_id,
+        us.package_id,
+        us.start_date,
+        us.expiry_date,
+        us.status as subscription_status,
+        us.created_at as subscription_created_at,
+        pkg.name as package_name,
+        pkg.speed as package_speed,
+        pkg.price as package_price,
+        pkg.validity_days,
+        p.id as payment_id,
+        p.amount as payment_amount,
+        p.status as payment_status,
+        p.payment_method,
+        p.payment_date
+      FROM users u
+      LEFT JOIN (
+        SELECT us1.*
+        FROM user_subscriptions us1
+        INNER JOIN (
+          SELECT user_id, MAX(expiry_date) as max_expiry
+          FROM user_subscriptions
+          GROUP BY user_id
+        ) us2 ON us1.user_id = us2.user_id AND us1.expiry_date = us2.max_expiry
+      ) us ON u.id = us.user_id
+      LEFT JOIN packages pkg ON us.package_id = pkg.id
+      LEFT JOIN payments p ON p.subscription_id = us.id
+      WHERE us.expiry_date < ? OR us.expiry_date IS NULL
+      ORDER BY us.expiry_date DESC
+      `,
+      [todayStr]
+    );
+
+    // Calculate days expired for each subscription
+    const calculateDaysExpired = (expiryDate) => {
+      if (!expiryDate) return "No subscriptions";
+      
+      const expiry = new Date(expiryDate);
+      expiry.setHours(0, 0, 0, 0);
+      const diff = Math.floor((today - expiry) / (1000 * 60 * 60 * 24));
+      
+      if (diff === 0) return "Today";
+      if (diff === 1) return "1 day ago";
+      return `${diff} days ago`;
+    };
+
+    // Format the response
+    const formattedClients = expiredClients.map((client) => ({
+      // User info
+      id: client.user_id,
+      first_name: client.first_name,
+      second_name: client.second_name,
+      email: client.email,
+      phone: client.phone,
+      
+      // Subscription info (last subscription)
+      subscription: client.subscription_id ? {
+        id: client.subscription_id,
+        package_id: client.package_id,
+        start_date: client.start_date,
+        expiry_date: client.expiry_date,
+        expires: client.expiry_date ? dayjs(client.expiry_date).format("YYYY-MM-DD") : null,
+        status: client.subscription_status,
+        created_at: client.subscription_created_at,
+        days_expired: calculateDaysExpired(client.expiry_date),
+      } : null,
+      
+      // Package info (last package)
+      package: client.package_id ? {
+        id: client.package_id,
+        name: client.package_name,
+        speed: client.package_speed,
+        price: client.package_price,
+        validity_days: client.validity_days,
+      } : null,
+      
+      // Payment info (if exists)
+      payment: client.payment_id ? {
+        id: client.payment_id,
+        amount: client.payment_amount,
+        status: client.payment_status,
+        payment_method: client.payment_method,
+        payment_date: client.payment_date,
+      } : null,
+    }));
+
+    console.log(`Found ${formattedClients.length} clients with expired subscriptions`);
+    res.json(formattedClients);
+
+  } catch (err) {
+    console.error("Error fetching expired clients:", err);
+    res.status(500).json({ 
+      error: "Failed to fetch expired clients: " + err.message 
+    });
+  }
+});
+
 router.get("/subscribe/client/history", async (req, res) => {
   try {
     const { userId } = req.query;

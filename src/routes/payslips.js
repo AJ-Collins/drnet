@@ -7,12 +7,22 @@ const db = require("../config/db");
  */
 router.get("/payslips", async (req, res) => {
   try {
+    // Disable caching for this endpoint
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    console.log("Fetching all payslips...");
+
     const [rows] = await db.query(`
       SELECT 
         sp.id, 
         sp.staff_id, 
+        sp.salary_id,
         s.first_name, 
         s.second_name,
+        s.email,
+        s.phone,
         sp.pay_period AS period, 
         sp.gross_pay,
         sp.net_pay AS net_salary, 
@@ -20,28 +30,94 @@ router.get("/payslips", async (req, res) => {
         sp.allowance_description,
         sp.deductions,
         sp.deduction_description,
+        sp.payment_method,
         sp.payment_date,
         sp.created_at,
+        sp.updated_at,
         FALSE AS sent
       FROM staff_payslips sp
       JOIN staff s ON sp.staff_id = s.id
       ORDER BY sp.created_at DESC
     `);
 
-    // Parse JSON fields
-    const formattedRows = rows.map((row) => ({
-      ...row,
-      staff_name: `${row.first_name} ${row.second_name || ""}`.trim(),
-      allowances: JSON.parse(row.allowances || "[]"),
-      allowance_description: JSON.parse(row.allowance_description || "[]"),
-      deductions: JSON.parse(row.deductions || "[]"),
-      deduction_description: JSON.parse(row.deduction_description || "[]"),
-    }));
+    console.log(`Found ${rows.length} payslips`);
+
+    if (rows.length === 0) {
+      return res.json([]);
+    }
+
+    // Parse JSON fields and format response
+    const formattedRows = rows.map((row) => {
+      let allowances = [];
+      let allowance_description = [];
+      let deductions = [];
+      let deduction_description = [];
+
+      // Safely parse JSON fields
+      try {
+        allowances = typeof row.allowances === 'string' 
+          ? JSON.parse(row.allowances) 
+          : (row.allowances || []);
+      } catch (e) {
+        console.warn(`Failed to parse allowances for payslip ${row.id}`);
+        allowances = [];
+      }
+
+      try {
+        allowance_description = typeof row.allowance_description === 'string' 
+          ? JSON.parse(row.allowance_description) 
+          : (row.allowance_description || []);
+      } catch (e) {
+        console.warn(`Failed to parse allowance_description for payslip ${row.id}`);
+        allowance_description = [];
+      }
+
+      try {
+        deductions = typeof row.deductions === 'string' 
+          ? JSON.parse(row.deductions) 
+          : (row.deductions || []);
+      } catch (e) {
+        console.warn(`Failed to parse deductions for payslip ${row.id}`);
+        deductions = [];
+      }
+
+      try {
+        deduction_description = typeof row.deduction_description === 'string' 
+          ? JSON.parse(row.deduction_description) 
+          : (row.deduction_description || []);
+      } catch (e) {
+        console.warn(`Failed to parse deduction_description for payslip ${row.id}`);
+        deduction_description = [];
+      }
+
+      return {
+        id: row.id,
+        staff_id: row.staff_id,
+        salary_id: row.salary_id,
+        staff_name: `${row.first_name} ${row.second_name || ""}`.trim(),
+        first_name: row.first_name,
+        second_name: row.second_name,
+        email: row.email,
+        phone: row.phone,
+        period: row.period,
+        gross_pay: parseFloat(row.gross_pay),
+        net_salary: parseFloat(row.net_salary),
+        allowances: allowances,
+        allowance_description: allowance_description,
+        deductions: deductions,
+        deduction_description: deduction_description,
+        payment_method: row.payment_method,
+        payment_date: row.payment_date,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        sent: false
+      };
+    });
 
     res.json(formattedRows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
+    console.error("Error fetching payslips:", err);
+    res.status(500).json({ error: "Server error: " + err.message });
   }
 });
 
