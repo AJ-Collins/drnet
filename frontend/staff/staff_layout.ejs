@@ -167,9 +167,9 @@
                       <p>No notifications yet</p>
                     </div>
                   </div>
-
+                   <% const notificationsSlug = "notifications"; %>
                   <div class="p-4 border-t border-gray-200 text-center">
-                    <a href="#" class="text-teal-600 hover:text-teal-700 font-medium">
+                    <a href="/staff/<%= notificationsSlug %>" class="text-teal-600 hover:text-teal-700 font-medium">
                       View all notifications →
                     </a>
                   </div>
@@ -571,7 +571,7 @@
           const id = btn.dataset.id;
           try {
             await fetch(`/api/notifications/${id}/read`, { 
-              method: 'PATCH',
+              method: 'PUT',
               credentials: 'include'
             });
             loadNotifications();
@@ -589,7 +589,7 @@
     // Mark all as read
     markAllBtn.addEventListener('click', async () => {
       try {
-        await fetch('/api/notifications/mark-all-read', { method: 'PATCH' });
+        await fetch('/api/notifications/read-all', { method: 'PUT' });
         loadNotifications();
         showNotification('All notifications marked as read', 'success');
       } catch (err) {

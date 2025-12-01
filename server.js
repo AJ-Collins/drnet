@@ -193,7 +193,7 @@ app.use("/api", apiSessionAuth, userProfile);
 app.use("/api/client", bookings);
 app.use("/api", apiSessionAuth, teamChat);
 app.use("/api", apiSessionAuth, announcement);
-app.use("/api/notifications", apiSessionAuth, notificationsRoutes);
+app.use("/api", apiSessionAuth, notificationsRoutes);
 
 // Create uploads folder
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
@@ -242,6 +242,7 @@ const adminPages = [
   "equipments",
   "expired-users",
   "active-users",
+  "notifications",
 ];
 
 app.get("/admin/:page", requireAdminAuth, (req, res) => {
@@ -291,6 +292,7 @@ const supervisorPages = [
   "equipments",
   "my-customers",
   "work-schedule",
+  "notifications",
 ];
 
 app.get("/supervisor/:page", requireSupervisorAuth, (req, res) => {
@@ -324,6 +326,7 @@ const staffPages = [
   "my-customers",
   "support-tickets",
   "work-schedule",
+  "notifications",
 ];
 
 app.get("/staff/:page", requireStaffAuth, (req, res) => {
@@ -356,6 +359,7 @@ const clientPages = [
   "my-subscription",
   "support",
   "payment-billing",
+  "notifications",
 ];
 
 app.get("/client/:page", requireClientAuth, (req, res) => {

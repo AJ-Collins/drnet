@@ -1,284 +1,216 @@
 const express = require("express");
 const router = express.Router();
 const Notification = require("../models/Notification");
-const db = require("../config/db");
+const notificationService = require("../services/notificationService");
 
-// GET all notifications for the logged-in user based on their role
-router.get("/", async (req, res) => {
+/**
+ * GET /api/notifications
+ * Get notifications for current user based on their role
+ */
+router.get("/notifications", async (req, res) => {
   try {
-    // 1. Check if user exists in staff table
-    const [staffExists] = await db.query(
-      "SELECT id FROM staff WHERE id = ?",
-      [req.session.user.id]
-    );
+    const userId = req.session.user.id;
+    const userRoleId = req.session.user.role_id;
 
-    if (staffExists.length === 0) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. User is not staff.",
+    if (!userRoleId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User role not found" 
       });
     }
 
-    // 2. Fetch ALL notifications for all staff
-    const [notifications] = await db.query(`
-      SELECT 
-        id, type, reference_id, title, message, role_id,
-        is_read, created_at, updated_at
-      FROM notifications
-      ORDER BY created_at DESC
-    `);
+    const notifications = await Notification.findForUser(userId, userRoleId);
+    const unreadCount = await Notification.getUnreadCount(userId, userRoleId);
 
     res.json({
       success: true,
-      data: notifications,
-      unreadCount: notifications.filter((n) => !n.is_read).length,
+      notifications,
+      unreadCount,
     });
-
-  } catch (err) {
-    console.error("Error fetching notifications:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch notifications",
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to load notifications" 
     });
   }
 });
 
-
-// GET unread notifications count
-router.get("/unread-count", async (req, res) => {
+/**
+ * GET /api/notifications/unread-count
+ * Get unread notification count
+ */
+router.get("/notifications/unread-count", async (req, res) => {
   try {
+    const userId = req.session.user.id;
     const userRoleId = req.session.user.role_id;
 
-    const [result] = await db.query(
-      `
-      SELECT COUNT(*) as count
-      FROM notifications
-      WHERE role_id = ? AND is_read = FALSE
-      `,
-      [userRoleId]
-    );
+    const count = await Notification.getUnreadCount(userId, userRoleId);
 
     res.json({
       success: true,
-      count: result[0].count,
+      count,
     });
-  } catch (err) {
-    console.error("Error fetching unread count:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch unread count",
+  } catch (error) {
+    console.error("Error fetching unread count:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to get count" 
     });
   }
 });
 
-// GET single notification by ID (with role validation)
-router.get("/:id", async (req, res) => {
+/**
+ * PUT /api/notifications/:id/read
+ * Mark notification as read
+ */
+router.put("/notifications/:id/read", async (req, res) => {
   try {
-    const { id } = req.params;
+    const notificationId = req.params.id;
+    const userId = req.session.user.id;
     const userRoleId = req.session.user.role_id;
 
-    const [notifications] = await db.query(
-      `
-      SELECT 
-        id,
-        type,
-        reference_id,
-        title,
-        message,
-        role_id,
-        is_read,
-        created_at,
-        updated_at
-      FROM notifications
-      WHERE id = ? AND role_id = ?
-      `,
-      [id, userRoleId]
-    );
+    const result = await Notification.markAsRead(notificationId, userId, userRoleId);
 
-    if (notifications.length === 0) {
+    if (result.affectedRows === 0) {
       return res.status(404).json({
         success: false,
-        error: "Notification not found or access denied",
+        message: "Notification not found or access denied",
       });
     }
-
-    res.json({
-      success: true,
-      data: notifications[0],
-    });
-  } catch (err) {
-    console.error("Error fetching notification:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch notification",
-    });
-  }
-});
-
-// PATCH - Mark notification as read
-router.patch("/:id/read", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userRoleId = req.session.user.role_id;
-
-    // Verify the notification belongs to the user's role
-    const [check] = await db.query(
-      `SELECT id FROM notifications WHERE id = ? AND role_id = ?`,
-      [id, userRoleId]
-    );
-
-    if (check.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: "Notification not found or access denied",
-      });
-    }
-
-    await Notification.markAsRead(id);
 
     res.json({
       success: true,
       message: "Notification marked as read",
     });
-  } catch (err) {
-    console.error("Error marking notification as read:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to mark notification as read",
+  } catch (error) {
+    console.error("Error marking as read:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to update" 
     });
   }
 });
 
-// PATCH - Mark all notifications as read for current user
-router.patch("/mark-all-read", async (req, res) => {
+/**
+ * PUT /api/notifications/read-all
+ * Mark all notifications as read
+ */
+router.put("/notifications/read-all", async (req, res) => {
   try {
+    const userId = req.session.user.id;
     const userRoleId = req.session.user.role_id;
 
-    const [result] = await db.query(
-      `
-      UPDATE notifications 
-      SET is_read = TRUE 
-      WHERE role_id = ? AND is_read = FALSE
-      `,
-      [userRoleId]
-    );
+    await Notification.markAllAsReadForUser(userId, userRoleId);
 
     res.json({
       success: true,
       message: "All notifications marked as read",
-      updatedCount: result.affectedRows,
     });
-  } catch (err) {
-    console.error("Error marking all notifications as read:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to mark all notifications as read",
+  } catch (error) {
+    console.error("Error marking all as read:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to update" 
     });
   }
 });
 
-// DELETE - Delete a notification (with role validation)
-router.delete("/:id", async (req, res) => {
+/**
+ * DELETE /api/notifications/:id
+ * Delete a notification
+ */
+router.delete("/notifications/:id", async (req, res) => {
   try {
-    const { id } = req.params;
+    const notificationId = req.params.id;
+    const userId = req.session.user.id;
     const userRoleId = req.session.user.role_id;
 
-    // Verify the notification belongs to the user's role
-    const [check] = await db.query(
-      `SELECT id FROM notifications WHERE id = ? AND role_id = ?`,
-      [id, userRoleId]
-    );
+    const result = await Notification.delete(notificationId, userId, userRoleId);
 
-    if (check.length === 0) {
+    if (result.affectedRows === 0) {
       return res.status(404).json({
         success: false,
-        error: "Notification not found or access denied",
+        message: "Notification not found or access denied",
       });
     }
 
-    await Notification.delete(id);
-
     res.json({
       success: true,
-      message: "Notification deleted successfully",
+      message: "Notification deleted",
     });
-  } catch (err) {
-    console.error("Error deleting notification:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to delete notification",
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to delete" 
     });
   }
 });
 
-// DELETE - Clear all read notifications for current user
-router.delete("/clear/read", async (req, res) => {
-  try {
-    const userRoleId = req.session.user.role_id;
-
-    const [result] = await db.query(
-      `
-      DELETE FROM notifications 
-      WHERE role_id = ? AND is_read = TRUE
-      `,
-      [userRoleId]
-    );
-
-    res.json({
-      success: true,
-      message: "Read notifications cleared",
-      deletedCount: result.affectedRows,
-    });
-  } catch (err) {
-    console.error("Error clearing notifications:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to clear notifications",
-    });
-  }
-});
-
-// POST - Create a notification (Admin only)
-router.post("/", async (req, res) => {
+/**
+ * POST /api/notifications/create (Admin only)
+ * Manually create notification for specific role(s)
+ */
+router.post("/notifications/create", async (req, res) => {
   try {
     const { type, reference_id, title, message, role_id } = req.body;
 
-    if (!type || !title || !message || !role_id) {
+    if (!title || !message || !role_id) {
       return res.status(400).json({
         success: false,
-        error: "Type, title, message, and role_id are required",
+        message: "Title, message, and role_id are required",
       });
     }
 
-    // Extract user info from session
-    const createdBy = req.session.user.id;
-    const createdByRole = req.session.user.role_id;
-
-    const result = await Notification.create({
-      type,
+    await notificationService.createForRole({
+      type: type || 'system',
       reference_id: reference_id || null,
       title,
       message,
       role_id,
-      is_read: false,
     });
 
-    // Optional: Log who created the notification
-    console.log(
-      `Notification created by user ID: ${createdBy} (Role: ${createdByRole})`
-    );
-
-    res.status(201).json({
+    res.json({
       success: true,
       message: "Notification created successfully",
-      id: result.insertId,
     });
-  } catch (err) {
-    console.error("Error creating notification:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to create notification",
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to create notification" 
     });
   }
 });
+
+/**
+ * GET /api/notifications/admin/all (Admin only)
+ * Get all notifications across all roles
+ */
+router.get("/notifications/admin/all", async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.session.user.role_id !== 1) { // Assuming 1 is admin role
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    const notifications = await Notification.findAll();
+
+    res.json({
+      success: true,
+      notifications,
+    });
+  } catch (error) {
+    console.error("Error fetching all notifications:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to load notifications" 
+    });
+  }
+});
+
 module.exports = router;

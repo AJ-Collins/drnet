@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Announcement = require("../models/Announcement");
-const Notification = require("../models/Notification");
 const db = require("../config/db");
+const notificationService = require("../services/notificationService");
 
 // GET all active announcements (everyone)
 router.get("/team/announcements", async (req, res) => {
@@ -59,20 +59,14 @@ router.post("/team/announcements", async (req, res) => {
       ? `${req.session.user.first_name} ${req.session.user.second_name || ''}`.trim()
       : req.session.user.email || 'Admin';
 
-    // Get role id of the user executing
-    const roleId = req.session.user.role_id; 
-
-    // Create notifications for all roles
-    if (roleId) {
-      await Notification.create({
-        type: 'announcement',
-        reference_id: announcementId,
-        title: 'New Announcement',
-        message: `${posterName} posted: "${title.trim()}"`,
-        role_id: roleId,
-        is_read: false,
-      });
-    }
+    // Admin notitifications only
+    await notificationService.createForRole({
+      type: 'announcement',
+      reference_id: announcementId,
+      title: title.trim() || 'New announcement',
+      message: body.trim() || 'N/A',
+      role_id: 3 // Admin role
+    });
 
     res.json({ 
       success: true, 

@@ -7,6 +7,7 @@ const UserSubscription = require("../models/UserSubscription");
 const User = require("../models/User");
 const Renewals = require("../models/Renewal");
 const Payment = require("../models/Payment");
+const notificationService = require("../services/notificationService");
 
 // Renew subscription
 router.post("/subscribe/client/renew", async (req, res) => {
@@ -28,10 +29,33 @@ router.post("/subscribe/client/renew", async (req, res) => {
         .json({ error: "Cannot renew. Subscription has no assigned package." });
     }
 
+    const lastPayment = await Payment.findBySubscriptionId(currentSub.id);
+
+    if(!lastPayment || lastPayment.length === 0) {
+      return res.status(403).json({
+        error: "Cannot renew. No payment record found for this subscription.",
+        code: "NO_PAYMENT"
+      });
+    }
+
+    const recentPayment = lastPayment.sort((a, b) => 
+      new Date(b.payment_date) - new Date(a.payment_date)
+    )[0];
+
+    if(recentPayment.status !== "paid") {
+      return res.status(403).json({
+        error: "Cannot renew. Payment is not made, please complete payment first.",
+        code: "PAYMENT_NOT_PAID",
+        paymentStatus: recentPayment.status,
+        amountDue: recentPayment.amount
+      });
+    }
+
     const plan = await Package.findById(currentSub.package_id);
     if (!plan) {
       return res.status(404).json({ error: "Package not found" });
     }
+    
 
     // Keep old values for renewal record
     const oldPackageId = currentSub.package_id;
@@ -45,6 +69,7 @@ router.post("/subscribe/client/renew", async (req, res) => {
     await UserSubscription.renew(currentSub.id, plan.validity_days);
 
     const renewedSub = await UserSubscription.getCurrent(userId);
+    const user = await User.findById(userId);
 
     // Insert renewal record
     await Renewals.create({
@@ -56,6 +81,20 @@ router.post("/subscribe/client/renew", async (req, res) => {
       old_amount: oldAmount,
       old_expiry_date: oldExpiry,
       new_expiry_date: renewedSub.expiry_date,
+    });
+
+    await notificationService.createForUser({
+      type: 'renewal',
+      reference_id: currentSub.id,
+      title: 'Client Subscription Renewal',
+      message: ` You renewed
+        ${user.first_name} ${user.second_name} subscription.
+        Plan: ${plan.name}
+        Amount: ${plan.price}
+        Old Expiry: ${oldExpiry}
+        New Expiry: ${renewedSub.expiry_date}
+      `.trim(),
+      role_id: 1
     });
 
     console.log("Subscription renewed successfully");
@@ -90,7 +129,6 @@ router.post("/subscribe/client/upgrade/:id", async (req, res) => {
     if (isNaN(newPlanId)) {
       return res.status(400).json({ error: "Invalid plan ID" });
     }
-
     const newPlan = await Package.findById(newPlanId);
     if (!newPlan) {
       return res.status(404).json({ error: "Plan not found" });
@@ -102,6 +140,21 @@ router.post("/subscribe/client/upgrade/:id", async (req, res) => {
       .format("YYYY-MM-DD");
 
     await UserSubscription.upgrade(userId, newPlanId, startDate, expiryDate);
+    const user = await User.findById(userId);
+    const upgradedSub = await UserSubscription.getCurrent(userId);
+
+    await notificationService.createForUser({
+      type: 'upgrade',
+      reference_id: upgradedSub.id,
+      title: 'Client Subscription Upgrade',
+      message: `You upgraded
+        ${user.first_name} ${user.second_name} subscription.
+        New Plan: ${newPlan.name}
+        Amount: ${newPlan.price}
+        New Expiry: ${expiryDate}
+      `.trim(),
+      role_id: 1
+    });
 
     console.log("✓ Subscription upgraded successfully");
     res.json({
@@ -564,6 +617,15 @@ router.post("/subscribe/client/reverse/:id", async (req, res) => {
 
     const subscriptionId = renewal.subscription_id;
 
+    // Fetch subscription info
+    const subscription = await UserSubscription.getById(subscriptionId);
+    if (!subscription)
+      return res.status(404).json({ error: "Subscription not found" });
+
+    const plan = await Package.findById(renewal.package_id);
+    const user = await User.findById(renewal.user_id);
+    const newExpiryBeforeRollback = subscription.expiry_date;
+
     // Rollback the subscription expiry_date to the old expiry
     await UserSubscription.update(subscriptionId, {
       expiry_date: renewal.old_expiry_date,
@@ -571,6 +633,21 @@ router.post("/subscribe/client/reverse/:id", async (req, res) => {
 
     // Delete the renewal record
     await Renewals.deleteById(renewalId);
+
+    await notificationService.createForUser({
+      type: "reversal",
+      reference_id: renewalId,
+      title: "Renewal Reversed",
+      message: `
+        A renewal has been reversed for:
+        User: ${user.first_name} ${user.second_name}
+        Plan: ${plan?.name || "Unknown plan"}
+        Amount Refunded/Reversed: ${renewal.amount}
+        Previous Expiry: ${newExpiryBeforeRollback}
+        Restored Expiry: ${renewal.old_expiry_date}
+      `.trim(),
+      role_id: 1 // admin role to see reversal logs
+    });
 
     res.json({
       success: true,
@@ -585,7 +662,7 @@ router.post("/subscribe/client/reverse/:id", async (req, res) => {
   }
 });
 
-// Update an existing subscription - FIXED
+// Update an existing subscription
 router.put("/subscribe/client/:id", async (req, res) => {
   try {
     const subId = parseInt(req.params.id, 10);
@@ -638,6 +715,10 @@ router.put("/subscribe/client/:id", async (req, res) => {
 
     console.log("Existing payments found:", existingPayments);
 
+    let finalAmount = payment?.amount || plan.price;
+    let finalStatus = "unpaid";
+
+
     if (existingPayments.length > 0) {
       // Prepare update values - IMPORTANT: Don't use default values, use existing values if not provided
       const updateAmount =
@@ -674,6 +755,9 @@ router.put("/subscribe/client/:id", async (req, res) => {
         ]
       );
 
+      finalAmount = updateAmount;
+      finalStatus = updateStatus;
+
       console.log("Payment update result:", result);
     } else {
       console.log("No payment found, creating new one");
@@ -689,7 +773,37 @@ router.put("/subscribe/client/:id", async (req, res) => {
         notes: null,
         status: payment?.status || "unpaid",
       });
+
+      finalAmount = newPay.amount;
+      finalStatus = newPay.status;
     }
+
+    const adminMessage = `
+      Subscription #${subId} was updated.
+      Plan: ${plan.name}
+      Start: ${newStartDate}
+      Expiry: ${newExpiry}
+      Amount: ${finalAmount}
+      Status: ${finalStatus}
+    `.trim();
+
+    const clientMessage = `
+      Your subscription was updated.
+      Plan: ${plan.name}
+      Starts: ${newStartDate}
+      Expires: ${newExpiry}
+      Amount: ${finalAmount}
+      Status: ${finalStatus}
+    `.trim();
+
+    // Admin notification
+    await notificationService.createForUser({
+      type: "subscription_update",
+      reference_id: subId,
+      title: "Subscription Updated",
+      message: adminMessage,
+      role_id: 1,
+    });
 
     res.json({
       success: true,

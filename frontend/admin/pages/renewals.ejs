@@ -336,7 +336,7 @@
   /* ---------- FETCH DATA ---------- */
   async function fetchClients() {
     const res = await fetch(`${API}/clients`);
-    if (!res.ok) throw new Error("Failed to load clients");
+    await handleApiError(res);
     const data = await res.json();
 
     const enriched = await Promise.all(
@@ -366,7 +366,7 @@
 
   async function fetchPackages() {
     const res = await fetch(PKG_API);
-    if (!res.ok) throw new Error("Failed to load packages");
+    await handleApiError(res);
     const data = await res.json();
     RENEW.packagesCache = Array.isArray(data) ? data : [];
   }
@@ -385,7 +385,7 @@
         return;
       }
 
-      if (!res.ok) throw new Error("Failed to load history");
+      await handleApiError(res);
       const data = await res.json();
       RENEW.historyCache = Array.isArray(data) ? data : [];
     } catch {
@@ -685,7 +685,7 @@
         method: "POST",
         headers: { "X-Admin-Request": "true" },
       });
-      if (!res.ok) throw new Error(await res.text());
+      await handleApiError(res);
       const data = await res.json();
 
       Swal.fire(
@@ -764,6 +764,48 @@
     }
   }
 
+
+  const handleApiError = async (response) => {
+    if (response.ok) return response;
+
+    let errorMessage = "An error occurred";
+    let errorTitle = "Request Failed";
+
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorData.message || errorMessage;
+      
+      // Optional: Map specific error codes to friendly messages
+      const friendlyMessages = {
+        "NO_PAYMENT": "Cannot renew: No payment record found for this subscription.",
+        "CLIENT_NOT_FOUND": "Client not found.",
+        "PACKAGE_NOT_FOUND": "Selected package is no longer available.",
+        "ALREADY_ACTIVE": "This client already has an active subscription.",
+        "INVALID_DATE": "Invalid renewal date.",
+      };
+
+      if (errorData.code && friendlyMessages[errorData.code]) {
+        errorMessage = friendlyMessages[errorData.code];
+      }
+    } catch {
+      errorMessage = await response.text() || response.statusText;
+    }
+
+    showError(errorMessage, errorTitle);
+    throw new Error(errorMessage);
+  };
+
+  // Helper for SweetAlert2 (add if you don't have it)
+  const showError = (message, title = "Error") => {
+    Swal.fire({
+      icon: "error",
+      title: title,
+      text: message,
+      confirmButtonColor: "#14b8a6",
+      confirmButtonText: "OK",
+    });
+  };
+
   /* ---------- EXPORT CSV ---------- */
   window.exportRenewalsCSV = () => {
     if (!RENEW.selectedClient || RENEW.historyCache.length === 0)
@@ -819,7 +861,7 @@
           headers: { "X-Admin-Request": "true" },
         }
       );
-      if (!res.ok) throw new Error(await res.text());
+      await handleApiError(res);
       await fetchClients();
       await loadClientSubscriptions(RENEW.selectedClient.id);
       await updateStats();
@@ -844,7 +886,7 @@
         method: "DELETE",
         headers: { "X-Admin-Request": "true" },
       });
-      if (!res.ok) throw new Error(await res.text());
+      await handleApiError(res);
       await fetchHistory(RENEW.selectedClient.id);
       renderHistory();
       await updateStats();
