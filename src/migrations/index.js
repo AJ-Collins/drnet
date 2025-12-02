@@ -16,6 +16,7 @@ const createBookingsTable = require("./bookings");
 const createClientPaymentReceiptsTable = require("./client_payment_receipt");
 const createUserSubscriptionsTable = require("./user_subscriptions");
 const addSubscriptionColumns = require("./addSubscriptionColumns");
+const createReports = require("./reports");
 
 //Seeders
 const seedRoles = require("../seeders/roles_seeder");
@@ -100,6 +101,7 @@ async function runMigrations() {
   await createPurchaseInvoiceTable();
   await createItemsPurchaseInvoiceTable();
   await createExpensesTable();
+  await  createReports()
 
   console.log("All migrations completed. Running seeders...");
 

@@ -9,6 +9,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   dateStrings: true,
   timezone: "+03:00",
+  multipleStatements: true
 });
 
 module.exports = pool;

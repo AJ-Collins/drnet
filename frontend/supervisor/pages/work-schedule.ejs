@@ -99,9 +99,9 @@
       <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
         <h3 class="text-xl font-bold text-gray-900 mb-4">Quick Filters</h3>
         <div class="space-y-3">
-          <button onclick="filterByDate('today')" class="filter-btn w-full px-4 py-3 bg-teal-100 text-teal-700 border-2 border-teal-300 rounded-xl font-semibold transition flex items-center justify-between">
+          <button onclick="filterByDate('today')" class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition flex items-center justify-between">
             <span><i class="fas fa-calendar-day mr-2"></i>Today</span>
-            <span id="filterTodayCount" class="bg-teal-200 px-2 py-1 rounded-full text-xs">0</span>
+            <span id="filterTodayCount" class="bg-gray-200 px-2 py-1 rounded-full text-xs">0</span>
           </button>
           <button onclick="filterByDate('tomorrow')" class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition flex items-center justify-between">
             <span><i class="fas fa-calendar-plus mr-2"></i>Tomorrow</span>
@@ -111,8 +111,8 @@
             <span><i class="fas fa-calendar-week mr-2"></i>This Week</span>
             <span id="filterWeekCount" class="bg-gray-200 px-2 py-1 rounded-full text-xs">0</span>
           </button>
-          <button onclick="filterByDate('all')" class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition">
-            <i class="fas fa-list mr-2"></i>All Tasks
+          <button onclick="filterByDate('all')" class="filter-btn w-full px-4 py-3 bg-teal-100 text-teal-700 border-2 border-teal-300 rounded-xl font-semibold transition flex items-center justify-between">
+            <span><i class="fas fa-list mr-2"></i>All Tasks</span>
           </button>
         </div>
       </div>
@@ -389,7 +389,7 @@
   const API_BASE = "/api/schedules";
   let schedules = [];
   let currentSchedule = null;
-  let activeFilter = "today";
+  let activeFilter = "all";
   let taskTypeFilters = ["Installation", "Repair", "Maintenance", "Inspection", "Emergency"];
   let currentCalendarMonth = dayjs();
   let selectedDate = null;
@@ -463,18 +463,30 @@
 
         let date = dayjs().format("YYYY-MM-DD");
         if (targetDay !== undefined && month >= 1 && month <= 12) {
-          const d = new Date(year, month - 1, 1);
-          const firstDay = d.getDay();
-          const diff = (targetDay - firstDay + 7) % 7;
-          const daysInMonth = new Date(year, month, 0).getDate();
-          let day = 1 + diff;
-          while (day <= daysInMonth) {
-            const testDate = new Date(year, month - 1, day);
-            if (testDate.getDay() === targetDay) {
-              date = testDate.toISOString().split('T')[0];
-              break;
+          // Find the NEXT occurrence of this day of week in this month (or current date if already passed)
+          const now = dayjs();
+          let candidateDate = dayjs().year(year).month(month - 1).startOf('month');
+          
+          // Find first occurrence of target day in the month
+          while (candidateDate.day() !== targetDay) {
+            candidateDate = candidateDate.add(1, 'day');
+          }
+          
+          // If this date is in the past, try next occurrence in same month
+          while (candidateDate.isBefore(now, 'day') && candidateDate.month() === month - 1) {
+            candidateDate = candidateDate.add(7, 'day');
+          }
+          
+          // If still in the correct month, use it
+          if (candidateDate.month() === month - 1) {
+            date = candidateDate.format('YYYY-MM-DD');
+          } else {
+            // Otherwise use the first occurrence (for historical/future schedules)
+            candidateDate = dayjs().year(year).month(month - 1).startOf('month');
+            while (candidateDate.day() !== targetDay) {
+              candidateDate = candidateDate.add(1, 'day');
             }
-            day += 7;
+            date = candidateDate.format('YYYY-MM-DD');
           }
         }
 
@@ -653,6 +665,7 @@
   // === SAVE ===
   async function saveSchedule(e) {
     e.preventDefault();
+
     const id = document.getElementById("scheduleId").value;
     const data = {
       id: id ? parseInt(id) : undefined,
@@ -669,26 +682,76 @@
       notes: document.getElementById("notes").value,
     };
 
+    // Show loading
+    Swal.fire({
+      title: id ? "Updating..." : "Creating...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     try {
       const method = id ? "PUT" : "POST";
       const url = id ? `${API_BASE}/${id}` : API_BASE;
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       });
-      if (!res.ok) throw new Error("Save failed");
+
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || "Failed to save");
+      }
+
       const saved = await res.json();
 
-      if (!id) schedules.push(saved);
-      else schedules = schedules.map(s => s.id === saved.id ? saved : s);
+      if (!id) {
+        schedules.push(saved);
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "New schedule created successfully",
+          timer: 2000,
+          showConfirmButton: false,
+          willClose: () => {
+            window.location.reload();
+          }
+        });
+      } else {
+        schedules = schedules.map(s => s.id === saved.id ? saved : s);
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          text: "Schedule updated successfully",
+          timer: 2000,
+          showConfirmButton: false,
+          willClose: () => {
+            window.location.reload();
+          }
+        });
+      }
 
       closeScheduleModal();
       renderSchedules();
       renderCalendar();
-      if (selectedDate) showDayTasks(selectedDate.format("YYYY-MM-DD"));
+      updateStats();
+      updateFilterCounts();
+
+      if (selectedDate) {
+        showDayTasks(selectedDate.format("YYYY-MM-DD"));
+      }
+
     } catch (err) {
-      Swal.fire("Error", "Failed to save schedule", "error");
+      console.error("Save error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.message || "Failed to save schedule. Please try again.",
+      });
     }
   }
 
@@ -728,23 +791,58 @@
   }
 
   async function deleteTask(id) {
-    Swal.fire({
-      title: "Delete Task?", text: "This action cannot be undone.", icon: "warning",
-      showCancelButton: true, confirmButtonColor: "#dc2626", confirmButtonText: "Yes, delete it!"
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-          schedules = schedules.filter(s => s.id !== id);
-          renderSchedules();
-          renderCalendar();
-          closeViewTaskModal();
-          Swal.fire("Deleted!", "Task has been removed.", "success");
-        } catch (err) {
-          Swal.fire("Error", "Failed to delete", "error");
-        }
-      }
+    const result = await Swal.fire({
+      title: "Delete Task?",
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel"
     });
+
+    if (!result.isConfirmed) return;
+
+    Swal.fire({
+      title: "Deleting...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+
+      schedules = schedules.filter(s => s.id !== id);
+
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "Task has been removed",
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      renderSchedules();
+      renderCalendar();
+      updateStats();
+      updateFilterCounts();
+
+      if (selectedDate) {
+        showDayTasks(selectedDate.format("YYYY-MM-DD"));
+      }
+
+      closeViewTaskModal();
+
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to delete task. Please try again.",
+      });
+    }
   }
 
   // === CALENDAR ===

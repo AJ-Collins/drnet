@@ -31,6 +31,7 @@ const userProfile = require("./src/routes/userProfile");
 const teamChat = require("./src/routes/teamChat");
 const announcement = require("./src/routes/announcements");
 const notificationsRoutes = require("./src/routes/notifications");
+const reports = require("./src/routes/reports");
 // Session Configuration
 app.use(
   session({
@@ -194,6 +195,7 @@ app.use("/api/client", bookings);
 app.use("/api", apiSessionAuth, teamChat);
 app.use("/api", apiSessionAuth, announcement);
 app.use("/api", apiSessionAuth, notificationsRoutes);
+app.use("/api", apiSessionAuth, reports);
 
 // Create uploads folder
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
@@ -293,6 +295,7 @@ const supervisorPages = [
   "my-customers",
   "work-schedule",
   "notifications",
+  "daily_reports",
 ];
 
 app.get("/supervisor/:page", requireSupervisorAuth, (req, res) => {

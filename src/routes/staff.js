@@ -442,15 +442,14 @@ router.get("/performance/weekly", async (req, res) => {
     // Get the last 7 days of data with dates
     const [weeklyAssignments] = await db.query(
       `SELECT 
-        DATE(scheduledDate) as date,
-        COUNT(*) as total,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
+          DATE(completedAt) as date,
+          COUNT(*) as total,
+          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
       FROM assignments
       WHERE technicianId = ?
-        AND scheduledDate >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-        AND scheduledDate <= CURDATE()
-      GROUP BY DATE(scheduledDate)
-      ORDER BY DATE(scheduledDate) ASC`,
+        AND DATE(completedAt) BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
+      GROUP BY DATE(completedAt)
+      ORDER BY DATE(completedAt) ASC`,
       [userId]
     );
 

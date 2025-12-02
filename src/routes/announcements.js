@@ -65,7 +65,7 @@ router.post("/team/announcements", async (req, res) => {
       reference_id: announcementId,
       title: title.trim() || 'New announcement',
       message: body.trim() || 'N/A',
-      role_id: 3 // Admin role
+      role_id: [1,2,3]
     });
 
     res.json({ 

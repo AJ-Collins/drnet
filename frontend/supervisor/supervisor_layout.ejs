@@ -18,6 +18,7 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -74,6 +75,7 @@
             <% const pages = [ {slug:'dashboard', name:'Dashboard'},
             { slug:'my-customers', name:'My Assignments' },
             { slug:'work-schedule', name:'Work Schedule' },
+            { slug:'daily_reports', name:'Daily Reports' },
             {slug:'staff-attendance', name:'Staff Attendance'},
             { slug: 'my-packages', name: 'My Packages' },
             {slug:'manage-users', name:'User Management'},
@@ -92,6 +94,7 @@
                   p.slug === 'dashboard' ? 'fa-chart-pie' :
                    p.slug.includes('work-schedule') ? 'fa-tasks' :
                   p.slug.includes('work-schedule') ? 'fa-calendar-alt' :
+                  p.slug.includes('daily_reports') ? 'fa-calendar-day' :
                   p.slug.includes('attendance') ? 'fa-user-check' :
                   p.slug.includes('users') ? 'fa-users' :
                   p.slug.includes('service') ? 'fa-tools' :
