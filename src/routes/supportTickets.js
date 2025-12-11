@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-
+const Guest = require("../models/Guest");
 const SupportTicket = require("../models/SupportTicket");
 const SupportTicketMessage = require("../models/SupportTicketMessage");
 const Staff = require("../models/Staff");
 const db = require("../config/db");
+const notificationService = require("../services/notificationService");
 
 router.get("/my/tickets", async (req, res) => {
   try {
@@ -139,19 +140,41 @@ router.get("/assigned/tickets", async (req, res) => {
 // CREATE ticket
 router.post("/tickets", async (req, res) => {
   try {
-    const { fullName, phone, issue_type, priority, status, ticket_number } =
+    const { fullName, phone, issue_type, priority, status, ticket_number, assigned_to } =
       req.body;
+
+    let user = await Guest.findByPhone(phone);
+
+    if (!user) {
+      const newUserId = await Guest.create({ fullName, phone });
+      user = { id: newUserId };
+    }    
 
     const ticket = await SupportTicket.create({
       ticket_number,
-      user_id: null,
-      subject: `${issue_type} - ${fullName}`,
+      user_id: user.id,
+      subject: `${issue_type} - ${fullName}` || 'No Subject',
       issue_type,
       priority,
       description: "",
       status: status || "Pending",
-      assigned_to: null,
+      assigned_to: assigned_to || null,
     });
+
+    if (assigned_to) {
+      const assignStaff = await Staff.findById(assigned_to);
+      const staffRoleId = assignStaff ? assignStaff.role_id : null;
+
+      if (staffRoleId) {
+        await notificationService.createForRole({
+          type: 'support_ticket_assignment',
+          reference_id: ticket.id,
+          title: `New Assignment`,
+          message: `You have a new assignment: ${ticket.ticket_number}`,
+          role_id: staffRoleId
+        });
+      }
+    }
 
     res.json(ticket);
   } catch (err) {
@@ -351,6 +374,31 @@ router.post("/tickets/:id/assign", async (req, res) => {
     }
 
     const ticket = await SupportTicket.findById(id);
+
+    // Notification
+    if (assignedToValue !== null) {
+      const assignedStaff = await Staff.findById(assignedToValue);
+      const roleId = assignedStaff ? assignedStaff.role_id : null;
+
+      if (roleId) {
+        const message =
+          ticket.assigned_to === assignedToValue
+            ? `You have a new assignment: ${ticket.ticket_number}`
+            : `Assignment ${ticket.ticket_number} has been reassigned to you`;
+
+        await notificationService.createForRole({
+          type: "ticket_assignment",
+          reference_id: ticket.id,
+          title:
+            ticket.assigned_to === assignedToValue
+              ? "New Assignment"
+              : "Assignment Reassigned",
+          message,
+          role_id: roleId,
+        });
+      }
+    }
+
     res.json(ticket);
   } catch (err) {
     console.error("Assign error:", err);

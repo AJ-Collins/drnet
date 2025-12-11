@@ -1,0 +1,810 @@
+<style>
+  .slide-in {
+    animation: slideIn 0.4s ease-out;
+  }
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .stat-card {
+    transition: all 0.3s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  }
+</style>
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">
+      Service Assignment Management
+    </h3>
+    <p class="text-teal-600 mt-1">
+      Assign installations, maintenance, and asset recovery tasks to technicians
+    </p>
+  </div>
+  <button
+    onclick="openCreateModal()"
+    class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
+  >
+    <i class="fas fa-user-plus"></i> <span>New Assignment</span>
+  </button>
+</div>
+
+<!-- STATS CARDS -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Total Assignments</h3>
+        <h2 id="totalAssignments" class="text-3xl font-bold text-gray-800">
+          0
+        </h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Active Assignments</h3>
+        <h2 id="activeAssignments" class="text-3xl font-bold text-gray-800">
+          0
+        </h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-hourglass-half text-green-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Pending Review</h3>
+        <h2 id="pendingAssignments" class="text-3xl font-bold text-gray-800">
+          0
+        </h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-eye text-orange-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-teal-600 text-sm font-bold mb-1">Completed Today</h3>
+        <h2 id="completedToday" class="text-3xl font-bold text-gray-800">0</h2>
+      </div>
+      <div
+        class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+      >
+        <i class="fas fa-check-circle text-purple-600 text-xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="bg-white shadow-xl p-6 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Client, tech, ID…"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+      />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2"
+        >Service Type</label
+      >
+      <select
+        id="serviceTypeFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Types</option>
+        <option value="installation">Installation</option>
+        <option value="maintenance">Maintenance</option>
+        <option value="asset_recovery">Asset Recovery</option>
+        <option value="repair">Repair</option>
+        <option value="inspection">Inspection</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+      <select
+        id="statusFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Status</option>
+        <option value="assigned">Assigned</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+        <option value="pending_review">Pending Review</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2"
+        >Technician</label
+      >
+      <select
+        id="technicianFilter"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+      >
+        <option value="">All Technicians</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-bold text-teal-800">
+      <i class="fas fa-list mr-2"></i>Assignments
+    </h3>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-teal-50">
+        <tr>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            ID
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Client
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Service
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Tech
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Date
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Status
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody
+        id="assignmentsTableBody"
+        class="bg-white divide-y divide-gray-200"
+      ></tbody>
+    </table>
+  </div>
+
+  <!-- PAGINATION -->
+  <div id="pagination" class="flex justify-center space-x-2 mt-6"></div>
+</div>
+<!-- CREATE / EDIT MODAL -->
+<div
+  id="createAssignmentModal"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="bg-white shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+  >
+    <div class="bg-teal-700 px-8 py-6">
+      <h2 id="modalTitle" class="text-2xl font-bold text-white">
+        Create Service Assignment
+      </h2>
+      <p class="text-teal-100 mt-1">
+        Assign a new service task to a technician
+      </p>
+    </div>
+    <div class="p-8">
+      <form id="assignmentForm" class="space-y-6">
+        <input type="hidden" id="editId" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
+              Assignment Details
+            </h3>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Service Type *</label
+              >
+              <select
+                id="serviceType"
+                required
+                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">Select…</option>
+                <option value="installation">Installation</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="asset_recovery">Asset Recovery</option>
+                <option value="repair">Repair</option>
+                <option value="inspection">Inspection</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Priority *</label
+              >
+              <select
+                id="priority"
+                required
+                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">Select…</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Scheduled Date *</label
+              >
+              <input
+                id="scheduledDate"
+                type="datetime-local"
+                required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Estimated Duration (hrs) *</label
+              >
+              <input
+                id="estimatedDuration"
+                type="number"
+                min="0.5"
+                step="0.5"
+                required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+          </div>
+          <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
+              Client & Technician
+            </h3>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Client Name *</label
+              >
+              <input
+                id="clientName"
+                type="text"
+                required
+                placeholder="John Doe / ABC Ltd"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Client Contact (optional)</label
+              >
+              <input
+                id="clientContact"
+                type="text"
+                placeholder="Phone / Email"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Service Address *</label
+              >
+              <textarea
+                id="serviceAddress"
+                rows="3"
+                required
+                placeholder="Full address…"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              ></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Technician *</label
+              >
+              <select
+                id="technicianId"
+                required
+                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">Select…</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Supervisor *</label
+              >
+              <select
+                id="supervisorId"
+                required
+                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              >
+                <option value="">Select…</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Description *</label
+          >
+          <textarea
+            id="description"
+            rows="4"
+            required
+            placeholder="Detailed description…"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+          ></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Required Equipment / Assets</label
+          >
+          <textarea
+            id="requiredEquipment"
+            rows="3"
+            placeholder="List items…"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+          ></textarea>
+        </div>
+        <div class="flex justify-end space-x-4 pt-6 border-t">
+          <button
+            type="button"
+            onclick="closeCreateModal()"
+            class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            id="submitBtn"
+            class="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+          >
+            Create Assignment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = {
+    ASSIGNMENTS: "/api/assignments",
+    TECHNICIANS: "/api/technicians",
+    SUPERVISORS: "/api/supervisors",
+  };
+
+  let assignments = [];
+  let technicians = [];
+  let supervisors = [];
+  let filtered = [];
+  let currentPage = 1;
+  const itemsPerPage = 8;
+
+  const $ = (id) => document.getElementById(id);
+
+  const priorityBadge = (p) => {
+    const map = {
+      low: "bg-green-100 text-green-700",
+      medium: "bg-yellow-100 text-yellow-700",
+      high: "bg-orange-100 text-orange-700",
+      urgent: "bg-red-100 text-red-700",
+    };
+    return map[p] || "bg-gray-100 text-gray-700";
+  };
+  const statusBadge = (s) => {
+    const map = {
+      assigned: "bg-blue-100 text-blue-700",
+      in_progress: "bg-indigo-100 text-indigo-700",
+      completed: "bg-green-100 text-green-700",
+      pending_review: "bg-orange-100 text-orange-700",
+    };
+    return map[s] || "bg-gray-100 text-gray-700";
+  };
+
+  // === API CALLS ===
+  const api = {
+    async get(url) {
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    async post(url, data) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    async put(url, data) {
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    async delete(url) {
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+  };
+
+  // === LOAD DATA ===
+  async function loadData() {
+    try {
+      const [assignData, techData, supData] = await Promise.all([
+        api.get(API.ASSIGNMENTS),
+        api.get(API.TECHNICIANS),
+        api.get(API.SUPERVISORS),
+      ]);
+      assignments = assignData;
+      technicians = techData;
+      supervisors = supData;
+      populateSelects();
+      applyFilters();
+      updateStats();
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  }
+
+  function populateSelects() {
+    const populate = (id, list, valueKey, labelKey) => {
+      const sel = $(id);
+      sel.innerHTML = '<option value="">Select…</option>';
+      list.forEach((item) => {
+        const opt = document.createElement("option");
+        opt.value = item[valueKey];
+        opt.textContent = item[labelKey];
+        sel.appendChild(opt);
+      });
+    };
+    populate("technicianId", technicians, "id", "name");
+    populate("supervisorId", supervisors, "id", "name");
+    populate(
+      "technicianFilter",
+      [{ id: "", name: "All Technicians" }, ...technicians],
+      "id",
+      "name"
+    );
+  }
+
+  // === FILTER & RENDER ===
+  function applyFilters() {
+    let list = [...assignments];
+    const q = $("searchInput").value.toLowerCase().trim();
+    const type = $("serviceTypeFilter").value;
+    const status = $("statusFilter").value;
+    const tech = $("technicianFilter").value;
+
+    if (q) {
+      list = list.filter((a) => {
+        const idStr = String(a.id).toLowerCase();
+        const clientStr = (a.clientName || "").toLowerCase();
+        const techName = technicians.find((t) => t.id === a.technicianId)?.name || "";
+        const techStr = techName.toLowerCase();
+
+        return (
+          idStr.includes(q) ||
+          clientStr.includes(q) ||
+          techStr.includes(q)
+        );
+      });
+    }
+    if (type) list = list.filter((a) => a.serviceType === type);
+    if (status) list = list.filter((a) => a.status === status);
+    if (tech) list = list.filter((a) => a.technicianId === tech);
+
+    filtered = list;
+    currentPage = 1;
+    renderTable();
+  }
+
+  function renderTable() {
+    const start = (currentPage - 1) * itemsPerPage;
+    const pageItems = filtered.slice(start, start + itemsPerPage);
+    const tbody = $("assignmentsTableBody");
+
+    if (!pageItems.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">No assignments found</td></tr>`;
+      renderPagination(0);
+      return;
+    }
+
+    tbody.innerHTML = pageItems
+      .map((a) => {
+        const tech =
+          technicians.find((t) => t.id === a.technicianId)?.name || "—";
+        return `
+        <tr class="hover:bg-teal-50 transition">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${
+            a.id
+          }</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+            a.clientName
+          }</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${a.serviceType.replace(
+            /_/g,
+            " "
+          )}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${tech}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dayjs(
+            a.scheduledDate
+          ).format("DD MMM YYYY, HH:mm")}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge(
+              a.status
+            )}">
+              ${a.status.replace(/_/g, " ").toUpperCase()}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+            <button onclick="viewAssignment(${
+              a.id
+            })" class="text-teal-600 hover:text-teal-900"><i class="fas fa-eye"></i></button>
+            <button onclick="openEditModal(${
+              a.id
+            })" class="text-blue-600 hover:text-blue-900"><i class="fas fa-edit"></i></button>
+            <button onclick="deleteAssignment(${
+              a.id
+            })" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`;
+      })
+      .join("");
+
+    renderPagination(filtered.length);
+  }
+
+  function renderPagination(total) {
+    const pages = Math.ceil(total / itemsPerPage);
+    const nav = $("pagination");
+    nav.innerHTML = "";
+    if (pages <= 1) return;
+
+    const btn = (text, page, disabled = false) => {
+      const b = document.createElement("button");
+      b.textContent = text;
+      b.disabled = disabled;
+      b.className = `px-4 py-2 border rounded text-sm ${
+        disabled ? "opacity-50" : "hover:bg-gray-100"
+      }`;
+      if (!disabled)
+        b.onclick = () => {
+          currentPage = page;
+          renderTable();
+        };
+      return b;
+    };
+
+    nav.appendChild(btn("Prev", currentPage - 1, currentPage === 1));
+    for (let i = 1; i <= pages; i++) {
+      const b = btn(i, i);
+      if (i === currentPage) b.className += " bg-teal-600 text-white";
+      nav.appendChild(b);
+    }
+    nav.appendChild(btn("Next", currentPage + 1, currentPage === pages));
+  }
+
+  function updateStats() {
+    const today = dayjs().startOf("day");
+    $("totalAssignments").textContent = assignments.length;
+    $("activeAssignments").textContent = assignments.filter((a) =>
+      ["assigned", "in_progress"].includes(a.status)
+    ).length;
+    $("pendingAssignments").textContent = assignments.filter(
+      (a) => a.status === "pending_review"
+    ).length;
+    $("completedToday").textContent = assignments.filter(
+      (a) =>
+        a.status === "completed" &&
+        a.completedAt &&
+        dayjs(a.completedAt).isSame(today, "day")
+    ).length;
+  }
+
+  // === MODAL ===
+  function openCreateModal() {
+    $("modalTitle").textContent = "Create Service Assignment";
+    $("submitBtn").textContent = "Create Assignment";
+    $("assignmentForm").reset();
+    $("editId").value = "";
+    $("createAssignmentModal").classList.remove("hidden");
+  }
+
+  function openEditModal(id) {
+    const a = assignments.find((x) => x.id === id);
+    if (!a) return;
+    $("modalTitle").textContent = "Edit Assignment";
+    $("submitBtn").textContent = "Update Assignment";
+    $("editId").value = a.id;
+    $("serviceType").value = a.serviceType;
+    $("priority").value = a.priority;
+    $("scheduledDate").value = a.scheduledDate.slice(0, 16);
+    $("estimatedDuration").value = a.estimatedDuration;
+    $("clientName").value = a.clientName;
+    $("clientContact").value = a.clientContact || "";
+    $("serviceAddress").value = a.serviceAddress;
+    $("technicianId").value = a.technicianId;
+    $("supervisorId").value = a.supervisorId;
+    $("description").value = a.description;
+    $("requiredEquipment").value = a.requiredEquipment || "";
+    $("createAssignmentModal").classList.remove("hidden");
+  }
+
+  function closeCreateModal() {
+    $("createAssignmentModal").classList.add("hidden");
+  }
+
+  // === FORM SUBMIT ===
+  $("assignmentForm").onsubmit = async (e) => {
+    e.preventDefault();
+    if (!$("assignmentForm").checkValidity())
+      return $("assignmentForm").reportValidity();
+
+    const data = {
+      serviceType: $("serviceType").value,
+      priority: $("priority").value,
+      scheduledDate: $("scheduledDate").value,
+      estimatedDuration: parseFloat($("estimatedDuration").value),
+      clientName: $("clientName").value.trim(),
+      clientContact: $("clientContact").value.trim(),
+      serviceAddress: $("serviceAddress").value.trim(),
+      technicianId: $("technicianId").value,
+      supervisorId: $("supervisorId").value,
+      description: $("description").value.trim(),
+      requiredEquipment: $("requiredEquipment").value.trim(),
+    };
+
+    try {
+      if ($("editId").value) {
+        await api.put(`${API.ASSIGNMENTS}/${$("editId").value}`, data);
+        Swal.fire("Updated!", "", "success");
+      } else {
+        await api.post(API.ASSIGNMENTS, data);
+        Swal.fire("Created!", "", "success");
+      }
+      closeCreateModal();
+      loadData();
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
+  };
+
+  // === VIEW / DELETE ===
+  window.viewAssignment = async (id) => {
+    const a = assignments.find((x) => x.id === id);
+    if (!a) return;
+    const tech = technicians.find((t) => t.id === a.technicianId)?.name || "—";
+    const sup = supervisors.find((s) => s.id === a.supervisorId)?.name || "—";
+
+    Swal.fire({
+      title: `#${a.id} – ${a.clientName}`,
+      html: `
+        <div class="text-left space-y-2">
+          <p><strong>Service:</strong> ${a.serviceType.replace(/_/g, " ")}</p>
+          <p><strong>Priority:</strong> <span class="${priorityBadge(
+            a.priority
+          )} px-2 py-0.5 rounded text-xs">${a.priority}</span></p>
+          <p><strong>Status:</strong> <span class="${statusBadge(
+            a.status
+          )} px-2 py-0.5 rounded text-xs">${a.status.replace(
+        /_/g,
+        " "
+      )}</span></p>
+          <p><strong>Scheduled:</strong> ${dayjs(a.scheduledDate).format(
+            "DD MMM YYYY, HH:mm"
+          )}</p>
+          <p><strong>Duration:</strong> ${a.estimatedDuration} h</p>
+          <p><strong>Address:</strong> ${a.address}</p>
+          <p><strong>Tech:</strong> ${tech}</p>
+          <p><strong>Supervisor:</strong> ${sup}</p>
+          <p><strong>Description:</strong> ${a.description}</p>
+          ${
+            a.requiredEquipment
+              ? `<p><strong>Equipment:</strong> ${a.requiredEquipment}</p>`
+              : ""
+          }
+        </div>`,
+      icon: "info",
+      confirmButtonColor: "#0d9488",
+    });
+  };
+
+  window.deleteAssignment = async (id) => {
+    const res = await Swal.fire({
+      title: "Delete?",
+      text: "Cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+    });
+    if (!res.isConfirmed) return;
+    await api.delete(`${API.ASSIGNMENTS}/${id}`);
+    loadData();
+    Swal.fire("Deleted!", "", "success");
+  };
+
+  // === FILTER INPUTS ===
+  [
+    "searchInput",
+    "serviceTypeFilter",
+    "statusFilter",
+    "technicianFilter",
+  ].forEach((id) => {
+    $(id).addEventListener("input", applyFilters);
+    $(id).addEventListener("change", applyFilters);
+  });
+
+  // === INIT ===
+  document.addEventListener("DOMContentLoaded", () => {
+    loadData();
+  });
+
+  // Global
+  window.openCreateModal = openCreateModal;
+  window.openEditModal = openEditModal;
+  window.closeCreateModal = closeCreateModal;
+</script>

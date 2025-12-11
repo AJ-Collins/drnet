@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Report = require("../models/Reports");
 const notificationService = require("../services/notificationService");
+const Staff = require("../models/Staff");
+const Role = require("../models/Role");
 
 // GET all reports
 router.get("/reports", async (req, res) => {
@@ -27,10 +29,23 @@ router.get("/report:id", async (req, res) => {
 // POST create new report
 router.post("/report", async (req, res) => {
   try {
-    const { report_type, start_date, end_date, content, generated_by } = req.body;
+    const { report_type, start_date, end_date, content } = req.body;
+    const staffId = req.session.user.id;
 
     if (!report_type || !start_date || !end_date || !content) {
       return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const staff = await Staff.findOne(staffId);
+
+    if (!staff) {
+      return res.status(404).json({ message: 'Staff details not found' });
+    }
+
+    const role = await Role.findOne(staff.role_id);
+
+    if (!role) {
+      return res.status(404).json({ message: 'This staff does not have a role.'});
     }
 
     const newReport = await Report.create({
@@ -38,7 +53,7 @@ router.post("/report", async (req, res) => {
       start_date,
       end_date,
       content,
-      generated_by: generated_by || "Supervisor",
+      generated_by: role.name || "Supervisor",
     });
 
     const snippet = content.length > 50 ? content.substring(0, 50) + "..." : content;

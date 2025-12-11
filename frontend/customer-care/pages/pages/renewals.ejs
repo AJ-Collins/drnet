@@ -1,0 +1,911 @@
+<!-- ==================== RENEWALS MANAGEMENT ==================== -->
+<div class="flex items-center justify-between mb-8 px-6 pt-6">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">Renewals Management</h3>
+    <p class="text-teal-600 mt-1">Subscription & Service Renewals</p>
+  </div>
+
+  <button
+    onclick="exportRenewalsCSV()"
+    class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
+  >
+    <i class="fas fa-download group-hover:scale-110 transition-transform"></i>
+    <span>Export CSV</span>
+  </button>
+</div>
+
+<!-- ==================== STATS ==================== -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 px-6">
+  <div
+    class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400 stat-card"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-teal-600 text-sm font-bold mb-1">Monthly Renewals</p>
+        <h3 id="statRenewals" class="text-3xl font-bold text-gray-800">0</h3>
+      </div>
+      <div
+        class="w-14 h-14 bg-teal-100 rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-sync text-teal-600 text-2xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400 stat-card"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-green-600 text-sm font-bold mb-1">
+          Revenue (Current Month)
+        </p>
+        <h3 id="statRevenue" class="text-3xl font-bold text-gray-800">Ksh 0</h3>
+      </div>
+      <div
+        class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-dollar-sign text-green-600 text-2xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400 stat-card"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-blue-600 text-sm font-bold mb-1">Avg. Renewal</p>
+        <h3 id="statAvg" class="text-3xl font-bold text-gray-800">Ksh 0</h3>
+      </div>
+      <div
+        class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-chart-pie text-blue-600 text-2xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400 stat-card"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-purple-600 text-sm font-bold mb-1">Active Clients</p>
+        <h3 id="statActive" class="text-3xl font-bold text-gray-800">0</h3>
+      </div>
+      <div
+        class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-user-check text-purple-600 text-2xl"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== QUICK RENEWAL ==================== -->
+<div class="bg-white shadow-xl p-6 mb-8 rounded-xl slide-in px-6">
+  <div class="flex items-center mb-6">
+    <div
+      class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center mr-3"
+    >
+      <i class="fas fa-bolt text-teal-600 text-sm"></i>
+    </div>
+    <h2 class="text-xl font-bold text-gray-800">Quick Renewal / Upgrade</h2>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Search & Select -->
+    <div class="lg:col-span-2">
+      <label class="block text-sm font-bold text-gray-700 mb-2">
+        <i class="fas fa-user text-teal-600 mr-2"></i>Select Client
+      </label>
+      <div class="relative">
+        <i
+          class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+        ></i>
+        <input
+          type="text"
+          id="renewClientSearch"
+          placeholder="Type name / phone / email..."
+          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all"
+        />
+      </div>
+
+      <select
+        id="renewClientSelect"
+        size="6"
+        class="mt-3 w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all bg-white"
+        onchange="loadClientSubscriptions(this.value)"
+      ></select>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col justify-center space-y-2">
+      <button
+        onclick="openRenewModal()"
+        id="btnRenew"
+        class="w-full bg-teal-700 hover:bg-teal-800 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors hidden"
+      >
+        <i class="fas fa-sync text-sm"></i>
+        <span class="text-sm">Renew</span>
+      </button>
+
+      <button
+        onclick="openUpgradeModal()"
+        id="btnUpgrade"
+        class="w-full bg-teal-800 hover:bg-teal-900 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors hidden"
+      >
+        <i class="fas fa-arrow-up text-sm"></i>
+        <span class="text-sm">Upgrade</span>
+      </button>
+
+      <!-- <button
+        onclick="openSubscribeModal()"
+        id="btnSubscribe"
+        class="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors"
+      >
+        <i class="fas fa-plus text-sm"></i>
+        <span class="text-sm">Subscribe</span>
+      </button> -->
+    </div>
+  </div>
+
+  <!-- Client Preview -->
+  <div
+    id="clientPreview"
+    class="mt-6 hidden bg-teal-50 border-2 border-teal-200 rounded-xl p-4"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div
+          class="w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center text-white font-bold"
+        >
+          <span id="previewInitials"></span>
+        </div>
+        <div>
+          <p id="previewName" class="font-bold text-gray-800"></p>
+          <p id="previewContact" class="text-sm text-gray-600"></p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p id="previewPlan" class="font-semibold text-teal-800"></p>
+        <p id="previewExpiry" class="text-xs text-gray-600"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Renewal History ==================== -->
+<div class="bg-white shadow-md p-6 rounded-xl mb-8 slide-in px-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-bold text-teal-800">
+      <i class="fas fa-history mr-2"></i>Renewal History
+    </h3>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full" id="historyTable">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Plan
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Renewed On
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Old Expiry
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Expires On
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Old Amount
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Renewed Amount
+          </th>
+          <th
+            class="text-left p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider"
+          >
+            Status
+          </th>
+          <th
+            class="text-right p-3 font-semibold text-gray-700 text-sm uppercase tracking-wider pr-6"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== RENEW / UPGRADE / SUBSCRIBE MODAL ==================== -->
+<div
+  id="renewModal"
+  class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
+>
+  <div
+    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
+  >
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-bold text-teal-800 flex items-center">
+        <i class="fas fa-wifi mr-3 text-indigo-600"></i
+        ><span id="modalHeader">Renew Subscription</span>
+      </h3>
+      <button
+        type="button"
+        onclick="closeRenewModal()"
+        class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+      >
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <div class="space-y-5">
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <p class="text-sm text-gray-600">Client</p>
+        <p id="modalClientName" class="text-lg font-bold text-gray-900">-</p>
+      </div>
+
+      <div
+        id="currentPlanBox"
+        class="bg-teal-50 p-4 rounded-lg border border-teal-200 hidden"
+      >
+        <p class="text-sm text-teal-700 font-medium">Current Plan</p>
+        <p id="currentPlanName" class="text-xl font-bold text-teal-800">-</p>
+        <p id="currentPlanExpiry" class="text-sm text-teal-600 mt-1">-</p>
+      </div>
+
+      <div id="planSelectWrapper">
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Select Plan
+        </label>
+        <select
+          id="modalPlanSelect"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white"
+        >
+          <option value="">Loading plans…</option>
+        </select>
+      </div>
+
+      <div class="flex space-x-3">
+        <button
+          type="button"
+          onclick="closeRenewModal()"
+          class="flex-1 py-3 px-6 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-all"
+        >
+          Cancel
+        </button>
+        <button
+          id="modalActionBtn"
+          type="button"
+          class="flex-1 py-3 px-6 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-semibold hover:from-teal-700 hover:to-teal-800 shadow-lg hover:shadow-xl transition-all"
+        >
+          <span id="modalActionText">Renew</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ==============================================================
+   RENEWALS MANAGEMENT – FIXED VERSION
+   ============================================================== */
+  const RENEW = {
+    clientsCache: [],
+    packagesCache: [],
+    selectedClient: null,
+    historyCache: [],
+    modalMode: "",
+  };
+
+  const $r = (id) => document.getElementById(id);
+  const API = "/api";
+  const PKG_API = "/api/packages";
+
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString("en-KE", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  const getBadge = (s) =>
+    ({
+      Active: "bg-green-100 text-green-700",
+      Expired: "bg-red-100 text-red-700",
+      Suspended: "bg-orange-100 text-orange-700",
+    }[s] || "bg-gray-100 text-gray-700");
+
+  /* ---------- FETCH DATA ---------- */
+  async function fetchClients() {
+    const res = await fetch(`${API}/clients`);
+    await handleApiError(res);
+    const data = await res.json();
+
+    const enriched = await Promise.all(
+      data.map(async (c) => {
+        try {
+          const subRes = await fetch(
+            `${API}/subscribe/client/current?userId=${c.id}`,
+            {
+              headers: { "X-Admin-Request": "true" },
+            }
+          );
+          let sub = subRes.ok ? await subRes.json() : null;
+          // API returns an array, get first item
+          if (Array.isArray(sub) && sub.length > 0) {
+            sub = sub[0];
+          }
+          return { ...c, currentSub: sub };
+        } catch {
+          return { ...c, currentSub: null };
+        }
+      })
+    );
+
+    RENEW.clientsCache = enriched;
+    return enriched;
+  }
+
+  async function fetchPackages() {
+    const res = await fetch(PKG_API);
+    await handleApiError(res);
+    const data = await res.json();
+    RENEW.packagesCache = Array.isArray(data) ? data : [];
+  }
+
+  async function fetchHistory(clientId) {
+    try {
+      const res = await fetch(
+        `${API}/subscribe/client/history?userId=${clientId}`,
+        {
+          headers: { "X-Admin-Request": "true" },
+        }
+      );
+
+      if (res.status === 404) {
+        RENEW.historyCache = [];
+        return;
+      }
+
+      await handleApiError(res);
+      const data = await res.json();
+      RENEW.historyCache = Array.isArray(data) ? data : [];
+    } catch {
+      RENEW.historyCache = [];
+    }
+  }
+
+  /* ---------- CLIENT SELECT ---------- */
+  async function populateClientSelect(search = "") {
+    const select = $r("renewClientSelect");
+    const filtered = RENEW.clientsCache.filter(
+      (c) =>
+        `${c.first_name} ${c.second_name}`
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        (c.phone && c.phone.includes(search)) ||
+        (c.email && c.email.toLowerCase().includes(search.toLowerCase()))
+    );
+
+    select.innerHTML = filtered.length
+      ? filtered
+          .map((c) => {
+            // Get package name with fallbacks
+            let planName = "(No Plan)";
+            if (c.currentSub) {
+              if (c.currentSub.package?.name) {
+                planName = `(${c.currentSub.package.name})`;
+              } else if (c.currentSub.package_name) {
+                planName = `(${c.currentSub.package_name})`;
+              }
+            }
+
+            return `
+        <option value="${c.id}">
+          ${c.first_name} ${c.second_name} – ${c.phone || "—"} ${planName}
+        </option>`;
+          })
+          .join("")
+      : "<option disabled>No clients found</option>";
+  }
+
+  let searchTimer;
+  $r("renewClientSearch").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => populateClientSelect(e.target.value), 300);
+  });
+
+  window.loadClientSubscriptions = async (clientId) => {
+    if (!clientId) {
+      clearClientView();
+      return;
+    }
+
+    const client = RENEW.clientsCache.find((c) => c.id == clientId);
+    if (!client) return;
+
+    RENEW.selectedClient = client;
+    await fetchHistory(clientId);
+    renderClientPreview();
+    renderHistory();
+    toggleActionButtons();
+  };
+
+  function clearClientView() {
+    RENEW.selectedClient = null;
+    RENEW.historyCache = [];
+    $r("clientPreview")?.classList.add("hidden");
+    $r(
+      "historyBody"
+    ).innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Select a client to view history</td></tr>`;
+    toggleActionButtons();
+  }
+
+  /* ---------- RENDER UI ---------- */
+  function renderClientPreview() {
+    const c = RENEW.selectedClient;
+    const sub = c.currentSub;
+
+    $r("previewInitials").textContent =
+      `${c.first_name[0]}${c.second_name[0]}`.toUpperCase();
+    $r("previewName").textContent = `${c.first_name} ${c.second_name}`;
+    $r("previewContact").textContent = `${c.phone || "—"} • ${c.email || "—"}`;
+
+    // Get plan name
+    let planName = "No active plan";
+    if (sub) {
+      if (sub.package?.name) {
+        planName = sub.package.name;
+      } else if (sub.package_name) {
+        planName = sub.package_name;
+      }
+    }
+    $r("previewPlan").textContent = planName;
+
+    // Get expiry date
+    let expiryText = "";
+    if (sub) {
+      const expiryDate = sub.expiry_date || sub.expires;
+      if (expiryDate) {
+        expiryText = `Expires ${formatDate(expiryDate)}`;
+      }
+    }
+    $r("previewExpiry").textContent = expiryText;
+
+    $r("clientPreview").classList.remove("hidden");
+  }
+
+  function renderHistory() {
+    const tbody = $r("historyBody");
+
+    // If no client selected → show placeholder
+    if (!RENEW.selectedClient) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Select a client to view renewal history</td></tr>`;
+      return;
+    }
+
+    if (!RENEW.historyCache || RENEW.historyCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Client has no renewal history</td></tr>`;
+      return;
+    }
+
+    const sortedHistory = [...RENEW.historyCache].sort((a, b) => {
+      return new Date(b.renewal_date) - new Date(a.renewal_date);
+    });
+
+    // Find the LATEST ACTIVE renewal (by new_expiry_date)
+    const activeItems = sortedHistory.filter(
+      (h) => new Date(h.new_expiry_date) >= new Date()
+    );
+    const latestActive = activeItems.length > 0 ? activeItems[0] : null;
+
+    // Otherwise, show only real renewals
+    tbody.innerHTML = RENEW.historyCache
+      .map((h, idx, arr) => {
+        const isActive = new Date(h.new_expiry_date) >= new Date();
+        const isLatestActive = latestActive && h.id === latestActive.id;
+
+        return `
+        <tr class="hover:bg-gray-50">
+          <td class="p-3">${h.package_name || "Unknown Plan"}</td>
+          <td class="p-3">${formatDate(h.renewal_date)}</td>
+          <td class="p-3">${formatDate(h.old_expiry_date)}</td>
+          <td class="p-3">${formatDate(h.new_expiry_date)}</td>
+          <td class="p-3">KSh ${Number(h.old_amount || 0).toLocaleString()}</td>
+          <td class="p-3">KSh ${Number(h.amount || 0).toLocaleString()}</td>
+          <td class="p-3">
+            <span class="px-2 py-1 rounded text-xs font-medium ${getBadge(
+              isActive ? "Active" : "Expired"
+            )}">
+              ${isActive ? "Active" : "Expired"}
+            </span>
+          </td>
+          <td class="p-3 text-right">
+            <div class="flex justify-end items-center gap-2">
+              ${
+                isLatestActive
+                  ? `<button onclick="reverseRenewal(${h.id})"
+                      class="text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white
+                      px-3 py-1.5 rounded-lg shadow-sm flex items-center space-x-1
+                      transition-all transform hover:scale-105">
+                      <i class="fas fa-undo"></i>
+                      <span>Undo</span>
+                    </button>`
+                  : `<button onclick="deleteRenewal(${h.id})"
+                      class="text-xs bg-red-100 hover:bg-red-200 text-red-700
+                      px-2 py-1 rounded flex items-center space-x-1">
+                      <i class="fas fa-trash"></i>
+                      <span>Delete</span>
+                    </button>`
+              }
+            </div>
+          </td>
+        </tr>`;
+      })
+      .join("");
+  }
+
+  function toggleActionButtons() {
+    const hasEverSubscribed = !!RENEW.selectedClient?.currentSub;
+
+    const showRenewUpgrade = hasEverSubscribed;
+    const showSubscribeOnly = !hasEverSubscribed;
+
+    // Renew & Upgrade buttons
+    $r("btnRenew").classList.toggle("hidden", !showRenewUpgrade);
+    $r("btnUpgrade").classList.toggle("hidden", !showRenewUpgrade);
+
+    // Subscribe button (currently commented out, but ready if you uncomment)
+    // $r("btnSubscribe").classList.toggle("hidden", showRenewUpgrade);
+
+    // Enable/disable for safety
+    $r("btnRenew").disabled = !showRenewUpgrade;
+    $r("btnUpgrade").disabled = !showRenewUpgrade;
+  }
+
+  /* ---------- MODAL ---------- */
+  async function populateModalPlans() {
+    await fetchPackages();
+    const sel = $r("modalPlanSelect");
+    sel.innerHTML = '<option value="">Select a plan...</option>';
+    RENEW.packagesCache.forEach((p) => {
+      const opt = new Option(
+        `${p.name} – KSh ${p.price} (${p.speed || ""})`,
+        p.id
+      );
+      sel.appendChild(opt);
+    });
+  }
+
+  function openModal(mode) {
+    if (!RENEW.selectedClient)
+      return Swal.fire("No Client", "Select a client first", "warning");
+
+    RENEW.modalMode = mode;
+    $r("modalHeader").textContent = {
+      renew: "Renew Subscription",
+      upgrade: "Upgrade Plan",
+      subscribe: "New Subscription",
+    }[mode];
+    $r("modalActionText").textContent =
+      mode === "renew" ? "Renew" : mode === "upgrade" ? "Upgrade" : "Subscribe";
+    $r(
+      "modalClientName"
+    ).textContent = `${RENEW.selectedClient.first_name} ${RENEW.selectedClient.second_name}`;
+
+    const cur = RENEW.selectedClient.currentSub;
+    const curBox = $r("currentPlanBox");
+    if (cur && mode !== "subscribe") {
+      $r("currentPlanName").textContent =
+        cur.package?.name || cur.package_name || "Unknown Plan";
+      $r("currentPlanExpiry").textContent = `Expires: ${formatDate(
+        cur.expiry_date || cur.expires
+      )}`;
+      curBox.classList.remove("hidden");
+    } else curBox.classList.add("hidden");
+
+    const wrapper = $r("planSelectWrapper");
+    if (mode === "renew") {
+      wrapper.classList.add("hidden");
+      populateModalPlans();
+      const opt = $r("modalPlanSelect").querySelector(
+        `option[value="${cur?.package_id}"]`
+      );
+      if (opt) opt.selected = true;
+    } else {
+      wrapper.classList.remove("hidden");
+      populateModalPlans();
+      $r("modalPlanSelect").selectedIndex = 0;
+    }
+
+    $r("renewModal").style.display = "flex";
+    setTimeout(
+      () =>
+        $r("renewModal")
+          .querySelector(".bg-white")
+          .classList.replace("scale-95", "scale-100"),
+      10
+    );
+  }
+
+  window.openRenewModal = () => openModal("renew");
+  window.openUpgradeModal = () => openModal("upgrade");
+  window.openSubscribeModal = () => openModal("subscribe");
+  window.closeRenewModal = () => {
+    $r("renewModal")
+      .querySelector(".bg-white")
+      .classList.replace("scale-100", "scale-95");
+    setTimeout(() => ($r("renewModal").style.display = "none"), 200);
+  };
+
+  /* ---------- MODAL SUBMIT ---------- */
+  $r("modalActionBtn").onclick = async () => {
+    if (RENEW.modalMode !== "renew" && !$r("modalPlanSelect").value)
+      return Swal.fire("Select Plan", "Please choose a plan", "warning");
+
+    const clientId = RENEW.selectedClient.id;
+    let endpoint = "";
+
+    switch (RENEW.modalMode) {
+      case "renew":
+        endpoint = `${API}/subscribe/client/renew?userId=${clientId}`;
+        break;
+      case "upgrade":
+        endpoint = `${API}/subscribe/client/upgrade/${
+          $r("modalPlanSelect").value
+        }?userId=${clientId}`;
+        break;
+      case "subscribe":
+        endpoint = `${API}/subscribe/client/${
+          $r("modalPlanSelect").value
+        }?userId=${clientId}`;
+        break;
+    }
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "X-Admin-Request": "true" },
+      });
+      await handleApiError(res);
+      const data = await res.json();
+
+      Swal.fire(
+        "Success!",
+        `${
+          RENEW.modalMode === "renew"
+            ? "Renewed"
+            : RENEW.modalMode === "upgrade"
+            ? "Upgraded"
+            : "Subscribed"
+        } successfully!`,
+        "success"
+      );
+      closeRenewModal();
+
+      // FULL REFRESH
+      await fetchClients();
+      populateClientSelect();
+      await loadClientSubscriptions(clientId);
+      await updateStats();
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  };
+
+  /* ---------- STATS ---------- */
+  async function updateStats() {
+    try {
+      const res = await fetch(`${API}/renewals/stats`, {
+        headers: { "X-Admin-Request": "true" },
+      });
+
+      let monthlyRenewals = 0;
+      let revenue = 0;
+      let avgRenewal = 0;
+
+      if (res.ok) {
+        const s = await res.json();
+        monthlyRenewals = s.monthlyRenewals || 0;
+        revenue = s.revenue || 0;
+        avgRenewal = s.avgRenewal || 0;
+      }
+
+      // Use the actual expiry_date
+      function formatDateForMySQL(date = new Date()) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      // Today in YYYY-MM-DD
+      const todayStr = formatDateForMySQL();
+
+      // Active clients count
+      const activeClientsCount = RENEW.clientsCache.filter(c => {
+        if (!c.currentSub) return false;
+
+        const start = c.currentSub.start_date;
+        const expiry = c.currentSub.expiry_date || c.currentSub.expires;
+
+        if (!start || !expiry) return false;
+
+        // Compare as YYYY-MM-DD strings
+        return start <= todayStr && expiry >= todayStr;
+      }).length;
+
+      // Update all stats
+      $r("statRenewals").textContent = monthlyRenewals;
+      $r("statRevenue").textContent = `Ksh ${revenue.toLocaleString()}`;
+      $r("statAvg").textContent = `Ksh ${avgRenewal.toLocaleString()}`;
+      $r("statActive").textContent = activeClientsCount;
+    } catch (e) {
+      console.error("Stats update failed:", e);
+    }
+  }
+
+
+  const handleApiError = async (response) => {
+    if (response.ok) return response;
+
+    let errorMessage = "An error occurred";
+    let errorTitle = "Request Failed";
+
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorData.message || errorMessage;
+      
+      // Optional: Map specific error codes to friendly messages
+      const friendlyMessages = {
+        "NO_PAYMENT": "Cannot renew: No payment record found for this subscription.",
+        "CLIENT_NOT_FOUND": "Client not found.",
+        "PACKAGE_NOT_FOUND": "Selected package is no longer available.",
+        "ALREADY_ACTIVE": "This client already has an active subscription.",
+        "INVALID_DATE": "Invalid renewal date.",
+      };
+
+      if (errorData.code && friendlyMessages[errorData.code]) {
+        errorMessage = friendlyMessages[errorData.code];
+      }
+    } catch {
+      errorMessage = await response.text() || response.statusText;
+    }
+
+    showError(errorMessage, errorTitle);
+    throw new Error(errorMessage);
+  };
+
+  // Helper for SweetAlert2 (add if you don't have it)
+  const showError = (message, title = "Error") => {
+    Swal.fire({
+      icon: "error",
+      title: title,
+      text: message,
+      confirmButtonColor: "#14b8a6",
+      confirmButtonText: "OK",
+    });
+  };
+
+  /* ---------- EXPORT CSV ---------- */
+  window.exportRenewalsCSV = () => {
+    if (!RENEW.selectedClient || RENEW.historyCache.length === 0)
+      return Swal.fire(
+        "No Data",
+        "Select a client with history to export",
+        "info"
+      );
+
+    const rows = RENEW.historyCache.map((h) => [
+      `${RENEW.selectedClient.first_name} ${RENEW.selectedClient.second_name}`,
+      h.package_name,
+      h.price,
+      formatDate(h.assigned_at || h.created_at),
+      formatDate(h.expires),
+      new Date(h.expires) >= new Date() ? "Active" : "Expired",
+    ]);
+
+    const csv = [
+      ["Client", "Plan", "Price", "Assigned", "Expires", "Status"],
+      ...rows,
+    ]
+      .map((r) => r.map((v) => `"${v}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `renewals-${RENEW.selectedClient.id}-${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  /* ---------- REVERSE & DELETE ---------- */
+  window.reverseRenewal = async (id) => {
+    if (
+      !(await Swal.fire({
+        title: "Reverse?",
+        text: "This will revert to previous plan",
+        icon: "warning",
+        showCancelButton: true,
+      }).then((r) => r.isConfirmed))
+    )
+      return;
+    try {
+      const res = await fetch(
+        `${API}/subscribe/client/reverse/${id}?userId=${RENEW.selectedClient.id}`,
+        {
+          method: "POST",
+          headers: { "X-Admin-Request": "true" },
+        }
+      );
+      await handleApiError(res);
+      await fetchClients();
+      await loadClientSubscriptions(RENEW.selectedClient.id);
+      await updateStats();
+      Swal.fire("Reversed!", "", "success");
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  };
+
+  window.deleteRenewal = async (id) => {
+    if (
+      !(await Swal.fire({
+        title: "Delete?",
+        text: "Cannot be undone",
+        icon: "danger",
+        showCancelButton: true,
+      }).then((r) => r.isConfirmed))
+    )
+      return;
+    try {
+      const res = await fetch(`${API}/subscribe/client/delete/${id}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Request": "true" },
+      });
+      await handleApiError(res);
+      await fetchHistory(RENEW.selectedClient.id);
+      renderHistory();
+      await updateStats();
+      Swal.fire("Deleted!", "", "success");
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  };
+
+  /* ---------- INIT ---------- */
+  (async () => {
+    try {
+      await Promise.all([fetchClients(), fetchPackages()]);
+      populateClientSelect();
+      updateStats();
+      clearClientView();
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Load Error", e.message, "error");
+    }
+  })();
+</script>

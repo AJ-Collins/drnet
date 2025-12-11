@@ -249,8 +249,7 @@ router.get("/staff/dashboard/stats", async (req, res) => {
       `SELECT COUNT(*) as count FROM assignments 
        WHERE technicianId = ? 
          AND status = 'completed'
-         AND MONTH(scheduledDate) = MONTH(CURDATE())
-         AND YEAR(scheduledDate) = YEAR(CURDATE())`,
+         AND MONTH(completedAt) = MONTH(CURDATE())`,
       [userId]
     );
 
@@ -258,8 +257,7 @@ router.get("/staff/dashboard/stats", async (req, res) => {
     const [totalAssignedResult] = await db.query(
       `SELECT COUNT(*) as count FROM assignments 
        WHERE technicianId = ? 
-         AND MONTH(scheduledDate) = MONTH(CURDATE())
-         AND YEAR(scheduledDate) = YEAR(CURDATE())`,
+         AND MONTH(completedAt) = MONTH(CURDATE())`,
       [userId]
     );
 

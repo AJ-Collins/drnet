@@ -79,6 +79,11 @@ const Staff = {
     return rows[0] ? formatStaff(rows[0]) : null;
   },
 
+  findOne: async (id) => {
+    const [rows] = await db.query(`SELECT * FROM staff WHERE id = ? LIMIT 1`, [id]);
+    return rows[0];
+  },
+
   findByRole: async (roleId) => {
     const [rows] = await db.query(
       `SELECT s.*, r.name AS role_name

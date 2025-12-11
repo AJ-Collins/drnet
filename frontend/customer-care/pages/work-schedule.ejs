@@ -1,0 +1,1152 @@
+<style>
+    /* Skeleton Loading */
+    @keyframes skeleton {
+      0% { background-color: #f3f4f6; }
+      100% { background-color: #e5e7eb; }
+    }
+    .skeleton {
+      background: #e5e7eb;
+      animation: skeleton 1.2s ease-in-out infinite;
+      border-radius: 0.5rem;
+    }
+    .skeleton-text { height: 1rem; }
+    .skeleton-title { height: 1.5rem; width: 60%; }
+    .skeleton-circle { width: 2.5rem; height: 2.5rem; border-radius: 9999px; }
+    .skeleton-card { height: 8rem; }
+
+    /* Modal Animation */
+    .modal-backdrop {
+      transition: opacity 0.3s ease;
+    }
+    .modal-content {
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+    }
+    .modal-backdrop.open .modal-content {
+      transform: scale(1);
+    }
+  </style>
+
+<div class="max-w-full mx-auto p-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8 p-6">
+    <div>
+      <h1 class="text-3xl font-bold text-teal-800">Work Schedule</h1>
+      <p class="text-teal-600 mt-1">Manage your installations, repairs, and maintenance tasks</p>
+    </div>
+    <button onclick="openScheduleModal()" class="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+      <i class="fas fa-plus"></i> <span>New Schedule</span>
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 px-6">
+    <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-blue-600 text-sm font-bold mb-1">Today's Tasks</h3>
+          <h2 id="todayTasks" class="text-3xl font-bold text-gray-800">0</h2>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-calendar-day text-blue-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-green-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-green-600 text-sm font-bold mb-1">Completed</h3>
+          <h2 id="completedTasks" class="text-3xl font-bold text-gray-800">0</h2>
+        </div>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-check-circle text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-amber-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-amber-600 text-sm font-bold mb-1">Pending</h3>
+          <h2 id="pendingTasks" class="text-3xl font-bold text-gray-800">0</h2>
+        </div>
+        <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-clock text-amber-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg p-6 border-2 border-purple-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-purple-600 text-sm font-bold mb-1">This Week</h3>
+          <h2 id="weekTasks" class="text-3xl font-bold text-gray-800">0</h2>
+        </div>
+        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-calendar-week text-purple-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6">
+    <!-- Left Column -->
+    <div class="lg:col-span-1 space-y-6">
+
+      <!-- Quick Filters -->
+      <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Quick Filters</h3>
+        <div class="space-y-3">
+          <button onclick="filterByDate('today')" class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition flex items-center justify-between">
+            <span><i class="fas fa-calendar-day mr-2"></i>Today</span>
+            <span id="filterTodayCount" class="bg-gray-200 px-2 py-1 rounded-full text-xs">0</span>
+          </button>
+          <button onclick="filterByDate('tomorrow')" class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition flex items-center justify-between">
+            <span><i class="fas fa-calendar-plus mr-2"></i>Tomorrow</span>
+            <span id="filterTomorrowCount" class="bg-gray-200 px-2 py-1 rounded-full text-xs">0</span>
+          </button>
+          <button onclick="filterByDate('week')" class="filter-btn w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 transition flex items-center justify-between">
+            <span><i class="fas fa-calendar-week mr-2"></i>This Week</span>
+            <span id="filterWeekCount" class="bg-gray-200 px-2 py-1 rounded-full text-xs">0</span>
+          </button>
+          <button onclick="filterByDate('all')" class="filter-btn w-full px-4 py-3 bg-teal-100 text-teal-700 border-2 border-teal-300 rounded-xl font-semibold transition flex items-center justify-between">
+            <span><i class="fas fa-list mr-2"></i>All Tasks</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Task Types Filter -->
+      <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Task Types</h3>
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked class="w-5 h-5 text-teal-600 rounded focus:ring-2 focus:ring-teal-500" onchange="filterTasks()" />
+            <span class="flex-1 font-semibold text-gray-700">Installation</span>
+            <span id="countInstallation" class="bg-teal-100 text-teal-700 px-2 py-1 rounded-full text-xs font-bold">0</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" onchange="filterTasks()" />
+            <span class="flex-1 font-semibold text-gray-700">Repair</span>
+            <span id="countRepair" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold">0</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked class="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500" onchange="filterTasks()" />
+            <span class="flex-1 font-semibold text-gray-700">Maintenance</span>
+            <span id="countMaintenance" class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-bold">0</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked class="w-5 h-5 text-amber-600 rounded focus:ring-2 focus:ring-amber-500" onchange="filterTasks()" />
+            <span class="flex-1 font-semibold text-gray-700">Inspection</span>
+            <span id="countInspection" class="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-bold">0</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked class="w-5 h-5 text-red-600 rounded focus:ring-2 focus:ring-red-500" onchange="filterTasks()" />
+            <span class="flex-1 font-semibold text-gray-700">Emergency</span>
+            <span id="countEmergency" class="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">0</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Interactive Calendar -->
+      <div class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-3xl shadow-2xl p-6 text-white">
+        <div class="flex items-center justify-between mb-6">
+          <button onclick="changeMonth(-1)" class="p-2 hover:bg-white/20 rounded-lg transition">
+            <i class="fas fa-chevron-left text-xl"></i>
+          </button>
+          <div class="text-center">
+            <h3 id="calendarMonthYear" class="text-2xl font-bold"></h3>
+            <p class="text-teal-100 text-sm">Click a date to schedule</p>
+          </div>
+          <button onclick="changeMonth(1)" class="p-2 hover:bg-white/20 rounded-lg transition">
+            <i class="fas fa-chevron-right text-xl"></i>
+          </button>
+        </div>
+        
+        <div class="grid grid-cols-7 gap-1 text-center text-sm mb-3">
+          <div class="font-bold text-teal-100 py-2">Sun</div>
+          <div class="font-bold text-teal-100 py-2">Mon</div>
+          <div class="font-bold text-teal-100 py-2">Tue</div>
+          <div class="font-bold text-teal-100 py-2">Wed</div>
+          <div class="font-bold text-teal-100 py-2">Thu</div>
+          <div class="font-bold text-teal-100 py-2">Fri</div>
+          <div class="font-bold text-teal-100 py-2">Sat</div>
+        </div>
+        
+        <div id="calendarDays" class="grid grid-cols-7 gap-1 text-center"></div>
+        
+        <div class="mt-6 pt-6 border-t border-teal-400/30 flex items-center justify-between text-sm">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+            <span class="text-teal-100">Completed</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-amber-400 rounded-full"></div>
+            <span class="text-teal-100">Pending</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-white rounded-full"></div>
+            <span class="text-teal-100">Today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tasks for Selected Date -->
+      <div id="dayTasksContainer" class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 id="selectedDateTitle" class="text-xl font-bold text-gray-900"></h3>
+            <p id="selectedDateSubtitle" class="text-sm text-gray-600"></p>
+          </div>
+          <button onclick="scheduleForDate()" class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-teal-600 hover:to-teal-700 transition flex items-center gap-2 shadow-lg">
+            <i class="fas fa-plus"></i> Add
+          </button>
+        </div>
+        <div id="dayTasksList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-gray-900">My Schedule</h2>
+          <select id="statusFilter" class="px-4 py-2 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-teal-500" onchange="renderSchedules()">
+            <option value="">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+
+        <div id="scheduleList" class="space-y-4 max-h-[900px] overflow-y-auto">
+          <!-- Skeleton -->
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="scheduleModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 modal-backdrop">
+  <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto modal-content">
+    <div class="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6 flex justify-between items-center">
+      <h3 id="modalTitle" class="text-2xl font-bold">Add New Schedule</h3>
+      <button onclick="closeScheduleModal()" class="text-white/90 hover:text-white transition">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+    <form id="scheduleForm" onsubmit="saveSchedule(event)" class="p-8 space-y-6">
+      <input type="hidden" id="scheduleId" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Task Type *</label>
+          <select id="taskType" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white">
+            <option value="">Select task type...</option>
+            <option>Installation</option>
+            <option>Repair</option>
+            <option>Maintenance</option>
+            <option>Inspection</option>
+            <option>Emergency</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Priority *</label>
+          <select id="priority" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white">
+            <option>Low</option>
+            <option selected>Medium</option>
+            <option>High</option>
+            <option>Urgent</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Date *</label>
+          <input type="date" id="taskDate" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Time *</label>
+          <input type="time" id="taskTime" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Duration (hours) *</label>
+          <input type="number" id="duration" required min="0.5" step="0.5" value="2" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Status *</label>
+          <select id="status" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition bg-white">
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">Customer Name *</label>
+        <input type="text" id="customerName" required placeholder="Enter customer name" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">Location *</label>
+        <input type="text" id="location" required placeholder="Enter service location address" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">Contact Number *</label>
+        <input type="tel" id="contactNumber" required placeholder="0700000000" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">Task Description</label>
+        <textarea id="description" rows="4" placeholder="Describe the task details..." class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">Notes</label>
+        <textarea id="notes" rows="3" placeholder="Any additional notes..." class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 transition resize-none"></textarea>
+      </div>
+      <div class="flex gap-4 pt-4">
+        <button type="submit" class="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 rounded-xl hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg">
+          <i class="fas fa-save mr-2"></i>Save Schedule
+        </button>
+        <button type="button" onclick="closeScheduleModal()" class="px-8 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- View Task Modal -->
+<div id="viewTaskModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 modal-backdrop">
+  <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content">
+    <div class="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6 flex justify-between items-center">
+      <h3 class="text-2xl font-bold">Task Details</h3>
+      <button onclick="closeViewTaskModal()" class="text-white/90 hover:text-white transition">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+    <div class="p-8 space-y-6">
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">TASK TYPE</p>
+          <p id="viewTaskType" class="font-bold text-gray-900 text-lg"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">PRIORITY</p>
+          <span id="viewPriority" class="inline-block px-3 py-1 rounded-full text-sm font-bold"></span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">DATE & TIME</p>
+          <p id="viewDateTime" class="font-semibold text-gray-900"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">DURATION</p>
+          <p id="viewDuration" class="font-semibold text-gray-900"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">STATUS</p>
+          <span id="viewStatus" class="inline-block px-3 py-1 rounded-full text-sm font-bold"></span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-gray-500 mb-1">CONTACT</p>
+          <p id="viewContact" class="font-semibold text-gray-900"></p>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-500 mb-2">CUSTOMER NAME</p>
+        <p id="viewCustomer" class="font-bold text-gray-900 text-lg"></p>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-500 mb-2">LOCATION</p>
+        <p id="viewLocation" class="font-semibold text-gray-900"></p>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-500 mb-2">DESCRIPTION</p>
+        <p id="viewDescription" class="text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-200"></p>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-gray-500 mb-2">NOTES</p>
+        <p id="viewNotes" class="text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-200"></p>
+      </div>
+    </div>
+    <div class="p-6 border-t-2 border-gray-100 bg-gray-50 flex justify-between">
+      <div class="flex gap-3">
+        <button onclick="editTaskFromView()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition flex items-center gap-2">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button onclick="deleteTask(currentSchedule.id)" class="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition flex items-center gap-2">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+      <button onclick="closeViewTaskModal()" class="px-6 py-3 bg-gray-600 text-white font-bold rounded-xl hover:bg-gray-700 transition">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = "/api/schedules";
+  let schedules = [];
+  let currentSchedule = null;
+  let activeFilter = "all";
+  let taskTypeFilters = ["Installation", "Repair", "Maintenance", "Inspection", "Emergency"];
+  let currentCalendarMonth = dayjs();
+  let selectedDate = null;
+
+  // === FETCH & RENDER ===
+  async function loadSchedules() {
+    const container = document.getElementById("scheduleList");
+    container.innerHTML = `
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    `;
+
+    try {
+      const res = await fetch(API_BASE, {
+        headers: {
+          'Cache-Control': 'no-cache'  // ← Forces fresh request
+        }
+      });
+
+      let rawSchedules = [];
+      if (res.status === 304 && schedules.length > 0) {
+        // Use cached data
+        rawSchedules = schedules.map(s => ({
+          id: s.id,
+          schedule_type: s.taskType,
+          task_description: `Customer: ${s.customerName}\n Location: ${s.location}\n Contact: ${s.contactNumber}\n Priority: ${s.priority}\n Status: ${s.status}\n Description: ${s.description}\n Notes: ${s.notes}`,
+          start_time: s.time + ':00',
+          end_time: (parseInt(s.time.split(':')[0]) + s.duration) + ':' + s.time.split(':')[1] + ':00',
+          day_of_week: dayjs(s.date).format('dddd'),
+          month: dayjs(s.date).month() + 1,
+          is_active: !s.is_deleted
+        }));
+      } else if (res.ok) {
+        rawSchedules = await res.json();
+      } else {
+        throw new Error("Failed to load");
+      }
+
+      // === TRANSFORM DATA (Same as before) ===
+      schedules = rawSchedules.map(item => {
+        const lines = (item.task_description || "").split("\n").map(l => l.trim()).filter(Boolean);
+        const descMap = {};
+        lines.forEach(line => {
+          const [key, ...valueParts] = line.split(":");
+          if (key && valueParts.length) {
+            descMap[key.trim().toLowerCase().replace(/\s+/g, '')] = valueParts.join(":").trim();
+          }
+        });
+
+        const customer = descMap['customer'] || 'Unknown';
+        const location = descMap['location'] || 'Unknown';
+        const contact = descMap['contact'] || 'N/A';
+        const priority = descMap['priority'] || 'Medium';
+        const status = descMap['status'] || 'Pending';
+        const description = descMap['description'] || '';
+        const notes = descMap['notes'] || '';
+
+        const start = item.start_time;
+        const end = item.end_time;
+        const duration = start && end
+          ? ((new Date(`2000-01-01 ${end}`) - new Date(`2000-01-01 ${start}`)) / (1000 * 60 * 60)).toFixed(1)
+          : 2;
+
+        // Reconstruct date from day_of_week + month
+        const year = new Date().getFullYear();
+        const month = item.month;
+        const dayOfWeek = item.day_of_week;
+        const dayMap = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+        const targetDay = dayMap[dayOfWeek];
+
+        let date = dayjs().format("YYYY-MM-DD");
+        if (targetDay !== undefined && month >= 1 && month <= 12) {
+          // Find the NEXT occurrence of this day of week in this month (or current date if already passed)
+          const now = dayjs();
+          let candidateDate = dayjs().year(year).month(month - 1).startOf('month');
+          
+          // Find first occurrence of target day in the month
+          while (candidateDate.day() !== targetDay) {
+            candidateDate = candidateDate.add(1, 'day');
+          }
+          
+          // If this date is in the past, try next occurrence in same month
+          while (candidateDate.isBefore(now, 'day') && candidateDate.month() === month - 1) {
+            candidateDate = candidateDate.add(7, 'day');
+          }
+          
+          // If still in the correct month, use it
+          if (candidateDate.month() === month - 1) {
+            date = candidateDate.format('YYYY-MM-DD');
+          } else {
+            // Otherwise use the first occurrence (for historical/future schedules)
+            candidateDate = dayjs().year(year).month(month - 1).startOf('month');
+            while (candidateDate.day() !== targetDay) {
+              candidateDate = candidateDate.add(1, 'day');
+            }
+            date = candidateDate.format('YYYY-MM-DD');
+          }
+        }
+
+        return {
+          id: item.id,
+          taskType: item.schedule_type,
+          priority,
+          date,
+          time: start ? start.slice(0, 5) : "09:00",
+          duration: parseFloat(duration),
+          status,
+          customerName: customer,
+          location,
+          contactNumber: contact,
+          description,
+          notes,
+          is_deleted: !item.is_active
+        };
+      });
+
+      renderSchedules();
+      renderCalendar();
+      updateStats();
+      updateFilterCounts();
+
+    } catch (err) {
+      container.innerHTML = `<p class="text-center text-red-600 py-8">Error: ${err.message}</p>`;
+      console.error(err);
+    }
+  }
+
+  // === HELPERS ===
+  function getPriorityBadge(p) {
+    const map = { Low: "bg-gray-100 text-gray-700", Medium: "bg-blue-100 text-blue-700", High: "bg-orange-100 text-orange-700", Urgent: "bg-red-100 text-red-700" };
+    return map[p] || "bg-gray-100 text-gray-700";
+  }
+
+  function getStatusBadge(s) {
+    const map = { Pending: "bg-yellow-100 text-yellow-700", "In Progress": "bg-blue-100 text-blue-700", Completed: "bg-green-100 text-green-700" };
+    return map[s] || "bg-gray-100 text-gray-700";
+  }
+
+  // === RENDER SCHEDULES ===
+  function renderSchedules() {
+    const container = document.getElementById("scheduleList");
+    let filtered = schedules.filter(s => !s.is_deleted);
+
+    const statusFilter = document.getElementById("statusFilter").value;
+    if (statusFilter) filtered = filtered.filter(s => s.status === statusFilter);
+
+    const today = dayjs().format("YYYY-MM-DD");
+    const tomorrow = dayjs().add(1, "day").format("YYYY-MM-DD");
+    const weekStart = dayjs().startOf("week").format("YYYY-MM-DD");
+    const weekEnd = dayjs().endOf("week").format("YYYY-MM-DD");
+
+    if (activeFilter === "today") filtered = filtered.filter(s => s.date === today);
+    else if (activeFilter === "tomorrow") filtered = filtered.filter(s => s.date === tomorrow);
+    else if (activeFilter === "week") filtered = filtered.filter(s => s.date >= weekStart && s.date <= weekEnd);
+
+    if (taskTypeFilters.length > 0) filtered = filtered.filter(s => taskTypeFilters.includes(s.taskType));
+
+    filtered.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+
+    container.innerHTML = filtered.length ? filtered.map(s => `
+      <div class="bg-gradient-to-r from-teal-50 to-white p-5 rounded-2xl border-2 border-teal-100 hover:shadow-lg transition-all cursor-pointer flex justify-between items-start" onclick="viewTask(${s.id})">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg ${s.taskType === "Installation" ? "bg-teal-500" : s.taskType === "Repair" ? "bg-blue-500" : s.taskType === "Maintenance" ? "bg-purple-500" : s.taskType === "Inspection" ? "bg-amber-500" : "bg-red-500"}">
+              ${s.taskType[0]}
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-900">${s.customerName}</h4>
+              <p class="text-sm text-gray-600">${s.location}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 text-sm text-gray-600">
+            <span><i class="fas fa-clock mr-1"></i>${s.time} (${s.duration}h)</span>
+            <span><i class="fas fa-calendar mr-1"></i>${dayjs(s.date).format("ddd, MMM D")}</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 ${getPriorityBadge(s.priority)}">${s.priority}</span>
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-bold ${getStatusBadge(s.status)}">${s.status}</span>
+        </div>
+      </div>
+    `).join("") : '<p class="text-center text-gray-500 py-8">No tasks found.</p>';
+
+    updateStats();
+    updateFilterCounts();
+  }
+
+  function updateStats() {
+    const today = dayjs().format("YYYY-MM-DD");
+    const weekStart = dayjs().startOf("week").format("YYYY-MM-DD");
+    const weekEnd = dayjs().endOf("week").format("YYYY-MM-DD");
+
+    document.getElementById("todayTasks").textContent = schedules.filter(s => !s.is_deleted && s.date === today).length;
+    document.getElementById("completedTasks").textContent = schedules.filter(s => !s.is_deleted && s.status === "Completed").length;
+    document.getElementById("pendingTasks").textContent = schedules.filter(s => !s.is_deleted && s.status !== "Completed").length;
+    document.getElementById("weekTasks").textContent = schedules.filter(s => !s.is_deleted && s.date >= weekStart && s.date <= weekEnd).length;
+  }
+
+  function updateFilterCounts() {
+    const counts = { today: 0, tomorrow: 0, week: 0, Installation: 0, Repair: 0, Maintenance: 0, Inspection: 0, Emergency: 0 };
+    schedules.filter(s => !s.is_deleted).forEach(s => {
+      if (s.date === dayjs().format("YYYY-MM-DD")) counts.today++;
+      if (s.date === dayjs().add(1, "day").format("YYYY-MM-DD")) counts.tomorrow++;
+      if (s.date >= dayjs().startOf("week").format("YYYY-MM-DD") && s.date <= dayjs().endOf("week").format("YYYY-MM-DD")) counts.week++;
+      counts[s.taskType]++;
+    });
+
+    document.getElementById("filterTodayCount").textContent = counts.today;
+    document.getElementById("filterTomorrowCount").textContent = counts.tomorrow;
+    document.getElementById("filterWeekCount").textContent = counts.week;
+    document.getElementById("countInstallation").textContent = counts.Installation;
+    document.getElementById("countRepair").textContent = counts.Repair;
+    document.getElementById("countMaintenance").textContent = counts.Maintenance;
+    document.getElementById("countInspection").textContent = counts.Inspection;
+    document.getElementById("countEmergency").textContent = counts.Emergency;
+  }
+
+  // === FILTERS ===
+  function filterByDate(filter) {
+    activeFilter = filter;
+    document.querySelectorAll(".filter-btn").forEach(b => {
+      b.classList.remove("bg-teal-100", "text-teal-700", "border-teal-300");
+      b.classList.add("bg-gray-50", "hover:bg-gray-100", "border-gray-200", "text-gray-700");
+    });
+    event.target.classList.remove("bg-gray-50", "hover:bg-gray-100", "border-gray-200", "text-gray-700");
+    event.target.classList.add("bg-teal-100", "text-teal-700", "border-teal-300");
+    renderSchedules();
+  }
+
+  function filterTasks() {
+    taskTypeFilters = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.parentElement.querySelector("span").textContent.trim());
+    renderSchedules();
+  }
+
+  // === MODALS ===
+  function openScheduleModal(id = null) {
+    currentSchedule = id ? schedules.find(s => s.id === id) : null;
+    const modal = document.getElementById("scheduleModal");
+    const title = document.getElementById("modalTitle");
+    const form = document.getElementById("scheduleForm");
+
+    if (currentSchedule) {
+      title.textContent = "Edit Schedule";
+      document.getElementById("scheduleId").value = currentSchedule.id;
+      document.getElementById("taskType").value = currentSchedule.taskType;
+      document.getElementById("priority").value = currentSchedule.priority;
+      document.getElementById("taskDate").value = currentSchedule.date;
+      document.getElementById("taskTime").value = currentSchedule.time;
+      document.getElementById("duration").value = currentSchedule.duration;
+      document.getElementById("status").value = currentSchedule.status;
+      document.getElementById("customerName").value = currentSchedule.customerName;
+      document.getElementById("location").value = currentSchedule.location;
+      document.getElementById("contactNumber").value = currentSchedule.contactNumber;
+      document.getElementById("description").value = currentSchedule.description || "";
+      document.getElementById("notes").value = currentSchedule.notes || "";
+    } else {
+      title.textContent = "Add New Schedule";
+      form.reset();
+      document.getElementById("scheduleId").value = "";
+      document.getElementById("priority").value = "Medium";
+      document.getElementById("status").value = "Pending";
+    }
+    modal.classList.remove("hidden");
+    modal.classList.add("open");
+  }
+
+  function closeScheduleModal() {
+    document.getElementById("scheduleModal").classList.add("hidden");
+    document.getElementById("scheduleModal").classList.remove("open");
+  }
+
+  // === SAVE ===
+  async function saveSchedule(e) {
+    e.preventDefault();
+
+    const id = document.getElementById("scheduleId").value;
+    const data = {
+      id: id ? parseInt(id) : undefined,
+      taskType: document.getElementById("taskType").value,
+      priority: document.getElementById("priority").value,
+      date: document.getElementById("taskDate").value,
+      time: document.getElementById("taskTime").value,
+      duration: parseFloat(document.getElementById("duration").value),
+      status: document.getElementById("status").value,
+      customerName: document.getElementById("customerName").value,
+      location: document.getElementById("location").value,
+      contactNumber: document.getElementById("contactNumber").value,
+      description: document.getElementById("description").value,
+      notes: document.getElementById("notes").value,
+    };
+
+    // Show loading
+    Swal.fire({
+      title: id ? "Updating..." : "Creating...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    try {
+      const method = id ? "PUT" : "POST";
+      const url = id ? `${API_BASE}/${id}` : API_BASE;
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || "Failed to save");
+      }
+
+      const saved = await res.json();
+
+      if (!id) {
+        schedules.push(saved);
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "New schedule created successfully",
+          timer: 2000,
+          showConfirmButton: false,
+          willClose: () => {
+            window.location.reload();
+          }
+        });
+      } else {
+        schedules = schedules.map(s => s.id === saved.id ? saved : s);
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          text: "Schedule updated successfully",
+          timer: 2000,
+          showConfirmButton: false,
+          willClose: () => {
+            window.location.reload();
+          }
+        });
+      }
+
+      closeScheduleModal();
+      renderSchedules();
+      renderCalendar();
+      updateStats();
+      updateFilterCounts();
+
+      if (selectedDate) {
+        showDayTasks(selectedDate.format("YYYY-MM-DD"));
+      }
+
+    } catch (err) {
+      console.error("Save error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.message || "Failed to save schedule. Please try again.",
+      });
+    }
+  }
+
+  // === VIEW & DELETE ===
+  function viewTask(id) {
+    const task = schedules.find(s => s.id === id);
+    if (!task) return;
+    currentSchedule = task;
+
+    document.getElementById("viewTaskType").textContent = task.taskType;
+    document.getElementById("viewPriority").textContent = task.priority;
+    document.getElementById("viewPriority").className = `inline-block px-3 py-1 rounded-full text-sm font-bold ${getPriorityBadge(task.priority)}`;
+    document.getElementById("viewDateTime").textContent = `${dayjs(task.date).format("MMMM D, YYYY")} at ${task.time}`;
+    document.getElementById("viewDuration").textContent = `${task.duration} hour${task.duration > 1 ? "s" : ""}`;
+    document.getElementById("viewStatus").textContent = task.status;
+    document.getElementById("viewStatus").className = `inline-block px-3 py-1 rounded-full text-sm font-bold ${getStatusBadge(task.status)}`;
+    document.getElementById("viewCustomer").textContent = task.customerName;
+    document.getElementById("viewLocation").textContent = task.location;
+    document.getElementById("viewContact").textContent = task.contactNumber;
+    document.getElementById("viewDescription").textContent = task.description || "—";
+    document.getElementById("viewNotes").textContent = task.notes || "—";
+
+    const modal = document.getElementById("viewTaskModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("open");
+  }
+
+  function closeViewTaskModal() {
+    const modal = document.getElementById("viewTaskModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("open");
+  }
+
+  function editTaskFromView() {
+    closeViewTaskModal();
+    openScheduleModal(currentSchedule.id);
+  }
+
+  async function deleteTask(id) {
+    const result = await Swal.fire({
+      title: "Delete Task?",
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel"
+    });
+
+    if (!result.isConfirmed) return;
+
+    Swal.fire({
+      title: "Deleting...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+
+      schedules = schedules.filter(s => s.id !== id);
+
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "Task has been removed",
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      renderSchedules();
+      renderCalendar();
+      updateStats();
+      updateFilterCounts();
+
+      if (selectedDate) {
+        showDayTasks(selectedDate.format("YYYY-MM-DD"));
+      }
+
+      closeViewTaskModal();
+
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to delete task. Please try again.",
+      });
+    }
+  }
+
+  // === CALENDAR ===
+  function renderCalendar() {
+    const monthYear = document.getElementById("calendarMonthYear");
+    const daysContainer = document.getElementById("calendarDays");
+    monthYear.textContent = currentCalendarMonth.format("MMMM YYYY");
+
+    const firstDay = currentCalendarMonth.startOf("month").startOf("week");
+    const lastDay = currentCalendarMonth.endOf("month").endOf("week");
+    let current = firstDay;
+    let html = "";
+
+    while (current.isBefore(lastDay) || current.isSame(lastDay, "day")) {
+      const dateStr = current.format("YYYY-MM-DD");
+      const isCurrentMonth = current.month() === currentCalendarMonth.month();
+      const isToday = current.isSame(dayjs(), "day");
+      const isSelected = selectedDate && current.isSame(selectedDate, "day");
+      const tasks = schedules.filter(s => !s.is_deleted && s.date === dateStr);
+      const hasCompleted = tasks.some(s => s.status === "Completed");
+      const hasPending = tasks.some(s => s.status !== "Completed");
+
+      let classes = "py-2 rounded-lg cursor-pointer relative transition-all hover:bg-teal-50";
+      if (!isCurrentMonth) classes += " text-gray-400";
+      if (isToday) classes += " bg-teal-500 text-white font-bold hover:bg-teal-600";
+      if (isSelected && !isToday) classes += " bg-teal-100 text-teal-800 font-bold";
+
+      html += `<div class="${classes}" onclick="selectDate('${dateStr}')">${current.date()}`;
+      if (tasks.length > 0 && !isToday) {
+        html += `<div class="flex gap-0.5 justify-center mt-0.5">`;
+        if (hasCompleted) html += `<div class="w-1 h-1 bg-green-500 rounded-full"></div>`;
+        if (hasPending) html += `<div class="w-1 h-1 bg-amber-500 rounded-full"></div>`;
+        html += `</div>`;
+      }
+      html += `</div>`;
+      current = current.add(1, "day");
+    }
+    daysContainer.innerHTML = html;
+  }
+
+  function changeMonth(delta) {
+    currentCalendarMonth = currentCalendarMonth.add(delta, "month");
+    renderCalendar();
+  }
+
+  function selectDate(dateStr) {
+    selectedDate = dayjs(dateStr);
+    renderCalendar();
+    showDayTasks(dateStr);
+  }
+
+  function showDayTasks(dateStr) {
+    const container = document.getElementById("dayTasksContainer");
+    const title = document.getElementById("selectedDateTitle");
+    const list = document.getElementById("dayTasksList");
+    const date = dayjs(dateStr);
+    title.textContent = date.format("dddd, MMMM D, YYYY");
+
+    const tasks = schedules.filter(s => !s.is_deleted && s.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
+
+    list.innerHTML = tasks.length ? tasks.map(t => `
+      <div class="bg-gradient-to-r ${t.status === "Completed" ? "from-green-50 to-white border-green-200" : "from-teal-50 to-white border-teal-200"} p-4 rounded-xl border-2 transition-all hover:shadow-md">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3 flex-1">
+            <button onclick="toggleTaskComplete(${t.id}, event)" class="mt-1 w-6 h-6 rounded-full border-2 ${t.status === "Completed" ? "bg-green-500 border-green-500" : "border-gray-300 hover:border-teal-500"} flex items-center justify-center transition-all flex-shrink-0">
+              ${t.status === "Completed" ? '<i class="fas fa-check text-white text-xs"></i>' : ""}
+            </button>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-bold text-gray-900 ${t.status === "Completed" ? "line-through opacity-60" : ""}">${t.customerName}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full font-bold ${getPriorityBadge(t.priority)}">${t.priority}</span>
+              </div>
+              <p class="text-sm text-gray-600 mb-1 ${t.status === "Completed" ? "line-through opacity-60" : ""}">${t.taskType} - ${t.location}</p>
+              <div class="flex items-center gap-3 text-xs text-gray-500">
+                <span><i class="fas fa-clock mr-1"></i>${t.time}</span>
+                <span><i class="fas fa-hourglass-half mr-1"></i>${t.duration}h</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="viewTask(${t.id})" class="text-teal-600 hover:text-teal-700 p-2 hover:bg-teal-50 rounded-lg transition-all">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+    `).join("") : `
+      <div class="text-center py-8 text-gray-500">
+        <i class="fas fa-calendar-plus text-4xl mb-3 text-gray-300"></i>
+        <p>No tasks scheduled for this day</p>
+        <button onclick="scheduleForDate()" class="mt-4 text-teal-600 hover:text-teal-700 font-semibold">
+          <i class="fas fa-plus mr-1"></i> Schedule a task
+        </button>
+      </div>
+    `;
+
+    container.classList.remove("hidden");
+  }
+
+  function scheduleForDate() {
+    openScheduleModal();
+    if (selectedDate) document.getElementById("taskDate").value = selectedDate.format("YYYY-MM-DD");
+  }
+
+  async function toggleTaskComplete(id, event) {
+    event.stopPropagation();
+    const task = schedules.find(s => s.id === id);
+    if (!task) return;
+    const newStatus = task.status === "Completed" ? "Pending" : "Completed";
+
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) throw new Error("Update failed");
+      task.status = newStatus;
+      renderSchedules();
+      renderCalendar();
+      if (selectedDate) showDayTasks(selectedDate.format("YYYY-MM-DD"));
+    } catch (err) {
+      Swal.fire("Error", "Failed to update status", "error");
+    }
+  }
+
+  // === INIT ===
+  document.addEventListener("DOMContentLoaded", () => {
+    loadSchedules();
+
+    // Close modals on backdrop click
+    document.querySelectorAll(".modal-backdrop").forEach(modal => {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.classList.add("hidden");
+          modal.classList.remove("open");
+        }
+      });
+    });
+  });
+
+  // === CALENDAR ===
+  function renderCalendar() {
+    const monthYear = document.getElementById("calendarMonthYear");
+    const daysContainer = document.getElementById("calendarDays");
+    monthYear.textContent = currentCalendarMonth.format("MMMM YYYY");
+
+    const firstDay = currentCalendarMonth.startOf("month").startOf("week");
+    const lastDay = currentCalendarMonth.endOf("month").endOf("week");
+    let current = firstDay;
+    let html = "";
+
+    while (current.isBefore(lastDay) || current.isSame(lastDay, "day")) {
+      const dateStr = current.format("YYYY-MM-DD");
+      const isCurrentMonth = current.month() === currentCalendarMonth.month();
+      const isToday = current.isSame(dayjs(), "day");
+      const isSelected = selectedDate && current.isSame(selectedDate, "day");
+      const tasks = schedules.filter(s => !s.is_deleted && s.date === dateStr);
+      const hasCompleted = tasks.some(s => s.status === "Completed");
+      const hasPending = tasks.some(s => s.status !== "Completed");
+      const taskCount = tasks.length;
+
+      let classes = "relative group";
+      let dayClasses = "w-full h-12 flex flex-col items-center justify-center rounded-xl cursor-pointer transition-all";
+      
+      if (!isCurrentMonth) {
+        dayClasses += " text-white/40 hover:text-white/60 hover:bg-white/5";
+      } else if (isToday) {
+        dayClasses += " bg-white text-teal-600 font-bold shadow-lg hover:shadow-xl transform hover:scale-105";
+      } else if (isSelected) {
+        dayClasses += " bg-white/20 text-white font-bold ring-2 ring-white";
+      } else {
+        dayClasses += " text-white hover:bg-white/10 font-medium";
+      }
+
+      html += `<div class="${classes}">`;
+      html += `<div class="${dayClasses}" onclick="selectDate('${dateStr}')">`;
+      html += `<span class="text-base">${current.date()}</span>`;
+      
+      if (taskCount > 0) {
+        html += `<div class="flex gap-0.5 mt-0.5">`;
+        if (hasCompleted && hasPending) {
+          html += `<div class="w-1.5 h-1.5 bg-green-400 rounded-full"></div>`;
+          html += `<div class="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>`;
+        } else if (hasCompleted) {
+          html += `<div class="w-1.5 h-1.5 bg-green-400 rounded-full"></div>`;
+        } else if (hasPending) {
+          html += `<div class="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>`;
+        }
+        html += `</div>`;
+      }
+      
+      html += `</div>`;
+      
+      // Tooltip on hover
+      if (taskCount > 0 && isCurrentMonth) {
+        html += `<div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+          ${taskCount} task${taskCount > 1 ? 's' : ''} scheduled
+          <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+            <div class="border-4 border-transparent border-t-gray-900"></div>
+          </div>
+        </div>`;
+      }
+      
+      html += `</div>`;
+      current = current.add(1, "day");
+    }
+    daysContainer.innerHTML = html;
+  }
+
+  function changeMonth(delta) {
+    currentCalendarMonth = currentCalendarMonth.add(delta, "month");
+    renderCalendar();
+  }
+
+  function selectDate(dateStr) {
+    selectedDate = dayjs(dateStr);
+    renderCalendar();
+    showDayTasks(dateStr);
+  }
+
+  function showDayTasks(dateStr) {
+    const container = document.getElementById("dayTasksContainer");
+    const title = document.getElementById("selectedDateTitle");
+    const subtitle = document.getElementById("selectedDateSubtitle");
+    const list = document.getElementById("dayTasksList");
+    const date = dayjs(dateStr);
+    
+    title.textContent = date.format("MMMM D, YYYY");
+    
+    const today = dayjs().format("YYYY-MM-DD");
+    const tomorrow = dayjs().add(1, "day").format("YYYY-MM-DD");
+    let dayInfo = date.format("dddd");
+    if (dateStr === today) dayInfo = "Today";
+    else if (dateStr === tomorrow) dayInfo = "Tomorrow";
+    
+    const tasks = schedules.filter(s => !s.is_deleted && s.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
+    const completedCount = tasks.filter(t => t.status === "Completed").length;
+    
+    subtitle.textContent = `${dayInfo} • ${tasks.length} task${tasks.length !== 1 ? 's' : ''}${completedCount > 0 ? ` • ${completedCount} completed` : ''}`;
+
+    list.innerHTML = tasks.length ? tasks.map(t => `
+      <div class="bg-gradient-to-r ${t.status === "Completed" ? "from-green-50 to-white border-green-200" : "from-white to-gray-50 border-gray-200"} p-4 rounded-xl border-2 transition-all hover:shadow-lg hover:border-teal-300 cursor-pointer" onclick="viewTask(${t.id})">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3 flex-1">
+            <button onclick="toggleTaskComplete(${t.id}, event)" class="mt-1 w-6 h-6 rounded-full border-2 ${t.status === "Completed" ? "bg-green-500 border-green-500" : "border-gray-300 hover:border-teal-500"} flex items-center justify-center transition-all flex-shrink-0 hover:scale-110">
+              ${t.status === "Completed" ? '<i class="fas fa-check text-white text-xs"></i>' : ""}
+            </button>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="font-bold text-gray-900 text-base ${t.status === "Completed" ? "line-through opacity-60" : ""}">${t.customerName}</span>
+                <span class="text-xs px-2 py-1 rounded-full font-bold ${getPriorityBadge(t.priority)}">${t.priority}</span>
+              </div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="inline-block px-2 py-1 rounded-lg text-xs font-bold ${t.taskType === "Installation" ? "bg-teal-100 text-teal-700" : t.taskType === "Repair" ? "bg-blue-100 text-blue-700" : t.taskType === "Maintenance" ? "bg-purple-100 text-purple-700" : t.taskType === "Inspection" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}">
+                  ${t.taskType}
+                </span>
+              </div>
+              <p class="text-sm text-gray-600 mb-2 ${t.status === "Completed" ? "line-through opacity-60" : ""}">
+                <i class="fas fa-map-marker-alt mr-1"></i>${t.location}
+              </p>
+              <div class="flex items-center gap-4 text-sm text-gray-500">
+                <span class="flex items-center gap-1">
+                  <i class="fas fa-clock"></i>
+                  <span class="font-semibold">${t.time}</span>
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="fas fa-hourglass-half"></i>
+                  <span>${t.duration}h</span>
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="fas fa-phone"></i>
+                  <span>${t.contactNumber}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <button onclick="event.stopPropagation(); viewTask(${t.id})" class="text-teal-600 hover:text-teal-700 p-2 hover:bg-teal-50 rounded-lg transition-all">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button onclick="event.stopPropagation(); openScheduleModal(${t.id})" class="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-all">
+              <i class="fas fa-edit"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join("") : `
+      <div class="text-center py-12 text-gray-400">
+        <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <i class="fas fa-calendar-plus text-4xl text-gray-300"></i>
+        </div>
+        <p class="text-lg font-semibold text-gray-600 mb-2">No tasks scheduled</p>
+        <p class="text-sm mb-4">Get started by adding your first task for this day</p>
+        <button onclick="scheduleForDate()" class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-teal-600 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2">
+          <i class="fas fa-plus"></i> Schedule Task
+        </button>
+      </div>
+    `;
+
+    container.classList.remove("hidden");
+  }
+
+  function scheduleForDate() {
+    openScheduleModal();
+    if (selectedDate) document.getElementById("taskDate").value = selectedDate.format("YYYY-MM-DD");
+  }
+
+</script>

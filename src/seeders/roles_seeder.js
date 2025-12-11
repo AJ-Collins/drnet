@@ -4,8 +4,9 @@ async function seedRoles() {
   const roles = [
     { id: 1, name: "Admin" },
     { id: 2, name: "Supervisor" },
-    { id: 3, name: "Staff" },
+    { id: 3, name: "Staff" },    
     { id: 4, name: "Client" },
+    { id: 5, name: "Customer-Care"}
   ];
 
   for (const role of roles) {

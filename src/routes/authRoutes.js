@@ -173,6 +173,9 @@ router.post("/login", async (req, res) => {
       case 4:
         redirectUrl = "/client/dashboard";
         break;
+      case 5:
+        redirectUrl = "/customer-care/dashboard";
+        break;
       default:
         console.error("Unknown role_id:", user.role_id);
         return res.status(403).json({

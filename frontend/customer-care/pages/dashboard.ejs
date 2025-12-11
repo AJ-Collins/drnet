@@ -1,0 +1,942 @@
+<style>
+  .stat-card {
+    transition: transform 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Skeleton Loading */
+  @keyframes skeleton {
+    0% {
+      background-color: #f3f4f6;
+    }
+    100% {
+      background-color: #e5e7eb;
+    }
+  }
+  .skeleton {
+    background: #e5e7eb;
+    animation: skeleton 1.2s ease-in-out infinite;
+    border-radius: 0.5rem;
+  }
+  .skeleton-text {
+    height: 1rem;
+  }
+  .skeleton-title {
+    height: 1.5rem;
+    width: 60%;
+  }
+  .skeleton-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+  }
+</style>
+<div class="mb-6">
+  <h1 id="pageTitle" class="text-3xl font-bold text-teal-800">Dashboard</h1>
+  <p id="pageSubtitle" class="text-teal-600">
+    Welcome to Dr.Net Technology Labs Management System
+  </p>
+</div>
+
+<!-- Quick Stats Grid -->
+<div
+  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+  id="statsGrid"
+>
+  <!-- Skeleton Loader -->
+  <div
+    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+  >
+    <div class="flex items-center justify-between">
+      <div class="space-y-3">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton h-8 w-16"></div>
+      </div>
+      <div class="skeleton skeleton-circle"></div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-blue-50 rounded-xl shadow-lg p-6 border border-blue-400"
+  >
+    <div class="flex items-center justify-between">
+      <div class="space-y-3">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton h-8 w-16"></div>
+      </div>
+      <div class="skeleton skeleton-circle"></div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-green-50 rounded-xl shadow-lg p-6 border border-green-400"
+  >
+    <div class="flex items-center justify-between">
+      <div class="space-y-3">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton h-8 w-16"></div>
+      </div>
+      <div class="skeleton skeleton-circle"></div>
+    </div>
+  </div>
+  <div
+    class="stat-card bg-orange-50 rounded-xl shadow-lg p-6 border border-orange-400"
+  >
+    <div class="flex items-center justify-between">
+      <div class="space-y-3">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton h-8 w-16"></div>
+      </div>
+      <div class="skeleton skeleton-circle"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts + Tasks -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- Weekly Performance Chart -->
+  <div class="bg-white shadow-lg p-6 rounded-xl">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">
+        Performance Trend (Weekly)
+      </h3>
+    </div>
+    <div class="h-64 relative">
+      <canvas id="revenueChart" class="skeleton w-full h-full"></canvas>
+    </div>
+  </div>
+
+  <!-- Today's Tasks -->
+  <div class="bg-white shadow-lg p-6 rounded-xl">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">Today's Tasks</h3>
+      <a
+        href="#"
+        class="inline-flex items-center px-4 py-2 bg-teal-100 text-teal-700 font-semibold text-sm rounded-lg hover:bg-teal-200 transition duration-200"
+      >
+        View more
+        <svg
+          class="w-4 h-4 ml-2"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 5l7 7-7 7"
+          ></path>
+        </svg>
+      </a>
+    </div>
+    <div id="tasksList" class="space-y-3 max-h-96 overflow-y-auto">
+      <!-- Skeleton Tasks -->
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+      >
+        <div class="space-y-2 flex-1">
+          <div class="skeleton h-4 w-48"></div>
+          <div class="skeleton h-3 w-32"></div>
+          <div class="skeleton h-3 w-28"></div>
+        </div>
+        <div class="skeleton h-5 w-20 mt-2 md:mt-0"></div>
+      </div>
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+      >
+        <div class="space-y-2 flex-1">
+          <div class="skeleton h-4 w-44"></div>
+          <div class="skeleton h-3 w-36"></div>
+          <div class="skeleton h-3 w-24"></div>
+        </div>
+        <div class="skeleton h-5 w-24 mt-2 md:mt-0"></div>
+      </div>
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+      >
+        <div class="space-y-2 flex-1">
+          <div class="skeleton h-4 w-40"></div>
+          <div class="skeleton h-3 w-30"></div>
+          <div class="skeleton h-3 w-32"></div>
+        </div>
+        <div class="skeleton h-5 w-20 mt-2 md:mt-0"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payslips + Quick Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- My Payslips -->
+  <div class="lg:col-span-2 bg-white shadow-lg p-6 rounded-xl">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">My Payslips</h3>
+      <!-- <a
+        href="payslips.html"
+        class="inline-flex items-center px-4 py-2 bg-teal-100 text-teal-700 font-semibold text-sm rounded-lg hover:bg-teal-200 transition duration-200"
+      >
+        View all
+        <svg
+          class="w-4 h-4 ml-2"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 5l7 7-7 7"
+          ></path>
+        </svg> -->
+      </a>
+    </div>
+    <div id="payslipsList" class="space-y-4">
+      <!-- Skeleton Payslips -->
+      <div
+        class="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg"
+      >
+        <div class="skeleton skeleton-circle"></div>
+        <div class="flex-1 space-y-2">
+          <div class="skeleton h-4 w-40"></div>
+          <div class="skeleton h-3 w-32"></div>
+        </div>
+        <div class="skeleton h-4 w-20"></div>
+      </div>
+      <div
+        class="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg"
+      >
+        <div class="skeleton skeleton-circle"></div>
+        <div class="flex-1 space-y-2">
+          <div class="skeleton h-4 w-36"></div>
+          <div class="skeleton h-3 w-28"></div>
+        </div>
+        <div class="skeleton h-4 w-20"></div>
+      </div>
+      <div
+        class="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg"
+      >
+        <div class="skeleton skeleton-circle"></div>
+        <div class="flex-1 space-y-2">
+          <div class="skeleton h-4 w-44"></div>
+          <div class="skeleton h-3 w-30"></div>
+        </div>
+        <div class="skeleton h-4 w-20"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-white shadow-lg p-6 rounded-xl">
+    <h3 class="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
+    <div class="grid grid-cols-2 gap-4">
+      <!-- <a
+        href="team-performance.html"
+        class="bg-teal-50 hover:bg-teal-100 rounded-lg p-4 text-center transition-colors group"
+      >
+        <div
+          class="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-teal-600 transition-colors"
+        >
+          <i class="fas fa-chart-line text-white text-xl"></i>
+        </div>
+        <p class="font-medium text-teal-700">Team Performance</p>
+      </a> -->
+      <% const teamCommunicateSlug = "communication-team"; %>
+      <a
+       href="/customer-care/<%= teamCommunicateSlug %>"
+        class="bg-blue-50 hover:bg-blue-100 rounded-lg p-4 text-center transition-colors group"
+      >
+        <div
+          class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition-colors"
+        >
+          <i class="fas fa-comments text-white text-xl"></i>
+        </div>
+        <p class="font-medium text-blue-700">Team Communication</p>
+      </a>
+      <% const myScheduleSlug = "work-schedule"; %>
+      <a
+        href="/customer-care/<%= myScheduleSlug %>"
+        class="bg-green-50 hover:bg-green-100 rounded-lg p-4 text-center transition-colors group"
+      >
+        <div
+          class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-green-600 transition-colors"
+        >
+          <i class="fas fa-calendar-alt text-white text-xl"></i>
+        </div>
+        <p class="font-medium text-green-700">View Schedule</p>
+      </a>
+      <!-- <a
+        href="financial-reports.html"
+        class="bg-purple-50 hover:bg-purple-100 rounded-lg p-4 text-center transition-colors group"
+      >
+        <div
+          class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-600 transition-colors"
+        >
+          <i class="fas fa-file-alt text-white text-xl"></i>
+        </div>
+        <p class="font-medium text-purple-700">Financial Reports</p>
+      </a> -->
+    </div>
+  </div>
+</div>
+<script>
+  const API_BASE = "/api";
+  const $ = (id) => document.getElementById(id);
+  let chart = null;
+
+  // Notification
+  function showNotification(msg, type = "info") {
+    const div = Object.assign(document.createElement("div"), {
+      className: `fixed top-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg z-50 ${
+        type === "error"
+          ? "bg-red-500"
+          : type === "success"
+          ? "bg-green-500"
+          : "bg-blue-500"
+      }`,
+      textContent: msg,
+    });
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+  }
+
+  // Format Date
+  function formatDate(date) {
+    return dayjs(date).format("MMM D, YYYY");
+  }
+
+  // Render Stats
+  function renderStats(stats) {
+    const container = $("statsGrid");
+    container.innerHTML = `
+    <div class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-teal-600 text-sm font-bold">Open Tickets</p>
+          <h3 class="text-3xl font-bold text-gray-800 mt-2">${stats.openTickets}</h3>
+        </div>
+        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-ticket-alt text-teal-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card bg-blue-50 rounded-xl shadow-lg p-6 border border-blue-400">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-blue-600 text-sm font-bold">Active Tasks</p>
+          <h3 class="text-3xl font-bold text-gray-800 mt-2">${stats.activeTasks}</h3>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-tasks text-blue-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card bg-green-50 rounded-xl shadow-lg p-6 border border-green-400">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-green-600 text-sm font-bold">Tasks Completed</p>
+          <h3 class="text-3xl font-bold text-gray-800 mt-2">${stats.completedTasks}</h3>
+        </div>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-check-circle text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card bg-orange-50 rounded-xl shadow-lg p-6 border border-orange-400">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-orange-600 text-sm font-bold">Performance Score</p>
+          <h3 class="text-3xl font-bold text-gray-800 mt-2">${stats.performanceScore}%</h3>
+        </div>
+        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-star-half-alt text-orange-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+  `;
+  }
+
+  // Render Tasks
+  function renderTasks(tasks) {
+    const container = $("tasksList");
+
+    function formatTaskTime(t) {
+      const date = new Date(t.scheduledDate);
+      const options = {
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      const formattedDate = date.toLocaleString("en-US", options);
+
+      const duration = Number(t.estimatedDuration);
+      const durationText =
+        duration > 1 ? `${duration} hours` : `${duration} hour`;
+
+      return `${formattedDate} - (${durationText})`;
+    }
+
+    function getStatusColor(status) {
+      switch (status.toLowerCase()) {
+        case "completed":
+          return "green";
+        case "assigned":
+          return "yellow";
+        default:
+          return "gray";
+      }
+    }
+
+    container.innerHTML =
+      tasks.length === 0
+        ? `<p class="text-gray-500 text-center py-4">No tasks for today.</p>`
+        : tasks
+            .map((t) => {
+              const statusColor = getStatusColor(t.status);
+              return `
+              <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                  <p class="font-medium text-gray-800">${t.title} - ${
+                t.client
+              } (${t.clientContact})</p>
+                  <p class="text-gray-500 text-sm">Address: ${t.address}</p>
+                  <p class="text-gray-500 text-sm">Time: ${t.time}</p>
+                </div>
+                <span class="text-${statusColor}-600 font-semibold mt-2 md:mt-0">${
+                t.status
+              }</span>
+              </div>
+            `;
+            })
+            .join("");
+  }
+
+  // Render Payslips
+  function renderPayslips(payslips) {
+    const container = $("payslipsList");
+    container.innerHTML =
+      payslips.length === 0
+        ? `<p class="text-gray-500 text-center py-4">No payslips available.</p>`
+        : payslips
+            .map(
+              (p) => `
+      <div class="flex items-center space-x-4 p-3 hover:bg-teal-50 border border-gray-200 rounded-lg transition-colors">
+        <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+          <i class="fas fa-file-invoice-dollar text-teal-600"></i>
+        </div>
+        <a href="payslip-single.html?id=${p.id}" class="flex-1">
+          <p class="font-medium text-gray-800">${p.month} Salary Payslip</p>
+          <p class="text-gray-600 text-sm">Net Pay: KSH ${Number(
+            p.net_pay
+          ).toLocaleString("en-KE", { minimumFractionDigits: 2 })}</p>
+        </a>
+        <span class="text-gray-500 text-sm hidden md:block">${p.date}</span>
+        <button 
+          onclick="downloadPayslipQuick(${p.id})" 
+          class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center space-x-2"
+          title="Download PDF">
+          <i class="fas fa-download"></i>
+          <span class="hidden md:inline">Download</span>
+        </button>
+        <a href="payslip-single.html?id=${
+          p.id
+        }" class="text-teal-600 hover:text-teal-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+    `
+            )
+            .join("");
+  }
+
+  async function downloadPayslipQuick(payslipId) {
+    try {
+      // Show loading
+      Swal.fire({
+        title: "Loading...",
+        text: "Fetching payslip details",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const response = await fetch(`${API_BASE}/staff/payslips/${payslipId}`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to load payslip");
+      }
+
+      const payslip = await response.json();
+
+      // Close loading and generate PDF
+      Swal.close();
+      generatePayslipPDF(payslip);
+    } catch (error) {
+      console.error("Error downloading payslip:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Failed to download payslip",
+        icon: "error",
+      });
+    }
+  }
+
+  // Render Chart
+  function renderChart(weeklyData) {
+    const canvas = $("revenueChart");
+    canvas.classList.remove("skeleton");
+    const ctx = canvas.getContext("2d");
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: weeklyData.labels,
+        datasets: [
+          {
+            label: "Performance (%)",
+            data: weeklyData.values,
+            borderColor: "#0d9488",
+            backgroundColor: "rgba(13, 148, 136, 0.1)",
+            fill: true,
+            tension: 0.3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            suggestedMin: 0,
+            suggestedMax: 100,
+            ticks: { callback: (v) => v + "%" },
+          },
+        },
+      },
+    });
+  }
+
+  // Load Dashboard
+  async function loadDashboard() {
+    try {
+      const [statsRes, tasksRes, payslipsRes, chartRes] = await Promise.all([
+        fetch(`${API_BASE}/staff/dashboard/stats`, {
+          credentials: "include",
+        }),
+        fetch(`${API_BASE}/my/dashboard/assignments`, {
+          credentials: "include",
+        }),
+        fetch(`${API_BASE}/payslips/recent`, { credentials: "include" }),
+        fetch(`${API_BASE}/performance/weekly`, {
+          credentials: "include",
+        }),
+      ]);
+
+      const stats = await statsRes.json();
+      const tasks = await tasksRes.json();
+      const payslips = await payslipsRes.json();
+      const chartData = await chartRes.json();
+
+      renderStats(stats);
+      renderTasks(tasks);
+      renderPayslips(payslips);
+      renderChart(chartData);
+    } catch (err) {
+      console.error("Dashboard load error:", err);
+      showNotification("Failed to load dashboard data", "error");
+    }
+  }
+
+  // Load and display single payslip details
+  async function loadPayslipDetails(payslipId) {
+    try {
+      const response = await fetch(`${API_BASE}/staff/payslips/${payslipId}`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to load payslip");
+      }
+
+      const payslip = await response.json();
+      displayPayslipDetails(payslip);
+    } catch (error) {
+      console.error("Error loading payslip:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Failed to load payslip details",
+        icon: "error",
+      });
+    }
+  }
+
+  // Display payslip details in the page
+  function displayPayslipDetails(payslip) {
+    // Staff Information
+    $("staffName").textContent = payslip.staff.name;
+    $("employeeId").textContent = payslip.staff.employeeId;
+    $("position").textContent = payslip.staff.position;
+    $("department").textContent = payslip.staff.department;
+    $("staffEmail").textContent = payslip.staff.email;
+    $("staffPhone").textContent = payslip.staff.phone;
+
+    // Payslip Information
+    $("payPeriod").textContent = dayjs(payslip.payPeriod).format("MMMM YYYY");
+    $("paymentDate").textContent = dayjs(payslip.paymentDate).format(
+      "MMMM D, YYYY"
+    );
+    $("paymentMethod").textContent = payslip.paymentMethod.toUpperCase();
+
+    // Earnings
+    const earningsContainer = $("earningsContainer");
+    earningsContainer.innerHTML = "";
+
+    const earnings = [
+      { label: "Basic Salary", amount: payslip.earnings.basicSalary },
+      { label: "Housing Allowance", amount: payslip.earnings.housingAllowance },
+      {
+        label: "Transport Allowance",
+        amount: payslip.earnings.transportAllowance,
+      },
+      { label: "Medical Allowance", amount: payslip.earnings.medicalAllowance },
+      { label: "Other Allowances", amount: payslip.earnings.otherAllowances },
+    ];
+
+    earnings.forEach((item) => {
+      if (item.amount > 0) {
+        earningsContainer.innerHTML += `
+        <div class="flex justify-between py-2 border-b">
+          <span class="text-gray-600">${item.label}</span>
+          <span class="font-medium">KSH ${item.amount.toLocaleString("en-KE", {
+            minimumFractionDigits: 2,
+          })}</span>
+        </div>
+      `;
+      }
+    });
+
+    // Custom allowances
+    if (
+      payslip.earnings.customAllowances &&
+      Object.keys(payslip.earnings.customAllowances).length > 0
+    ) {
+      Object.entries(payslip.earnings.customAllowances).forEach(
+        ([key, value]) => {
+          earningsContainer.innerHTML += `
+        <div class="flex justify-between py-2 border-b">
+          <span class="text-gray-600">${key}</span>
+          <span class="font-medium">KSH ${Number(value).toLocaleString(
+            "en-KE",
+            { minimumFractionDigits: 2 }
+          )}</span>
+        </div>
+      `;
+        }
+      );
+    }
+
+    // Deductions
+    const deductionsContainer = $("deductionsContainer");
+    deductionsContainer.innerHTML = "";
+
+    if (
+      payslip.deductions.items &&
+      Object.keys(payslip.deductions.items).length > 0
+    ) {
+      Object.entries(payslip.deductions.items).forEach(([key, value]) => {
+        deductionsContainer.innerHTML += `
+        <div class="flex justify-between py-2 border-b">
+          <span class="text-gray-600">${key}</span>
+          <span class="font-medium text-red-600">KSH ${Number(
+            value
+          ).toLocaleString("en-KE", { minimumFractionDigits: 2 })}</span>
+        </div>
+      `;
+      });
+    } else {
+      deductionsContainer.innerHTML = `
+      <div class="text-center py-4 text-gray-500">No deductions</div>
+    `;
+    }
+
+    // Summary
+    $("grossPay").textContent = `KSH ${payslip.summary.grossPay.toLocaleString(
+      "en-KE",
+      { minimumFractionDigits: 2 }
+    )}`;
+    $(
+      "totalDeductions"
+    ).textContent = `KSH ${payslip.summary.totalDeductions.toLocaleString(
+      "en-KE",
+      { minimumFractionDigits: 2 }
+    )}`;
+    $("netPay").textContent = `KSH ${payslip.summary.netPay.toLocaleString(
+      "en-KE",
+      { minimumFractionDigits: 2 }
+    )}`;
+
+    // Store payslip data globally for PDF generation
+    window.currentPayslip = payslip;
+  }
+
+  // Generate Payslip PDF
+  function generatePayslipPDF(payslip) {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    // ────── COMPANY BRANDING ──────
+    pdf.setFontSize(24);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(220, 38, 127);
+    pdf.text("DR.NET INNOVATIONS", 20, 25);
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("INNOVATIVE CONNECTIONS WITH DOCTORS PRECISION", 20, 33);
+    pdf.text(
+      "Email: dr.netinnovations@gmail.com | Website: https://drnet.co.ke/",
+      20,
+      40
+    );
+    pdf.text("P.O. Box 105876 - 00100 NAIROBI", 20, 47);
+    pdf.text("Phone: +254111357066", 20, 54);
+
+    // ────── PAYSLIP HEADER ──────
+    pdf.setFontSize(20);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("PAYSLIP", 150, 25);
+
+    // ────── PAYSLIP DETAILS BOX ──────
+    pdf.setDrawColor(220, 38, 127);
+    pdf.setLineWidth(0.5);
+    pdf.rect(120, 35, 70, 25);
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(`Payslip ID: ${payslip.id}`, 125, 42);
+    pdf.text(`Generated On: ${dayjs().format("MMM D, YYYY")}`, 125, 54);
+
+    // ────── EMPLOYEE DETAILS ──────
+    pdf.setFontSize(14);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("EMPLOYEE DETAILS:", 20, 75);
+
+    pdf.setFontSize(11);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(`Name: ${payslip.staff.name}`, 20, 85);
+    pdf.text(`Employee ID: ${payslip.staff.employeeId}`, 20, 93);
+    pdf.text(`Department: ${payslip.staff.department}`, 20, 109);
+    pdf.text(`Email: ${payslip.staff.email}`, 20, 117);
+    pdf.text(`Phone: ${payslip.staff.phone}`, 20, 125);
+
+    // ────── EARNINGS SECTION ──────
+    let y = 145;
+    pdf.setFontSize(14);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(220, 38, 127);
+    pdf.text("EARNINGS", 20, y);
+
+    // Earnings header
+    pdf.setFillColor(240, 240, 240);
+    pdf.rect(20, y + 5, 170, 8, "F");
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("DESCRIPTION", 25, y + 10);
+    pdf.text("AMOUNT (KSH)", 155, y + 10);
+
+    // Earnings items
+    pdf.setFont("helvetica", "normal");
+    y += 20;
+
+    const earnings = [
+      { label: "Basic Salary", amount: payslip.earnings.basicSalary },
+      { label: "Housing Allowance", amount: payslip.earnings.housingAllowance },
+      {
+        label: "Transport Allowance",
+        amount: payslip.earnings.transportAllowance,
+      },
+      { label: "Medical Allowance", amount: payslip.earnings.medicalAllowance },
+      { label: "Other Allowances", amount: payslip.earnings.otherAllowances },
+    ];
+
+    // Add standard earnings
+    earnings.forEach((item) => {
+      if (item.amount > 0) {
+        pdf.text(item.label, 25, y);
+        pdf.text(
+          item.amount.toLocaleString("en-KE", { minimumFractionDigits: 2 }),
+          165,
+          y
+        );
+        y += 7;
+      }
+    });
+
+    // Add custom allowances if any
+    if (
+      payslip.earnings.customAllowances &&
+      Object.keys(payslip.earnings.customAllowances).length > 0
+    ) {
+      Object.entries(payslip.earnings.customAllowances).forEach(
+        ([key, value]) => {
+          pdf.text(key, 25, y);
+          pdf.text(
+            Number(value).toLocaleString("en-KE", { minimumFractionDigits: 2 }),
+            165,
+            y
+          );
+          y += 7;
+        }
+      );
+    }
+
+    // Gross pay line
+    y += 5;
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(20, y, 190, y);
+    y += 8;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("GROSS PAY", 25, y);
+    pdf.text(
+      payslip.summary.grossPay.toLocaleString("en-KE", {
+        minimumFractionDigits: 2,
+      }),
+      165,
+      y
+    );
+
+    // ────── DEDUCTIONS SECTION ──────
+    y += 20;
+    pdf.setFontSize(14);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(220, 38, 127);
+    pdf.text("DEDUCTIONS", 20, y);
+
+    // Deductions header
+    pdf.setFillColor(240, 240, 240);
+    pdf.rect(20, y + 5, 170, 8, "F");
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("DESCRIPTION", 25, y + 10);
+    pdf.text("AMOUNT (KSH)", 155, y + 10);
+
+    // Deductions items
+    pdf.setFont("helvetica", "normal");
+    y += 20;
+
+    if (
+      payslip.deductions.items &&
+      Object.keys(payslip.deductions.items).length > 0
+    ) {
+      Object.entries(payslip.deductions.items).forEach(([key, value]) => {
+        pdf.text(key, 25, y);
+        pdf.text(
+          Number(value).toLocaleString("en-KE", { minimumFractionDigits: 2 }),
+          165,
+          y
+        );
+        y += 7;
+      });
+    } else {
+      pdf.setTextColor(100, 100, 100);
+      pdf.text("No deductions", 25, y);
+      y += 7;
+    }
+
+    // Total deductions line
+    y += 5;
+    pdf.setTextColor(0, 0, 0);
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(20, y, 190, y);
+    y += 8;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("TOTAL DEDUCTIONS", 25, y);
+    pdf.text(
+      payslip.summary.totalDeductions.toLocaleString("en-KE", {
+        minimumFractionDigits: 2,
+      }),
+      165,
+      y
+    );
+
+    // ────── NET PAY (HIGHLIGHTED) ──────
+    y += 15;
+    pdf.setFillColor(220, 38, 127);
+    pdf.rect(20, y - 5, 170, 12, "F");
+
+    pdf.setFontSize(14);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(255, 255, 255);
+    pdf.text("NET PAY", 25, y + 3);
+    pdf.text(
+      `KSH ${payslip.summary.netPay.toLocaleString("en-KE", {
+        minimumFractionDigits: 2,
+      })}`,
+      155,
+      y + 3
+    );
+
+    // ────── FOOTER ──────
+    pdf.setFontSize(9);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("For queries, contact HR at dr.netinnovations@gmail.com", 20, 287);
+
+    // ────── SAVE ──────
+    const fileName = `DR-NET-Payslip-${
+      payslip.staff.employeeId
+    }-${dayjs().format("MMM-YYYY")}.pdf`;
+    pdf.save(fileName);
+
+    Swal.fire({
+      title: "Success",
+      text: "Payslip PDF downloaded successfully!",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }
+
+  // Download PDF button handler
+  function handleDownloadPayslip() {
+    if (window.currentPayslip) {
+      generatePayslipPDF(window.currentPayslip);
+    } else {
+      Swal.fire({
+        title: "Error",
+        text: "No payslip data available",
+        icon: "error",
+      });
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener("DOMContentLoaded", () => {
+    // Check if we're on single payslip page
+    const urlParams = new URLSearchParams(window.location.search);
+    const payslipId = urlParams.get("id");
+
+    if (payslipId) {
+      loadPayslipDetails(payslipId);
+    } else {
+      // Load dashboard
+      loadDashboard();
+    }
+  });
+</script>

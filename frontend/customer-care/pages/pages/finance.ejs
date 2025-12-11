@@ -1,0 +1,4316 @@
+<style>
+  .tab-button.active {
+    background: linear-gradient(to right, #0d9488, #0f766e);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+  .tab-button:not(.active):hover {
+    background-color: #f0fdfa;
+    color: #0f766e;
+  }
+  .receipt-modal {
+    transition: all 0.3s ease;
+  }
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+</style>
+
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h3 class="text-2xl font-bold text-teal-800">Finance & Reports</h3>
+    <p class="text-teal-600 mt-1">
+      Manage invoices, receipts, payslips, expenses, and generate reports
+    </p>
+  </div>
+</div>
+<!-- Tab Navigation -->
+<div class="w-full mt-6 mb-8">
+  <div
+    class="flex flex-wrap w-full gap-2 bg-white/60 backdrop-blur border border-gray-200 p-2 shadow-sm"
+  >
+    <button
+      id="invoicesTab"
+      class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 bg-white text-gray-700 active"
+      onclick="showTab('invoices')"
+    >
+      <i data-lucide="scroll-text" class="w-5 h-5"></i> Client Invoices
+    </button>
+
+    <button
+      id="receiptsTab"
+      class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+      onclick="showTab('receipts')"
+    >
+      <i data-lucide="receipt" class="w-5 h-5"></i> Payment Receipts
+    </button>
+
+    <button
+      id="payslipsTab"
+      class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+      onclick="showTab('payslips')"
+    >
+      <i data-lucide="wallet" class="w-5 h-5"></i> Staff Payslips
+    </button>
+
+    <button
+      id="expensesTab"
+      class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+      onclick="showTab('expenses')"
+    >
+      <i data-lucide="credit-card" class="w-5 h-5"></i> Expenses
+    </button>
+
+    <button
+      id="salesTab"
+      class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+      onclick="showTab('sales')"
+    >
+      <i data-lucide="trending-up" class="w-5 h-5"></i> Sales
+    </button>
+
+    <button
+      id="dailyReportsTab"
+      class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+      onclick="showTab('dailyReports')"
+    >
+      <i data-lucide="file-text" class="w-5 h-5"></i> Reports
+    </button>
+
+    <button
+      id="analyticsTab"
+      class="tab-button grow px-6 py-3 font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-100"
+      onclick="showTab('analytics')"
+    >
+      <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Analytics
+    </button>
+  </div>
+
+  <!-- Tab Content Sections -->
+  <section id="reports-finance" class="space-y-8 pb-20">
+    <!-- Invoices Section -->
+    <div id="invoicesSection" class="tab-content space-y-8">
+      <h3 class="text-2xl font-bold text-teal-600 mb-8">
+        Client Invoices & Management
+      </h3>
+
+      <!-- Invoice Builder -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 border border-teal-100 rounded-2xl"
+      >
+        <h4 class="text-sm font-semibold text-gray-800 mb-6 border-b pb-2">
+          Generate New Invoice
+        </h4>
+
+        <!-- Client Selection / Manual -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-search text-teal-600 mr-1"></i>Search & Select
+              Client
+            </label>
+            <div class="relative">
+              <input
+                type="text"
+                id="clientSearch"
+                placeholder="Type name, phone, email..."
+                class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all"
+              />
+              <i
+                class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              ></i>
+            </div>
+            <select
+              id="clientSelect"
+              size="5"
+              class="mt-2 w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 bg-white"
+              onchange="selectClient(this.value)"
+            ></select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-user-edit text-teal-600 mr-1"></i>Or Enter
+              Manually
+            </label>
+            <div class="space-y-3">
+              <input
+                type="text"
+                id="manualName"
+                placeholder="Client Name"
+                class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              />
+              <input
+                type="text"
+                id="manualPhone"
+                placeholder="Phone"
+                class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              />
+              <input
+                type="email"
+                id="manualEmail"
+                placeholder="Email (optional)"
+                class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              />
+              <input
+                type="text"
+                id="manualPeriod"
+                placeholder="Billing Period (e.g. Nov 2025)"
+                class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              />
+              <input
+                type="date"
+                id="manualDueDate"
+                placeholder="Due Date"
+                class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              />
+              <input
+                type="text"
+                id="manualLocation"
+                placeholder="Location (e.g. Nairobi)"
+                class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Item Button -->
+        <div class="flex justify-between items-center mb-4">
+          <h5 class="font-semibold text-gray-800">Invoice Items</h5>
+          <button
+            onclick="addInvoiceItem()"
+            class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-medium shadow-md flex items-center gap-2"
+          >
+            <i class="fas fa-plus"></i> Add Item
+          </button>
+        </div>
+
+        <!-- Items Container -->
+        <div id="invoiceItemsContainer" class="space-y-3 mb-6">
+          <div
+            class="p-4 bg-teal-50 border border-teal-200 text-sm text-teal-800 text-center"
+          >
+            No items added. Click "Add Item" to begin.
+          </div>
+        </div>
+
+        <!-- Totals -->
+        <div
+          class="bg-gradient-to-r from-teal-50 to-teal-100 p-5 rounded-xl border border-teal-300"
+        >
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-right">
+            <div>
+              <p class="text-sm text-gray-600">Subtotal</p>
+              <p id="subtotal" class="text-xl font-bold text-gray-800">
+                KES 0.00
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">VAT (0%)</p>
+              <p id="vat" class="text-xl font-bold text-gray-800">KES 0.00</p>
+            </div>
+            <div class="md:col-span-2">
+              <p class="text-sm text-gray-600">Grand Total</p>
+              <p id="grandTotal" class="text-2xl font-bold text-teal-700">
+                KES 0.00
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="flex justify-end mt-6">
+          <button
+            onclick="generateAndSaveInvoice()"
+            class="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+          >
+            <i class="fas fa-file-invoice"></i> Generate & Save Invoice
+          </button>
+        </div>
+      </div>
+
+      <!-- Generated Invoices Table -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100 rounded-2xl"
+      >
+        <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+          Generated Invoices
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-teal-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Invoice #
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Client
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Period
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Amount
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Date
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              id="invoicesTableBody"
+              class="bg-white divide-y divide-gray-200"
+            >
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- SMS Templates Panel - Place this right under the Invoices table or in the sidebar -->
+        <div class="mt-12 bg-white/90 backdrop-blur-sm border border-teal-200 shadow-xl overflow-hidden">
+          <button
+            onclick="toggleSMSPanel()"
+            class="w-full px-4 py-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white font-bold text-lg flex items-center justify-between hover:from-teal-700 hover:to-teal-800 transition-all"
+          >
+            <span class="flex items-center gap-3">
+              <i data-lucide="message-square" class="w-4 h-4"></i>
+              Ready-to-Send SMS
+            </span>
+            <i data-lucide="chevron-down" id="smsPanelIcon" class="w-6 h-6 transition-transform"></i>
+          </button>
+
+          <div id="smsPanelContent" class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-8 hidden">
+            <!-- Reminder SMS -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-red-600 flex items-center gap-2">
+                  <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                  Payment Reminder SMS (Overdue)
+                </h4>
+                <button
+                  onclick="copySMS('reminder')"
+                  class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg transition"
+                >
+                  <i data-lucide="copy" class="w-4 h-4"></i> Copy Reminder
+                </button>
+              </div>
+              <textarea
+                id="reminderSMSTemplate"
+                class="w-full h-48 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-sm text-gray-800 font-mono focus:outline-none focus:border-red-500 resize-none"
+                readonly
+              ></textarea>
+            </div>
+
+            <!-- Confirmation SMS -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-green-600 flex items-center gap-2">
+                  <i data-lucide="check-circle" class="w-5 h-5"></i>
+                  Payment Confirmation SMS
+                </h4>
+                <button
+                  onclick="copySMS('confirmation')"
+                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 shadow-md hover:shadow-lg transition"
+                >
+                  <i data-lucide="copy" class="w-4 h-4"></i> Copy Confirmation
+                </button>
+              </div>
+              <textarea
+                id="confirmationSMSTemplate"
+                class="w-full h-48 p-4 bg-green-50 border-2 border-green-200 rounded-xl text-sm text-gray-800 font-mono focus:outline-none focus:border-green-500 resize-none"
+                readonly
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Receipts Section -->
+    <div id="receiptsSection" class="tab-content hidden space-y-8">
+      <h3 class="text-2xl font-bold text-teal-600 mb-8">Payment Receipts</h3>
+
+      <!-- Receipt Generation -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 border border-teal-100 rounded-2xl"
+      >
+        <h4 class="text-sm font-semibold text-gray-800 mb-6 border-b pb-2">
+          Generate Payment Receipt
+        </h4>
+
+        <!-- Toggle Buttons -->
+        <div class="flex gap-4 mb-6">
+          <button
+            id="selectClientBtn"
+            onclick="toggleReceiptMode('select')"
+            class="tab-button px-5 py-2 rounded-lg bg-teal-600 text-white font-medium active"
+          >
+            Select Client
+          </button>
+          <button
+            id="manualEntryBtn"
+            onclick="toggleReceiptMode('manual')"
+            class="tab-button px-5 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300"
+          >
+            Enter Manually
+          </button>
+        </div>
+
+        <!-- ==== SELECT CLIENT MODE ==== -->
+        <div id="selectClientMode">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Search & Select -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2"
+                >Search & Select Client</label
+              >
+              <div class="relative">
+                <input
+                  type="text"
+                  id="receiptClientSearch"
+                  placeholder="Type name, phone, email..."
+                  class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all"
+                />
+                <i
+                  class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                ></i>
+              </div>
+              <select
+                id="receiptClientSelect"
+                size="5"
+                class="mt-2 w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 bg-white"
+                onchange="selectReceiptClient(this.value)"
+              ></select>
+            </div>
+
+            <!-- Selected Client Card -->
+            <div
+              id="selectedClientInfo"
+              class="hidden p-4 bg-teal-50 border border-teal-200 rounded-xl"
+            >
+              <p class="text-sm font-medium text-teal-800">Selected Client:</p>
+              <p id="selectedClientName" class="font-bold text-gray-800"></p>
+              <p id="selectedClientPhone" class="text-sm text-gray-600"></p>
+              <p
+                id="selectedClientPackage"
+                class="text-sm font-medium text-teal-700 mt-1"
+              ></p>
+            </div>
+
+            <!-- Generate Button -->
+            <div class="flex items-end">
+              <button
+                onclick="generateReceiptFromSelection()"
+                class="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 w-full"
+              >
+                <i class="fas fa-file-invoice"></i> Generate Receipt
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==== MANUAL / AUTO-FILLED FORM ==== -->
+        <div
+          id="receiptFormContainer"
+          class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6"
+        >
+          <!-- Row 1 -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Client Name *</label
+            >
+            <input
+              type="text"
+              id="receiptClientName"
+              required
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              placeholder="e.g. John Doe"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Phone *</label
+            >
+            <input
+              type="text"
+              id="receiptClientPhone"
+              required
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              placeholder="e.g. 0712345678"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Location (optional)</label
+            >
+            <input
+              type="text"
+              id="receiptClientLocation"
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              placeholder="e.g. Nairobi"
+            />
+          </div>
+
+          <!-- Row 2 -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Billing Period (optional)</label
+            >
+            <input
+              type="text"
+              id="receiptBillingPeriod"
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              placeholder="e.g. November 2025"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Email (optional)</label
+            >
+            <input
+              type="email"
+              id="receiptClientEmail"
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              placeholder="client@example.com"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Amount Paid (KES) *</label
+            >
+            <input
+              type="number"
+              id="receiptAmount"
+              required
+              min="0"
+              step="0.01"
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              placeholder="5500"
+            />
+          </div>
+
+          <!-- Row 3 -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Payment Date *</label
+            >
+            <input
+              type="date"
+              id="receiptPaymentDate"
+              required
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Transaction Ref (optional)</label
+            >
+            <input
+              type="text"
+              id="receiptTxRef"
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              placeholder="e.g. MPESA123XYZ"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Payment Method *</label
+            >
+            <select
+              id="receiptPaymentMethod"
+              required
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 bg-white"
+            >
+              <option value="">Select...</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="cash">Cash</option>
+              <option value="cheque">Cheque</option>
+              <option value="card">Card</option>
+            </select>
+          </div>
+
+          <!-- Note -->
+          <div class="md:col-span-3">
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Note (optional)</label
+            >
+            <textarea
+              id="receiptNote"
+              rows="2"
+              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
+              placeholder="Any additional info..."
+            ></textarea>
+          </div>
+
+          <!-- Generate Button (Manual Mode) -->
+          <div class="md:col-span-3 flex justify-end mt-4 gap-4">
+            <button
+              id="manualGenerateBtn"
+              onclick="generateManualReceipt()"
+              class="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            >
+              <i class="fas fa-receipt"></i> Generate Receipt
+            </button>
+            <button
+              onclick="resetReceiptForm()"
+              class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-medium shadow-md transition-all hidden"
+              id="cancelEditBtn"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Receipts (unchanged) -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100 rounded-2xl"
+      >
+        <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+          Recent Receipts
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-teal-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Receipt #
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Client
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Amount
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Date
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Method
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              id="receiptsTableBody"
+              class="bg-white divide-y divide-gray-200"
+            >
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payslips Section -->
+    <div id="payslipsSection" class="tab-content hidden space-y-8">
+      <h3 class="text-2xl font-bold text-teal-600 mb-8">
+        Staff Payslips Management
+      </h3>
+
+      <!-- Staff Selection & Preview -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 border border-teal-100 rounded-2xl shadow-xl"
+      >
+        <h4 class="text-sm font-semibold text-gray-800 mb-6 border-b pb-2">
+          Select Staff to Generate Payslip
+        </h4>
+
+        <!-- Search & Multi-Select -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-search text-teal-600 mr-1"></i> Search & Select
+              Staff
+            </label>
+            <div class="relative">
+              <input
+                type="text"
+                id="payslipStaffSearch"
+                placeholder="Search by name, phone, ID..."
+                class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all"
+              />
+              <i
+                class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              ></i>
+            </div>
+            <select
+              id="payslipStaffSelect"
+              multiple
+              size="6"
+              class="mt-2 w-full p-3 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 bg-white text-sm"
+            ></select>
+            <p class="text-xs text-gray-500 mt-1">
+              Hold Ctrl/Cmd to select multiple
+            </p>
+          </div>
+        </div>
+
+        <!-- Selected Staff Preview + Period Input -->
+        <div id="selectedStaffPreview" class="hidden mt-6 space-y-4">
+          <h5 class="font-semibold text-teal-800 flex items-center gap-2">
+            <i class="fas fa-users"></i> Selected Staff Preview
+          </h5>
+
+          <!-- Staff Cards -->
+          <div
+            id="staffPreviewContainer"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          ></div>
+
+          <!-- Pay Period Input -->
+          <div
+            class="mt-6 p-4 bg-gradient-to-r from-teal-50 to-teal-100 border border-teal-300 rounded-xl"
+          >
+            <label class="block text-sm font-semibold text-teal-800 mb-2">
+              <i class="fas fa-calendar-alt mr-1"></i> Pay Period (Required)
+            </label>
+            <input
+              type="text"
+              id="payslipPeriodInput"
+              placeholder="e.g. November 2025"
+              class="w-full md:w-64 p-3 border-2 border-teal-200 rounded-lg focus:border-teal-600 focus:ring-4 focus:ring-teal-100 transition-all font-medium"
+              required
+            />
+            <p class="text-xs text-teal-700 mt-1">
+              This will appear on all generated payslips
+            </p>
+          </div>
+
+          <!-- Generate Button (Moved here) -->
+          <div class="flex justify-end mt-4">
+            <button
+              onclick="generateSelectedPayslips()"
+              id="generatePayslipsBtn"
+              disabled
+              class="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="fas fa-file-invoice"></i> Generate Payslips
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generated Payslips Table -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100 rounded-2xl"
+      >
+        <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+          Generated Payslips
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-teal-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Payslip ID
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Staff
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Period
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Net Pay
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              id="payslipsTableBody"
+              class="bg-white divide-y divide-gray-200"
+            >
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Reports Section -->
+    <div id="dailyReportsSection" class="tab-content hidden space-y-8">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-2xl font-bold text-teal-600">
+          Daily & Operational Reports
+        </h3>
+
+        <!-- <button onclick="" 
+                          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300">
+                          + New Sale
+                      </button> -->
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">
+                Today's Reports
+              </h3>
+              <h2 id="monthlyExpenses" class="text-2xl font-bold text-gray-800">
+                0
+              </h2>
+            </div>
+
+            <!-- <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+                              </div> -->
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">This Week</h3>
+              <h2 id="yearlyExpenses" class="text-2xl font-bold text-gray-800">
+                0
+              </h2>
+            </div>
+
+            <!-- <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+                              </div> -->
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">
+                High Priority
+              </h3>
+              <h2 id="largestExpense" class="text-2xl font-bold text-gray-800">
+                0
+              </h2>
+            </div>
+
+            <!-- <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-money-bill-wave text-blue-600 text-xl"></i>
+                              </div> -->
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">
+                Urgent Issues
+              </h3>
+              <h2 id="totalExpenses" class="text-2xl font-bold text-gray-800">
+                0
+              </h2>
+            </div>
+
+            <!-- <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-coins text-blue-600 text-xl"></i>
+                              </div> -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100"
+      >
+        <div
+          class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-2 flex-1">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Search</label
+              >
+              <input
+                id="searchInput"
+                type="text"
+                placeholder="Client, tech, ID…"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Report Type</label
+              >
+              <select
+                id="serviceTypeFilter"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+              >
+                <option value="">All Types</option>
+                <option value="daily-operations">Daily Operations</option>
+                <option value="equipment-status">Equipment Status</option>
+                <option value="team-performance">Team Performance</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Priority</label
+              >
+              <select
+                id="statusFilter"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+              >
+                <option value="">All Priorities</option>
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Priority</label
+              >
+              <select
+                id="statusFilter"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+              >
+                <option value="">All Priorities</option>
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex-shrink-0 pb-3">
+            <button
+              id="fetchNewReports"
+              class="w-full md:w-auto px-6 py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition shadow-md flex items-center gap-2 justify-center"
+            >
+              <i class="fas fa-sync animate-spin-slow"></i>
+              Refresh
+            </button>
+          </div>
+        </div>
+        <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+          Reports List
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-teal-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Report Name
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Type
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Priority
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Date
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              id="reportsTableBody"
+              class="bg-white divide-y divide-gray-200"
+            >
+              <!-- Reports will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div id="analyticsSection" class="tab-content hidden space-y-8">
+      <h3
+        class="text-2xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 bg-clip-text text-transparent mb-8"
+      >
+        📊 Advanced Analytics Reports
+      </h3>
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
+        <!-- Financial Reports -->
+        <div
+          class="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-teal-100"
+        >
+          <h5 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+            💹 Financial Reports
+          </h5>
+          <div class="space-y-3">
+            <button
+              onclick="generateAnalyticsReport('revenue')"
+              class="w-full p-3 bg-teal-50 rounded-lg border border-teal-200 hover:bg-teal-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-teal-800">Revenue Report</div>
+              <div class="text-sm text-teal-600">
+                Monthly/yearly revenue analysis
+              </div>
+            </button>
+            <button
+              onclick="generateAnalyticsReport('outstanding')"
+              class="w-full p-3 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-red-800">Outstanding Payments</div>
+              <div class="text-sm text-red-600">
+                Unpaid invoices and overdue analysis
+              </div>
+            </button>
+            <button
+              onclick="generateAnalyticsReport('expenses')"
+              class="w-full p-3 bg-orange-50 rounded-lg border border-orange-200 hover:bg-orange-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-orange-800">
+                Expenditure Breakdown
+              </div>
+              <div class="text-sm text-orange-600">
+                Categorized monthly expenses
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Client Reports -->
+        <div
+          class="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-teal-100"
+        >
+          <h5 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+            👥 Client Reports
+          </h5>
+          <div class="space-y-3">
+            <button
+              onclick="generateAnalyticsReport('clients')"
+              class="w-full p-3 bg-cyan-50 rounded-lg border border-cyan-200 hover:bg-cyan-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-cyan-800">Client Summary</div>
+              <div class="text-sm text-cyan-600">
+                Active/inactive client statistics
+              </div>
+            </button>
+            <button
+              onclick="generateAnalyticsReport('packages')"
+              class="w-full p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-blue-800">Package Adoption</div>
+              <div class="text-sm text-blue-600">
+                Most popular package analysis
+              </div>
+            </button>
+            <button
+              onclick="generateAnalyticsReport('retention')"
+              class="w-full p-3 bg-purple-50 rounded-lg border border-purple-200 hover:bg-purple-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-purple-800">Client Retention</div>
+              <div class="text-sm text-purple-600">
+                Churn and retention rates over time
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Staff Reports -->
+        <div
+          class="bg-white/90 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-teal-100"
+        >
+          <h5 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+            👨‍💼 Staff & HR Reports
+          </h5>
+          <div class="space-y-3">
+            <button
+              onclick="generateAnalyticsReport('staffSummary')"
+              class="w-full p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-green-800">Staff Headcount</div>
+              <div class="text-sm text-green-600">
+                Headcount by department and location
+              </div>
+            </button>
+            <button
+              onclick="generateAnalyticsReport('performance')"
+              class="w-full p-3 bg-yellow-50 rounded-lg border border-yellow-200 hover:bg-yellow-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-yellow-800">Performance Metrics</div>
+              <div class="text-sm text-yellow-600">
+                Staff productivity and efficiency
+              </div>
+            </button>
+            <button
+              onclick="generateAnalyticsReport('payroll')"
+              class="w-full p-3 bg-rose-50 rounded-lg border border-rose-200 hover:bg-rose-100 transition text-left shadow-sm"
+            >
+              <div class="font-medium text-rose-800">Payroll Cost Analysis</div>
+              <div class="text-sm text-rose-600">
+                Total payroll expense trends
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Report Preview -->
+      <div
+        id="analyticsReportPreview"
+        class="hidden mt-8 p-6 bg-gray-50 rounded-xl border border-gray-300 shadow-inner"
+      >
+        <h5 class="text-lg font-bold text-gray-800 mb-3">
+          Report Result:
+          <span id="reportTypeHeader" class="text-teal-600"></span>
+        </h5>
+        <pre
+          id="analyticsReportContent"
+          class="font-mono text-sm text-gray-700 whitespace-pre-wrap"
+        ></pre>
+      </div>
+    </div>
+
+    <!-- Sales Section -->
+    <div id="salesSection" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-2xl font-bold text-teal-600">Sales Management</h3>
+
+        <button
+          onclick="openSalesModal()"
+          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300"
+        >
+          + New Sale
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">
+                Today's Sales
+              </h3>
+              <h2 id="todaySales" class="text-2xl font-bold text-gray-800">
+                KES 0
+              </h2>
+            </div>
+
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">This Month</h3>
+              <h2 id="monthSales" class="text-2xl font-bold text-gray-800">
+                KES 0
+              </h2>
+            </div>
+
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">This Year</h3>
+              <h2 id="yearSales" class="text-2xl font-bold text-gray-800">
+                KES 0
+              </h2>
+            </div>
+
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-money-bill-wave text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">Total Sales</h3>
+              <h2 id="totalSales" class="text-2xl font-bold text-gray-800">
+                KES 0
+              </h2>
+            </div>
+
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-coins text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100"
+      >
+        <div
+          class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-2 flex-1">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Search</label
+              >
+              <input
+                id="searchInput"
+                type="text"
+                placeholder="Client, tech, ID…"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Types</label
+              >
+              <select
+                id="serviceTypeFilter"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+              >
+                <option value="all">All Types</option>
+                <option value="router">Router</option>
+                <option value="cable">Cable</option>
+                <option value="adapter">Adapter</option>
+                <option value="switch">Switch</option>
+                <option value="modem">Modem</option>
+                <option value="antenna">Antenna</option>
+                <option value="connector">Connector</option>
+                <option value="splitter">Splitter</option>
+                <option value="extender">WiFi Extender</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Month</label
+              >
+              <select
+                id="statusFilter"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+              >
+                <option value="">All Months</option>
+                <option value="january">January</option>
+                <option value="february">February</option>
+                <option value="march">March</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex-shrink-0 pb-1">
+            <button
+              id="saleExportBtn"
+              class="w-full md:w-auto px-6 py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition shadow-md"
+            >
+              Export
+            </button>
+          </div>
+        </div>
+        <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+          Expenses
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-teal-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Date
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Type
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Customer
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Quantity
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Description
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Amount
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              id="salesTableBody"
+              class="bg-white divide-y divide-gray-200"
+            >
+              <!-- Receipts will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expenses Section -->
+    <div id="expensesSection" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-2xl font-bold text-teal-600">Expenses Tracking</h3>
+
+        <button
+          onclick="openExpenseModal()"
+          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300"
+        >
+          + Record New
+        </button>
+      </div>
+      <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">This Month</h3>
+              <h2 id="monthlyExpenses" class="text-2xl font-bold text-gray-800">
+                KES 0
+              </h2>
+            </div>
+
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">This Year</h3>
+              <h2 id="yearlyExpenses" class="text-2xl font-bold text-gray-800">
+                KES 0
+              </h2>
+            </div>
+
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">
+                Largest Expense
+              </h3>
+              <h2 id="largestExpense" class="text-2xl font-bold text-gray-800">
+                KES 0
+              </h2>
+            </div>
+
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-money-bill-wave text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+        <div
+          class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-teal-600 text-sm font-bold mb-1">
+                Total Expenses
+              </h3>
+              <h2 id="totalExpenses" class="text-2xl font-bold text-gray-800">
+                KES 0
+              </h2>
+            </div>
+
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-coins text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div> -->
+
+      <!-- Filters -->
+      <div
+        class="bg-white/90 backdrop-blur-sm p-8 shadow-xl border border-teal-100"
+      >
+        <div
+          class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-4"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-2 flex-1">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Search</label
+              >
+              <input
+                id="searchInput"
+                type="text"
+                placeholder="Client, tech, ID…"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Category</label
+              >
+              <select
+                id="serviceTypeFilter"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+              >
+                <option value="all">All Categories</option>
+                <option value="bills">Bills & Utilities</option>
+                <option value="salaries">Staff Salaries</option>
+                <option value="petty_cash">Petty Cash</option>
+                <option value="equipment">Equipment</option>
+                <option value="office_supplies">Office Supplies</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Vendor</label
+              >
+              <select
+                id="statusFilter"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
+              >
+                <option value="">All Vendors</option>
+                <option value="assigned">KPLC</option>
+                <option value="in_progress">KRA</option>
+              </select>
+            </div>
+          </div>
+          <!-- <div class="flex-shrink-0 pb-1">
+            <button
+              id="exportBtn"
+              class="w-full md:w-auto px-6 py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition shadow-md"
+            >
+              Export
+            </button>
+          </div> -->
+        </div>
+        <h4 class="text-xl font-semibold text-teal-800 mb-6 border-b pb-2">
+          Expenses
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-teal-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Date
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Category
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Vendor/Payee
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Description
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Amount
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              id="expensesTableBody"
+              class="bg-white divide-y divide-gray-200"
+            >
+              <!-- Receipts will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Receipt View Modal -->
+<div
+  id="receiptViewModal"
+  class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop"
+>
+  <div class="bg-white w-full max-w-2xl border border-gray-200 overflow-hidden">
+    <!-- HEADER -->
+    <div class="bg-teal-600 text-white p-6">
+      <div class="flex justify-between items-center">
+        <h3 class="text-2xl font-bold tracking-wide">Payment Receipt</h3>
+        <button
+          onclick="closeReceiptModal()"
+          class="text-white/90 hover:text-white"
+        >
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="p-8 space-y-6">
+      <div class="space-y-4 text-gray-700 text-base">
+        <div class="flex justify-between">
+          <span class="font-semibold">Receipt #:</span>
+          <span id="modalReceiptNumber" class="font-bold text-gray-800"
+            >---</span
+          >
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Client:</span>
+          <span id="modalClientName" class="font-bold text-gray-800">---</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Amount:</span>
+          <span id="modalAmount" class="font-bold text-teal-600 text-lg"
+            >---</span
+          >
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Date:</span>
+          <span id="modalReceiptDate" class="font-medium">---</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Payment Method:</span>
+          <span id="modalPaymentMethod" class="font-medium">---</span>
+        </div>
+      </div>
+
+      <!-- FOOTER BUTTONS -->
+      <div class="pt-6 border-t border-gray-200 flex justify-end space-x-4">
+        <button
+          onclick="printReceiptFromModal()"
+          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition flex items-center"
+        >
+          <i class="fas fa-print mr-2"></i> Print
+        </button>
+        <button
+          onclick="closeReceiptModal()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Expense Modal-->
+<div
+  id="addExpenseModal"
+  class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white w-full max-w-4xl shadow-2xl border border-gray-200 overflow-hidden max-h-[90vh] flex flex-col"
+  >
+    <!-- HEADER -->
+    <div
+      class="bg-teal-600 text-white px-8 py-6 flex items-center justify-between flex-shrink-0"
+    >
+      <h3 class="text-3xl font-bold" id="expenseModalTitle">
+        Record New Expense
+      </h3>
+      <button onclick="closeExpenseModal()" class="hover:text-white/70">
+        <i class="fas fa-times text-3xl"></i>
+      </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="px-6 md:px-10 py-6 md:py-10 overflow-y-auto flex-1">
+      <form
+        id="expenseForm"
+        onsubmit="saveExpense(event)"
+        class="space-y-8 text-gray-700 text-base"
+      >
+        <input type="hidden" id="expenseId" />
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <label class="font-semibold text-sm mb-1 block"
+              >Expense Category *</label
+            >
+            <select
+              id="expenseCategory"
+              required
+              class="w-full bg-white p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            >
+              <option value="">Select category...</option>
+              <option value="bills">Bills & Utilities</option>
+              <option value="salaries">Staff Salaries</option>
+              <option value="petty_cash">Petty Cash</option>
+              <option value="equipment">Equipment & Hardware</option>
+              <option value="office_supplies">Office Supplies</option>
+              <option value="maintenance">Maintenance & Repairs</option>
+              <option value="transportation">Transportation</option>
+              <option value="marketing">Marketing & Advertising</option>
+              <option value="insurance">Insurance</option>
+              <option value="rent">Rent & Property</option>
+              <option value="software">Software & Licenses</option>
+              <option value="training">Training & Development</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="font-semibold text-sm mb-1 block"
+              >Amount (KES) *</label
+            >
+            <input
+              type="number"
+              id="expenseAmount"
+              min="0"
+              step="0.01"
+              required
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div>
+            <label class="font-semibold text-sm mb-1 block">Date *</label>
+            <input
+              type="date"
+              id="expenseDate"
+              required
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <label class="font-semibold text-sm mb-1 block"
+              >Vendor / Payee *</label
+            >
+            <input
+              type="text"
+              id="expenseVendor"
+              required
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+              placeholder="e.g., KPLC, John Doe"
+            />
+          </div>
+
+          <div>
+            <label class="font-semibold text-sm mb-1 block"
+              >Payment Method *</label
+            >
+            <select
+              id="paymentMethod"
+              required
+              class="w-full bg-white p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            >
+              <option value="">Select method...</option>
+              <option value="cash">Cash</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="cheque">Cheque</option>
+              <option value="card">Debit/Credit Card</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-semibold text-sm mb-1 block">Description *</label>
+          <textarea
+            id="expenseDescription"
+            rows="3"
+            required
+            class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            placeholder="Detailed description..."
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="font-semibold text-sm mb-1 block"
+            >Receipt / Ref # (Optional)</label
+          >
+          <input
+            type="text"
+            id="expenseReference"
+            class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            placeholder="Invoice / receipt number"
+          />
+        </div>
+      </form>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="px-8 py-6 bg-gray-50 flex justify-end gap-4 border-t">
+      <button
+        onclick="saveExpense()"
+        class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md"
+      >
+        <span id="expenseSaveBtnText">Save Expense</span>
+      </button>
+      <button
+        onclick="closeExpenseModal()"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!--Sales Modal - REDESIGNED TO MATCH BACKEND-->
+<div
+  id="addSalesModal"
+  class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white w-full max-w-4xl shadow-2xl border border-gray-200 overflow-hidden max-h-[90vh] flex flex-col rounded-2xl"
+  >
+    <!-- HEADER -->
+    <div
+      class="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-8 py-6 flex items-center justify-between flex-shrink-0"
+    >
+      <h3 class="text-3xl font-bold" id="salesModalTitle">Record New Sale</h3>
+      <button
+        onclick="closeSalesModal()"
+        class="hover:text-white/70 transition"
+      >
+        <i class="fas fa-times text-3xl"></i>
+      </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="px-6 md:px-10 py-6 md:py-10 overflow-y-auto flex-1">
+      <form id="salesForm" onsubmit="saveSale(event)" class="space-y-8">
+        <input type="hidden" id="saleId" />
+
+        <!-- Row 1: Item Selection -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-box mr-1"></i> Item / Accessory *
+            </label>
+            <select
+              id="saleItemId"
+              required
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600 bg-white"
+            >
+              <option value="">Select existing item...</option>
+              <!-- Populated via JS -->
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-plus-circle mr-1"></i> Or Create New Item
+            </label>
+            <input
+              type="text"
+              id="saleNewItemName"
+              placeholder="Enter new item name (e.g. TP-Link Router)"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-tags mr-1"></i> Category
+            </label>
+            <select
+              id="saleCategory"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600 bg-white"
+            >
+              <option value="router">Router</option>
+              <option value="cable">Cable</option>
+              <option value="adapter">Adapter</option>
+              <option value="switch" selected>Switch</option>
+              <option value="modem">Modem</option>
+              <option value="antenna">Antenna</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 2: Customer & Quantity -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-user mr-1"></i> Customer Name *
+            </label>
+            <input
+              type="text"
+              id="saleCustomer"
+              required
+              placeholder="e.g. James Kamau"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-hashtag mr-1"></i> Quantity *
+            </label>
+            <input
+              type="number"
+              id="saleQuantity"
+              required
+              min="1"
+              value="1"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-money-bill-wave mr-1"></i> Unit Price (KES) *
+            </label>
+            <input
+              type="number"
+              id="saleUnitPrice"
+              required
+              min="0"
+              step="0.01"
+              placeholder="300.00"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            />
+          </div>
+        </div>
+
+        <!-- Row 3: Total & Date -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-calculator mr-1"></i> Total Amount (KES)
+            </label>
+            <div
+              class="p-4 bg-teal-50 border border-teal-300 rounded-xl text-2xl font-bold text-teal-700 text-center"
+            >
+              KES <span id="saleTotalDisplay">0.00</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-calendar mr-1"></i> Sale Date *
+            </label>
+            <input
+              type="date"
+              id="saleDate"
+              required
+              value="2025-11-18"
+              class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+            />
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-sticky-note mr-1"></i> Notes (Optional)
+          </label>
+          <textarea
+            id="saleNotes"
+            rows="3"
+            placeholder="Any additional info..."
+            class="w-full p-4 rounded-xl border border-gray-300 focus:ring-4 focus:ring-teal-200 focus:border-teal-600"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="px-8 py-6 bg-gray-50 flex justify-end gap-4 border-t">
+      <button
+        onclick="saveSale()"
+        class="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+      >
+        <i class="fas fa-save"></i>
+        <span id="salesSaveBtnText">Save Sale</span>
+      </button>
+      <button
+        onclick="closeSalesModal()"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!--  RECEIPT VIEW MODAL (re-designed)                           -->
+<!-- ============================================================= -->
+<div
+  id="receiptViewModal"
+  class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop"
+>
+  <div
+    class="relative bg-white w-full max-w-2xl mx-auto rounded-xl shadow-2xl overflow-hidden receipt-modal"
+  >
+    <!-- ====================== HEADER ====================== -->
+    <div
+      class="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6 flex items-center justify-between"
+    >
+      <div class="flex items-center gap-4">
+        <!-- Company Logo (replace src with your logo) -->
+        <img
+          src="/assets/logo-white.png"
+          alt="Company Logo"
+          class="h-12 w-auto object-contain hidden md:block"
+        />
+        <div>
+          <h3 class="text-2xl font-bold tracking-wide">Payment Receipt</h3>
+          <p class="text-sm opacity-90">
+            Official Receipt – <span id="modalReceiptNumber">---</span>
+          </p>
+        </div>
+      </div>
+      <button
+        onclick="closeReceiptModal()"
+        class="text-white/80 hover:text-white transition"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- ====================== BODY ====================== -->
+    <div class="p-6 md:p-8 space-y-8 print:p-0 print:bg-white">
+      <!-- ---------- Client & Receipt Info (2-column) ---------- -->
+      <div class="grid md:grid-cols-2 gap-6 text-gray-800">
+        <div class="space-y-2">
+          <h4 class="font-semibold text-teal-700 flex items-center gap-1">
+            <i class="fas fa-user"></i> Client Details
+          </h4>
+          <p>
+            <span class="font-medium">Name:</span>
+            <span id="modalClientName">---</span>
+          </p>
+          <p>
+            <span class="font-medium">Phone:</span>
+            <span id="modalClientPhone">---</span>
+          </p>
+          <p>
+            <span class="font-medium">Location:</span>
+            <span id="modalClientLocation">---</span>
+          </p>
+          <p>
+            <span class="font-medium">Email:</span>
+            <span id="modalClientEmail">---</span>
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-semibold text-teal-700 flex items-center gap-1">
+            <i class="fas fa-file-invoice"></i> Receipt Details
+          </h4>
+          <p>
+            <span class="font-medium">Receipt #:</span>
+            <span id="modalReceiptNumber2">---</span>
+          </p>
+          <p>
+            <span class="font-medium">Date:</span>
+            <span id="modalReceiptDate">---</span>
+          </p>
+          <p>
+            <span class="font-medium">Period:</span>
+            <span id="modalReceiptPeriod">---</span>
+          </p>
+          <p>
+            <span class="font-medium">Method:</span>
+            <span id="modalPaymentMethod">---</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- ---------- Transaction Reference ---------- -->
+      <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <p class="text-sm">
+          <span class="font-medium text-gray-700">Transaction Ref:</span>
+          <span id="modalTxRef" class="ml-2 text-gray-900">---</span>
+        </p>
+      </div>
+
+      <!-- ---------- Amount Breakdown ---------- -->
+      <div
+        class="bg-gradient-to-r from-teal-50 to-teal-100 rounded-xl p-6 border border-teal-300"
+      >
+        <div
+          class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-right"
+        >
+          <div>
+            <p class="text-sm text-gray-600">Subtotal</p>
+            <p id="modalSubtotal" class="text-xl font-bold text-gray-800">
+              KES 0.00
+            </p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">VAT (0%)</p>
+            <p id="modalVat" class="text-xl font-bold text-gray-800">
+              KES 0.00
+            </p>
+          </div>
+          <div class="md:col-span-1">
+            <p class="text-sm text-gray-600">Grand Total</p>
+            <p id="modalAmount" class="text-2xl font-bold text-teal-700">
+              KES 0.00
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------- Note (if any) ---------- -->
+      <div id="modalNoteSection" class="hidden">
+        <h4 class="font-semibold text-teal-700 flex items-center gap-1 mb-2">
+          <i class="fas fa-sticky-note"></i> Additional Note
+        </h4>
+        <p
+          id="modalNote"
+          class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-gray-700"
+        ></p>
+      </div>
+
+      <!-- ---------- Footer Signature Area (print only) ---------- -->
+      <div
+        class="hidden print:flex print:justify-between print:mt-12 print:pt-8 print:border-t print:border-gray-300"
+      >
+        <div class="text-center">
+          <p class="font-medium">Received by</p>
+          <div class="mt-8 border-t border-gray-400 w-40 mx-auto"></div>
+        </div>
+        <div class="text-center">
+          <p class="font-medium">Authorized Signature</p>
+          <div class="mt-8 border-t border-gray-400 w-40 mx-auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================== FOOTER BUTTONS ====================== -->
+    <div
+      class="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-200 print:hidden"
+    >
+      <button
+        onclick="printReceiptFromModal()"
+        class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md flex items-center gap-2 transition"
+      >
+        <i class="fas fa-print"></i> Print / PDF
+      </button>
+      <button
+        onclick="closeReceiptModal()"
+        class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium shadow-md transition"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SMS Preview / Edit Modal -->
+<div
+  id="smsPreviewModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+>
+  <div class="bg-white w-full max-w-3xl p-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-2xl font-semibold text-gray-800">SMS Preview</h4>
+      <button
+        onclick="closeSMSModal()"
+        class="text-gray-500 hover:text-gray-700 text-xl"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- SMS Area (full height, no borders inside) -->
+    <div id="smsPreviewContainer" class="h-80"></div>
+
+    <!-- Buttons -->
+    <div class="mt-4 flex justify-end space-x-3">
+      <button
+        id="copySMSBtn"
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center"
+      >
+        <i class="fas fa-copy mr-2"></i>Copy
+      </button>
+
+      <button
+        id="sendSMSBtn"
+        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm flex items-center"
+      >
+        <i class="fas fa-paper-plane mr-2"></i>Send
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --------------------------------------------------------------
+  //  GLOBAL CONFIG
+  // --------------------------------------------------------------
+  const API_BASE = "/api"; // change if proxy is different
+  const formatKES = (n) =>
+    `KES ${Number(n)
+      .toFixed(2)
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+
+  // --------------------------------------------------------------
+  //  HELPERS
+  // --------------------------------------------------------------
+  const api = async (path, opts = {}) => {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { "Content-Type": "application/json" },
+      ...opts,
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  };
+
+  // --------------------------------------------------------------
+  //  TAB CONTROL
+  // --------------------------------------------------------------
+  let currentTab = "invoices";
+  function showTab(id) {
+    document
+      .querySelectorAll(".tab-content")
+      .forEach((s) => s.classList.add("hidden"));
+    document
+      .querySelectorAll(".tab-button")
+      .forEach((b) => b.classList.remove("active"));
+    document.getElementById(`${id}Section`)?.classList.remove("hidden");
+    document.getElementById(`${id}Tab`)?.classList.add("active");
+    currentTab = id;
+    window[`setup${id.charAt(0).toUpperCase() + id.slice(1)}Tab`]?.();
+  }
+
+  // --------------------------------------------------------------
+  //  COMMON POPULATE SELECTS
+  // --------------------------------------------------------------
+  async function populateSelect(url, selectId, textFn) {
+    const data = await api(url);
+    const sel = document.getElementById(selectId);
+    sel.innerHTML = '<option value="">Choose...</option>';
+    data.forEach((o) => {
+      const opt = document.createElement("option");
+      opt.value = o.id;
+      opt.textContent = textFn(o);
+      sel.appendChild(opt);
+    });
+  }
+
+  // --------------------------------------------------------------
+  //  INVOICES
+  // --------------------------------------------------------------
+  let invoiceItems = [];
+  let clientsCache = [];
+  let selectedClient = null;
+
+  // Load clients on tab open
+  async function setupInvoicesTab() {
+    try {
+      clientsCache = await api("/clients");
+      populateClientSelect();
+      loadGeneratedInvoices();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // Search & filter clients
+  document.getElementById("clientSearch").addEventListener("input", (e) => {
+    populateClientSelect(e.target.value);
+  });
+
+  function populateClientSelect(filter = "") {
+    const select = document.getElementById("clientSelect");
+    const filtered = clientsCache.filter((c) =>
+      `${c.first_name} ${c.second_name} ${c.phone} ${c.email}`
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+    );
+    select.innerHTML =
+      filtered
+        .map(
+          (c) => `
+      <option value="${c.id}">
+        ${c.first_name} ${c.second_name} – ${c.phone} (${c.email})
+      </option>
+    `
+        )
+        .join("") || "<option disabled>No clients found</option>";
+  }
+
+  function selectClient(clientId) {
+    if (!clientId) return;
+    selectedClient = clientsCache.find((c) => c.id == clientId);
+    if (selectedClient) {
+      document.getElementById(
+        "manualName"
+      ).value = `${selectedClient.first_name} ${selectedClient.second_name}`;
+      document.getElementById("manualPhone").value = selectedClient.phone;
+      document.getElementById("manualEmail").value = selectedClient.email;
+    }
+  }
+
+  // Add new item
+  function addInvoiceItem() {
+    invoiceItems.push({
+      id: Date.now(),
+      description: "",
+      quantity: 1,
+      amount: 0,
+    });
+    renderInvoiceItems();
+  }
+
+  // Remove item
+  function removeInvoiceItem(id) {
+    invoiceItems = invoiceItems.filter((i) => i.id !== id);
+    renderInvoiceItems();
+  }
+
+  // Update item
+  function updateInvoiceItem(id, field, value) {
+    const item = invoiceItems.find((i) => i.id === id);
+    if (!item) return;
+
+    // Update model
+    item[field] = field === "description" ? value : Number(value) || 0;
+
+    // Update only the **total** for this row
+    const row = document.querySelector(`[data-item-id="${id}"]`);
+    if (row) {
+      const qty = item.quantity;
+      const amt = item.amount;
+      const total = qty * amt;
+      row.querySelector(
+        ".item-total"
+      ).textContent = `KES ${total.toLocaleString()}`;
+    }
+
+    // Update grand totals
+    updateTotals();
+  }
+
+  // Render items + totals
+  function renderInvoiceItems() {
+    const container = document.getElementById("invoiceItemsContainer");
+    if (!invoiceItems.length) {
+      container.innerHTML = `
+        <div class="p-4 bg-teal-50 border border-teal-200 text-sm text-teal-800 text-center rounded-lg">
+          No items added. Click "Add Item" to begin.
+        </div>`;
+      updateTotals();
+      return;
+    }
+
+    let subtotal = 0;
+    container.innerHTML = invoiceItems
+      .map((item) => {
+        const total = item.quantity * item.amount;
+        subtotal += total;
+
+        // Unique IDs for label-for association
+        const descId = `desc-${item.id}`;
+        const qtyId = `qty-${item.id}`;
+        const amountId = `amt-${item.id}`;
+
+        return `
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-3 p-3 bg-gray-50 border rounded-lg items-center"
+             data-item-id="${item.id}">
+
+          <!-- ==== DESCRIPTION ==== -->
+          <div class="col-span-2 flex flex-col">
+            <label for="${descId}" class="text-xs font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <input id="${descId}"
+                   value="${item.description}"
+                   onchange="updateInvoiceItem(${
+                     item.id
+                   }, 'description', this.value)"
+                   class="p-2 border rounded text-sm"
+                   placeholder="Item description" />
+          </div>
+
+          <!-- ==== QUANTITY ==== -->
+          <div class="flex flex-col">
+            <label for="${qtyId}" class="text-xs font-medium text-gray-700 mb-1">
+              Qty
+            </label>
+            <input id="${qtyId}"
+                   type="number"
+                   value="${item.quantity}"
+                   min="1"
+                   onchange="updateInvoiceItem(${
+                     item.id
+                   }, 'quantity', this.value)"
+                   class="p-2 border rounded text-sm w-20" />
+          </div>
+
+          <!-- ==== AMOUNT ==== -->
+          <div class="flex flex-col">
+            <label for="${amountId}" class="text-xs font-medium text-gray-700 mb-1">
+              Amount (KES)
+            </label>
+            <input id="${amountId}"
+                   type="number"
+                   value="${item.amount}"
+                   min="0"
+                   step="0.01"
+                   onchange="updateInvoiceItem(${
+                     item.id
+                   }, 'amount', this.value)"
+                   class="p-2 border rounded text-sm w-28"
+                   placeholder="0.00" />
+          </div>
+
+          <!-- ==== LINE TOTAL ==== -->
+          <div class="text-right font-medium item-total">
+            KES ${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </div>
+
+          <!-- ==== REMOVE ==== -->
+          <button onclick="removeInvoiceItem(${item.id})"
+                  class="text-red-600 hover:text-red-800 transition"
+                  title="Remove item">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>`;
+      })
+      .join("");
+
+    updateTotals();
+  }
+
+  function updateTotals() {
+    const subtotal = invoiceItems.reduce(
+      (sum, item) => sum + (item.quantity || 0) * (item.amount || 0),
+      0
+    );
+    const vat = 0; // You said VAT is 0
+    const grand = subtotal + vat;
+
+    // Update Subtotal
+    const subtotalEl = document.getElementById("subtotal");
+    if (subtotalEl) {
+      subtotalEl.textContent = formatKES(subtotal);
+    }
+
+    // Update VAT (make sure you have <span id="vatAmount">)
+    const vatEl = document.getElementById("vatAmount");
+    if (vatEl) {
+      vatEl.textContent = formatKES(vat);
+    }
+
+    // Update Grand Total
+    const grandTotalEl = document.getElementById("grandTotal");
+    if (grandTotalEl) {
+      grandTotalEl.textContent = formatKES(grand);
+    }
+  }
+
+  // Generate & Save Invoice
+  async function generateAndSaveInvoice() {
+    if (!invoiceItems.length) return alert("Add at least one item");
+
+    const clientData = {
+      name: document.getElementById("manualName").value.trim(),
+      phone: document.getElementById("manualPhone").value.trim(),
+      email: document.getElementById("manualEmail").value.trim(),
+      period: document.getElementById("manualPeriod").value.trim(),
+      location: document.getElementById("manualLocation").value.trim(),
+      dueDate: document.getElementById("manualDueDate").value.trim() || null,
+      clientId: selectedClient?.id || null,
+    };
+
+    if (!clientData.name || !clientData.phone || !clientData.period) {
+      return alert("Fill all fields");
+    }
+
+    const payload = {
+      client: clientData,
+      items: invoiceItems.map((i) => ({
+        description: i.description,
+        quantity: i.quantity,
+        amount: i.amount,
+      })),
+    };
+
+    try {
+      const res = await api("/invoices/generate", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      // Reset form
+      invoiceItems = [];
+      renderInvoiceItems();
+      document.getElementById("manualName").value = "";
+      document.getElementById("manualPhone").value = "";
+      document.getElementById("manualEmail").value = "";
+      document.getElementById("manualPeriod").value = "";
+      document.getElementById("manualLocation").value = "";
+      document.getElementById("manualDueDate").value = "";
+      selectedClient = null;
+      document.getElementById("clientSearch").value = "";
+
+      Swal.fire(
+        "Success!",
+        `Invoice #${res.id} generated and saved.`,
+        "success"
+      );
+      loadGeneratedInvoices();
+      lucide.createIcons();
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  }
+
+  // Load all generated invoices
+  async function loadGeneratedInvoices() {
+    try {
+      const invoices = await api("/invoices");
+      renderInvoicesTable(invoices);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function renderInvoicesTable(invoices) {
+    const tbody = document.getElementById("invoicesTableBody");
+    tbody.innerHTML =
+      invoices
+        .map(
+          (inv) => `
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-6 py-4 text-sm font-medium">#${inv.invoice_number}</td>
+        <td class="px-6 py-4 text-sm">${
+          inv.client.name
+        }<br><small class="text-gray-500">${inv.client.phone}</small></td>
+        <td class="px-6 py-4 text-sm">${inv.client.period}</td>
+        <td class="px-6 py-4 text-sm font-semibold">KES ${Number(
+          inv.total
+        ).toLocaleString()}</td>
+        <td class="px-6 py-4 text-sm">${new Date(
+          inv.created_at
+        ).toLocaleDateString()}</td>
+        <td class="px-6 py-4 text-sm space-x-2">
+          <button onclick="downloadInvoice(${
+            inv.id
+          })" class="text-teal-600 hover:text-teal-800" title="Download PDF">
+            <i class="fas fa-download"></i>
+          </button>
+          <!-- REMINDER SMS -->
+          <button onclick="viewInvoiceAndFillSMS(${inv.id})"
+                  class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-orange-100 text-orange-600 hover:bg-orange-200 transition shadow-sm"
+                  title="Send SMS Templates">
+            <i data-lucide="message-square" class="w-5 h-5"></i>
+          </button>
+          <button onclick="deleteInvoice(${
+            inv.id
+          })" class="text-red-600 hover:text-red-800" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `
+        )
+        .join("") ||
+      `<tr><td colspan="6" class="text-center py-8 text-gray-500">No invoices generated yet</td></tr>`;
+      lucide.createIcons();
+  }
+
+  // Action placeholders (implement in backend)
+  async function downloadInvoice(id) {
+    try {
+      const invoice = await api(`/invoices/${id}`);
+      generateInvoicePDF(invoice);
+    } catch (e) {
+      Swal.fire("Error", e.message || "Could not load invoice", "error");
+    }
+  }
+  async function editInvoice(id) {
+    alert(`Edit invoice #${id}`);
+  }
+  async function deleteInvoice(id) {
+    if (confirm("Delete invoice?")) {
+      await api(`/invoices/${id}`, { method: "DELETE" });
+      loadGeneratedInvoices();
+    }
+  }
+  async function generateReceiptFromInvoice(id) {
+    const inv = (await api("/invoices")).find((i) => i.id === id);
+    if (inv) {
+      // Switch to receipts tab and prefill
+      showTab("receipts");
+      document.getElementById("receiptClient").value =
+        inv.client.clientId || "";
+      document.getElementById("receiptAmount").value = inv.total;
+    }
+  }
+
+  // --------------------------------------------------------------
+  //  RECEIPTS
+  // --------------------------------------------------------------
+  let receiptClientsCache = [];
+  let selectedReceiptClient = null; // client object when selected
+  let receiptMode = "select"; // 'select' | 'manual'
+
+  async function setupReceiptsTab() {
+    try {
+      receiptClientsCache = await api("/clients");
+      populateReceiptClientSelect();
+      loadReceipts();
+      // default to select mode
+      toggleReceiptMode("select");
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  /* ---------- Toggle Select / Manual ---------- */
+  function toggleReceiptMode(mode) {
+    receiptMode = mode;
+
+    // toggle button styles
+    document.getElementById("selectClientBtn").className =
+      mode === "select"
+        ? "tab-button px-5 py-2 rounded-lg bg-teal-600 text-white font-medium active"
+        : "tab-button px-5 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300";
+    document.getElementById("manualEntryBtn").className =
+      mode === "manual"
+        ? "tab-button px-5 py-2 rounded-lg bg-teal-600 text-white font-medium active"
+        : "tab-button px-5 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300";
+
+    // show / hide sections
+    document
+      .getElementById("selectClientMode")
+      .classList.toggle("hidden", mode !== "select");
+    document
+      .getElementById("receiptFormContainer")
+      .classList.toggle("hidden", false); // always visible
+
+    // clear form when switching to manual
+    if (mode === "manual") clearReceiptForm();
+
+    // hide "Generate" in select-mode (it appears only after a client is chosen)
+    document
+      .getElementById("manualGenerateBtn")
+      .classList.toggle("hidden", mode === "select");
+  }
+
+  /* ---------- Search & Populate Select ---------- */
+  document
+    .getElementById("receiptClientSearch")
+    .addEventListener("input", (e) =>
+      populateReceiptClientSelect(e.target.value)
+    );
+
+  function populateReceiptClientSelect(filter = "") {
+    const select = document.getElementById("receiptClientSelect");
+    const filtered = receiptClientsCache.filter((c) =>
+      `${c.first_name} ${c.second_name} ${c.phone} ${c.email} ${c.plan || ""}`
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+    );
+
+    select.innerHTML =
+      filtered
+        .map(
+          (c) => `
+        <option value="${c.id}" data-plan="${c.plan || ""}">
+          ${c.first_name} ${c.second_name} – ${c.phone} (${c.email || "—"}) [${
+            c.plan || "No Plan"
+          }]
+        </option>`
+        )
+        .join("") || "<option disabled>No clients found</option>";
+  }
+
+  /* ---------- Client Selected → Fill Form ---------- */
+  function selectReceiptClient(clientId) {
+    if (!clientId) return;
+    selectedReceiptClient = receiptClientsCache.find((c) => c.id == clientId);
+    if (!selectedReceiptClient) return;
+
+    // Fill the form fields
+    document.getElementById(
+      "receiptClientName"
+    ).value = `${selectedReceiptClient.first_name} ${selectedReceiptClient.second_name}`;
+    document.getElementById("receiptClientPhone").value =
+      selectedReceiptClient.phone;
+    document.getElementById("receiptClientEmail").value =
+      selectedReceiptClient.email || "";
+    document.getElementById("receiptClientLocation").value =
+      selectedReceiptClient.address || "";
+    // optional – you could pre-fill a default period
+    // document.getElementById('receiptBillingPeriod').value = ...
+
+    // Show the card
+    document.getElementById(
+      "selectedClientName"
+    ).textContent = `${selectedReceiptClient.first_name} ${selectedReceiptClient.second_name}`;
+    document.getElementById("selectedClientPhone").textContent =
+      selectedReceiptClient.phone;
+    document.getElementById("selectedClientPackage").textContent = `Package: ${
+      selectedReceiptClient.plan || "None"
+    }`;
+    document.getElementById("selectedClientInfo").classList.remove("hidden");
+
+    // Show manual generate button (same as manual mode)
+    document.getElementById("manualGenerateBtn").classList.remove("hidden");
+  }
+
+  /* ---------- Clear Form (used when switching to manual) ---------- */
+  function clearReceiptForm() {
+    const fields = [
+      "receiptClientName",
+      "receiptClientPhone",
+      "receiptClientEmail",
+      "receiptClientLocation",
+      "receiptBillingPeriod",
+      "receiptAmount",
+      "receiptPaymentDate",
+      "receiptTxRef",
+      "receiptPaymentMethod",
+      "receiptNote",
+    ];
+    fields.forEach((id) => (document.getElementById(id).value = ""));
+    document.getElementById("selectedClientInfo").classList.add("hidden");
+    selectedReceiptClient = null;
+  }
+
+  /* ---------- Generate from Selected Client (quick button) ---------- */
+  async function generateReceiptFromSelection() {
+    if (!selectedReceiptClient) return alert("Select a client first");
+    // auto-fill amount / date if you want a shortcut, otherwise just open the form
+    // here we just ensure the form is filled and let admin click "Generate Receipt"
+    alert(
+      "Client data pre-filled – now fill Amount, Date, Method and click Generate Receipt."
+    );
+  }
+
+  /* ---------- Generate Receipt (works for both modes) ---------- */
+  async function generateManualReceipt() {
+    const payload = {
+      clientId: selectedReceiptClient ? selectedReceiptClient.id : null,
+      client: {
+        name: document.getElementById("receiptClientName").value.trim(),
+        phone: document.getElementById("receiptClientPhone").value.trim(),
+        location: document.getElementById("receiptClientLocation").value.trim(),
+        period: document.getElementById("receiptBillingPeriod").value.trim(),
+        email: document.getElementById("receiptClientEmail").value.trim(),
+      },
+      amount: Number(document.getElementById("receiptAmount").value),
+      paymentDate: document.getElementById("receiptPaymentDate").value,
+      transactionRef:
+        document.getElementById("receiptTxRef").value.trim() || null,
+      paymentMethod: document.getElementById("receiptPaymentMethod").value,
+      note: document.getElementById("receiptNote").value.trim() || null,
+    };
+
+    // basic validation
+    if (
+      !payload.client.name ||
+      !payload.client.phone ||
+      !payload.amount ||
+      !payload.paymentDate ||
+      !payload.paymentMethod
+    ) {
+      return Swal.fire(
+        "Missing fields",
+        "Please fill all required fields (*).",
+        "warning"
+      );
+    }
+
+    try {
+      const res = await api(
+        selectedReceiptClient ? "/receipts" : "/receipts/manual",
+        { method: "POST", body: JSON.stringify(payload) }
+      );
+      viewReceiptModal(res.id);
+      loadReceipts();
+      // reset
+      clearReceiptForm();
+      toggleReceiptMode("select");
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  }
+
+  async function viewReceiptModal(receiptId) {
+    try {
+      const receipt = await api(`/receipts/${receiptId}`); // assumes your backend returns full receipt object
+
+      // ---- Header ----
+      document.getElementById(
+        "modalReceiptNumber"
+      ).textContent = `#${receipt.id}`;
+      document.getElementById(
+        "modalReceiptNumber2"
+      ).textContent = `#${receipt.id}`;
+
+      // ---- Client ----
+      document.getElementById("modalClientName").textContent =
+        receipt.client.name;
+      document.getElementById("modalClientPhone").textContent =
+        receipt.client.phone;
+      document.getElementById("modalClientLocation").textContent =
+        receipt.client.location || "—";
+      document.getElementById("modalClientEmail").textContent =
+        receipt.client.email || "—";
+
+      // ---- Receipt Details ----
+      document.getElementById("modalReceiptDate").textContent = new Date(
+        receipt.paymentDate
+      ).toLocaleDateString("en-GB");
+      document.getElementById("modalReceiptPeriod").textContent =
+        receipt.client.period || "—";
+      document.getElementById("modalPaymentMethod").textContent =
+        receipt.paymentMethod;
+      document.getElementById("modalTxRef").textContent =
+        receipt.transactionRef || "—";
+
+      // ---- Amounts (if backend sends subtotal/vat) ----
+      const subtotal = receipt.subtotal ?? receipt.amount;
+      const vat = receipt.amount - subtotal;
+      document.getElementById("modalSubtotal").textContent =
+        formatKES(subtotal);
+      document.getElementById("modalVat").textContent = formatKES(vat);
+      document.getElementById("modalAmount").textContent = formatKES(
+        receipt.amount
+      );
+
+      // ---- Note (optional) ----
+      const noteEl = document.getElementById("modalNoteSection");
+      const noteTxt = document.getElementById("modalNote");
+      if (receipt.note && receipt.note.trim()) {
+        noteTxt.textContent = receipt.note.trim();
+        noteEl.classList.remove("hidden");
+      } else {
+        noteEl.classList.add("hidden");
+      }
+
+      // ---- Show modal ----
+      document.getElementById("receiptViewModal").classList.remove("hidden");
+    } catch (err) {
+      Swal.fire("Error", err.message || "Could not load receipt", "error");
+    }
+  }
+
+  // Close modal
+  function closeReceiptModal() {
+    document.getElementById("receiptViewModal").classList.add("hidden");
+  }
+
+  // Print – opens native print dialog (modal stays open, print CSS hides everything else)
+  function printReceiptFromModal() {
+    window.print();
+  }
+
+  /* ---------- Load & Render Receipts (unchanged) ---------- */
+  async function loadReceipts() {
+    try {
+      const data = await api("/receipts");
+      renderReceiptsTable(data);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  /* ---------- Table rendering (unchanged) ---------- */
+  function renderReceiptsTable(list) {
+    const tbody = document.getElementById("receiptsTableBody");
+    tbody.innerHTML = "";
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-500">No receipts generated yet</td></tr>`;
+      return;
+    }
+    list.forEach((r) => {
+      tbody.insertAdjacentHTML(
+        "beforeend",
+        `<tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 text-sm font-medium">#${r.id}</td>
+          <td class="px-6 py-4 text-sm">${
+            r.clientName
+          }<br><small class="text-gray-500">${r.clientPhone}</small></td>
+          <td class="px-6 py-4 text-sm font-semibold">${formatKES(
+            r.amount
+          )}</td>
+          <td class="px-6 py-4 text-sm">${new Date(
+            r.paymentDate
+          ).toLocaleDateString()}</td>
+          <td class="px-6 py-4 text-sm">${r.paymentMethod}</td>
+          <td class="px-6 py-4 text-sm space-x-2">
+            <button onclick="viewReceiptModal('${
+              r.id
+            }')" class="text-teal-600 hover:text-teal-800" title="View"><i class="fas fa-eye"></i></button>
+            <button onclick="editReceipt('${
+              r.id
+            }')" class="text-blue-600 hover:text-blue-800" title="Edit"><i class="fas fa-edit"></i></button>
+            <button onclick="downloadReceipt('${
+              r.id
+            }')" class="text-green-600 hover:text-green-800" title="Download PDF"><i class="fas fa-download"></i></button>
+            <button onclick="deleteReceipt('${
+              r.id
+            }')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`
+      );
+    });
+  }
+
+  // --------------------------------------------------------------
+  //  EDIT & DELETE RECEIPT
+  // --------------------------------------------------------------
+
+  let editingReceiptId = null; // Track if we're editing
+
+  // Open Edit Modal with pre-filled data
+  async function editReceipt(id) {
+    try {
+      const receipt = await api(`/receipts/${id}`);
+
+      editingReceiptId = id;
+
+      // Switch to manual mode (since we need full form control)
+      toggleReceiptMode("manual");
+
+      // Fill form
+      document.getElementById("receiptClientName").value = receipt.client.name;
+      document.getElementById("receiptClientPhone").value =
+        receipt.client.phone;
+      document.getElementById("receiptClientEmail").value =
+        receipt.client.email || "";
+      document.getElementById("receiptClientLocation").value =
+        receipt.client.location || "";
+      document.getElementById("receiptBillingPeriod").value =
+        receipt.client.period || "";
+      document.getElementById("receiptAmount").value = receipt.amount;
+      document.getElementById("receiptPaymentDate").value = receipt.paymentDate;
+      document.getElementById("receiptTxRef").value =
+        receipt.transactionRef || "";
+      document.getElementById("receiptPaymentMethod").value =
+        receipt.paymentMethod;
+      document.getElementById("receiptNote").value = receipt.note || "";
+      document.getElementById("cancelEditBtn").classList.remove("hidden");
+
+      // Change button text
+      const btn = document.getElementById("manualGenerateBtn");
+      btn.textContent = "Update Receipt";
+      btn.onclick = updateReceipt; // temporarily override
+
+      // Scroll to form
+      document
+        .getElementById("receiptFormContainer")
+        .scrollIntoView({ behavior: "smooth" });
+    } catch (err) {
+      Swal.fire("Error", "Could not load receipt for editing.", "error");
+    }
+  }
+
+  // Update existing receipt
+  async function updateReceipt() {
+    const payload = {
+      client: {
+        name: document.getElementById("receiptClientName").value.trim(),
+        phone: document.getElementById("receiptClientPhone").value.trim(),
+        location: document.getElementById("receiptClientLocation").value.trim(),
+        period: document.getElementById("receiptBillingPeriod").value.trim(),
+        email: document.getElementById("receiptClientEmail").value.trim(),
+      },
+      amount: Number(document.getElementById("receiptAmount").value),
+      paymentDate: document.getElementById("receiptPaymentDate").value,
+      transactionRef:
+        document.getElementById("receiptTxRef").value.trim() || null,
+      paymentMethod: document.getElementById("receiptPaymentMethod").value,
+      note: document.getElementById("receiptNote").value.trim() || null,
+    };
+
+    if (
+      !payload.client.name ||
+      !payload.client.phone ||
+      !payload.amount ||
+      !payload.paymentDate ||
+      !payload.paymentMethod
+    ) {
+      return Swal.fire(
+        "Missing fields",
+        "Please fill all required fields.",
+        "warning"
+      );
+    }
+
+    try {
+      await api(`/receipts/${editingReceiptId}`, {
+        method: "PATCH", // You'll need to add this route in backend
+        body: JSON.stringify(payload),
+      });
+
+      Swal.fire("Updated!", "Receipt updated successfully.", "success");
+      loadReceipts();
+      resetReceiptForm();
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  }
+
+  // Reset form after save/update
+  function resetReceiptForm() {
+    clearReceiptForm();
+    toggleReceiptMode("select");
+    const btn = document.getElementById("manualGenerateBtn");
+    document.getElementById("cancelEditBtn").classList.add("hidden");
+    btn.textContent = "Generate Receipt";
+    btn.onclick = generateManualReceipt;
+    editingReceiptId = null;
+  }
+
+  // Delete receipt
+  async function deleteReceipt(id) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this receipt? This cannot be undone."
+      )
+    )
+      return;
+
+    try {
+      await api(`/receipts/${id}`, { method: "DELETE" });
+      loadReceipts();
+      Swal.fire("Deleted!", "Receipt has been removed.", "success");
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  }
+
+  // --------------------------------------------------------------
+  //  PAYSLIPS
+  // --------------------------------------------------------------
+  let staffCache = [];
+  let salaryCache = {}; // staff_id → {basic_salary, net_salary, effective_from}
+  let selectedStaffIds = [];
+  let generatedPayslips = [];
+
+  // NEW: per-staff temporary data while building the payslip
+  let staffTempData = {}; // staffId → {allowances: [], deductions: []}
+
+  /* ── 1. SETUP ─────────────────────────────────────────────────── */
+  async function setupPayslipsTab() {
+    try {
+      staffCache = await api("/staff");
+      salaryCache = {};
+      const salaries = await api("/staff/salaries");
+      salaries.forEach((s) => (salaryCache[s.staff_id] = s));
+
+      document
+        .getElementById("payslipPeriodInput")
+        ?.addEventListener("input", updateGenerateButton);
+
+      populatePayslipStaffSelect();
+      loadGeneratedPayslips();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  /* ── 2. SELECT STAFF (multi-select) ───────────────────────────── */
+  document
+    .getElementById("payslipStaffSearch")
+    .addEventListener("input", (e) =>
+      populatePayslipStaffSelect(e.target.value)
+    );
+
+  function populatePayslipStaffSelect(filter = "") {
+    const select = document.getElementById("payslipStaffSelect");
+    const filtered = staffCache.filter((s) =>
+      `${s.name} ${s.phone} ${s.employeeId} ${s.department}`
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+    );
+
+    select.innerHTML =
+      filtered
+        .map(
+          (s) => `
+        <option value="${s.id}" data-dept="${s.department}" data-pos="${s.position}">
+          ${s.name} – ${s.phone} (${s.employeeId}) [${s.department}]
+        </option>
+      `
+        )
+        .join("") || "<option disabled>No staff found</option>";
+
+    // re-apply previous selection
+    Array.from(select.options).forEach(
+      (o) => (o.selected = selectedStaffIds.includes(o.value))
+    );
+  }
+
+  document
+    .getElementById("payslipStaffSelect")
+    .addEventListener("change", () => {
+      selectedStaffIds = Array.from(
+        document.getElementById("payslipStaffSelect").selectedOptions
+      ).map((o) => o.value);
+      updateGenerateButton();
+      renderSelectedStaffPreview(); // ← now builds allowance/deduction UI
+    });
+
+  /* ── 3. GENERATE BUTTON STATE ─────────────────────────────────── */
+  function updateGenerateButton() {
+    const btn = document.getElementById("generatePayslipsBtn");
+    const period = document.getElementById("payslipPeriodInput")?.value.trim();
+    const enabled = selectedStaffIds.length && period;
+    btn.disabled = !enabled;
+    btn.classList.toggle("opacity-50", !enabled);
+    btn.classList.toggle("cursor-not-allowed", !enabled);
+  }
+
+  /* ── 4. PREVIEW + ALLOWANCE/DEDUCTION UI ──────────────────────── */
+  function renderSelectedStaffPreview() {
+    const container = document.getElementById("staffPreviewContainer");
+    const preview = document.getElementById("selectedStaffPreview");
+
+    if (!selectedStaffIds.length) {
+      preview.classList.add("hidden");
+      return;
+    }
+
+    // Auto-fill period if empty
+    const periodInput = document.getElementById("payslipPeriodInput");
+    if (!periodInput.value) {
+      const now = new Date();
+      periodInput.value = `${now.toLocaleString("default", {
+        month: "long",
+      })} ${now.getFullYear()}`;
+      updateGenerateButton();
+    }
+
+    preview.classList.remove("hidden");
+    container.innerHTML = selectedStaffIds
+      .map((id) => buildStaffCard(id))
+      .join("");
+
+    selectedStaffIds.forEach((id) => window.recalc(id));
+  }
+
+  /* ---- Build a single staff card (now with allowances/deductions) ---- */
+  function buildStaffCard(staffId) {
+    const staff = staffCache.find((s) => s.id == staffId);
+    const salary = salaryCache[staffId] || {
+      basic_salary: 0,
+      net_salary: 0,
+      effective_from: "N/A",
+    };
+    const temp = staffTempData[staffId] || { allowances: [], deductions: [] };
+
+    // Helper to recalc net pay for THIS staff only
+    const recalc = () => {
+      const basic = Number(salary.basic_salary) || 0;
+      const alw = temp.allowances.reduce(
+        (s, a) => s + Number(a.amount || 0),
+        0
+      );
+      const ded = temp.deductions.reduce(
+        (s, d) => s + Number(d.amount || 0),
+        0
+      );
+      const net = basic + alw - ded;
+      document.querySelector(`[data-staff="${staffId}"] .net-pay`).textContent =
+        formatKES(net);
+    };
+
+    // ---- Allowance / Deduction line template ----
+    const lineHTML = (type, idx, item = { desc: "", amount: 0 }) => `
+      <div class="flex gap-2 items-center mt-1">
+        <input type="text" placeholder="Description"
+              class="flex-1 p-1 text-xs border rounded"
+              value="${item.desc}"
+              onchange="updateTemp('${staffId}','${type}',${idx},'desc',this.value); window.recalc('${staffId}');">
+        <input type="number" placeholder="0.00" min="0" step="0.01"
+              class="w-20 p-1 text-xs border rounded text-right"
+              value="${item.amount}"
+              onchange="updateTemp('${staffId}','${type}',${idx},'amount',this.value); window.recalc('${staffId}');">
+        <button type="button" class="text-red-600 hover:text-red-800 text-xs"
+                onclick="removeTemp('${staffId}','${type}',${idx}); renderSelectedStaffPreview();">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>`;
+
+    // ---- Add new line buttons ----
+    const addBtn = (type) => `
+      <button type="button"
+              class="mt-2 text-xs text-teal-600 hover:text-teal-800"
+              onclick="addTemp('${staffId}','${type}');renderSelectedStaffPreview();">
+        <i class="fas fa-plus"></i> Add ${
+          type === "allowances" ? "Allowance" : "Deduction"
+        }
+      </button>`;
+
+    return `
+      <div class="p-4 bg-teal-50 border border-teal-200 rounded-lg" data-staff="${staffId}">
+        <p class="font-bold text-teal-800">${staff.name}</p>
+        <p class="text-sm text-gray-600">${staff.position} • ${
+      staff.department
+    }</p>
+
+        <div class="mt-2 space-y-1 text-sm">
+          <p><span class="font-medium">Basic:</span> ${formatKES(
+            salary.basic_salary
+          )}</p>
+
+          <!-- ALLOWANCES -->
+          <div class="mt-3">
+            <p class="font-medium text-green-700">Allowances</p>
+            ${temp.allowances
+              .map((a, i) => lineHTML("allowances", i, a))
+              .join("")}
+            ${addBtn("allowances")}
+          </div>
+
+          <!-- DEDUCTIONS -->
+          <div class="mt-3">
+            <p class="font-medium text-red-700">Deductions</p>
+            ${temp.deductions
+              .map((d, i) => lineHTML("deductions", i, d))
+              .join("")}
+            ${addBtn("deductions")}
+          </div>
+
+          <p class="mt-2">
+          <span class="font-medium">Net Pay:</span>
+          <strong class="net-pay">${(() => {
+            const basic = Number(salary.basic_salary) || 0;
+            const alw = temp.allowances.reduce(
+              (s, a) => s + Number(a.amount || 0),
+              0
+            );
+            const ded = temp.deductions.reduce(
+              (s, d) => s + Number(d.amount || 0),
+              0
+            );
+            return formatKES(basic + alw - ded);
+          })()}</strong>
+        </p>
+          <p class="text-xs text-gray-500">Effective: ${
+            salary.effective_from
+          }</p>
+        </div>
+      </div>`;
+  }
+
+  /* ---- Temp data helpers ------------------------------------------------ */
+  function addTemp(staffId, type) {
+    if (!staffTempData[staffId])
+      staffTempData[staffId] = { allowances: [], deductions: [] };
+    staffTempData[staffId][type].push({ desc: "", amount: 0 });
+  }
+  function removeTemp(staffId, type, idx) {
+    staffTempData[staffId][type].splice(idx, 1);
+  }
+  function updateTemp(staffId, type, idx, field, value) {
+    const rec = staffTempData[staffId][type][idx];
+    rec[field] = value;
+  }
+
+  /* ── 5. GENERATE PAYSLIPS (send allowances/deductions) ─────────────── */
+  async function generateSelectedPayslips() {
+    if (!selectedStaffIds.length)
+      return Swal.fire(
+        "Warning",
+        "Select at least one staff member.",
+        "warning"
+      );
+
+    const period = document.getElementById("payslipPeriodInput").value.trim();
+    if (!period)
+      return Swal.fire("Warning", "Enter the pay period.", "warning");
+
+    Swal.fire({
+      title: "Generating…",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    try {
+      const promises = selectedStaffIds.map(async (staffId) => {
+        const salary = salaryCache[staffId] || { basic_salary: 0 };
+        const temp = staffTempData[staffId] || {
+          allowances: [],
+          deductions: [],
+        };
+
+        const payload = {
+          staffId: Number(staffId),
+          period,
+          basic_salary: Number(salary.basic_salary),
+          allowances: temp.allowances.map((a) => ({
+            description: a.desc,
+            amount: Number(a.amount) || 0,
+          })),
+          deductions: temp.deductions.map((d) => ({
+            description: d.desc,
+            amount: Number(d.amount) || 0,
+          })),
+        };
+
+        return api("/payslips", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+      });
+
+      const responses = await Promise.all(promises);
+
+      // Build UI objects
+      const newPayslips = responses.map((r) => ({
+        id: r.id,
+        staffId: r.staff_id,
+        staffName:
+          staffCache.find((s) => s.id == r.staff_id)?.name || "Unknown",
+        period: r.period,
+        netPay: r.net_salary,
+        status: "Generated",
+        preview: r.preview || "",
+      }));
+
+      generatedPayslips = [...generatedPayslips, ...newPayslips];
+      renderPayslipsTable();
+
+      Swal.fire({
+        icon: "success",
+        title: "Payslips Saved!",
+        html: `<strong>${selectedStaffIds.length}</strong> payslip(s) created for <strong>${period}</strong>`,
+        timer: 3500,
+      });
+
+      // ---- Reset UI ----
+      selectedStaffIds = [];
+      staffTempData = {}; // clear temporary allowance/deduction data
+      document.getElementById("payslipStaffSelect").selectedIndex = -1;
+      document.getElementById("payslipPeriodInput").value = "";
+      updateGenerateButton();
+      renderSelectedStaffPreview();
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Error", e.message || "Failed to generate payslips.", "error");
+    }
+  }
+
+  /* ── 6. TABLE RENDER (unchanged) ───────────────────────────────────── */
+  function renderPayslipsTable() {
+    const tbody = document.getElementById("payslipsTableBody");
+    if (!generatedPayslips.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-500">No payslips generated yet</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = generatedPayslips
+      .map(
+        (p) => `
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-6 py-4 text-sm font-medium">#${p.id}</td>
+        <td class="px-6 py-4 text-sm">${p.staffName}</td>
+        <td class="px-6 py-4 text-sm">${p.period}</td>
+        <td class="px-6 py-4 text-sm font-semibold">${formatKES(p.netPay)}</td>
+        <td class="px-6 py-4 text-sm">
+          <span class="px-2 py-1 text-xs rounded-full ${
+            p.status === "Sent"
+              ? "bg-green-100 text-green-800"
+              : "bg-yellow-100 text-yellow-800"
+          }">
+            ${p.status}
+          </span>
+        </td>
+        <td class="px-6 py-4 text-sm space-x-2">          
+          <button onclick="deletePayslip(${
+            p.id
+          })" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`
+      )
+      .join("");
+  }
+
+  // <button onclick="viewPayslip(${
+  //           p.id
+  //         })" class="text-teal-600 hover:text-teal-800" title="View"><i class="fas fa-eye"></i></button>
+  //         <button onclick="editPayslip(${
+  //           p.id
+  //         })" class="text-blue-600 hover:text-blue-800" title="Edit"><i class="fas fa-edit"></i></button>
+  //         <button onclick="sendPayslip(${
+  //           p.id
+  //         })" class="text-green-600 hover:text-green-800" title="Send"><i class="fas fa-paper-plane"></i></button>
+
+  /* ── 7. REST OF PAYSLIP ACTIONS (unchanged) ─────────────────────── */
+  function viewPayslip(id) {
+    const p = generatedPayslips.find((x) => x.id === id);
+    if (p?.preview) {
+      Swal.fire({
+        title: `Payslip #${id} – ${p.staffName}`,
+        html: `<pre class="text-left text-xs overflow-auto max-h-96">${p.preview}</pre>`,
+        width: 800,
+      });
+    }
+  }
+  async function editPayslip(id) {
+    alert(`Edit payslip #${id}`);
+  }
+  async function sendPayslip(id) {
+    if (confirm("Send payslip via email/SMS?")) {
+      await api(`/payslips/send/${id}`, { method: "POST" });
+      const p = generatedPayslips.find((x) => x.id === id);
+      if (p) p.status = "Sent";
+      renderPayslipsTable();
+      Swal.fire("Sent!", "Payslip has been sent.", "success");
+    }
+  }
+  async function deletePayslip(id) {
+    if (confirm("Delete this payslip?")) {
+      await api(`/payslips/${id}`, { method: "DELETE" });
+      generatedPayslips = generatedPayslips.filter((p) => p.id !== id);
+      renderPayslipsTable();
+    }
+  }
+
+  /* ── 8. LOAD PREVIOUSLY GENERATED PAYSLIPS ─────────────────────── */
+  async function loadGeneratedPayslips() {
+    try {
+      const data = await api("/payslips");
+      generatedPayslips = data.map((p) => ({
+        id: p.id,
+        staffId: p.staff_id,
+        staffName: p.staff_name || "Unknown",
+        period: p.period,
+        netPay: p.net_salary,
+        status: p.sent ? "Sent" : "Generated",
+      }));
+      renderPayslipsTable();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  window.recalc = function (staffId) {
+    const staff = staffCache.find((s) => s.id == staffId);
+    const salary = salaryCache[staffId] || { basic_salary: 0 };
+    const temp = staffTempData[staffId] || { allowances: [], deductions: [] };
+
+    const basic = Number(salary.basic_salary) || 0;
+    const alw = temp.allowances.reduce((s, a) => s + Number(a.amount || 0), 0);
+    const ded = temp.deductions.reduce((s, d) => s + Number(d.amount || 0), 0);
+    const net = basic + alw - ded;
+
+    const netEl = document.querySelector(`[data-staff="${staffId}"] .net-pay`);
+    if (netEl) {
+      netEl.textContent = formatKES(net);
+    }
+  };
+
+  // --------------------------------------------------------------
+  //  EXPENSES
+  // --------------------------------------------------------------
+  let expensesCache = []; // all rows from DB
+  let editingExpenseId = null; // null = create, number = edit
+
+  async function setupExpensesTab() {
+    await loadExpenses(); // fill table on tab open
+  }
+
+  /* ---------- FETCH ALL ---------- */
+  async function loadExpenses() {
+    try {
+      expensesCache = await api("/expenses");
+      renderExpensesTable();
+    } catch (e) {
+      Swal.fire("Load Error", e.message, "error");
+    }
+  }
+
+  /* ---------- RENDER TABLE ---------- */
+  function renderExpensesTable() {
+    const tbody = document.getElementById("expensesTableBody");
+    if (!expensesCache.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-500">No expenses recorded yet</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = expensesCache
+      .map(
+        (e) => `
+      <tr class="hover:bg-gray-50 transition">
+        <td class="px-6 py-4 text-sm">${new Date(
+          e.date
+        ).toLocaleDateString()}</td>
+        <td class="px-6 py-4 text-sm">${e.category}</td>
+        <td class="px-6 py-4 text-sm">${e.payee}</td>
+        <td class="px-6 py-4 text-sm">${e.description}</td>
+        <td class="px-6 py-4 text-sm font-semibold">${formatKES(e.amount)}</td>
+        <td class="px-6 py-4 text-sm space-x-2">
+          <button onclick="openEditExpense(${e.id})"
+                  class="text-blue-600 hover:text-blue-800" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteExpense(${e.id})"
+                  class="text-red-600 hover:text-red-800" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>`
+      )
+      .join("");
+  }
+
+  /* ---------- OPEN MODAL (Create) ---------- */
+  function openExpenseModal() {
+    editingExpenseId = null;
+    document.getElementById("expenseModalTitle").textContent =
+      "Record New Expense";
+    document.getElementById("expenseSaveBtnText").textContent = "Save Expense";
+    document.getElementById("expenseForm").reset();
+    document.getElementById("expenseId").value = "";
+    document.getElementById("addExpenseModal").classList.remove("hidden");
+  }
+
+  /* ---------- OPEN MODAL (Edit) ---------- */
+  function openEditExpense(id) {
+    const exp = expensesCache.find((e) => e.id === id);
+    if (!exp) return;
+
+    editingExpenseId = id;
+    document.getElementById("expenseModalTitle").textContent = "Edit Expense";
+    document.getElementById("expenseSaveBtnText").textContent =
+      "Update Expense";
+
+    document.getElementById("expenseId").value = exp.id;
+    document.getElementById("expenseCategory").value = exp.category;
+    document.getElementById("expenseAmount").value = exp.amount;
+    document.getElementById("expenseDate").value = exp.date;
+    document.getElementById("expenseVendor").value = exp.payee;
+    document.getElementById("paymentMethod").value = exp.payment_method;
+    document.getElementById("expenseDescription").value = exp.description;
+    document.getElementById("expenseReference").value = exp.reference || "";
+
+    document.getElementById("addExpenseModal").classList.remove("hidden");
+  }
+
+  /* ---------- CLOSE MODAL ---------- */
+  function closeExpenseModal() {
+    document.getElementById("addExpenseModal").classList.add("hidden");
+  }
+
+  /* ---------- SAVE (Create / Update) ---------- */
+  async function saveExpense(ev) {
+    if (ev) ev.preventDefault();
+
+    const payload = {
+      category: document.getElementById("expenseCategory").value,
+      amount: Number(document.getElementById("expenseAmount").value),
+      date: document.getElementById("expenseDate").value,
+      payee: document.getElementById("expenseVendor").value,
+      payment_method: document.getElementById("paymentMethod").value,
+      description: document.getElementById("expenseDescription").value,
+      reference: document.getElementById("expenseReference").value || null,
+    };
+
+    // basic validation
+    if (
+      !payload.category ||
+      !payload.amount ||
+      !payload.date ||
+      !payload.payee ||
+      !payload.payment_method ||
+      !payload.description
+    ) {
+      return Swal.fire(
+        "Missing fields",
+        "Please fill all required fields.",
+        "warning"
+      );
+    }
+
+    try {
+      let res;
+      if (editingExpenseId) {
+        // PATCH existing
+        res = await api(`/expenses/${editingExpenseId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        Swal.fire("Updated!", "Expense updated successfully.", "success");
+      } else {
+        // POST new
+        res = await api("/expenses", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        Swal.fire("Saved!", "Expense recorded.", "success");
+      }
+
+      closeExpenseModal();
+      await loadExpenses(); // refresh table
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  }
+
+  /* ---------- DELETE ---------- */
+  async function deleteExpense(id) {
+    if (!confirm("Delete this expense permanently?")) return;
+
+    try {
+      await api(`/expenses/${id}`, { method: "DELETE" });
+      expensesCache = expensesCache.filter((e) => e.id !== id);
+      renderExpensesTable();
+      Swal.fire("Deleted!", "Expense removed.", "success");
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  }
+
+  // --------------------------------------------------------------
+  //  SALES
+  // --------------------------------------------------------------
+  let salesCache = [];
+
+  async function setupSalesTab() {
+    await loadSales();
+    updateSalesStats(); // initial stats
+  }
+
+  async function loadSales() {
+    try {
+      const data = await api("/sales");
+      salesCache = Array.isArray(data) ? data : [];
+      renderSalesTable();
+      updateSalesStats();
+    } catch (e) {
+      console.error("Failed to load sales:", e);
+      Swal.fire("Error", "Could not load sales data", "error");
+    }
+  }
+
+  function renderSalesTable() {
+    const tbody = document.getElementById("salesTableBody");
+    if (!salesCache.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">No sales recorded yet</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = salesCache
+      .map(
+        (s) => `
+    <tr class="hover:bg-gray-50 transition">
+      <td class="px-6 py-4 text-sm">${new Date(
+        s.purchase_date || s.date
+      ).toLocaleDateString("en-KE")}</td>
+      <td class="px-6 py-4 text-sm capitalize">${(
+        s.category ||
+        s.item_name ||
+        "Accessory"
+      ).replace(/_/g, " ")}</td>
+      <td class="px-6 py-4 text-sm">${
+        s.first_name || s.customer || "Walk-in"
+      }</td>
+      <td class="px-6 py-4 text-sm text-center">${s.quantity || 1}</td>
+      <td class="px-6 py-4 text-sm">${s.notes || s.item_description || "-"}</td>
+      <td class="px-6 py-4 text-sm font-semibold">${formatKES(
+        s.total_amount || s.amount
+      )}</td>
+      <td class="px-6 py-4 text-sm space-x-2">
+        <button onclick="openEditSale(${
+          s.id
+        })" class="text-blue-600 hover:text-blue-800" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button onclick="deleteSale(${
+          s.id
+        })" class="text-red-600 hover:text-red-800" title="Delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    </tr>`
+      )
+      .join("");
+  }
+
+  // ———————— UPDATE STATS (Today / Month / Year / Total) ————————
+  function updateSalesStats() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+
+    let todayTotal = 0,
+      monthTotal = 0,
+      yearTotal = 0,
+      grandTotal = 0;
+
+    salesCache.forEach((s) => {
+      const amount = Number(s.total_amount || s.amount || 0);
+      grandTotal += amount;
+
+      const saleDate = new Date(s.purchase_date || s.date);
+      if (saleDate >= today) todayTotal += amount;
+      if (saleDate >= monthStart) monthTotal += amount;
+      if (saleDate >= yearStart) yearTotal += amount;
+    });
+
+    // Update the cards
+    document.getElementById("todaySales").textContent = formatKES(todayTotal);
+    document.getElementById("monthSales").textContent = formatKES(monthTotal);
+    document.getElementById("yearSales").textContent = formatKES(yearTotal);
+    document.getElementById("totalSales").textContent = formatKES(grandTotal);
+  }
+
+  // ———————— MODAL: Open Edit ————————
+  function openEditSale(id) {
+    const sale = salesCache.find((s) => s.id === id);
+    if (!sale) return;
+
+    editingSaleId = id;
+    document.getElementById("salesModalTitle").textContent = "Edit Sale";
+    document.getElementById("salesSaveBtnText").textContent = "Update Sale";
+
+    document.getElementById("saleId").value = sale.id;
+    document.getElementById("saleType").value =
+      sale.category || sale.item_name || "";
+    document.getElementById("saleAmount").value =
+      sale.total_amount || sale.amount || "";
+    document.getElementById("saleDate").value = (
+      sale.purchase_date ||
+      sale.date ||
+      ""
+    ).split(" ")[0];
+    document.getElementById("saleCustomer").value =
+      sale.first_name || sale.customer || "";
+    document.getElementById("saleQuantity").value = sale.quantity || 1;
+    document.getElementById("saleDescription").value =
+      sale.notes || sale.item_description || "";
+    document.getElementById("saleNotes").value = sale.notes || "";
+
+    document.getElementById("addSalesModal").classList.remove("hidden");
+  }
+
+  function closeSalesModal() {
+    document.getElementById("addSalesModal").classList.add("hidden");
+  }
+
+  // ———————— SAVE (Create / Update) ————————
+  async function saveSale(ev) {
+    if (ev) ev.preventDefault();
+
+    const itemId = document.getElementById("saleItemId").value;
+    const newItemName = document.getElementById("saleNewItemName").value.trim();
+    const category = document.getElementById("saleCategory").value;
+
+    const payload = {
+      item_id: itemId || null,
+      description: newItemName || null,
+      type: category,
+      quantity: Number(document.getElementById("saleQuantity").value),
+      amount: Number(document.getElementById("saleUnitPrice").value),
+      total_amount:
+        Number(document.getElementById("saleQuantity").value) *
+        Number(document.getElementById("saleUnitPrice").value),
+      date: document.getElementById("saleDate").value,
+      customer: document.getElementById("saleCustomer").value.trim(),
+      notes: document.getElementById("saleNotes").value.trim() || null,
+    };
+
+    // Validation
+    if (!payload.customer)
+      return Swal.fire("Error", "Customer name is required", "error");
+    if (!payload.quantity || payload.quantity < 1)
+      return Swal.fire("Error", "Valid quantity required", "error");
+    if (!payload.amount || payload.amount <= 0)
+      return Swal.fire("Error", "Valid unit price required", "error");
+    if (!payload.date) return Swal.fire("Error", "Sale date required", "error");
+    if (!itemId && !newItemName)
+      return Swal.fire(
+        "Error",
+        "Select an item or enter a new item name",
+        "error"
+      );
+
+    try {
+      if (editingSaleId) {
+        await api(`/sales/${editingSaleId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        Swal.fire("Updated!", "Sale updated successfully.", "success");
+      } else {
+        await api("/sales", { method: "POST", body: JSON.stringify(payload) });
+        Swal.fire("Success!", "Sale recorded successfully.", "success");
+      }
+      closeSalesModal();
+      loadSales();
+    } catch (e) {
+      Swal.fire("Error", e.message || "Failed to save sale", "error");
+    }
+  }
+
+  // ———————— DELETE ————————
+  async function deleteSale(id) {
+    if (!confirm("Delete this sale permanently?")) return;
+
+    try {
+      await api(`/sales/${id}`, { method: "DELETE" });
+      salesCache = salesCache.filter((s) => s.id !== id);
+      renderSalesTable();
+      updateSalesStats();
+      Swal.fire("Deleted!", "Sale removed.", "success");
+    } catch (e) {
+      Swal.fire("Error", e.message, "error");
+    }
+  }
+
+  async function populateItemsSelect() {
+    try {
+      const items = await api("/inventory"); // ← This is your real route
+      const select = document.getElementById("saleItemId");
+
+      // Clear previous options
+      select.innerHTML = '<option value="">Select existing item...</option>';
+
+      if (!items || items.length === 0) {
+        select.innerHTML += "<option disabled>No items in inventory</option>";
+        return;
+      }
+
+      items.forEach((item) => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = `${item.name} (${
+          item.brand || "No Brand"
+        }) – KES ${Number(item.unit_price).toFixed(2)} [${
+          item.quantity
+        } in stock]`;
+        opt.dataset.unitPrice = item.unit_price; // Store price for auto-fill
+        select.appendChild(opt);
+      });
+
+      // Auto-fill unit price when an item is selected
+      select.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption && selectedOption.dataset.unitPrice) {
+          document.getElementById("saleUnitPrice").value =
+            selectedOption.dataset.unitPrice;
+          updateSaleTotal(); // Recalculate total
+        }
+      });
+    } catch (e) {
+      console.error("Failed to load inventory:", e);
+      Swal.fire("Error", "Could not load items from inventory", "error");
+    }
+  }
+
+  // Auto-calculate total when quantity or price changes
+  document
+    .getElementById("saleQuantity")
+    .addEventListener("input", updateSaleTotal);
+  document
+    .getElementById("saleUnitPrice")
+    .addEventListener("input", updateSaleTotal);
+
+  function updateSaleTotal() {
+    const qty = Number(document.getElementById("saleQuantity").value) || 0;
+    const price = Number(document.getElementById("saleUnitPrice").value) || 0;
+    const total = qty * price;
+    document.getElementById("saleTotalDisplay").textContent = total.toFixed(2);
+  }
+
+  // Call when opening modal
+  function openSalesModal() {
+    editingSaleId = null;
+    document.getElementById("salesModalTitle").textContent = "Record New Sale";
+    document.getElementById("salesSaveBtnText").textContent = "Save Sale";
+    document.getElementById("salesForm").reset();
+    document.getElementById("saleId").value = "";
+    document.getElementById("saleDate").value = new Date()
+      .toISOString()
+      .split("T")[0];
+    document.getElementById("saleTotalDisplay").textContent = "0.00";
+
+    populateItemsSelect(); // ← Load items
+    document.getElementById("addSalesModal").classList.remove("hidden");
+  }
+
+  // --------------------------------------------------------------
+  //  REPORTS & ANALYTICS
+  // --------------------------------------------------------------
+  async function setupDailyReportsTab() {
+    await loadReports();
+  }
+  async function loadReports() {
+    const data = await api("/reports");
+    renderReportsTable(data);
+  }
+  function renderReportsTable(list) {
+    const tbody = document.getElementById("reportsTableBody");
+    tbody.innerHTML = "";
+    list.forEach((r) => {
+      tbody.insertAdjacentHTML(
+        "beforeend",
+        `<tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 text-sm font-medium">${r.name}</td>
+            <td class="px-6 py-4 text-sm"><span class="px-2 inline-flex text-xs rounded-full bg-blue-100 text-blue-800">${
+              r.type
+            }</span></td>
+            <td class="px-6 py-4 text-sm">${r.priority || "-"}</td>
+            <td class="px-6 py-4 text-sm">${r.date}</td>
+            <td class="px-6 py-4 text-sm">${r.status || "-"}</td>
+            <td class="px-6 py-4"><button onclick="viewReport('${
+              r.id
+            }')" class="text-teal-600 mr-3">View</button>
+            <button onclick="deleteReport('${
+              r.id
+            }')" class="text-red-600">Delete</button></td>
+          </tr>`
+      );
+    });
+  }
+  async function viewReport(id) {
+    const r = await api(`/reports/${id}`);
+    alert(`Report ${id}\n${JSON.stringify(r, null, 2)}`);
+  }
+  async function deleteReport(id) {
+    if (confirm("Delete report?")) {
+      await api(`/reports/${id}`, { method: "DELETE" });
+      loadReports();
+    }
+  }
+
+  async function generateAnalyticsReport(key) {
+    const { title, content } = await api(`/analytics/${key}`);
+    document.getElementById("reportTypeHeader").textContent = title;
+    document.getElementById("analyticsReportContent").textContent = content;
+    document
+      .getElementById("analyticsReportPreview")
+      .classList.remove("hidden");
+  }
+
+  // --------------------------------------------------------------
+  //  INIT
+  // --------------------------------------------------------------
+  document.addEventListener("DOMContentLoaded", () => {
+    lucide.createIcons();
+    showTab("invoices");
+    setupInvoicesTab();
+    Promise.allSettled([
+      setupReceiptsTab(),
+      setupPayslipsTab(),
+      setupExpensesTab(),
+      setupSalesTab(),
+      setupDailyReportsTab(),
+    ]).catch(() => {});
+  });
+
+  /**
+   * Generates a DR.NET-branded invoice PDF.
+   * @param {Object} invoice – the full invoice object returned by /invoices/{id}
+   */
+  function generateInvoicePDF(invoice) {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    // Default client if not provided
+    const client = invoice.client || {
+      name: "Unknown Client",
+      phone: "N/A",
+      email: "",
+      location: "",
+      period: "",
+    };
+
+    // ────── COMPANY BRANDING ──────
+    pdf.setFontSize(24);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(220, 38, 127);
+    pdf.text("DR.NET INNOVATIONS", 20, 25);
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("INNOVATIVE CONNECTIONS WITH DOCTORS PRECISION", 20, 33);
+    pdf.text(
+      "Email: dr.netinnovations@gmail.com | Website: https://drnet.co.ke/",
+      20,
+      40
+    );
+    pdf.text("P.O. Box 105876 - 00100 NAIROBI", 20, 47);
+    pdf.text("Phone: +254111357066", 20, 54);
+
+    // ────── INVOICE HEADER ──────
+    pdf.setFontSize(20);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("INVOICE", 150, 25);
+
+    // ────── INVOICE DETAILS BOX ──────
+    pdf.setDrawColor(220, 38, 127);
+    pdf.setLineWidth(0.5);
+    pdf.rect(120, 35, 70, 25);
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(`Invoice #: ${invoice.invoice_number || invoice.id}`, 125, 42);
+
+    const issueDate = dayjs(invoice.created_at).add(1, "day");
+    const dueDate = invoice.due_date
+      ? dayjs(invoice.due_date)
+      : issueDate.add(7, "day");
+    pdf.text(`Issue Date: ${issueDate.format("MMM D, YYYY")}`, 125, 48);
+    pdf.text(`Due Date: ${dueDate.format("MMM D, YYYY")}`, 125, 54);
+
+    // ────── BILL TO ──────
+    pdf.setFontSize(14);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("BILL TO:", 20, 80);
+
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(client.name, 20, 90);
+    pdf.text(`Phone: ${client.phone}`, 20, 98);
+    pdf.text(`Location: ${client.location || "—"}`, 20, 106);
+    if (client.email) pdf.text(`Email: ${client.email}`, 20, 114);
+    if (client.period) pdf.text(`Period: ${client.period}`, 20, 122);
+
+    // ────── ITEMS TABLE ──────
+    const startY = 140;
+    pdf.setFillColor(240, 240, 240);
+    pdf.rect(20, startY, 170, 10, "F");
+
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("DESCRIPTION", 25, startY + 7);
+    pdf.text("QTY", 100, startY + 7);
+    pdf.text("UNIT PRICE", 125, startY + 7);
+    pdf.text("TOTAL", 165, startY + 7);
+
+    pdf.setFont("helvetica", "normal");
+    let y = startY + 20;
+    let subtotal = 0;
+
+    // Ensure items exist
+    const items = invoice.items || [];
+    items.forEach((itm) => {
+      const lineTotal =
+        (itm.quantity || 1) * (itm.amount || itm.unit_price || 0);
+      subtotal += lineTotal;
+
+      pdf.text(itm.description || "Service/Item", 25, y);
+      pdf.text(String(itm.quantity || 1), 102, y);
+      pdf.text(
+        Number(itm.amount || itm.unit_price || 0).toLocaleString(),
+        130,
+        y
+      );
+      pdf.text(lineTotal.toLocaleString(), 167, y);
+      y += 8;
+    });
+
+    // ────── TOTALS ──────
+    const vat = Number(invoice.vat || subtotal * 0.16);
+    const grand = Number(invoice.grand_total || subtotal + vat);
+    const totalY = y + 15;
+
+    pdf.setDrawColor(0, 0, 0);
+    pdf.line(120, totalY - 5, 190, totalY - 5);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("SUBTOTAL:", 120, totalY);
+    pdf.text(
+      `KSH ${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+      160,
+      totalY
+    );
+
+    pdf.text("VAT (0%):", 120, totalY + 8);
+    pdf.text(
+      `KSH ${vat.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+      160,
+      totalY + 8
+    );
+
+    pdf.setFontSize(12);
+    pdf.setTextColor(220, 38, 127);
+    pdf.text("TOTAL DUE:", 120, totalY + 18);
+    pdf.text(
+      `KSH ${grand.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+      160,
+      totalY + 18
+    );
+
+    // ────── PAYMENT INSTRUCTIONS ──────
+    const payY = totalY + 35;
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("PAYMENT INSTRUCTIONS:", 20, payY);
+    pdf.text("• M-PESA: Lipa na M-Pesa Buy Goods", 20, payY + 8);
+    pdf.text("• Till Number: 5626320", 20, payY + 16);
+    pdf.text("• Name: DR.NET TECHNOLOGY LABS", 20, payY + 24);
+    pdf.text(
+      `• Reference: ${invoice.invoice_number || invoice.id}`,
+      20,
+      payY + 32
+    );
+
+    // ────── SAVE ──────
+    pdf.save(`DR-NET-Invoice-${invoice.invoice_number || invoice.id}.pdf`);
+
+    Swal.fire({
+      title: "Success",
+      text: "Invoice PDF generated successfully!",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }
+
+  /* --------------------------------------------------------------
+     SMS PREVIEW / EDIT MODAL – now supports reminder & confirmation
+     -------------------------------------------------------------- */
+  let currentInvoiceId = null;
+  let currentSMS = "";
+  let currentPhone = ""; // phone number to send to
+
+  function openSMSModal(invoiceId, templateType = "generic") {
+    currentInvoiceId = invoiceId;
+    fetchInvoiceForSMS(invoiceId, templateType);
+  }
+
+  async function fetchInvoiceForSMS(id, templateType) {
+    try {
+      const inv = await api(`/invoices/${id}`);
+
+      const client = inv.client;
+      const amount = Number(inv.total).toLocaleString();
+      const ref = inv.invoice_number;
+      const dueDate = inv.due_date
+        ? dayjs(inv.due_date).format("DD MMM YYYY")
+        : "ASAP";
+
+      let sms = "";
+
+      if (templateType === "reminder") {
+        sms =
+          `REMINDER: ${client.name}\n\n` +
+          `Your DR.NET subscription payment is overdue.\n\n` +
+          `Invoice #${ref}\n` +
+          `Amount: KSH ${amount}\n\n` +
+          `Please pay immediately to avoid service suspension.\n\n` +
+          `Pay via M-PESA:\n` +
+          `• Lipa na M-Pesa Buy Goods\n` +
+          `• Till Number: 5626320\n` +
+          `• Reference: ${ref}\n\n` +
+          `DR.NET TECHNOLOGY LABS`;
+      } else if (templateType === "confirmation") {
+        sms =
+          `Payment Confirmed!\n\n` +
+          `Thank you ${client.name}!\n\n` +
+          `Invoice #${ref} - PAID\n` +
+          `Amount: KSH ${amount}\n\n` +
+          `Your DR.NET internet service has been renewed for 30 days.\n\n` +
+          `Questions? Call 0701782354\n` +
+          `DR.NET TECHNOLOGY LABS`;
+      } else {
+        // fallback – generic (keeps the old behaviour)
+        sms =
+          `Dear ${client.name},\n` +
+          `Invoice #${ref} – KES ${amount}. Due: ${dueDate}.\n` +
+          `Pay via M-PESA Till 5626320 (Ref: ${ref}).`;
+      }
+
+      currentSMS = sms;
+      currentPhone = client.phone;
+      renderSMSPreview(sms);
+      document.getElementById("smsPreviewModal").classList.remove("hidden");
+    } catch (e) {
+      Swal.fire("Error", e.message || "Could not load invoice", "error");
+    }
+  }
+
+  /* ---- Render the teal‑styled preview + textarea ---- */
+  function renderSMSPreview(text) {
+    const container = document.getElementById("smsPreviewContainer");
+
+    container.innerHTML = `
+    <textarea
+      id="smsTextarea"
+      class="w-full h-full p-4 bg-gray-50 rounded-xl resize-none text-gray-800 text-lg leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
+      oninput="currentSMS=this.value"
+    >${text}</textarea>
+  `;
+
+    // Re‑wire buttons
+    document.getElementById("copySMSBtn").onclick = () =>
+      copySMSTemplate(currentSMS);
+    document.getElementById("sendSMSBtn").onclick = () =>
+      sendSMS(currentPhone, currentSMS);
+  }
+
+  /* ---- Copy / Send helpers (unchanged) ---- */
+  function copySMSTemplate(txt) {
+    navigator.clipboard.writeText(txt).then(() => {
+      Swal.fire({
+        icon: "success",
+        title: "Copied!",
+        toast: true,
+        position: "top-end",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    });
+  }
+
+  async function sendSMS(phone, message) {
+    if (!confirm(`Send SMS to ${phone}?`)) return;
+
+    try {
+      await api("/sms", {
+        method: "POST",
+        body: JSON.stringify({ to: phone, body: message }),
+      });
+      Swal.fire("Sent!", "SMS dispatched.", "success");
+      closeSMSModal();
+    } catch (e) {
+      Swal.fire("Failed", e.message || "SMS could not be sent", "error");
+    }
+  }
+
+  function closeSMSModal() {
+    document.getElementById("smsPreviewModal").classList.add("hidden");
+    currentInvoiceId = null;
+    currentSMS = "";
+    currentPhone = "";
+  }
+
+  // Toggle SMS Panel
+function toggleSMSPanel() {
+  const content = document.getElementById("smsPanelContent");
+  const icon = document.getElementById("smsPanelIcon");
+  content.classList.toggle("hidden");
+  icon.classList.toggle("rotate-180");
+}
+
+// Copy SMS with feedback
+function copySMS(type) {
+  const textarea = document.getElementById(type + "SMSTemplate");
+  textarea.select();
+  textarea.setSelectionRange(0, 99999); // For mobile
+
+  navigator.clipboard.writeText(textarea.value).then(() => {
+    // Beautiful toast notification
+    const toast = document.createElement("div");
+    toast.innerHTML = `
+      <div class="fixed top-24 right-6 bg-teal-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-pulse flex items-center gap-3 font-bold">
+        <i data-lucide="check-circle" class="w-6 h-6"></i>
+        ${type === 'reminder' ? 'Reminder' : 'Confirmation'} SMS Copied!
+      </div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+
+    // Re-create lucide icons after insert
+    lucide.createIcons();
+  });
+}
+
+// Auto-fill SMS when viewing an invoice
+function populateSMSTemplates(invoice) {
+  const clientName = invoice.client?.name || "Valued Customer";
+  const amount = Number(invoice.total || 0).toLocaleString();
+  const ref = invoice.invoice_number || invoice.id;
+  const dueDate = invoice.due_date 
+    ? new Date(invoice.due_date).toLocaleDateString("en-GB")
+    : "ASAP";
+
+  // Reminder
+  document.getElementById("reminderSMSTemplate").value = 
+    `REMINDER: ${clientName},
+
+    Your DR.NET subscription payment is overdue.
+
+    Invoice #: ${ref}
+    Amount Due: KES ${amount}
+
+    Please pay immediately to avoid service suspension.
+
+    Pay via M-PESA:
+    • Buy Goods & Services
+    • Till Number: 5626320
+    • Reference: ${ref}
+
+    DR.NET TECHNOLOGY LABS`;
+
+  // Confirmation
+  document.getElementById("confirmationSMSTemplate").value = 
+    `Payment Confirmed!
+
+    Thank you ${clientName}!
+
+    Invoice #${ref} - PAID
+    Amount: KES ${amount}
+
+    Your DR.NET internet service has been renewed for 30 days.
+
+    Questions? Call 0701782354
+    DR.NET TECHNOLOGY LABS`;
+
+    const toast = document.createElement("div");
+      toast.innerHTML = `
+        <div class="fixed top-24 right-6 bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-4 rounded-xl shadow-2xl z-50 animate-pulse flex items-center gap-3 font-bold transform transition-all duration-300">
+          <i data-lucide="message-square" class="w-6 h-6"></i>
+          SMS Templates Loaded for ${clientName.split(" ")[0]}!
+        </div>`;
+      
+      document.body.appendChild(toast);
+
+      // Trigger Lucide icon rendering
+      lucide.createIcons();
+
+      // Auto-remove after 3 seconds with fade-out
+      setTimeout(() => {
+        toast.firstElementChild.style.transition = "all 0.4s ease-out";
+        toast.firstElementChild.style.opacity = "0";
+        toast.firstElementChild.style.transform = "translateX(100%)";
+        setTimeout(() => toast.remove(), 400);
+      }, 3000);
+  }
+
+  async function viewInvoiceAndFillSMS(id) {
+    try {
+      const invoice = await api(`/invoices/${id}`);
+      populateSMSTemplates(invoice);
+      
+      // Auto-open the panel
+      const panel = document.getElementById("smsPanelContent");
+      if (panel.classList.contains("hidden")) {
+        toggleSMSPanel();
+      }
+      
+      // Smooth scroll to SMS panel
+      document.querySelector('#smsPanelContent').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+
+      // Swal.fire({
+      //   icon: 'info',
+      //   title: 'SMS Templates Ready!',
+      //   text: 'Both Reminder & Confirmation messages are filled and ready to copy!',
+      //   timer: 2500,
+      //   showConfirmButton: false
+      // });
+    } catch (e) {
+      Swal.fire("Error", "Could not load invoice for SMS", "error");
+    }
+  }
+</script>

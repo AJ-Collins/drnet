@@ -18,7 +18,7 @@ const upload = multer({
   },
 });
 
-// GET admin profile
+// GET profile
 router.get("/profile", async (req, res) => {
   try {
     const profile = await Staff.findById(req.session.user.id);
@@ -29,7 +29,7 @@ router.get("/profile", async (req, res) => {
   }
 });
 
-// UPDATE admin profile
+// UPDATE profile
 router.put("/profile", async (req, res) => {
   try {
     const updates = {};

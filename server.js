@@ -32,6 +32,7 @@ const teamChat = require("./src/routes/teamChat");
 const announcement = require("./src/routes/announcements");
 const notificationsRoutes = require("./src/routes/notifications");
 const reports = require("./src/routes/reports");
+const { error } = require("console");
 // Session Configuration
 app.use(
   session({
@@ -63,6 +64,7 @@ app.set("views", [
   path.join(__dirname, "frontend/supervisor"),
   path.join(__dirname, "frontend/staff"),
   path.join(__dirname, "frontend/client"),
+  path.join(__dirname, "frontend/customer-care"),
 ]);
 
 // STATIC ASSETS
@@ -119,6 +121,27 @@ function requireSupervisorAuth(req, res, next) {
   }
 
   console.log("Supervisor auth failed");
+
+  if (req.path.startsWith("/api/")) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized",
+      redirectUrl: "/login",
+    });
+  }
+
+  return res.redirect("/login");
+}
+
+function requireCustomerCareAuth(req, res, next){
+  console.log("Customer Care Auth check:", req.session?.user);
+
+  if (req.session?.user?.role_name === "customer-care") {
+    console.log("Customer care auth passed");
+    return next();
+  }
+
+  console.log("Customer care auth failed");
 
   if (req.path.startsWith("/api/")) {
     return res.status(401).json({
@@ -318,6 +341,44 @@ app.get("/supervisor/:page", requireSupervisorAuth, (req, res) => {
 
 app.get("/supervisor", requireSupervisorAuth, (req, res) => {
   res.redirect("/supervisor/dashboard");
+});
+
+//Customer care Routes
+const customerCarePages = [
+  "dashboard",
+  "manage-users",
+  "support-tickets",
+  "reports",
+  "profile",
+  "communication-team",
+  "my-customers",
+  "work-schedule",
+  "notifications",
+  "daily_reports",
+  "active-users",
+  "expired-users"
+];
+
+app.get("/customer-care/:page", requireCustomerCareAuth, (req, res) => {
+  let page = req.params.page;
+  if (!customerCarePages.includes(page)) {
+    return res.redirect("/customer-care/dashboard");
+  }
+
+  const title = page
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  res.render("customer_care_layout", {
+    pageTitle: title,
+    pageSubtitle: `Manage ${title.toLowerCase()}`,
+    currentPage: page,
+  });
+});
+
+app.get("/customer-care", requireCustomerCareAuth, (req, res) => {
+  res.redirect("/customer-care/dashboard");
 });
 
 // STAFF ROUTES
