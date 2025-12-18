@@ -457,19 +457,16 @@
     document.getElementById("reminderSMS").value = 
 `REMINDER: ${fullName},
 Your DR.NET subscription payment is overdue.
-Invoice #: ${ref}
 Amount Due: KES ${amount}
 Please pay ${isOverdue ? 'immediately' : 'by ' + dueText} to avoid service suspension.
 Pay via M-PESA:
 • Buy Goods & Services
 • Till Number: 5626320
-• Reference: ${ref}
 DR.NET TECHNOLOGY LABS`;
 
     document.getElementById("confirmationSMS").value = 
 `Payment Confirmed!
 Thank you ${firstName}!
-Invoice #${ref} - PAID
 Amount: KES ${amount}
 Your DR.NET internet service has been renewed for 30 days.
 Questions? Call 0701782354
