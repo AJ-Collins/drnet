@@ -46,6 +46,34 @@
     </div> -->
   </div>
 
+  <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Search Input -->
+    <div class="md:col-span-2">
+      <div class="relative">
+        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search by name, phone, package..."
+          class="w-full pl-10 pr-4 py-3 border border-teal-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 transition"
+        />
+      </div>
+    </div>
+
+    <!-- Status Filter -->
+    <div>
+      <select
+        id="statusFilter"
+        class="w-full px-4 py-3 border border-teal-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-teal-100 focus:border-teal-500 bg-white transition"
+      >
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="overdue">Overdue</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+  </div>
+
   <!-- Clients Table -->
   <div class="bg-white/90 backdrop-blur-sm shadow-xl border border-teal-100 overflow-hidden">
     <div class="p-6 border-b border-teal-100 flex items-center justify-between">
@@ -195,6 +223,7 @@
   const API_BASE = "/api";
   const PAGE_SIZE = 50;
   let allClients = [];
+  let filteredClients = [];
   let currentPage = 1;
 
   // Show loading state
@@ -248,9 +277,14 @@
         })
       );
 
-      allClients = enriched.sort((a, b) => (a.name || a.first_name || "").localeCompare(b.name || b.first_name || ""));
-      renderCurrentPage();
-      updatePagination();
+      allClients = enriched.sort((a, b) => {
+        const nameA = (a.name || `${a.first_name || ''} ${a.second_name || ''}`).toLowerCase();
+        const nameB = (b.name || `${b.first_name || ''} ${b.second_name || ''}`).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+
+      filteredClients = allClients;
+      applyFiltersAndRender();
       hideLoading();
     } catch (err) {
       console.error(err);
@@ -263,11 +297,45 @@
     }
   }
 
+  // Apply search + status filter
+  function applyFiltersAndRender() {
+    const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
+    const statusFilter = document.getElementById("statusFilter").value;
+
+    filteredClients = allClients.filter(client => {
+      const fullName = (client.name || `${client.first_name || ''} ${client.second_name || ''}`).toLowerCase();
+      const phone = (client.phone || "").toLowerCase();
+      const packageName = (client.packageName || "").toLowerCase();
+
+      const matchesSearch = !searchTerm ||
+        fullName.includes(searchTerm) ||
+        phone.includes(searchTerm) ||
+        packageName.includes(searchTerm);
+
+      let matchesStatus = true;
+      if (statusFilter) {
+        const today = new Date();
+        const expiry = client.expiryDate ? new Date(client.expiryDate) : null;
+        const isOverdue = expiry && expiry < today;
+
+        if (statusFilter === "active") matchesStatus = client.subscriptionStatus === "active" && !isOverdue;
+        else if (statusFilter === "overdue") matchesStatus = isOverdue;
+        else if (statusFilter === "inactive") matchesStatus = client.subscriptionStatus !== "active" || !client.expiryDate;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+
+    currentPage = 1;
+    renderCurrentPage();
+    updatePagination();
+  }
+
   // Render current page
   function renderCurrentPage() {
     const start = (currentPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE;
-    const pageData = allClients.slice(start, end);
+    const pageData = filteredClients.slice(start, end);
 
     const tbody = document.getElementById("clientsTableBody");
 
@@ -276,7 +344,7 @@
         <tr>
           <td colspan="6" class="text-center py-16 text-gray-500">
             <i data-lucide="users" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
-            <p class="text-lg">No clients found</p>
+            <p class="text-lg">No clients match your filters</p>
           </td>
         </tr>`;
       lucide.createIcons();
@@ -328,13 +396,13 @@
 
   // Update pagination controls
   function updatePagination() {
-    const total = allClients.length;
+    const total = filteredClients.length;
     const pages = Math.ceil(total / PAGE_SIZE);
     const start = (currentPage - 1) * PAGE_SIZE + 1;
     const end = Math.min(currentPage * PAGE_SIZE, total);
 
     document.getElementById("paginationSummary").textContent = 
-      `Showing ${start} to ${end} of ${total} clients`;
+      `Showing ${total === 0 ? 0 : start} to ${end} of ${total} client${total !== 1 ? 's' : ''}`;
 
     document.getElementById("prevPage").disabled = currentPage === 1;
     document.getElementById("nextPage").disabled = currentPage === pages || pages === 0;
@@ -353,7 +421,7 @@
   });
 
   document.getElementById("nextPage").addEventListener("click", () => {
-    if (currentPage * PAGE_SIZE < allClients.length) {
+    if (currentPage * PAGE_SIZE < filteredClients.length) {
       currentPage++;
       renderCurrentPage();
       updatePagination();
@@ -361,6 +429,10 @@
     }
   });
 
+  // Search & filter listeners
+  document.getElementById("searchInput").addEventListener("input", applyFiltersAndRender);
+  document.getElementById("statusFilter").addEventListener("change", applyFiltersAndRender);
+  
   // Open SMS bubble
   function openSMSBubble(clientId) {
     const client = allClients.find(c => c.id === clientId || c.id == clientId);
