@@ -1,0 +1,439 @@
+<style>
+    .tab-button.active {
+      background: linear-gradient(to right, #0d9488, #0f766e);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    }
+    .bubble-panel {
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .bubble-panel.open {
+      transform: translateX(0);
+    }
+    .toast {
+      animation: slideIn 0.5s ease-out forwards, fadeOut 0.5s ease-out 2.5s forwards;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
+    /* Skeleton Loading Animation */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+    }
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+
+<div class="max-w-full mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h3 class="text-3xl font-bold text-teal-800">SMS Templates Manager</h3>
+      <p class="text-teal-600 mt-1">Send payment reminders & confirmations to clients</p>
+    </div>
+    <!-- <div class="text-right">
+      <p class="text-sm text-gray-600">M-PESA Till: <strong>5626320</strong></p>
+      <p class="text-sm text-gray-600">Support: <strong>0701782354</strong></p>
+    </div> -->
+  </div>
+
+  <!-- Clients Table -->
+  <div class="bg-white/90 backdrop-blur-sm shadow-xl border border-teal-100 overflow-hidden">
+    <div class="p-6 border-b border-teal-100 flex items-center justify-between">
+      <h4 class="text-xl font-semibold text-teal-800">All Clients</h4>
+      <div class="text-sm text-gray-500 flex items-center gap-4">
+        <div>
+          <i data-lucide="loader-2" class="w-4 h-4 animate-spin inline mr-2 hidden" id="tableLoader"></i>
+          <span id="loadingText">Loading clients...</span>
+        </div>
+        <div id="paginationInfo" class="hidden text-teal-700 font-medium"></div>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-teal-50">
+          <tr>
+            <th class="px-6 py-4 text-left text-xs font-bold text-teal-700 uppercase tracking-wider">Client</th>
+            <th class="px-6 py-4 text-left text-xs font-bold text-teal-700 uppercase tracking-wider">Phone</th>
+            <th class="px-6 py-4 text-left text-xs font-bold text-teal-700 uppercase tracking-wider">Package</th>
+            <th class="px-6 py-4 text-left text-xs font-bold text-teal-700 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-4 text-left text-xs font-bold text-teal-700 uppercase tracking-wider">Expiry</th>
+            <th class="px-6 py-4 text-center text-xs font-bold text-teal-700 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="clientsTableBody" class="bg-white divide-y divide-gray-200">
+          <!-- Skeleton Rows (initial) -->
+          <tr class="hover:bg-teal-50 transition">
+            <td class="px-6 py-4"><div class="h-4 w-40 skeleton rounded"></div></td>
+            <td class="px-6 py-4"><div class="h-4 w-32 skeleton rounded"></div></td>
+            <td class="px-6 py-4">
+              <div class="h-4 w-36 skeleton rounded mb-2"></div>
+              <div class="h-3 w-24 skeleton rounded"></div>
+            </td>
+            <td class="px-6 py-4"><div class="h-4 w-20 skeleton rounded"></div></td>
+            <td class="px-6 py-4"><div class="h-4 w-28 skeleton rounded"></div></td>
+            <td class="px-6 py-4 text-center"><div class="w-12 h-12 mx-auto skeleton rounded-full"></div></td>
+          </tr>
+          <!-- Repeat 3 more times for visual balance -->
+          <tr class="hover:bg-teal-50 transition">
+            <td class="px-6 py-4"><div class="h-4 w-44 skeleton rounded"></div></td>
+            <td class="px-6 py-4"><div class="h-4 w-28 skeleton rounded"></div></td>
+            <td class="px-6 py-4">
+              <div class="h-4 w-32 skeleton rounded mb-2"></div>
+              <div class="h-3 w-20 skeleton rounded"></div>
+            </td>
+            <td class="px-6 py-4"><div class="h-4 w-24 skeleton rounded"></div></td>
+            <td class="px-6 py-4"><div class="h-4 w-32 skeleton rounded"></div></td>
+            <td class="px-6 py-4 text-center"><div class="w-12 h-12 mx-auto skeleton rounded-full"></div></td>
+          </tr>
+          <tr class="hover:bg-teal-50 transition">
+            <td class="px-6 py-4"><div class="h-4 w-36 skeleton rounded"></div></td>
+            <td class="px-6 py-4"><div class="h-4 w-36 skeleton rounded"></div></td>
+            <td class="px-6 py-4">
+              <div class="h-4 w-40 skeleton rounded mb-2"></div>
+              <div class="h-3 w-28 skeleton rounded"></div>
+            </td>
+            <td class="px-6 py-4"><div class="h-4 w-16 skeleton rounded"></div></td>
+            <td class="px-6 py-4"><div class="h-4 w-24 skeleton rounded"></div></td>
+            <td class="px-6 py-4 text-center"><div class="w-12 h-12 mx-auto skeleton rounded-full"></div></td>
+          </tr>
+          <tr class="hover:bg-teal-50 transition">
+            <td class="px-6 py-4"><div class="h-4 w-48 skeleton rounded"></div></td>
+            <td class="px-6 py-4"><div class="h-4 w-30 skeleton rounded"></div></td>
+            <td class="px-6 py-4">
+              <div class="h-4 w-38 skeleton rounded mb-2"></div>
+              <div class="h-3 w-22 skeleton rounded"></div>
+            </td>
+            <td class="px-6 py-4"><div class="h-4 w-20 skeleton rounded"></div></td>
+            <td class="px-6 py-4"><div class="h-4 w-30 skeleton rounded"></div></td>
+            <td class="px-6 py-4 text-center"><div class="w-12 h-12 mx-auto skeleton rounded-full"></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="p-6 border-t border-teal-100 flex items-center justify-between bg-teal-50/50">
+      <div class="text-sm text-teal-700" id="paginationSummary">Showing 0 to 0 of 0 clients</div>
+      <div class="flex items-center gap-2">
+        <button id="prevPage" disabled class="px-4 py-2 bg-white border border-teal-300 rounded-lg text-teal-700 hover:bg-teal-100 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i> Previous
+        </button>
+        <button id="nextPage" disabled class="px-4 py-2 bg-white border border-teal-300 rounded-lg text-teal-700 hover:bg-teal-100 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
+          Next <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide-in SMS Bubble Panel -->
+<div id="smsBubblePanel" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 bubble-panel overflow-y-auto">
+  <div class="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <i data-lucide="message-square" class="w-8 h-8"></i>
+      <div>
+        <h3 class="text-xl font-bold" id="bubbleClientName">Client Name</h3>
+        <p class="text-sm opacity-90" id="bubbleClientPhone">+254...</p>
+      </div>
+    </div>
+    <button onclick="closeSMSBubble()" class="hover:opacity-80">
+      <i data-lucide="x" class="w-8 h-8"></i>
+    </button>
+  </div>
+
+  <div class="p-6 space-y-8">
+    <!-- Reminder SMS -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="font-bold text-red-600 flex items-center gap-2">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          Payment Reminder SMS
+        </h4>
+        <button onclick="copySMS('reminder')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow">
+          <i data-lucide="copy" class="w-4 h-4"></i> Copy
+        </button>
+      </div>
+      <textarea id="reminderSMS" class="w-full h-48 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-sm text-gray-800 font-mono focus:outline-none focus:border-red-500 resize-none"></textarea>
+    </div>
+
+    <!-- Confirmation SMS -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="font-bold text-green-600 flex items-center gap-2">
+          <i data-lucide="check-circle" class="w-6 h-6"></i>
+          Payment Confirmation SMS
+        </h4>
+        <button onclick="copySMS('confirmation')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow">
+          <i data-lucide="copy" class="w-4 h-4"></i> Copy
+        </button>
+      </div>
+      <textarea id="confirmationSMS" class="w-full h-48 p-4 bg-green-50 border-2 border-green-200 rounded-xl text-sm text-gray-800 font-mono focus:outline-none focus:border-green-500 resize-none"></textarea>
+    </div>
+
+    <div class="pt-4 border-t border-gray-200">
+      <p class="text-xs text-gray-500 text-center">
+        Messages are editable. Copy and paste into your SMS app or bulk sender.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div id="bubbleOverlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="closeSMSBubble()"></div>
+
+<script>
+  const API_BASE = "http://localhost:5010/api";
+  const PAGE_SIZE = 50;
+  let allClients = [];
+  let currentPage = 1;
+
+  // Show loading state
+  function showLoading() {
+    document.getElementById("tableLoader").classList.remove("hidden");
+    document.getElementById("loadingText").textContent = "Loading clients...";
+    document.getElementById("paginationInfo").classList.add("hidden");
+  }
+
+  // Hide loading state
+  function hideLoading() {
+    document.getElementById("tableLoader").classList.add("hidden");
+    document.getElementById("loadingText").textContent = "";
+  }
+
+  // Fetch all clients and enrich
+  async function loadClients() {
+    showLoading();
+    try {
+      const clientsRes = await fetch(`${API_BASE}/clients`);
+      if (!clientsRes.ok) throw new Error("Failed to fetch clients");
+      const rawClients = await clientsRes.json();
+
+      const enriched = await Promise.all(
+        rawClients.map(async (client) => {
+          try {
+            const subRes = await fetch(`${API_BASE}/subscribe/client/current?userId=${client.id}`);
+            if (subRes.ok) {
+              const subData = await subRes.json();
+              if (subData.length > 0) {
+                const sub = subData[0];
+                return {
+                  ...client,
+                  packageName: sub.package?.name || "No Package",
+                  packagePrice: sub.package?.price || "0.00",
+                  expiryDate: sub.expiry_date || null,
+                  subscriptionStatus: sub.subscription_status || "inactive"
+                };
+              }
+            }
+          } catch (e) {
+            console.warn(`No subscription for client ${client.id}`);
+          }
+          return {
+            ...client,
+            packageName: "No Package",
+            packagePrice: "0.00",
+            expiryDate: null,
+            subscriptionStatus: "inactive"
+          };
+        })
+      );
+
+      allClients = enriched.sort((a, b) => (a.name || a.first_name || "").localeCompare(b.name || b.first_name || ""));
+      renderCurrentPage();
+      updatePagination();
+      hideLoading();
+    } catch (err) {
+      console.error(err);
+      hideLoading();
+      Swal.fire({
+        icon: "error",
+        title: "Failed to Load Clients",
+        text: "Please check your connection or server.",
+      });
+    }
+  }
+
+  // Render current page
+  function renderCurrentPage() {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageData = allClients.slice(start, end);
+
+    const tbody = document.getElementById("clientsTableBody");
+
+    if (pageData.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center py-16 text-gray-500">
+            <i data-lucide="users" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+            <p class="text-lg">No clients found</p>
+          </td>
+        </tr>`;
+      lucide.createIcons();
+      return;
+    }
+
+    tbody.innerHTML = pageData.map(client => {
+      const today = new Date();
+      const expiry = client.expiryDate ? new Date(client.expiryDate) : null;
+      const isOverdue = expiry && expiry < today;
+
+      const statusText = isOverdue ? "Overdue"
+        : client.subscriptionStatus === "active" ? "Active"
+        : "Inactive";
+
+      const statusColor = isOverdue ? "text-orange-600"
+        : client.subscriptionStatus === "active" ? "text-green-600"
+        : "text-red-600";
+
+      const fullName = client.name || `${client.first_name || ''} ${client.second_name || ''}`.trim() || "Unknown Client";
+
+      return `
+        <tr class="hover:bg-teal-50 transition">
+          <td class="px-6 py-4 text-sm font-medium">${fullName}</td>
+          <td class="px-6 py-4 text-sm">${client.phone || "—"}</td>
+          <td class="px-6 py-4 text-sm">
+            ${client.packageName}
+            <br><small class="text-gray-500">KES ${Number(client.packagePrice || 0).toLocaleString()}</small>
+          </td>
+          <td class="px-6 py-4 text-sm">
+            <span class="${statusColor} font-medium">${statusText}</span>
+          </td>
+          <td class="px-6 py-4 text-sm">
+            ${expiry ? expiry.toLocaleDateString("en-GB") : "—"}
+          </td>
+          <td class="px-6 py-4 text-center">
+            <button onclick="openSMSBubble(${client.id})"
+                    class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 text-teal-700 hover:bg-teal-200 hover:scale-110 transition shadow-lg"
+                    title="SMS Templates">
+              <i data-lucide="message-square" class="w-6 h-6"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    lucide.createIcons();
+  }
+
+  // Update pagination controls
+  function updatePagination() {
+    const total = allClients.length;
+    const pages = Math.ceil(total / PAGE_SIZE);
+    const start = (currentPage - 1) * PAGE_SIZE + 1;
+    const end = Math.min(currentPage * PAGE_SIZE, total);
+
+    document.getElementById("paginationSummary").textContent = 
+      `Showing ${start} to ${end} of ${total} clients`;
+
+    document.getElementById("prevPage").disabled = currentPage === 1;
+    document.getElementById("nextPage").disabled = currentPage === pages || pages === 0;
+
+    document.getElementById("paginationInfo").classList.toggle("hidden", total === 0);
+  }
+
+  // Pagination handlers
+  document.getElementById("prevPage").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderCurrentPage();
+      updatePagination();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+
+  document.getElementById("nextPage").addEventListener("click", () => {
+    if (currentPage * PAGE_SIZE < allClients.length) {
+      currentPage++;
+      renderCurrentPage();
+      updatePagination();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+
+  // Open SMS bubble
+  function openSMSBubble(clientId) {
+    const client = allClients.find(c => c.id === clientId || c.id == clientId);
+    if (!client) {
+      Swal.fire("Error", "Client not found", "error");
+      return;
+    }
+
+    const fullName = client.name || `${client.first_name || ''} ${client.second_name || ''}`.trim() || "Customer";
+    const firstName = fullName.split(" ")[0];
+
+    document.getElementById("bubbleClientName").textContent = fullName;
+    document.getElementById("bubbleClientPhone").textContent = client.phone || "—";
+
+    const amount = Number(client.packagePrice || 0).toLocaleString();
+    const ref = `INV-${String(client.id).padStart(4, '0')}`;
+    const expiry = client.expiryDate ? new Date(client.expiryDate) : null;
+    const today = new Date();
+    const dueText = expiry ? expiry.toLocaleDateString("en-GB") : "immediately";
+    const isOverdue = expiry && expiry < today;
+
+    document.getElementById("reminderSMS").value = 
+`REMINDER: ${fullName},
+Your DR.NET subscription payment is overdue'.
+Invoice #: ${ref}
+Amount Due: KES ${amount}
+Please pay ${isOverdue ? 'immediately' : 'by ' + dueText} to avoid service suspension.
+Pay via M-PESA:
+• Buy Goods & Services
+• Till Number: 5626320
+• Reference: ${ref}
+DR.NET TECHNOLOGY LABS`;
+
+    document.getElementById("confirmationSMS").value = 
+`Payment Confirmed!
+Thank you ${firstName}!
+Invoice #${ref} - PAID
+Amount: KES ${amount}
+Your DR.NET internet service has been renewed for 30 days.
+Questions? Call 0701782354
+DR.NET TECHNOLOGY LABS`;
+
+    document.getElementById("smsBubblePanel").classList.add("open");
+    document.getElementById("bubbleOverlay").classList.remove("hidden");
+    lucide.createIcons();
+  }
+
+  function closeSMSBubble() {
+    document.getElementById("smsBubblePanel").classList.remove("open");
+    document.getElementById("bubbleOverlay").classList.add("hidden");
+  }
+
+  function copySMS(type) {
+    const textarea = document.getElementById(type + "SMS");
+    textarea.select();
+    navigator.clipboard.writeText(textarea.value).then(() => {
+      const toast = document.createElement("div");
+      toast.className = "fixed top-24 right-6 bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-4 rounded-xl shadow-2xl z-50 toast flex items-center gap-3 font-bold";
+      toast.innerHTML = `
+        <i data-lucide="check-circle" class="w-6 h-6"></i>
+        ${type === 'reminder' ? 'Reminder' : 'Confirmation'} SMS Copied!
+      `;
+      document.body.appendChild(toast);
+      lucide.createIcons();
+      setTimeout(() => toast.remove(), 3000);
+    }).catch(() => {
+      Swal.fire("Copy Failed", "Could not copy text", "error");
+    });
+  }
+
+  // Initialize
+  document.addEventListener("DOMContentLoaded", () => {
+    lucide.createIcons();
+    loadClients();
+  });
+</script>

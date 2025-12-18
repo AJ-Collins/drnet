@@ -268,6 +268,7 @@ const adminPages = [
   "expired-users",
   "active-users",
   "notifications",
+  "reminders"
 ];
 
 app.get("/admin/:page", requireAdminAuth, (req, res) => {

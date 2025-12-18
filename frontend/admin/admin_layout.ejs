@@ -78,6 +78,7 @@
             {slug:'manage-users', name:'User Management'},
             {slug:'service-management', name:'Service Management'},
             { slug:'reports', name:'Generated Reports' },
+            { slug: 'reminders', name:'Reminders' },
             {slug:'support-tickets', name:'Support Tickets'}, {slug:'finance',
             name:'Finance & Reports'}, {slug:'renewals', name:'Renewals'},
             {slug:'website-bookings', name:'Website Bookings'},
@@ -95,6 +96,7 @@
                   p.slug.includes('users') ? 'fa-users' :
                   p.slug.includes('service') ? 'fa-tools' :
                   p.slug.includes('reports') ? 'fa-calendar-day' :
+                  p.slug.includes('reminders') ? 'fa-bell':
                   p.slug.includes('ticket') ? 'fa-ticket-alt' :
                   p.slug.includes('finance') ? 'fa-dollar-sign' :
                   p.slug.includes('renewals') ? 'fa-sync-alt' :
