@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 const mailNotificationService = {
     sendEmail: async (recipient, taskTitle) => {
         const mailOptions = {
-            from: '"DR.Net Labs - Reminder" <your-email@gmail.com>',
+            from: '"DR.Net Labs - Reminder" <info@drnet.co.ke>',
             to: recipient,
             subject: `Reminders - HR- Assistant: ${taskTitle}`,
             html: `

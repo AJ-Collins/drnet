@@ -30,7 +30,7 @@ const mailNotificationService = {
         const logoPath = path.join(process.cwd(), 'frontend', 'assets', 'images', 'logo_image_1.jpg');
         
         const mailOptions = {
-            from: '"DR.Net Labs - Report" <your-email@gmail.com>',
+            from: '"DR.Net Labs - Report" <info@drnet.co.ke>',
             to: recipient,
             subject: 'Report Review',
             html: `
