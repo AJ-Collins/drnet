@@ -1,0 +1,842 @@
+<style>
+  /* ---- Core Teal Theme ---- */
+  .gradient-bg { background: linear-gradient(135deg, #0d9488 0%, #0f766e 50%, #115e59 100%); }
+  .stat-card { transition: all 0.3s ease; }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(13, 148, 136, 0.15); }
+
+  /* ---- Status & Priority Badges ---- */
+  .status-planning { @apply bg-gray-100 text-gray-700; }
+  .status-in_progress { @apply bg-teal-100 text-teal-700; }
+  .status-on_hold { @apply bg-yellow-100 text-yellow-700; }
+  .status-completed { @apply bg-green-100 text-green-700; }
+  .status-cancelled { @apply bg-red-100 text-red-700; }
+
+  .priority-low { @apply bg-gray-100 text-gray-700; }
+  .priority-medium { @apply bg-teal-100 text-teal-700; }
+  .priority-high { @apply bg-orange-100 text-orange-700; }
+  .priority-urgent { @apply bg-red-100 text-red-700; }
+
+  /* ---- Tabs ---- */
+  .tab-active { @apply bg-teal-600 text-white border-teal-600; }
+  .tab-inactive { @apply bg-white text-gray-700 border-gray-300 hover:bg-gray-50; }
+
+  /* ---- Skeleton ---- */
+  @keyframes skeleton { 0% { background-color: #f3f4f6; } 100% { background-color: #e5e7eb; } }
+  .skeleton { background: #e5e7eb; animation: skeleton 1.2s ease-in-out infinite; border-radius: 0.5rem; }
+  .skeleton-text { height: 1rem; }
+  .skeleton-title { height: 1.8rem; width: 70%; }
+  .skeleton-circle { width: 3rem; height: 3rem; border-radius: 9999px; }
+  .skeleton-line { height: 1rem; width: 100%; }
+  .skeleton-sm { height: 0.75rem; width: 60%; }
+</style>
+
+<div class="flex flex-1">
+  <main class="flex-1 p-4 lg:p-8">
+    <% const projectsBackSlug = "projects"; %>
+    <a href="/hr-assistant/<%= projectsBackSlug %>" class="inline-flex items-center text-teal-600 hover:text-teal-800 font-medium mb-6">
+      <i class="fas fa-arrow-left mr-2"></i> Back to Projects
+    </a>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-20">
+      <p class="text-gray-600 text-lg">Loading project details...</p>
+    </div>
+
+    <!-- Project Detail Content (hidden until loaded) -->
+    <div id="projectContent" class="hidden">
+      <!-- Project Header -->
+      <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-8">
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-4">
+              <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 project-name"></h1>
+              <div class="flex gap-3">
+                <span class="status-badge px-4 py-2 rounded-full font-bold text-sm"></span>
+                <span class="priority-badge px-4 py-2 rounded-full font-bold text-sm"></span>
+              </div>
+            </div>
+            <p class="text-gray-600 text-lg project-description mt-3"></p>
+            <div class="flex flex-wrap gap-4 mt-6 text-sm">
+              <div>
+                <span class="text-gray-600">Project Code:</span>
+                <span class="font-medium ml-2 project-code"></span>
+              </div>
+              <div>
+                <span class="text-gray-600">Type:</span>
+                <span class="font-medium ml-2 project-type capitalize"></span>
+              </div>
+              <div>
+                <span class="text-gray-600">Manager:</span>
+                <span class="font-medium ml-2 project-manager"></span>
+              </div>
+            </div>
+          </div>
+          <div class="w-full lg:w-80">
+            <div class="text-center">
+              <div class="text-5xl font-extrabold text-teal-600 project-progress">0%</div>
+              <p class="text-gray-600 mt-2 text-lg">Overall Progress</p>
+              <div class="w-full bg-gray-200 rounded-full h-5 mt-4">
+                <div class="progress-bar h-5 rounded-full bg-teal-600 transition-all duration-1000"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex flex-wrap gap-2 mb-8 border-b border-gray-200">
+        <button data-tab="overview" class="project-tab tab-active px-6 py-3 rounded-t-lg font-medium">Overview</button>
+        <button data-tab="milestones" class="project-tab tab-inactive px-6 py-3 rounded-t-lg font-medium">Milestones</button>
+        <button data-tab="resources" class="project-tab tab-inactive px-6 py-3 rounded-t-lg font-medium">Resources</button>
+        <button data-tab="expenses" class="project-tab tab-inactive px-6 py-3 rounded-t-lg font-medium">Expenses</button>
+        <button data-tab="team" class="project-tab tab-inactive px-6 py-3 rounded-t-lg font-medium">Team</button>
+      </div>
+
+      <!-- ==================== OVERVIEW TAB ==================== -->
+      <div id="overviewTab" class="tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Project Dates -->
+          <div class="bg-white rounded-2xl shadow-lg p-7">
+            <h3 class="text-xl font-semibold text-gray-800 mb-5">Timeline</h3>
+            <div class="space-y-5">
+              <div>
+                <p class="text-sm text-gray-600">Start Date</p>
+                <p class="text-lg font-bold project-start">-</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600">End Date</p>
+                <p class="text-lg font-bold project-end">-</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600">Days Remaining</p>
+                <p class="text-lg font-bold days-remaining text-teal-600">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Budget Summary -->
+          <div class="bg-white rounded-2xl shadow-lg p-7">
+            <h3 class="text-xl font-semibold text-gray-800 mb-5">Budget Summary</h3>
+            <div class="space-y-5">
+              <div>
+                <p class="text-sm text-gray-600">Allocated</p>
+                <p class="text-2xl font-bold budget-allocated">Ksh 0</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600">Spent</p>
+                <p class="text-2xl font-bold budget-spent text-red-600">Ksh 0</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600">Remaining</p>
+                <p class="text-2xl font-bold budget-remaining budget-status">Ksh 0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="bg-white rounded-2xl shadow-lg p-7">
+            <h3 class="text-xl font-semibold text-gray-800 mb-5">Quick Stats</h3>
+            <div class="grid grid-cols-2 gap-6">
+              <div class="text-center">
+                <div class="text-4xl font-bold text-teal-600 milestones-total">0</div>
+                <p class="text-gray-600 mt-2">Total Milestones</p>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-green-600 milestones-completed">0</div>
+                <p class="text-gray-600 mt-2">Completed</p>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-orange-600 resources-pending">0</div>
+                <p class="text-gray-600 mt-2">Resources Pending</p>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-purple-600 expenses-count">0</div>
+                <p class="text-gray-600 mt-2">Expenses Logged</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== MILESTONES TAB ==================== -->
+      <div id="milestonesTab" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-lg p-7">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold text-gray-800">Project Milestones</h3>
+            <button id="addMilestoneBtn" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-lg font-medium flex items-center">
+              <i class="fas fa-plus mr-2"></i> Add Milestone
+            </button>
+          </div>
+          <div id="milestonesList" class="space-y-6">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== RESOURCES TAB ==================== -->
+      <div id="resourcesTab" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-lg p-7">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold text-gray-800">Resource Requirements</h3>
+            <button id="addResourceBtn" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-lg font-medium flex items-center">
+              <i class="fas fa-plus mr-2"></i> Add Resource
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead class="bg-gray-50 border-b">
+                <tr>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Resource</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Qty</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Est. Cost</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Status</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Supplier</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Required By</th>
+                </tr>
+              </thead>
+              <tbody id="resourcesTable" class="divide-y divide-gray-200">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== EXPENSES TAB ==================== -->
+      <div id="expensesTab" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-lg p-7">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold text-gray-800">Expense Log</h3>
+            <button id="addExpenseBtn" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-lg font-medium flex items-center">
+              <i class="fas fa-plus mr-2"></i> Log Expense
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead class="bg-gray-50 border-b">
+                <tr>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Date</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Category</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Description</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Amount</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Paid To</th>
+                  <th class="py-4 px-6 text-sm font-medium text-gray-700">Method</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTable" class="divide-y divide-gray-200">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TEAM TAB ==================== -->
+      <div id="teamTab" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-lg p-7">
+          <h3 class="text-xl font-semibold text-gray-800 mb-6">Project Team</h3>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+              <p class="text-sm text-gray-600 mb-3">Project Manager</p>
+              <div class="inline-block bg-teal-100 text-teal-700 px-6 py-3 rounded-full text-lg font-bold project-manager-badge">
+                Staff #—
+              </div>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 mb-3">Assigned Staff</p>
+              <div id="teamChips" class="flex flex-wrap gap-3">
+                <!-- Filled by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Milestone Modal -->
+<div id="addMilestoneModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-screen overflow-y-auto p-8">
+    <h2 class="text-2xl font-bold text-teal-800 mb-6">Add Milestone</h2>
+    <form id="addMilestoneForm">
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Milestone Name *</label>
+          <input type="text" name="milestone_name" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea name="description" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select name="status" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="not_started">Not Started</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="delayed">Delayed</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Order Sequence</label>
+            <input type="number" name="order_sequence" value="0" min="0" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+            <input type="date" name="due_date" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Completion Date</label>
+            <input type="date" name="completion_date" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+          <textarea name="notes" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-4 mt-8">
+        <button type="button" id="closeMilestoneModal" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+        <button type="submit" class="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">Add Milestone</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Resource Modal -->
+<div id="addResourceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-screen overflow-y-auto p-8">
+    <h2 class="text-2xl font-bold text-teal-800 mb-6">Add Resource</h2>
+    <form id="addResourceForm">
+      <div class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Resource Type *</label>
+            <select name="resource_type" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="">Select type</option>
+              <option value="equipment">Equipment</option>
+              <option value="material">Material</option>
+              <option value="software">Software</option>
+              <option value="service">Service</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Resource Name *</label>
+            <input type="text" name="resource_name" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea name="description" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
+            <input type="number" name="quantity_needed" required min="1" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+            <input type="text" name="quantity_unit" placeholder="e.g., pcs, kg, hrs" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Est. Cost (Ksh)</label>
+            <input type="number" name="estimated_cost" min="0" step="0.01" placeholder="0.00" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <select name="priority" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Required By</label>
+            <input type="date" name="required_by_date" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Supplier Name</label>
+            <input type="text" name="supplier_name" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Supplier Contact</label>
+            <input type="text" name="supplier_contact" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+          <textarea name="notes" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-4 mt-8">
+        <button type="button" id="closeResourceModal" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+        <button type="submit" class="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">Add Resource</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Expense Modal -->
+<div id="addExpenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-screen overflow-y-auto p-8">
+    <h2 class="text-2xl font-bold text-teal-800 mb-6">Log Expense</h2>
+    <form id="addExpenseForm">
+      <div class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+            <select name="expense_category" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="">Select category</option>
+              <option value="labor">Labor</option>
+              <option value="materials">Materials</option>
+              <option value="equipment">Equipment</option>
+              <option value="software">Software</option>
+              <option value="travel">Travel</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Amount (Ksh) *</label>
+            <input type="number" name="amount" required min="0" step="0.01" placeholder="0.00" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea name="description" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Expense Date *</label>
+            <input type="date" name="expense_date" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Receipt Number</label>
+            <input type="text" name="receipt_number" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Paid To</label>
+            <input type="text" name="paid_to" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+            <select name="payment_method" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="">Select method</option>
+              <option value="cash">Cash</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="cheque">Cheque</option>
+              <option value="card">Card</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+          <textarea name="notes" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-4 mt-8">
+        <button type="button" id="closeExpenseModal" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+        <button type="submit" class="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">Log Expense</button>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+
+<!-- ======================= TEMPLATES ======================= -->
+<template id="milestoneItemTemplate">
+  <div class="bg-gray-50 rounded-xl p-6 border-l-8 milestone-item">
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <h4 class="text-lg font-bold text-gray-800 name"></h4>
+        <p class="text-gray-600 description mt-2"></p>
+      </div>
+      <div class="text-right">
+        <button class="complete-btn text-green-600 hover:text-green-700 font-bold text-sm">Mark Complete</button>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-4 text-sm">
+      <span class="status-badge px-4 py-1 rounded-full font-medium"></span>
+      <span class="text-gray-600">Due: <span class="due-date font-medium"></span></span>
+      <span class="text-gray-600">Order: <span class="order font-medium"></span></span>
+    </div>
+  </div>
+</template>
+
+<template id="resourceRowTemplate">
+  <tr>
+    <td class="py-4 px-6 name font-medium"></td>
+    <td class="py-4 px-6 quantity text-center"></td>
+    <td class="py-4 px-6 cost"></td>
+    <td class="py-4 px-6"><span class="status-badge px-3 py-1 rounded-full text-xs font-bold"></span></td>
+    <td class="py-4 px-6 supplier"></td>
+    <td class="py-4 px-6 due-date"></td>
+  </tr>
+</template>
+
+<template id="expenseRowTemplate">
+  <tr>
+    <td class="py-4 px-6 date"></td>
+    <td class="py-4 px-6 category"></td>
+    <td class="py-4 px-6 description"></td>
+    <td class="py-4 px-6 amount font-bold"></td>
+    <td class="py-4 px-6 paid-to"></td>
+    <td class="py-4 px-6 payment-method"></td>
+  </tr>
+</template>
+
+<template id="teamChipTemplate">
+  <span class="inline-block bg-teal-100 text-teal-700 px-5 py-2 rounded-full text-sm font-medium staff-chip"></span>
+</template>
+
+<script>
+  const API_BASE = "/api/hr/projects";
+  const projectId = window.location.pathname.split("/").pop(); // Extract ID from URL
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+
+  const statusColors = {
+    planning: "status-planning",
+    in_progress: "status-in_progress",
+    on_hold: "status-on_hold",
+    completed: "status-completed",
+    cancelled: "status-cancelled"
+  };
+
+  const priorityColors = {
+    low: "priority-low",
+    medium: "priority-medium",
+    high: "priority-high",
+    urgent: "priority-urgent"
+  };
+
+  async function loadProjectDetail() {
+    $("#loadingState").classList.remove("hidden");
+    $("#projectContent").classList.add("hidden");
+
+    try {
+      const res = await fetch(`${API_BASE}/${projectId}/details`);
+      if (!res.ok) throw new Error("Project not found");
+      const data = await res.json();
+      const { project, dashboard, details } = data;
+
+      const expensesRes = await fetch(`${API_BASE}/${projectId}/expenses`);
+      const expensesData = await expensesRes.json();
+      details.expenses = expensesData.expenses || [];
+
+      // Header
+      $(".project-name").textContent = project.project_name;
+      $(".project-description").textContent = project.description || "No description";
+      $(".project-code").textContent = project.project_code || "—";
+      $(".project-type").textContent = project.project_type;
+      $(".project-start").textContent = project.start_date ? new Date(project.start_date).toLocaleDateString() : "—";
+      $(".project-end").textContent = project.end_date ? new Date(project.end_date).toLocaleDateString() : "—";
+      $(".project-manager").textContent = project.project_manager_id ? `Staff #${project.project_manager_id}` : "Unassigned";
+
+      $(".project-progress").textContent = `${dashboard.progress}%`;
+      $(".progress-bar").style.width = `${dashboard.progress}%`;
+
+      const statusBadge = document.querySelector(".status-badge");
+      statusBadge.textContent = project.status.replace("_", " ").toUpperCase();
+      statusBadge.className = `status-badge px-4 py-2 rounded-full font-bold text-sm ${statusColors[project.status] || 'bg-gray-100 text-gray-700'}`;
+
+      const priorityBadge = document.querySelector(".priority-badge");
+      priorityBadge.textContent = project.priority.toUpperCase();
+      priorityBadge.className = `priority-badge px-4 py-2 rounded-full font-bold text-sm ${priorityColors[project.priority] || 'bg-gray-100 text-gray-700'}`;
+
+      // Budget
+      $(".budget-allocated").textContent = `Ksh ${Number(project.budget_allocated).toLocaleString()}`;
+      $(".budget-spent").textContent = `Ksh ${Number(dashboard.budget.spent).toLocaleString()}`;
+      const remaining = dashboard.budget.remaining;
+      const remainingEl = $(".budget-remaining");
+      remainingEl.textContent = `Ksh ${Number(Math.abs(remaining)).toLocaleString()}`;
+      remainingEl.className = remaining >= 0 ? "text-green-600" : "text-red-600";
+
+      // Days Remaining
+      if (project.end_date) {
+        const daysLeft = Math.ceil((new Date(project.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+        $(".days-remaining").textContent = daysLeft > 0 ? `${daysLeft} days` : "Overdue";
+      }
+
+      // Quick Stats
+      $(".milestones-total").textContent = dashboard.milestones.total;
+      $(".milestones-completed").textContent = dashboard.milestones.completed;
+      $(".resources-pending").textContent = dashboard.resources.pending;
+      $(".expenses-count").textContent = dashboard.summary?.total_expenses || 0;
+
+      // Milestones
+      const milestonesList = $("#milestonesList");
+      milestonesList.innerHTML = details.milestones.length ? "" : "<p class='text-center text-gray-500 py-8'>No milestones defined</p>";
+      const milestoneTmpl = document.getElementById("milestoneItemTemplate").content;
+      details.milestones.forEach(m => {
+        const node = milestoneTmpl.cloneNode(true);
+        node.querySelector(".name").textContent = m.milestone_name;
+        node.querySelector(".description").textContent = m.description || "No description";
+        node.querySelector(".due-date").textContent = m.due_date ? new Date(m.due_date).toLocaleDateString() : "—";
+        node.querySelector(".order").textContent = m.order_sequence;
+
+        const badge = node.querySelector(".status-badge");
+        badge.textContent = m.status.replace("_", " ").toUpperCase();
+        badge.className += ` ${statusColors[m.status] || 'bg-gray-100 text-gray-700'}`;
+
+        const isDelayed = details.delayed_milestones.some(d => d.id === m.id);
+        node.querySelector(".milestone-item").style.borderLeftColor = 
+          m.status === "completed" ? "#10b981" : 
+          isDelayed ? "#ef4444" : "#14b8a6";
+
+        node.querySelector(".complete-btn").onclick = async () => {
+          await fetch(`${API_BASE}/${projectId}/milestone`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: m.id, status: "completed" })
+          });
+          loadProjectDetail();
+        };
+
+        milestonesList.appendChild(node);
+      });
+
+      // Resources
+      const resourcesTbody = $("#resourcesTable");
+      resourcesTbody.innerHTML = "";
+      const resourceTmpl = document.getElementById("resourceRowTemplate").content;
+      details.resources.forEach(r => {
+        const row = resourceTmpl.cloneNode(true);
+        row.querySelector(".name").textContent = r.resource_name;
+        row.querySelector(".quantity").textContent = `${r.quantity_needed} ${r.quantity_unit || ''}`;
+        row.querySelector(".cost").textContent = `Ksh ${Number(r.estimated_cost).toLocaleString()}`;
+        row.querySelector(".supplier").textContent = r.supplier_name || "—";
+        row.querySelector(".due-date").textContent = r.required_by_date ? new Date(r.required_by_date).toLocaleDateString() : "—";
+
+        const badge = row.querySelector(".status-badge");
+        badge.textContent = r.status.toUpperCase();
+        badge.className += ` ${statusColors[r.status] || 'bg-gray-100 text-gray-700'}`;
+
+        resourcesTbody.appendChild(row);
+      });
+
+      // Expenses
+      const expensesTbody = $("#expensesTable");
+      expensesTbody.innerHTML = "";
+      const expenseTmpl = document.getElementById("expenseRowTemplate").content;
+      (details.expenses || []).forEach(e => {
+        const row = expenseTmpl.cloneNode(true);
+        row.querySelector(".date").textContent = new Date(e.expense_date).toLocaleDateString();
+        row.querySelector(".category").textContent = e.expense_category;
+        row.querySelector(".description").textContent = e.description || "—";
+        row.querySelector(".amount").textContent = `Ksh ${Number(e.amount).toLocaleString()}`;
+        row.querySelector(".paid-to").textContent = e.paid_to || "—";
+        row.querySelector(".payment-method").textContent = e.payment_method || "—";
+        expensesTbody.appendChild(row);
+      });
+
+      // Team
+      $(".project-manager-badge").textContent = project.project_manager_id ? `Staff #${project.project_manager_id}` : "Unassigned";
+      const teamChips = $("#teamChips");
+      teamChips.innerHTML = "";
+      const chipTmpl = document.getElementById("teamChipTemplate").content;
+      (project.assigned_staff || []).forEach(id => {
+        const chip = chipTmpl.cloneNode(true);
+        chip.querySelector(".staff-chip").textContent = `Staff #${id}`;
+        teamChips.appendChild(chip);
+      });
+
+      $("#loadingState").classList.add("hidden");
+      $("#projectContent").classList.remove("hidden");
+    } catch (e) {
+      $("#loadingState").innerHTML = `<p class="text-red-600 text-center py-20 text-xl">Failed to load project</p>`;
+    }
+  }
+
+  // Tab switching
+  $$(".project-tab").forEach(tab => {
+    tab.onclick = () => {
+      $$(".project-tab").forEach(t => {
+        t.classList.remove("tab-active");
+        t.classList.add("tab-inactive");
+      });
+      tab.classList.add("tab-active");
+      tab.classList.remove("tab-inactive");
+
+      $$(".tab-content").forEach(c => c.classList.add("hidden"));
+      $(`#${tab.dataset.tab}Tab`).classList.remove("hidden");
+    };
+  });
+
+  $("#addMilestoneBtn").addEventListener("click", () => {
+    $("#addMilestoneModal").classList.remove("hidden");
+    $("#addMilestoneForm").reset();
+  });
+
+  $("#closeMilestoneModal").addEventListener("click", () => {
+    $("#addMilestoneModal").classList.add("hidden");
+  });
+
+  $("#addMilestoneForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      milestone_name: formData.get("milestone_name"),
+      description: formData.get("description") || null,
+      status: formData.get("status"),
+      due_date: formData.get("due_date") || null,
+      completion_date: formData.get("completion_date") || null,
+      order_sequence: parseInt(formData.get("order_sequence")) || 0,
+      notes: formData.get("notes") || null,
+      deliverables: []
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/${projectId}/milestone`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed to add milestone");
+
+      $("#addMilestoneModal").classList.add("hidden");
+      showSuccessMessage("Milestone added successfully!");
+      loadProjectDetail();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  });
+
+  $("#addResourceBtn").addEventListener("click", () => {
+    $("#addResourceModal").classList.remove("hidden");
+    $("#addResourceForm").reset();
+  });
+
+  $("#closeResourceModal").addEventListener("click", () => {
+    $("#addResourceModal").classList.add("hidden");
+  });
+
+  $("#addResourceForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      resource_type: formData.get("resource_type"),
+      resource_name: formData.get("resource_name"),
+      description: formData.get("description") || null,
+      quantity_needed: parseFloat(formData.get("quantity_needed")),
+      quantity_unit: formData.get("quantity_unit") || null,
+      estimated_cost: parseFloat(formData.get("estimated_cost")) || 0,
+      priority: formData.get("priority"),
+      required_by_date: formData.get("required_by_date") || null,
+      supplier_name: formData.get("supplier_name") || null,
+      supplier_contact: formData.get("supplier_contact") || null,
+      notes: formData.get("notes") || null
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/${projectId}/resource`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed to add resource");
+
+      $("#addResourceModal").classList.add("hidden");
+      showSuccessMessage("Resource added successfully!");
+      loadProjectDetail();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  });
+
+  $("#addExpenseBtn").addEventListener("click", () => {
+    $("#addExpenseModal").classList.remove("hidden");
+    $("#addExpenseForm").reset();
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    $("input[name='expense_date']").value = today;
+  });
+
+  $("#closeExpenseModal").addEventListener("click", () => {
+    $("#addExpenseModal").classList.add("hidden");
+  });
+
+  $("#addExpenseForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      expense_category: formData.get("expense_category"),
+      description: formData.get("description") || null,
+      amount: parseFloat(formData.get("amount")),
+      expense_date: formData.get("expense_date"),
+      receipt_number: formData.get("receipt_number") || null,
+      paid_to: formData.get("paid_to") || null,
+      payment_method: formData.get("payment_method") || null,
+      notes: formData.get("notes") || null
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/${projectId}/expense`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed to log expense");
+
+      $("#addExpenseModal").classList.add("hidden");
+      showSuccessMessage("Expense logged successfully!");
+      loadProjectDetail();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  });
+
+  // Helper function to show success messages
+  function showSuccessMessage(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+    successDiv.textContent = message;
+    document.body.appendChild(successDiv);
+    setTimeout(() => successDiv.remove(), 3000);
+  }
+
+  document.addEventListener("DOMContentLoaded", loadProjectDetail);
+</script>

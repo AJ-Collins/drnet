@@ -8,7 +8,7 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || "drnet",
   connectionLimit: 10,
   dateStrings: true,
-  timezone: "+03:00",
+  timezone: '+00:00',
   multipleStatements: true
 });
 

@@ -32,7 +32,16 @@ const teamChat = require("./src/routes/teamChat");
 const announcement = require("./src/routes/announcements");
 const notificationsRoutes = require("./src/routes/notifications");
 const reports = require("./src/routes/reports");
-const { error } = require("console");
+const hrDashboard = require("./src/routes/hrDashboardRouter");
+
+// Notify
+const notify = require("./src/routes/notify");
+
+// Hr
+const hrProjectsRoutes = require("./src/routes/hrProjectsRoutes");
+const HrTaskRoutes = require("./src/routes/hrTasksRoutes");
+const Folders = require("./src/routes/folders");
+
 // Session Configuration
 app.use(
   session({
@@ -65,6 +74,7 @@ app.set("views", [
   path.join(__dirname, "frontend/staff"),
   path.join(__dirname, "frontend/client"),
   path.join(__dirname, "frontend/customer-care"),
+  path.join(__dirname, "frontend/hr-assistant"),
 ]);
 
 // STATIC ASSETS
@@ -194,6 +204,26 @@ function requireClientAuth(req, res, next) {
   return res.redirect("/login");
 }
 
+function requireHrAssistantAuth(req, res, next){
+  console.log("HR Assistant Auth Check:", req.session?.user);
+  if (req.session?.user?.role_name === "hr-assistant") {
+    console.log("Hr Assistant Auth passed");
+    return next();
+  }
+
+  console.log("Hr Assistant Auth failed");
+
+  if (req.path.startsWith("/api")) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized",
+      redirectUrl: "/login",
+    });
+  }
+
+  return res.redirect("/login");
+}
+
 // API ROUTES
 app.use("/api", authRoutes);
 app.use("/api", apiSessionAuth, admin);
@@ -219,6 +249,12 @@ app.use("/api", apiSessionAuth, teamChat);
 app.use("/api", apiSessionAuth, announcement);
 app.use("/api", apiSessionAuth, notificationsRoutes);
 app.use("/api", apiSessionAuth, reports);
+app.use("/api", apiSessionAuth, notify);
+//Hr
+app.use("/api", apiSessionAuth, hrProjectsRoutes);
+app.use("/api", apiSessionAuth, HrTaskRoutes);
+app.use("/api", apiSessionAuth, Folders);
+app.use("/api/hr", apiSessionAuth, hrDashboard);
 
 // Create uploads folder
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
@@ -382,6 +418,48 @@ app.get("/customer-care", requireCustomerCareAuth, (req, res) => {
   res.redirect("/customer-care/dashboard");
 });
 
+//HR Assistant Routes
+const hrAssistantPages = [
+  "dashboard",
+  "projects",
+  "tasks",
+  "documents",
+  "communication",
+  "profile",
+];
+
+app.get("/hr-assistant/:page", requireHrAssistantAuth, (req, res) => {
+  let page = req.params.page;
+  if (!hrAssistantPages.includes(page)) {
+    return res.redirect("/hr-assistant/dashboard");
+  }
+
+  const title = page
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  res.render("hr_assistant_layout", {
+    pageTitle: title,
+    pageSubtitle: `Manage ${title.toLowerCase()}`,
+    currentPage: page,
+    user: req.session.user
+  });
+});
+
+app.get('/hr-assistant/projects/:id', requireHrAssistantAuth, (req, res) => {
+  res.render("hr_assistant_layout", {
+    pageTitle: "Project Details",
+    pageSubtitle: `View and manage project #${req.params.id}`,
+    currentPage: "project-detail",
+    projectId: req.params.id,
+    user: req.session.user
+  });
+});
+app.get("/hr-assistant", requireHrAssistantAuth, (req, res) => {
+  res.redirect("/hr-assistant/dashboard");
+});
+
 // STAFF ROUTES
 
 const staffPages = [
@@ -462,7 +540,6 @@ process.on("unhandledRejection", (err) => {
 });
 
 // SERVER STARTUP
-
 async function startServer() {
   try {
     console.log("Starting Dr.Net Server...");

@@ -1,0 +1,587 @@
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccfbf1; border-radius: 10px; }
+        .animate-slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        /* Smooth fade for inputs */
+        .input-group { transition: all 0.3s ease; }
+        .hidden-group { display: none; opacity: 0; }
+</style>
+<div class="text-slate-900 min-h-screen relative overflow-x-hidden">
+
+  <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+
+  <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 px-6 h-16 flex items-center justify-between shadow-sm">
+    <div class="flex items-center gap-4">
+      <div class="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center text-white font-bold"><i class="fas fa-cubes"></i></div>
+      <h1 class="font-bold text-xl tracking-tight text-teal-800">OpsMaster Hub</h1>
+    </div>
+    
+    <div class="flex items-center gap-4">
+        <div class="flex bg-slate-100 p-1 rounded-xl">
+            <button onclick="switchTab('milestones')" id="tab-milestones" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-teal-700">Milestones</button>
+            <button onclick="switchTab('resources')" id="tab-resources" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-teal-600">Resources</button>
+            <button onclick="switchTab('logistics')" id="tab-logistics" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-teal-600">Logistics</button>
+            <button onclick="switchTab('approvals')" id="tab-approvals" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-teal-600 relative">
+                Requests
+                <span id="requestBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] flex items-center justify-center rounded-full">0</span>
+            </button>
+        </div>
+        <button onclick="generatePDFReport()" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">
+            <i class="fas fa-file-pdf mr-2"></i>REPORT
+        </button>
+        <button onclick="openProjectModal()" class="bg-teal-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-teal-700">
+            + PROJECT
+        </button>
+    </div>
+  </nav>
+
+  <main class="max-w-full mx-auto p-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Active Projects</h4>
+            <span id="stat-projects" class="text-2xl font-bold text-slate-800">0</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Utilization</h4>
+            <span id="stat-budget" class="text-2xl font-bold text-slate-800">Ksh 0</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Queue Status</h4>
+            <span id="stat-queue" class="text-2xl font-bold text-teal-600">0 Items</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Quick Dispatch</h4>
+            <div class="flex gap-2 mt-1">
+                <button onclick="openCommsDrawer('whatsapp', 'General Briefing')" class="flex-1 bg-emerald-50 text-emerald-600 py-2 rounded-lg text-xs font-bold hover:bg-emerald-100"><i class="fab fa-whatsapp text-lg"></i></button>
+                <button onclick="openCommsDrawer('email', 'Executive Summary')" class="flex-1 bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold hover:bg-blue-100"><i class="far fa-envelope text-lg"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-milestones" class="view-container space-y-6">
+        <div id="projectGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+
+    <div id="view-resources" class="view-container hidden space-y-6">
+        <div class="flex justify-between items-center">
+            <h3 class="font-bold text-slate-700">Procurement & Inventory</h3>
+            <button onclick="openResourceRequestModal()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold">+ REQUEST TOOLS</button>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 border-b">
+                    <tr>
+                        <th class="p-4 text-[10px] font-black text-slate-400 uppercase">Item</th>
+                        <th class="p-4 text-[10px] font-black text-slate-400 uppercase">Project</th>
+                        <th class="p-4 text-[10px] font-black text-slate-400 uppercase">Status</th>
+                        <th class="p-4 text-[10px] font-black text-slate-400 uppercase">Cost</th>
+                    </tr>
+                </thead>
+                <tbody id="resourceList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="view-logistics" class="view-container hidden space-y-6">
+        <h3 class="font-bold text-slate-700">Field Logistics & Status</h3>
+        <p class="text-xs text-slate-500">Manage accommodation, transport, and project completion status.</p>
+        <div id="logisticsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </div>
+
+    <div id="view-approvals" class="view-container hidden space-y-6">
+        <h3 class="font-bold text-slate-700">Pending Resource Requests</h3>
+        <div id="approvalList" class="grid grid-cols-1 gap-4"></div>
+    </div>
+  </main>
+
+  <div id="notifDrawer" class="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 border-l flex flex-col">
+    <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+        <div>
+            <h3 class="font-bold text-slate-800 text-lg">Dispatcher</h3>
+            <p class="text-xs text-slate-500">Send updates to stakeholders</p>
+        </div>
+        <button onclick="closeNotif()" class="text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times text-lg"></i></button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+        
+        <div class="space-y-2">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Communication Channel</label>
+            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
+                <button id="btn-chan-email" onclick="setChannel('email')" class="py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all">
+                    <i class="fas fa-envelope mr-1"></i> Email
+                </button>
+                <button id="btn-chan-whatsapp" onclick="setChannel('whatsapp')" class="py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all">
+                    <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                </button>
+            </div>
+            <input type="hidden" id="commsChannel" value="email">
+        </div>
+
+        <div id="recipient-group-email" class="input-group space-y-2">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Recipient Email</label>
+            <div class="relative">
+                <i class="fas fa-at absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="email" id="commsEmail" placeholder="stakeholder@company.com" class="w-full pl-9 p-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+            </div>
+        </div>
+
+        <div id="recipient-group-whatsapp" class="input-group hidden-group space-y-2">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Recipient WhatsApp Number</label>
+            <div class="relative">
+                <i class="fas fa-phone absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="tel" id="commsPhone" placeholder="+254 700 000 000" class="w-full pl-9 p-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Data Attachment Context</label>
+            <select id="commsContext" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-teal-500">
+                <option value="general">General Dashboard Overview</option>
+                <option value="approvals">Pending Requests List</option>
+                <optgroup label="Specific Projects" id="contextProjectOptions">
+                    </optgroup>
+            </select>
+            <p class="text-[10px] text-teal-600 font-medium bg-teal-50 p-2 rounded-lg border border-teal-100">
+                <i class="fas fa-info-circle mr-1"></i> Selected data summary will be appended to your message.
+            </p>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Custom Message</label>
+            <textarea id="commsMessage" class="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-teal-500 transition-all resize-none" placeholder="Type your briefing here..."></textarea>
+        </div>
+
+    </div>
+    <div class="p-6 border-t bg-slate-50">
+        <button id="btnSendComms" onclick="sendCommunication()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg">SEND DISPATCH</button>
+    </div>
+  </div>
+
+  <div id="projectModal" onclick="if(event.target === this) closeModals()" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-[600px] p-8 shadow-2xl animate-slide-in relative">
+      <button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+      <h3 class="text-xl font-bold mb-6 text-slate-800">New Project</h3>
+      <form id="projectForm" class="space-y-4">
+        <input type="text" id="projName" placeholder="Project Title" class="w-full p-3.5 bg-slate-50 border rounded-xl" required>
+        <div class="grid grid-cols-2 gap-4">
+            <input type="number" id="projBudget" placeholder="Budget (Ksh)" class="w-full p-3.5 bg-slate-50 border rounded-xl" required>
+            <input type="date" id="projDeadline" class="w-full p-3.5 bg-slate-50 border rounded-xl" required>
+        </div>
+        <button type="submit" class="w-full py-4 bg-teal-600 text-white rounded-xl font-bold shadow-lg mt-4">Launch Project</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="requestModal" onclick="if(event.target === this) closeModals()" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-[600px] p-8 shadow-2xl animate-slide-in relative">
+      <button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+      <h3 class="text-xl font-bold mb-6 text-slate-800">Request Resource</h3>
+      <form id="requestForm" class="space-y-4">
+        <select id="reqProject" class="w-full p-3.5 bg-slate-50 border rounded-xl" required>
+            <option value="" disabled selected>Select a Project</option>
+        </select>
+        <input type="text" id="reqItem" placeholder="Item Name" class="w-full p-3.5 bg-slate-50 border rounded-xl" required>
+        <div class="grid grid-cols-2 gap-4">
+            <input type="text" id="reqQty" placeholder="Qty" class="w-full p-3.5 bg-slate-50 border rounded-xl" required>
+            <input type="number" id="reqCost" placeholder="Cost (Ksh)" class="w-full p-3.5 bg-slate-50 border rounded-xl" required>
+        </div>
+        <button type="submit" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg">Submit Request</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="updateModal" onclick="if(event.target === this) closeModals()" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg w-full max-w-[700px] p-8 shadow-2xl animate-slide-in relative">
+      <button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+      <h3 class="text-xl font-bold mb-2 text-slate-800">Update Logistics</h3>
+      <p id="updateModalTitle" class="text-xs text-teal-600 font-bold uppercase mb-6"></p>
+      
+      <form id="updateForm" class="space-y-4">
+        <input type="hidden" id="updateProjId">
+        
+        <div>
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Completion Progress (%)</label>
+            <input type="number" id="updateProgress" min="0" max="100" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-teal-600">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Transport Status</label>
+                <select id="updateTransport" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    <option value="Pending">Pending</option>
+                    <option value="Requested">Requested</option>
+                    <option value="Deployed">Deployed</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Accommodation</label>
+                <select id="updateAccom" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    <option value="Pending">Pending</option>
+                    <option value="Booked">Booked</option>
+                    <option value="Checked In">Checked In</option>
+                    <option value="Checked Out">Checked Out</option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Delivery Stage</label>
+            <select id="updateDelivery" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                <option value="Queued">Queued</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Review">Review</option>
+                <option value="Delivered">Delivered</option>
+            </select>
+        </div>
+
+        <button type="submit" class="w-full py-4 bg-teal-600 text-white rounded-xl font-bold shadow-lg hover:bg-teal-700">Update Status</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+   const API_BASE_URL = '/api'; 
+
+   let projects = [];
+   let resources = [];
+   let requests = [];
+
+   window.onload = () => {
+       syncWithBackend();
+       setInterval(syncWithBackend, 30000);
+   };
+
+   async function syncWithBackend() {
+       try {
+           const [projRes, resRes, reqRes] = await Promise.all([
+               fetch(`${API_BASE_URL}/projects`),
+               fetch(`${API_BASE_URL}/resources`),
+               fetch(`${API_BASE_URL}/requests`)
+           ]);
+
+           if (!projRes.ok || !resRes.ok || !reqRes.ok) throw new Error("Sync failed");
+
+           projects = await projRes.json();
+           resources = await resRes.json();
+           requests = await reqRes.json();
+
+           renderData();
+       } catch (error) {
+           console.error("Data Sync Error:", error);
+           showToast("CONNECTION ERROR", "Could not sync with backend.");
+       }
+   }
+
+   document.getElementById('projectForm').onsubmit = async (e) => {
+       e.preventDefault();
+       const payload = {
+           name: document.getElementById('projName').value,
+           budget: parseInt(document.getElementById('projBudget').value),
+           deadline: document.getElementById('projDeadline').value,
+           spent: 0,
+           progress: 0,
+           logistics: { transport: "Pending", accommodation: "Pending", deliveryStatus: "Queued" }
+       };
+
+       try {
+           const res = await fetch(`${API_BASE_URL}/projects`, {
+               method: 'POST',
+               headers: {'Content-Type': 'application/json'},
+               body: JSON.stringify(payload)
+           });
+           if(res.ok) {
+               closeModals();
+               syncWithBackend();
+               showToast("SUCCESS", "Project initialized.");
+           }
+       } catch (err) { showToast("ERROR", "Failed to create project."); }
+   };
+
+   document.getElementById('requestForm').onsubmit = async (e) => {
+       e.preventDefault();
+       const payload = {
+           project: document.getElementById('reqProject').value,
+           item: document.getElementById('reqItem').value,
+           qty: document.getElementById('reqQty').value,
+           cost: parseInt(document.getElementById('reqCost').value),
+           status: "Pending Approval"
+       };
+
+       try {
+           const res = await fetch(`${API_BASE_URL}/requests`, {
+               method: 'POST',
+               headers: {'Content-Type': 'application/json'},
+               body: JSON.stringify(payload)
+           });
+           if(res.ok) {
+               closeModals();
+               syncWithBackend();
+               showToast("SENT", "Resource request submitted.");
+           }
+       } catch (err) { showToast("ERROR", "Failed to submit request."); }
+   };
+
+   function openUpdateModal(projId) {
+       const project = projects.find(p => String(p.id) === String(projId));
+        if(!project) {            
+            showToast("ERROR", "Could not locate project data.");
+            return;
+        }
+
+       document.getElementById('updateProjId').value = project.id;
+       document.getElementById('updateModalTitle').innerText = `Editing: ${project.name}`;
+       document.getElementById('updateProgress').value = project.progress || 0;
+       
+       document.getElementById('updateTransport').value = project.logistics?.transport || 'Pending';
+       document.getElementById('updateAccom').value = project.logistics?.accommodation || 'Pending';
+       document.getElementById('updateDelivery').value = project.logistics?.deliveryStatus || 'Queued';
+
+       const modal = document.getElementById('updateModal');
+        modal.classList.remove('hidden');
+        modal.scrollTop = 0;
+   }
+
+   document.getElementById('updateForm').onsubmit = async (e) => {
+       e.preventDefault();
+       const id = document.getElementById('updateProjId').value;
+       
+       const payload = {
+           progress: parseInt(document.getElementById('updateProgress').value),
+           logistics: {
+               transport: document.getElementById('updateTransport').value,
+               accommodation: document.getElementById('updateAccom').value,
+               deliveryStatus: document.getElementById('updateDelivery').value
+           }
+       };
+
+       try {
+           const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
+               method: 'PATCH',
+               headers: {'Content-Type': 'application/json'},
+               body: JSON.stringify(payload)
+           });
+           if(res.ok) {
+               closeModals();
+               syncWithBackend();
+               showToast("UPDATED", "Project status synced.");
+           }
+       } catch (err) { showToast("ERROR", "Update failed."); }
+   };
+
+//    async function approveRequest(id) {
+//        try {
+//            const res = await fetch(`${API_BASE_URL}/requests/${id}/approve`, {
+//                method: 'PATCH'
+//            });
+//            if(res.ok) {
+//                syncWithBackend();
+//                showToast("APPROVED", "Budget allocated.");
+//            }
+//        } catch (err) { showToast("ERROR", "Approval failed."); }
+//    }
+
+   function openCommsDrawer(channel = 'email', initialContext = 'general') {
+       setChannel(channel);
+       const projOptGroup = document.getElementById('contextProjectOptions');
+       projOptGroup.innerHTML = projects.map(p => `<option value="PROJ:${p.id}">${p.name}</option>`).join('');
+       document.getElementById('commsContext').value = initialContext.startsWith('PROJ') ? initialContext : 'general';
+       document.getElementById('commsMessage').value = '';
+       document.getElementById('notifDrawer').classList.remove('translate-x-full');
+   }
+
+   function setChannel(channel) {
+       document.getElementById('commsChannel').value = channel;
+       const btnEmail = document.getElementById('btn-chan-email');
+       const btnWhatsapp = document.getElementById('btn-chan-whatsapp');
+       
+       if(channel === 'email') {
+           btnEmail.className = "py-2 rounded-lg text-xs font-bold bg-white shadow-md text-teal-600 border border-slate-100 transition-all";
+           btnWhatsapp.className = "py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 transition-all";
+           document.getElementById('recipient-group-email').classList.remove('hidden-group');
+           document.getElementById('recipient-group-whatsapp').classList.add('hidden-group');
+       } else {
+           btnWhatsapp.className = "py-2 rounded-lg text-xs font-bold bg-white shadow-md text-teal-600 border border-slate-100 transition-all";
+           btnEmail.className = "py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 transition-all";
+           document.getElementById('recipient-group-whatsapp').classList.remove('hidden-group');
+           document.getElementById('recipient-group-email').classList.add('hidden-group');
+       }
+   }
+
+   async function sendCommunication() {
+       const channel = document.getElementById('commsChannel').value;
+       const contextKey = document.getElementById('commsContext').value;
+       const message = document.getElementById('commsMessage').value;
+       
+       let recipient = channel === 'email' ? document.getElementById('commsEmail').value : document.getElementById('commsPhone').value;
+       if(!recipient) return showToast("ERROR", "Recipient required");
+       if(!message) return showToast("ERROR", "Message required");
+
+       let attachedData = {};
+       if(contextKey === 'general') {
+           attachedData = { type: 'Report', stats: { projects: projects.length, budget: calculateTotalSpent() }};
+       } else if (contextKey.startsWith('PROJ:')) {
+           const projId = contextKey.split(':')[1];
+           attachedData = { type: 'Project', data: projects.find(p => p.id == projId) };
+       }
+
+       const btn = document.getElementById('btnSendComms');
+       btn.innerText = "SENDING...";
+       btn.disabled = true;
+
+       try {
+           const res = await fetch(`${API_BASE_URL}/proj/notify`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ channel, recipient, message, context: attachedData })
+           });
+           if(res.ok) {
+               showToast("SENT", `Dispatched via ${channel}`);
+               closeNotif();
+           }
+       } catch (err) { showToast("FAILED", "Check server."); } 
+       finally { btn.innerText = "SEND DISPATCH"; btn.disabled = false; }
+   }
+
+   function switchTab(tabId) {
+       document.querySelectorAll('.view-container').forEach(v => v.classList.add('hidden'));
+       document.getElementById(`view-${tabId}`).classList.remove('hidden');
+       
+       document.querySelectorAll('.tab-btn').forEach(btn => {
+           btn.classList.remove('bg-white', 'shadow-sm', 'text-teal-700');
+           btn.classList.add('text-slate-500');
+       });
+       document.getElementById(`tab-${tabId}`).classList.add('bg-white', 'shadow-sm', 'text-teal-700');
+   }
+
+   function renderData() {
+       renderProjectCards();
+       renderResourceTable();
+       renderLogisticsGrid();
+       renderApprovalQueue();
+       updateStats();
+       updateProjectDropdowns();
+   }
+
+   function renderProjectCards() {
+       const grid = document.getElementById('projectGrid');
+       grid.innerHTML = projects.map(p => `
+           <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm transition-all hover:border-teal-200">
+               <div class="flex justify-between items-start mb-4">
+                   <h4 class="font-bold text-slate-800">${p.name}</h4>
+                   <span class="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500">${p.logistics?.deliveryStatus || 'Init'}</span>
+               </div>
+               <div class="space-y-4">
+                   <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                       <div class="bg-teal-500 h-full rounded-full transition-all" style="width:${p.progress}%"></div>
+                   </div>
+                   <div class="flex justify-between text-[11px] font-bold border-t pt-2">
+                       <span class="text-slate-400 uppercase">Utilized</span>
+                       <span>Ksh ${p.spent.toLocaleString()} / Ksh ${p.budget.toLocaleString()}</span>
+                   </div>
+               </div>
+           </div>
+       `).join('') || '<p class="col-span-full text-center py-10 text-slate-400">No active projects.</p>';
+   }
+
+   function renderResourceTable() {
+       document.getElementById('resourceList').innerHTML = resources.map(r => `
+           <tr class="border-b text-sm hover:bg-slate-50">
+               <td class="p-4 font-bold text-slate-700">${r.item}</td>
+               <td class="p-4 text-slate-500">${r.project}</td>
+               <td class="p-4"><span class="px-2 py-1 rounded-full text-[9px] font-bold bg-blue-50 text-blue-600 uppercase">${r.status}</span></td>
+               <td class="p-4 font-bold">Ksh ${r.cost.toLocaleString()}</td>
+           </tr>
+       `).join('');
+   }
+
+   function renderLogisticsGrid() {
+       document.getElementById('logisticsGrid').innerHTML = projects.map(p => `
+           <div class="bg-white p-5 rounded-2xl border flex flex-col gap-4 hover:shadow-md transition-all">
+               <div class="flex items-center gap-4">
+                   <div class="bg-teal-50 p-4 rounded-xl text-teal-600"><i class="fas fa-truck-moving"></i></div>
+                   <div class="flex-1">
+                       <h5 class="text-sm font-bold">${p.name}</h5>
+                       <div class="grid grid-cols-3 gap-2 text-[10px] mt-2">
+                           <div><p class="text-slate-400">TRANSPORT</p><p class="font-bold">${p.logistics?.transport || '-'}</p></div>
+                           <div><p class="text-slate-400">LODGING</p><p class="font-bold text-slate-700">${p.logistics?.accommodation || '-'}</p></div>
+                           <div><p class="text-slate-400">STATUS</p><p class="text-teal-600 font-bold">${p.logistics?.deliveryStatus || 'Pending'}</p></div>
+                       </div>
+                   </div>
+               </div>
+               <button onclick="openUpdateModal('${p.id}')" class="w-full py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+                   UPDATE STATUS & LOGISTICS
+               </button>
+           </div>
+       `).join('');
+   }
+
+   function renderApprovalQueue() {
+       const badge = document.getElementById('requestBadge');
+       badge.innerText = requests.length;
+       badge.classList.toggle('hidden', requests.length === 0);
+       document.getElementById('approvalList').innerHTML = requests.map(req => `
+           <div class="bg-white p-5 rounded-2xl border border-teal-300 flex items-center justify-between animate-slide-in">
+               <div>
+                   <h5 class="text-sm font-bold">${req.item} <span class="text-xs font-normal text-slate-400">for ${req.project}</span></h5>
+                   <p class="text-[10px] text-slate-500 mt-1">Cost: Ksh ${req.cost.toLocaleString()}</p>
+               </div>
+           </div>
+       `).join('') || '<div class="text-center py-10 text-slate-300 italic">No pending requests.</div>';
+   }
+
+   function updateStats() {
+       document.getElementById('stat-projects').innerText = projects.length;
+       document.getElementById('stat-queue').innerText = `${requests.length} Items`;
+       document.getElementById('stat-budget').innerText = `Ksh ${calculateTotalSpent().toLocaleString()}`;
+   }
+   
+   function calculateTotalSpent() { return projects.reduce((acc, p) => acc + (parseFloat(p.spent) || 0), 0); }
+
+   function updateProjectDropdowns() {
+       const options = projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+       document.getElementById('reqProject').innerHTML = `<option value="" disabled selected>Select a Project</option>` + options;
+   }
+
+   function showToast(title, msg) {
+       const toast = document.createElement('div');
+       toast.className = "bg-slate-900 text-white p-4 rounded-xl shadow-xl min-w-[200px] animate-slide-in border-l-4 border-teal-500";
+       toast.innerHTML = `<h5 class="text-[10px] font-black uppercase text-teal-400 mb-1">${title}</h5><p class="text-xs font-medium">${msg}</p>`;
+       document.getElementById('toastContainer').appendChild(toast);
+       setTimeout(() => toast.remove(), 4000);
+   }
+   
+   function closeNotif() { document.getElementById('notifDrawer').classList.add('translate-x-full'); }
+   function openProjectModal() { document.getElementById('projectModal').classList.remove('hidden'); }
+   function openResourceRequestModal() { document.getElementById('requestModal').classList.remove('hidden'); }
+   function closeModals() { document.querySelectorAll('.fixed.inset-0').forEach(m => m.classList.add('hidden')); }
+   
+   async function generatePDFReport() {
+        const btn = event.currentTarget; 
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-2"></i> GENERATING...`;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+        setTimeout(async () => {
+                try {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+                        doc.text("Executive Summary", 14, 22);
+                        const tableRows = projects.map(p => [p.name, p.budget, p.progress + '%', p.logistics?.deliveryStatus]);
+                        doc.autoTable({ startY: 30, head: [['Project', 'Budget', 'Progress', 'Status']], body: tableRows });
+                        doc.save(`Report.pdf`);
+                        showToast("COMPLETE", "Report downloaded successfully.");
+                } catch (error) {
+                    showToast("ERROR", "Failed to generate PDF.");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                }
+        }, 500);
+    }
+</script>

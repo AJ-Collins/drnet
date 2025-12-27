@@ -28,6 +28,15 @@ const SupportTicket = require("./SupportTicket");
 const SupportTicketMessage = require("./SupportTicketMessage");
 const TeamMessage = require("./TeamMessage");
 const User = require("./User");
+// HR
+const HRTask = require("./HRTask");
+const HRCommunication = require("./HRCommunication");
+const HRDocument = require("./HRDocument");
+const HRProjectTracking = require("./HRProjectTracking");
+const HRProjectMilestone = require("./HRProjectMilestone");
+const HRResourceNeed = require("./HRResourceNeed");
+const HRProjectExpense = require("./HRProjectExpense");
+
 
 module.exports = {
   Admin,
@@ -60,4 +69,11 @@ module.exports = {
   SupportTicketMessage,
   TeamMessage,
   User,
+  HRTask,
+  HRCommunication,
+  HRDocument,
+  HRProjectTracking,
+  HRProjectMilestone,
+  HRResourceNeed,
+  HRProjectExpense,
 };

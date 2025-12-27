@@ -17,6 +17,16 @@ const createClientPaymentReceiptsTable = require("./client_payment_receipt");
 const createUserSubscriptionsTable = require("./user_subscriptions");
 const addSubscriptionColumns = require("./addSubscriptionColumns");
 const createReports = require("./reports");
+// HR
+const createHrProjects = require("./hr_projects");
+const createHrRequests = require("./hr_requests");
+const createHrResources = require("./hr_resources");
+const createTasksTable = require("./hr_tasks");
+const createCommentsTable = require("./hr_comments");
+const createFoldersTable = require("./hr_folders");
+const createDocumentsTable = require("./hr_documents");
+const createDocumentVersionsTable = require("./hr_document_versions");
+const createReportAttachmentsTable = require("./hr_report_attachments");
 
 //Seeders
 const seedRoles = require("../seeders/roles_seeder");
@@ -101,7 +111,18 @@ async function runMigrations() {
   await createPurchaseInvoiceTable();
   await createItemsPurchaseInvoiceTable();
   await createExpensesTable();
-  await  createReports()
+  await  createReports();
+
+  //hr
+  await createHrProjects();
+  await createHrRequests();
+  await createHrResources();
+  await createTasksTable();
+  await createCommentsTable();
+  await createFoldersTable ();
+  await createDocumentsTable();
+  await createDocumentVersionsTable();
+  await createReportAttachmentsTable();
 
   console.log("All migrations completed. Running seeders...");
 

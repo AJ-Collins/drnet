@@ -135,28 +135,20 @@
           loginBtn.textContent = "Logging in...";
 
           try {
-            console.log("🚀 Sending login request...");
             const res = await fetch("/api/login", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              credentials: "include", // CRITICAL: Include cookies
+              credentials: "include",
               body: JSON.stringify({ identifier, password }),
             });
 
-            console.log("📡 Response status:", res.status);
             const data = await res.json();
-            console.log("📦 Response data:", data);
 
             if (res.ok && data.success) {
               // Show success message
               successEl.classList.remove("hidden");
-
-              console.log(
-                "✅ Login successful, redirecting to:",
-                data.redirectUrl
-              );
 
               // Small delay to show success message, then redirect
               setTimeout(() => {
@@ -165,7 +157,6 @@
             } else {
               // Show error
               const errorMsg = data.error || "Unknown error";
-              console.error("❌ Login failed:", errorMsg);
               errorEl.textContent = errorMsg;
               errorEl.classList.remove("hidden");
 
@@ -174,7 +165,6 @@
               loginBtn.textContent = "Login";
             }
           } catch (err) {
-            console.error("💥 Network error:", err);
             errorEl.textContent = "Network error. Please try again.";
             errorEl.classList.remove("hidden");
 
