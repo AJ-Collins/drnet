@@ -2093,13 +2093,6 @@
       const department = $("department")?.value;
       const salary = $("basic_salary")?.value.trim();
 
-      if (!legacyRole) {
-        return Swal.fire(
-          "Validation",
-          "Please select Position (legacy).",
-          "warning"
-        );
-      }
       if (!dynamicRole) {
         return Swal.fire(
           "Validation",
@@ -2112,23 +2105,6 @@
       }
       if (!salary || salary === "0") {
         return Swal.fire("Validation", "Please enter Basic Salary.", "warning");
-      }
-
-      // Optional: warn if roles don't match (helpful during migration)
-      const legacyName = $("role").options[$("role").selectedIndex]?.text;
-      const dynamicName =
-        $("assignedRole").options[$("assignedRole").selectedIndex]?.text;
-
-      if (legacyName && dynamicName && legacyName !== dynamicName) {
-        const confirm = await Swal.fire({
-          title: "Roles Don't Match",
-          html: `Legacy: <strong>${legacyName}</strong><br>System: <strong>${dynamicName}</strong><br><br>Continue anyway?`,
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonText: "Yes, save",
-          cancelButtonText: "No, fix it",
-        });
-        if (!confirm.isConfirmed) return;
       }
     }
 
