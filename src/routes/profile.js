@@ -1,10 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const Staff = require("../models/Staff");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
+const db = require("../config/db");
+
+const SALT_ROUNDS = 12;
 
 // Configure multer for uploads
 const upload = multer({
@@ -77,31 +80,63 @@ router.post(
 // CHANGE password
 router.post("/change-password", async (req, res) => {
   const { currentPassword, newPassword } = req.body;
-
+  
   try {
-    // Use raw fetch to get password
+    // 1. Validate inputs
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ 
+        message: "Current password and new password are required" 
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ 
+        message: "New password must be at least 6 characters" 
+      });
+    }
+    
+    if (!req.session?.user?.id) {
+      return res.status(401).json({ 
+        message: "Not authenticated" 
+      });
+    }
+
+    // 3. Fetch staff with password
     const staff = await Staff.findByIdRaw(req.session.user.id);
 
-    if (!staff || !staff.password) {
-      return res
-        .status(400)
-        .json({ message: "Staff not found or password missing" });
+    if (!staff) {
+      return res.status(404).json({ 
+        message: "Staff member not found" 
+      });
     }
 
-    // Compare current password
+    if (!staff.password) {
+      return res.status(400).json({ 
+        message: "No password set for this account" 
+      });
+    }
+
+    // 4. Verify current password
     const match = await bcrypt.compare(currentPassword, staff.password);
+    
     if (!match) {
-      return res.status(401).json({ message: "Current password incorrect" });
+      return res.status(401).json({ 
+        message: "Current password is incorrect" 
+      });
     }
 
-    // Hash new password and update
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await Staff.update(req.session.user.id, { password: hashed });
+    // 5. Hash and update new password
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await db.query("UPDATE staff SET password = ? WHERE id = ?", [hashedPassword, req.session.user.id]);
 
-    res.json({ message: "Password changed successfully" });
+    res.json({ 
+      message: "Password changed successfully" 
+    });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ 
+      message: "Server error: " + err.message 
+    });
   }
 });
 

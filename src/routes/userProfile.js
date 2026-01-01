@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
+
+const SALT_ROUNDS = 12;
 
 // Configure multer for uploads
 const upload = multer({
@@ -100,7 +102,7 @@ router.post("/my/change-password", async (req, res) => {
     if (!match)
       return res.status(401).json({ message: "Current password incorrect" });
 
-    const hashed = await bcrypt.hash(newPassword, 10);
+    const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
     await User.update(req.session.user.id, { password: hashed });
 
     res.json({ message: "Password changed successfully" });

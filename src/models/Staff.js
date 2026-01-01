@@ -1,5 +1,7 @@
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const db = require("../config/db");
+
+const SALT_ROUNDS = 12;
 
 const Staff = {
   create: async (data) => {
@@ -20,7 +22,7 @@ const Staff = {
     } = data;
 
     const employee_id = idNumber || data.employee_id || null;
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+    const hashedPassword = password ? await bcrypt.hash(password, SALT_ROUNDS) : null;
 
     const position = role || data.position || "N/A";
 
@@ -158,8 +160,7 @@ const Staff = {
 
     // Optional: hash password if provided
     if (data.password) {
-      const bcrypt = require("bcryptjs");
-      data.password = await bcrypt.hash(data.password, 10);
+      data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
     }
 
     // Build staff update query
