@@ -129,7 +129,7 @@ async function runMigrations() {
   //await seedRoles();
   //await seedPermissions();
   //await seedRolePermissions();
-  // await seedAdmin();
+  await seedAdmin();
   //await seedBookings();
   //await usersSeeder();
   //await seedUserSubscriptions();

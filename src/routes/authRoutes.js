@@ -303,7 +303,6 @@ router.post("/login", async (req, res) => {
       3: "/staff/dashboard",
       4: "/client/dashboard",
       5: "/customer-care/dashboard",
-      6: "/hr-assistant/dashboard",
     };
 
     const redirectUrl = roleRoutes[user.role_id];
