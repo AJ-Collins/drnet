@@ -3,7 +3,6 @@ const createPermissionsTable = require("./permissions");
 const createRolePermissionsTable = require("./role_permissions");
 
 const createUsersTable = require("./users");
-const createAdminsTable = require("./admins");
 
 const createPackagesTable = require("./packages");
 const createItemsTable = require("./items");
@@ -15,28 +14,19 @@ const createRenewalsTable = require("./renewals");
 const createBookingsTable = require("./bookings");
 const createClientPaymentReceiptsTable = require("./client_payment_receipt");
 const createUserSubscriptionsTable = require("./user_subscriptions");
-const addSubscriptionColumns = require("./addSubscriptionColumns");
 const createReports = require("./reports");
-// HR
-const createHrProjects = require("./hr_projects");
-const createHrRequests = require("./hr_requests");
-const createHrResources = require("./hr_resources");
-const createTasksTable = require("./hr_tasks");
-const createCommentsTable = require("./hr_comments");
-const createFoldersTable = require("./hr_folders");
-const createDocumentsTable = require("./hr_documents");
-const createDocumentVersionsTable = require("./hr_document_versions");
-const createReportAttachmentsTable = require("./hr_report_attachments");
+// HR-ASSISTANT
+const createHrExpensesTable = require("./hr-expenses");
+const createHrTasksTable = require("./hr-tasks");
+const createHrBookingsTable = require("./hr-bookings");
+const createHrCommsLogsTable = require("./hr-communication-logs");
+
 
 //Seeders
 const seedRoles = require("../seeders/roles_seeder");
 const seedPermissions = require("../seeders/permissions_seeder");
 const seedRolePermissions = require("../seeders/role_permissions_seeder");
 const seedAdmin = require("../seeders/admin_seeder");
-const seedBookings = require("../seeders/bookings_seeder");
-const usersSeeder = require("../seeders/users_seeder");
-const seedUserSubscriptions = require("../seeders/seed_user_subscriptions");
-const seedRenewals = require("../seeders/renewals_seed");
 
 const {
   createInvoicesTable,
@@ -73,13 +63,10 @@ async function runMigrations() {
   await createPackagesTable();
   await createUsersTable();
   await createStaffTable();
-  await createAdminsTable();
 
   // Packages & items
 
   await createItemsTable();
-
-  // Client purchases, payments, invoices (dependent on users, items, packages)
 
   // Staff & related tables
 
@@ -113,27 +100,18 @@ async function runMigrations() {
   await createExpensesTable();
   await  createReports();
 
-  //hr
-  await createHrProjects();
-  await createHrRequests();
-  await createHrResources();
-  await createTasksTable();
-  await createCommentsTable();
-  await createFoldersTable ();
-  await createDocumentsTable();
-  await createDocumentVersionsTable();
-  await createReportAttachmentsTable();
+  //hr-assistant
+  await createHrExpensesTable();
+  await createHrTasksTable();
+  await createHrBookingsTable();
+  await createHrCommsLogsTable();
 
   console.log("All migrations completed. Running seeders...");
 
-  //await seedRoles();
-  //await seedPermissions();
-  //await seedRolePermissions();
+  await seedRoles();
+  await seedPermissions();
+  await seedRolePermissions();
   await seedAdmin();
-  //await seedBookings();
-  //await usersSeeder();
-  //await seedUserSubscriptions();
-  //await seedRenewals();
   console.log("Seeding complete!");
 }
 

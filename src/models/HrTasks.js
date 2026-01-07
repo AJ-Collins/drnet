@@ -1,69 +1,41 @@
 const db = require("../config/db");
 
 const HrTask = {
-    // READ all tasks with their comments
-    getAll: async () => {
-        const [tasks] = await db.query('SELECT * FROM tasks ORDER BY created_at DESC');
-        const [comments] = await db.query('SELECT * FROM comments ORDER BY time_sent ASC');
-        
-        return tasks.map(task => {
-            let formattedDate = '';
-            
-            if (task.dueDate) {
-                const dateObj = new Date(task.dueDate);
-                if (!isNaN(dateObj.getTime())) {
-                    formattedDate = dateObj.toISOString().split('T')[0];
-                }
-            }
+  create: async (data) => {
+    const sql = `INSERT INTO hrtasks (description, category, duration, task_date) VALUES (?, ?, ?, ?)`;
+    const [result] = await db.query(sql, [data.description, data.category, data.duration, data.task_date]);
+    return { id: result.insertId, ...data };
+  },
 
-            return {
-                ...task,
-                dueDate: formattedDate, 
-                comments: comments
-                    .filter(c => c.task_id === task.id)
-                    .map(c => ({ 
-                        text: c.text, 
-                        time: c.time_sent 
-                    }))
-            };
-        });
-    },
+  findAll: async () => {
+    const sql = `
+      SELECT 
+        id, 
+        description, 
+        category, 
+        duration, 
+        task_date 
+      FROM hrtasks 
+      ORDER BY task_date DESC, created_at DESC
+    `;
+    const [rows] = await db.query(sql);
+    return rows;
+  },
 
-    // CREATE a new task
-    create: async (data) => {
-        const { title, role, priority, owner, phone, dueDate } = data;
-        const [result] = await db.query(
-            'INSERT INTO tasks (title, role, priority, owner, phone, dueDate) VALUES (?, ?, ?, ?, ?, ?)',
-            [title, role, priority, owner, phone, dueDate]
-        );
-        return { id: result.insertId, ...data, comments: [] };
-    },
+  update: async (id, data) => {
+    const sql = `
+      UPDATE hrtasks 
+      SET description = ?, category = ?, duration = ?, task_date = ? 
+      WHERE id = ?
+    `;
+    await db.query(sql, [data.description, data.category, data.duration, data.task_date, id]);
+    return { id, ...data };
+  },
 
-    // UPDATE status or priority (PATCH)
-    update: async (id, updates) => {
-        const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
-        const values = [...Object.values(updates), id];
-        await db.query(`UPDATE tasks SET ${fields} WHERE id = ?`, values);
-        return { id, ...updates };
-    },
-
-    // DELETE task
-    delete: async (id) => {
-        await db.query('DELETE FROM tasks WHERE id = ?', [id]);
-        return true;
-    },
-
-    // ADD COMMENT
-    addComment: async (taskId, text) => {
-        await db.query('INSERT INTO comments (task_id, text) VALUES (?, ?)', [taskId, text]);
-
-        const [task] = await db.query('SELECT * FROM tasks WHERE id = ?', [taskId]);
-        const [comments] = await db.query('SELECT * FROM comments WHERE task_id = ?', [taskId]);
-        return { 
-            ...task[0], 
-            comments: comments.map(c => ({ text: c.text, time: c.time_sent })) 
-        };
-    }
+  delete: async (id) => {
+    await db.query("DELETE FROM hrtasks WHERE id = ?", [id]);
+    return true;
+  }
 };
 
 module.exports = HrTask;

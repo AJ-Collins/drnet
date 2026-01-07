@@ -1,0 +1,455 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    .glass-panel { background: white; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+    .nav-card { cursor: pointer; transition: all 0.3s; border: 1px solid #d5d9de; }
+    .nav-card.active { border-color: #0d9488; background: #f0fdfa; border-left: 4px solid #0d9488; }
+
+    .status-monitor-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; transition: all 0.2s; }
+    .status-monitor-card:hover { border-color: #0d9488; background: #fafafa; }
+
+    .btn-whatsapp { 
+        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+    }
+    .btn-email { 
+        background: #0f172a;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    }
+    
+    .input-field { 
+        background: #f8fafc; 
+        border: 1px solid #e2e8f0; 
+        transition: all 0.2s;
+    }
+    .input-field:focus-within { border-color: #0d9488; background: white; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.05); }
+
+    .memo-paper { background: #ffffff; border: 2px solid #f1f5f9; border-radius: 0.75rem; }
+    .custom-scroll::-webkit-scrollbar { width: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+</style>
+
+<div class="max-w-full mx-auto">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-3 space-y-4">
+            <div class="mb-6">
+                <h1 class="text-2xl font-black text-slate-900 tracking-tighter">Communication</h1>
+                <p class="text-slate-500 font-bold text-sm">Execute reminders and all Communications</p>
+            </div>
+
+            <div class="space-y-2">
+                <div onclick="switchDomain('tasks', this)" class="nav-card active p-4 rounded-xl flex items-center gap-3">
+                    <div class="w-8 h-8 text-slate-700 flex items-center justify-center text-xm"><i class="fas fa-list-check"></i></div>
+                    <h4 class="text-xm font-bold text-slate-700">Tasks</h4>
+                </div>
+                <div onclick="switchDomain('bookings', this)" class="nav-card p-4 rounded-xl flex items-center gap-3">
+                    <div class="w-8 h-8 text-slate-700 flex items-center justify-center text-xm"><i class="fas fa-calendar-check"></i></div>
+                    <h4 class="text-xm font-bold text-slate-700">Bookings</h4>
+                </div>
+                <div onclick="switchDomain('expenses', this)" class="nav-card p-4 rounded-xl flex items-center gap-3">
+                    <div class="w-8 h-8 text-slate-700 flex items-center justify-center text-xm"><i class="fas fa-wallet"></i></div>
+                    <h4 class="text-xm font-bold text-slate-700">Expenses</h4>
+                </div>
+            </div>
+
+           <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 h-[535px] overflow-y-auto">
+                <h4 class="text-xm font-black text-slate-400 uppercase mb-3">Recents</h4>
+                <div id="historyList" class="space-y-2 custom-scroll flex-grow"></div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-4">
+            <div id="domainStats" class="grid grid-cols-2 gap-3"></div>
+
+            <div class="bg-white border border-slate-200 rounded-xl flex flex-col h-[750px] overflow-hidden">
+                <div class="p-4 pb-2 border-b border-slate-50 flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <span id="monitorTitle" class="text-xm font-black uppercase tracking-widest text-slate-800">Feed</span>
+                        <span id="itemCount" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">0 items</span>
+                    </div>
+                    <div class="relative mt-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[12px]"></i>
+                        <input type="text" id="monitorSearch" oninput="updateUI()" placeholder="Search feed..." 
+                            class="w-full pl-8 pr-4 py-1.5 bg-slate-100 border border-slate-100 rounded-lg text-[12px] font-bold text-slate-700 outline-none focus:border-teal-500 focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <div id="monitorList" class="p-4 space-y-3 overflow-y-auto custom-scroll flex-grow"></div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-5 flex flex-col gap-4">
+            <div class="glass-panel rounded-xl p-6 flex flex-col h-full border-t-4 border-t-teal-500">
+                
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="input-field flex items-center px-3 py-2 rounded-xl">
+                        <i class="fas fa-at text-teal-400 text-xm mr-2"></i>
+                        <div class="flex-grow">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Recip. Email</p>
+                            <input type="email" id="targetEmail" class="w-full bg-transparent border-none outline-none text-xm font-bold text-slate-700" placeholder="cto@company.com">
+                        </div>
+                    </div>
+                    <div class="input-field flex items-center px-3 py-2 rounded-xl">
+                        <i class="fab fa-whatsapp text-teal-400 text-xm mr-2"></i>
+                        <div class="flex-grow">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Recip. Phone</p>
+                            <input type="text" id="targetPhone" class="w-full bg-transparent border-none outline-none text-xm font-bold text-slate-700" placeholder="254700000000">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-end mb-4">
+                    <div class="flex-grow mr-4 border-b border-slate-100">
+                        <p class="text-xm font-black text-slate-400 uppercase">Subject</p>
+                        <input type="text" id="msgSubject" class="text-sm font-bold text-slate-800 bg-transparent border-none outline-none w-full py-1" value="Executive Reminder">
+                    </div>
+                    <button onclick="generateOutline()" class="text-[10px] font-black text-white bg-slate-800 px-4 py-2 rounded-xl hover:bg-slate-700 shadow-md">
+                        <i class="fas fa-magic mr-2"></i>AUTO-DRAFT
+                    </button>
+                </div>
+
+                <div class="flex-grow memo-paper p-5 mb-4 relative">
+                    <div class="absolute top-3 right-3 group z-10">
+                        <button onclick="copyToClipboard()" id="copyBtn" class="w-8 h-8 flex items-center justify-center rounded-lg  bg-slate-50 text-slate-400 hover:text-teal-600 hover:bg-teal-50 border border-slate-100 hover:border-teal-200 transition-all shadow-sm">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 text-white text-[10px] px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none">
+                            Copy body content to clipboard
+                        </span>
+                    </div>
+                    <textarea id="msgBody" 
+                        placeholder="Click '+' on data points to build your report..."
+                        class="w-full h-full bg-transparent border-none text-slate-700 font-medium text-xm leading-relaxed outline-none resize-none custom-scroll"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="btnEmail" onclick="handleSend('email')" class="btn-email flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
+                        <i id="spinnerEmail" class="fas fa-circle-notch fa-spin hidden"></i>
+                        <i id="iconEmail" class="fas fa-envelope-open-text text-lg"></i> Dispatch Email
+                    </button>
+                    <button id="btnWhatsapp" onclick="handleSend('whatsapp')" class="btn-email flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
+                        <i id="spinnerWhatsapp" class="fas fa-circle-notch fa-spin hidden"></i>
+                        <i id="iconWhatsapp" class="fab fa-whatsapp text-xl p-2"></i> Dispatch WhatsApp
+                    </button>
+                </div>
+                <button onclick="document.getElementById('msgBody').value = ''" class="mt-4 text-[9px] font-bold text-slate-500 hover:text-rose-500 uppercase tracking-widest transition-colors">
+                    <i class="fas fa-trash-alt mr-2"></i> Reset Workspace
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const $ = id => document.getElementById(id);
+    let activeDomain = 'tasks';
+    let allData = {
+        tasks: [],
+        bookings: [],
+        expenses: []
+    };
+
+    async function loadBackendData() {
+        try {
+            const res = await fetch('/api/hr/planner');
+            const data = await res.json();
+            
+            allData.tasks = data.filter(item => item.source === 'task');
+            allData.bookings = data.filter(item => item.source === 'booking');
+            allData.expenses = data.filter(item => item.source === 'expense');
+
+            updateUI();
+        } catch (e) {
+            showToast("ERROR", "Failed to sync with database.");
+        }
+    }
+
+    function switchDomain(domain, el) {
+        activeDomain = domain;
+        document.querySelectorAll('.nav-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        updateUI();
+    }
+
+    function updateUI() {
+        const query = $('monitorSearch').value.toLowerCase();
+        const filteredItems = allData[activeDomain].filter(item => {
+            const description = item.item_desc ? item.item_desc.toLowerCase() : '';
+            const type = item.type ? item.type.toLowerCase() : '';
+            const status = item.status ? item.status.toLowerCase() : '';
+            
+            return description.includes(query) || 
+                type.includes(query) ||
+                status.includes(query);
+        });
+
+        const titleMap = { tasks: "Tasks Feed", bookings: "Client Bookings", expenses: "Expenditure Review" };
+        $('monitorTitle').innerText = titleMap[activeDomain];
+        $('itemCount').innerText = `${filteredItems.length} items`;
+        
+        renderStats(allData[activeDomain]);
+        renderMonitor(filteredItems);
+    }
+
+    function renderStats(items) {
+        const container = $('domainStats');
+        const pending = items.filter(i => i.status === 'pending').length;
+        const completed = items.filter(i => i.status === 'completed').length;
+        const total = items.length;
+        const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        const stats = [
+            { label: "Active", val: pending, color: "rose" },
+            { label: "Success Rate", val: completionRate + "%", color: "teal" }
+        ];
+
+        container.innerHTML = stats.map(s => `
+            <div onclick="injectText('${s.label}: ${s.val}')" class="bg-white p-4 rounded-2xl border border-slate-200 cursor-pointer hover:shadow-md transition-all">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">${s.label}</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-black text-${s.color}-600">${s.val}</span>
+                    <i class="fas fa-plus text-[8px] text-slate-200"></i>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderMonitor(items) {
+        const list = $('monitorList');
+        if (items.length === 0) {
+            list.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20 text-slate-400">
+                    <i class="fas fa-search mb-2 text-xl opacity-20"></i>
+                    <p class="text-xs italic">No matching records found</p>
+                </div>`;
+            return;
+        }
+
+        list.innerHTML = items.map((item, index) => {
+            const colorMap = { pending: 'rose', completed: 'teal', suspended: 'slate' };
+            const color = colorMap[item.status] || 'slate';
+
+            const originalIndex = allData[activeDomain].findIndex(i => i.id === item.id);
+            
+            return `
+                <div class="status-monitor-card shadow-sm border-l-4 border-l-${color}-500 animate-fade-up">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="text-[18px] font-black text-slate-800">${item.item_desc}</h4>
+                            <span class="text-[11px] font-black bg-${color}-50 text-${color}-600 px-2 py-0.5 rounded uppercase tracking-tighter">
+                                ${item.status} | ${item.type}
+                            </span>
+                        </div>
+                        <div class="relative group"> 
+                            <button onclick="injectItem(${originalIndex})" class="w-7 h-7 rounded-lg bg-slate-900 text-white hover:bg-teal-500 transition-all text-[10px]">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
+                                whitespace-nowrap bg-slate-900 text-white text-[10px]
+                                px-2 py-1 rounded-md opacity-0
+                                group-hover:opacity-100 transition
+                                pointer-events-none z-50
+
+                                after:content-[''] after:absolute after:top-1/2 after:left-full
+                                after:-translate-y-1/2
+                                after:border-4 after:border-transparent
+                                after:border-l-slate-900">
+                                Add data to form body
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-2">
+                        <p class="text-[10px] text-slate-500 font-bold">
+                            <i class="far fa-calendar-alt mr-1"></i> ${new Date(item.event_date).toLocaleDateString()}
+                        </p>
+                        <p class="text-[10px] text-slate-400 font-medium">Duration: ${item.duration}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function injectText(text) {
+        const textArea = $('msgBody');
+        textArea.value += (textArea.value ? "\n" : "") + "• " + text;
+    }
+
+    function injectItem(index) {
+        const item = allData[activeDomain][index];
+        if (!item) return;
+        const statusNote = item.status === 'pending' ? ' (ACTION REQUIRED)' : ` (${item.status.toUpperCase()})`;
+        injectText(`${item.item_desc}${statusNote}`);
+    }
+
+    function generateOutline() {
+        const textArea = $('msgBody');
+        const now = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        
+        let outline = `DAILY OPS BRIEF - ${now}\n`;
+        
+        const items = allData[activeDomain];
+        const pending = items.filter(i => i.status === 'pending').length;
+        outline += `STATUS: ${pending} PENDING ${activeDomain.toUpperCase()}\n\n`;
+        
+        textArea.value = outline + textArea.value;
+    }
+
+    function setBtnLoading(method, isLoading) {
+        const btn = method === 'email' ? $('btnEmail') : $('btnWhatsapp');
+        const spinner = method === 'email' ? $('spinnerEmail') : $('spinnerWhatsapp');
+        const icon = method === 'email' ? $('iconEmail') : $('iconWhatsapp');
+
+        if (isLoading) {
+            btn.classList.add('opacity-80', 'pointer-events-none');
+            spinner.classList.remove('hidden');
+            icon.classList.add('hidden');
+        } else {
+            btn.classList.remove('opacity-80', 'pointer-events-none');
+            spinner.classList.add('hidden');
+            icon.classList.remove('hidden');
+        }
+    }
+
+    async function handleSend(method) {
+        const subject = $('msgSubject').value;
+        const body = $('msgBody').value;
+        const email = $('targetEmail').value;
+        const phone = $('targetPhone').value;
+
+        if(!body.trim()) {
+            showToast("WARNING", "Please add content to the workspace.");
+            return;
+        }
+
+        setBtnLoading(method, true);
+
+        try {
+            await saveToHistory(subject, method);
+
+            if(method === 'email') {
+                if(!email) {
+                    showToast("ERROR", "Recipient email is required");
+                    setBtnLoading(method, false);
+                    return;
+                }
+
+                const response = await fetch('/api/hr/dispatch/mail', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipient: email, subject, body })
+                });
+
+                if(response.ok) {
+                    showToast("SUCCESS", "Email dispatched successfully");
+                } else {
+                    throw new Error("Dispatch failed");
+                }
+            } else {
+                const cleanPhone = phone.replace('+', '');
+                const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent('*' + subject + '*\n\n' + body)}`;
+                window.open(waUrl, '_blank');
+            }
+        } catch (e) {
+            showToast("ERROR", "Operation failed. Check server connection.");
+        } finally {
+            setBtnLoading(method, false);
+        }
+    }
+
+    async function saveToHistory(subject, method) {
+        const logData = {
+            subject: subject,
+            recipient: method === 'email' ? $('targetEmail').value : $('targetPhone').value,
+            method: method,
+            body: $('msgBody').value
+        };
+
+        try {
+            await fetch('/api/hr/logs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(logData)
+            });
+            renderHistory();
+        } catch (e) {
+            showToast("ERROR", "Failed to save log to database.");
+        }
+    }
+
+    async function renderHistory() {
+        try {
+            const res = await fetch('/api/hr/logs');
+            const history = await res.json();
+            
+            const list = $('historyList');
+            list.innerHTML = history.map(h => `
+                <div class="group flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 text-[11px] font-bold shadow-sm transition-all hover:border-teal-200">
+                    <div class="flex flex-col truncate">
+                        <span class="truncate w-32 text-slate-600">${h.subject}</span>
+                        <span class="text-[9px] text-slate-400 font-medium">${h.method.toUpperCase()} to ${h.recipient}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-teal-500 bg-teal-50 px-2 py-0.5 rounded-lg text-[8px]">
+                            ${new Date(h.sent_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
+                        <div class="relative group"> 
+                            <button onclick="deleteLog(${h.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-opacity">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
+                            <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
+                                whitespace-nowrap bg-slate-900 text-white text-[10px]
+                                px-2 py-1 rounded-md opacity-0
+                                group-hover:opacity-100 transition
+                                pointer-events-none z-50
+
+                                after:content-[''] after:absolute after:top-1/2 after:left-full
+                                after:-translate-y-1/2
+                                after:border-4 after:border-transparent
+                                after:border-l-slate-900">
+                                Delete log
+                            </span>
+                        </div>                        
+                    </div>
+                </div>
+            `).join('') || '<p class="text-[10px] text-slate-400 italic text-center py-4">No recent activity</p>';
+        } catch (e) {
+            console.error("History fetch failed", e);
+        }
+    }
+
+    async function deleteLog(id) {
+        if(!confirm("Remove this log from history?")) return;
+        try {
+            await fetch(`/api/hr/logs/${id}`, { method: 'DELETE' });
+            showToast("ERROR", "Log deleted successfully.");
+            renderHistory();
+        } catch (e) {
+            showToast("ERROR", "Delete failed.");
+        }
+    }
+
+    function copyToClipboard() {
+        const textArea = $('msgBody');
+        if (!textArea.value.trim()) return showToast("WARNING", "Workspace empty.");
+        
+        navigator.clipboard.writeText(textArea.value).then(() => {
+            showToast("SUCCESS", "Copied to clipboard!");
+        });
+    }
+
+    function showToast(title, msg) {
+        const toast = document.createElement('div');
+        toast.className = "bg-slate-900 text-white p-4 rounded-xl shadow-xl min-w-[200px] animate-fade-up";
+        toast.innerHTML = `<h5 class="text-[10px] font-black uppercase text-teal-400 mb-1">${title}</h5><p class="text-xs font-medium">${msg}</p>`;
+        $('toastContainer').appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
+    renderHistory();
+    loadBackendData();
+</script>

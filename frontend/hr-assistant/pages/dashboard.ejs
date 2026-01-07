@@ -1,0 +1,522 @@
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    .glass-panel { 
+        background: white; 
+        border: 1px solid #e2e8f0; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+    }
+    
+    .glass-panel:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    }
+    
+    .animate-fade-up { animation: fade-in-up 0.4s ease-out forwards; }
+    @keyframes fade-in-up { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::after {
+        content: ''; position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+        background: linear-gradient(135deg, currentColor 0%, transparent 70%);
+        opacity: 0.05; border-radius: 0 2rem 0 2rem;
+    }
+    
+    .chart-container { position: relative; height: 280px; }
+    
+    .quick-action-btn {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+    
+    .quick-action-btn:hover {
+        background: white;
+        border-color: #0d9488;
+        transform: scale(1.05);
+    }
+    
+    .activity-item {
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+    
+    .activity-item:hover {
+        border-left-color: #0d9488;
+        background: #f8fafc;
+    }
+</style>
+
+<div class="max-w-full mx-auto space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 animate-fade-up">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Dashboard</h1>
+            <p class="text-slate-500 font-bold text-sm">Overview of HR operations & performance metrics</p>
+        </div>
+        <div class="flex gap-2">
+            <div class="relative">
+                <span id="lastUpdate" class="text-xs text-slate-400 font-bold px-3 py-2">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Monthly Expenses -->
+        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-teal-500 animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center">
+                    <i class="fas fa-wallet text-teal-500 text-lg"></i>
+                </div>
+                <div class="text-right">
+                    <span id="expensePeriodBadge" class="text-[10px] font-black text-teal-600 bg-teal-50 px-2 py-1 rounded-full">This Month</span>
+                </div>
+            </div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Monthly Expenses</p>
+            <h2 id="totalExpenses" class="text-3xl font-black text-slate-800 mb-2">KES 0.00</h2>
+            <div class="flex items-center justify-between">
+                <span id="expenseCount" class="text-[10px] font-bold text-slate-500">0 Expenses</span>
+                <% const expensesSlug = "expenses"; %>
+                <a href="/hr-assistant/<%= expensesSlug %>" class="text-[10px] font-black text-teal-600 hover:text-teal-700">View Details →</a>
+            </div>
+        </div>
+
+        <!-- Active Bookings -->
+        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-indigo-500 animate-fade-up" style="animation-delay: 0.2s;">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-indigo-500 text-lg"></i>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">Active</span>
+                </div>
+            </div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Active Bookings</p>
+            <h2 id="bookingCount" class="text-3xl font-black text-slate-800 mb-2">0</h2>
+            <div class="flex items-center justify-between">
+                <span id="totalBookings" class="text-[10px] font-bold text-slate-500">0 Total</span>
+                <% const bookingsSlug = "bookings"; %>
+                <a href="/hr-assistant/<%= bookingsSlug %>" class="text-[10px] font-black text-indigo-600 hover:text-indigo-700">View Details →</a>
+            </div>
+        </div>
+
+        <!-- Task Efficiency -->
+        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-slate-900 animate-fade-up" style="animation-delay: 0.3s;">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
+                    <i class="fas fa-tasks text-slate-700 text-lg"></i>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-black text-slate-600 bg-slate-100 px-2 py-1 rounded-full">Today</span>
+                </div>
+            </div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Task Efficiency</p>
+            <h2 id="efficiency" class="text-3xl font-black text-slate-800 mb-2">0%</h2>
+            <div class="flex items-center justify-between">
+                <span id="taskCount" class="text-[10px] font-bold text-slate-500">0 Tasks</span>
+                <% const plannerSlug = "planner"; %>
+                <a href="/hr-assistant/<%= plannerSlug %>" class="text-[10px] font-black text-slate-700 hover:text-slate-900">View Details →</a>
+            </div>
+        </div>
+
+        <!-- Communications -->
+        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-rose-500 animate-fade-up" style="animation-delay: 0.4s;">
+            <div class="flex items-start justify-between mb-4">
+                <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center">
+                    <i class="fas fa-comments text-rose-500 text-lg"></i>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-1 rounded-full">Recent</span>
+                </div>
+            </div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Communications</p>
+            <h2 id="communicationCount" class="text-3xl font-black text-slate-800 mb-2">0</h2>
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-slate-500">Last 24 hours</span>
+                <% const communicationSlug = "communication"; %>
+                <a href="/hr-assistant/<%= communicationSlug %>" class="text-[10px] font-black text-rose-600 hover:text-rose-700">View Details →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Detailed Analytics -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Expense Breakdown Chart -->
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 animate-fade-up" style="animation-delay: 0.5s;">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-slate-800">Expense Breakdown</h3>
+                    <p class="text-[11px] font-bold text-slate-400">Monthly expenditure by category</p>
+                </div>
+                <select id="expensePeriod" onchange="updateExpenseChart()" class="text-[10px] font-bold bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 outline-none">
+                    <option value="month">This Month</option>
+                    <option value="week">This Week</option>
+                    <option value="today">Today</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Task Status Overview -->
+        <div class="glass-panel p-6 rounded-2xl animate-fade-up" style="animation-delay: 0.6s;">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-slate-800">Task Status</h3>
+                    <p class="text-[11px] font-bold text-slate-400">Operations overview</p>
+                </div>
+                <div class="text-right">
+                    <span id="totalTasks" class="text-[10px] font-black text-teal-600 bg-teal-50 px-2 py-1 rounded-full">0 Total</span>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Pending Tasks Progress -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-bold text-slate-700 flex items-center">
+                            <span class="w-2 h-2 rounded-full bg-slate-300 mr-2"></span>
+                            Pending
+                        </span>
+                        <span id="pendingCount" class="text-xs font-black text-slate-800">0</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div id="pendingBar" class="bg-slate-300 h-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Completed Tasks Progress -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-bold text-slate-700 flex items-center">
+                            <span class="w-2 h-2 rounded-full bg-teal-500 mr-2"></span>
+                            Completed
+                        </span>
+                        <span id="completedCount" class="text-xs font-black text-slate-800">0</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div id="completedBar" class="bg-teal-500 h-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Suspended Tasks Progress -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-bold text-slate-700 flex items-center">
+                            <span class="w-2 h-2 rounded-full bg-rose-400 mr-2"></span>
+                            Suspended
+                        </span>
+                        <span id="suspendedCount" class="text-xs font-black text-slate-800">0</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div id="suspendedBar" class="bg-rose-400 h-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-6 border-t border-slate-100">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-400 uppercase">Efficiency Rate</span>
+                    <div class="flex items-center gap-2">
+                        <span id="efficiencyRate" class="text-sm font-black text-teal-600">0%</span>
+                        <div class="flex items-center">
+                            <i class="fas fa-fire text-xs text-orange-500"></i>
+                            <span class="text-[10px] font-black text-orange-600 ml-1">7</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-slate-200"></div>
+                        </div>
+                        <span class="text-[8px] font-black text-slate-400">7-day streak</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass-panel p-6 rounded-2xl animate-fade-up" style="animation-delay: 0.7s;">
+            <h3 class="text-lg font-black text-slate-800 mb-6">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <a href="/hr-assistant/<%= expensesSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                    <i class="fas fa-plus-circle text-teal-500 text-xl mb-2"></i>
+                    <span class="text-xs font-bold text-slate-700">New Expense</span>
+                </a>
+                <a href="/hr-assistant/<%= bookingsSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                    <i class="fas fa-calendar-plus text-indigo-500 text-xl mb-2"></i>
+                    <span class="text-xs font-bold text-slate-700">New Booking</span>
+                </a>
+                <% const tasksSlug = "tasks"; %>
+                <a href="/hr-assistant/<%= tasksSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                    <i class="fas fa-tasks text-slate-700 text-xl mb-2"></i>
+                    <span class="text-xs font-bold text-slate-700">Add Task</span>
+                </a>
+                <% const remindersSlug = "reminders"; %>
+                <a href="/hr-assistant/<%= remindersSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                    <i class="fas fa-comment-alt text-rose-500 text-xl mb-2"></i>
+                    <span class="text-xs font-bold text-slate-700">Send Reminder</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 animate-fade-up" style="animation-delay: 0.8s;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-black text-slate-800">Recent Activities</h3>
+                <span class="text-[10px] font-black text-slate-400 uppercase">Last 24 hours</span>
+            </div>
+            
+            <div id="recentActivities" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                <div class="text-center py-8 text-slate-300">
+                    <i class="fas fa-history text-2xl mb-2"></i>
+                    <p class="text-xs font-bold">Loading activities...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let expenseChart = null;
+    let dashboardData = null;
+    let isLoading = false;
+
+    async function initDashboard() {
+        await loadDashboardData();
+        updateDashboardStats();
+        updateTaskStatus();
+        updateRecentActivities();
+        
+        // Update every 60 seconds
+        setInterval(async () => {
+            await loadDashboardData();
+            updateDashboardStats();
+            updateTaskStatus();
+        }, 60000);
+    }
+
+    async function loadDashboardData() {
+        try {
+            const response = await fetch('/api/hr/dashboard/summary');
+            if (!response.ok) throw new Error('Failed to load dashboard data');
+            dashboardData = await response.json();
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+            // Fallback data
+            dashboardData = {
+                expenses: { total: 0, count: 0, monthlyTotal: 0, breakdown: [] },
+                bookings: { active: 0, total: 0 },
+                tasks: { pending: 0, completed: 0, suspended: 0, total: 0 },
+                communications: { recent: 0 },
+                efficiency: 0,
+                recentActivities: []
+            };
+        }
+    }
+
+    function updateDashboardStats() {
+        if (!dashboardData) return;
+        
+        // Update main statistics 
+        document.getElementById('totalExpenses').textContent =`KES ${Number(dashboardData.expenses.monthlyTotal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+        document.getElementById('expenseCount').textContent = `${dashboardData.expenses.count} Expenses`;
+        
+        document.getElementById('bookingCount').textContent = dashboardData.bookings.active;
+        document.getElementById('totalBookings').textContent = `${dashboardData.bookings.total} Total`;
+        
+        document.getElementById('efficiency').textContent = `${dashboardData.efficiency}%`;
+        document.getElementById('taskCount').textContent = `${dashboardData.tasks.total} Tasks`;
+        
+        document.getElementById('communicationCount').textContent = dashboardData.communications.recent;
+        
+        // Update task status
+        document.getElementById('totalTasks').textContent = `${dashboardData.tasks.total} Total`;
+        document.getElementById('pendingCount').textContent = dashboardData.tasks.pending;
+        document.getElementById('completedCount').textContent = dashboardData.tasks.completed;
+        document.getElementById('suspendedCount').textContent = dashboardData.tasks.suspended;
+        document.getElementById('efficiencyRate').textContent = `${dashboardData.efficiency}%`;
+        
+        // Update progress bars
+        const totalTasks = dashboardData.tasks.total || 1;
+        document.getElementById('pendingBar').style.width = `${(dashboardData.tasks.pending / totalTasks) * 100}%`;
+        document.getElementById('completedBar').style.width = `${(dashboardData.tasks.completed / totalTasks) * 100}%`;
+        document.getElementById('suspendedBar').style.width = `${(dashboardData.tasks.suspended / totalTasks) * 100}%`;
+        
+        // Update timestamp
+        const now = new Date();
+        document.getElementById('lastUpdate').textContent =
+            `Today: ${now.toDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    function updateTaskStatus() {
+        if (!dashboardData) return;
+        
+        const totalTasks = dashboardData.tasks.total;
+        const completedTasks = dashboardData.tasks.completed;
+        const efficiency = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        
+        dashboardData.efficiency = efficiency;
+        updateDashboardStats();
+        
+        // Render expense chart
+        renderExpenseChart();
+    }
+
+    function renderExpenseChart() {
+        if (!dashboardData || !dashboardData.expenses.breakdown) return;
+        
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        
+        if (expenseChart) {
+            expenseChart.destroy();
+        }
+        
+        const labels = dashboardData.expenses.breakdown.map(item => item.category);
+        const data = dashboardData.expenses.breakdown.map(item => item.amount);
+        const colors = ['#0d9488', '#8b5cf6', '#f59e0b', '#ef4444', '#64748b', '#10b981', '#f97316'];
+        
+        expenseChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderWidth: 0,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                size: 10,
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: KES ${context.parsed.toLocaleString()}`;
+                            }
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+
+    async function updateExpenseChart() {
+        const period = document.getElementById('expensePeriod').value;
+        try {
+            const response = await fetch(`/api/hr/dashboard/expenses/breakdown?period=${period}`);
+            if (!response.ok) throw new Error('Failed to load expense breakdown');
+            const breakdown = await response.json();
+            dashboardData.expenses.breakdown = breakdown;
+            renderExpenseChart();
+        } catch (error) {
+            console.error('Error updating expense chart:', error);
+        }
+    }
+
+    async function updateRecentActivities() {
+        try {
+            const response = await fetch('/api/hr/dashboard/recent/activities');
+            if (!response.ok) throw new Error('Failed to load recent activities');
+            const activities = await response.json();
+            
+            const container = document.getElementById('recentActivities');
+            if (activities.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-300">
+                        <i class="fas fa-history text-2xl mb-2"></i>
+                        <p class="text-xs font-bold">No recent activities</p>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = activities.map(activity => {
+                let icon, color, bgColor;
+                
+                switch(activity.type) {
+                    case 'expense':
+                        icon = 'fa-wallet';
+                        color = 'text-teal-600';
+                        bgColor = 'bg-teal-50';
+                        break;
+                    case 'booking':
+                        icon = 'fa-calendar-check';
+                        color = 'text-indigo-600';
+                        bgColor = 'bg-indigo-50';
+                        break;
+                    case 'task':
+                        icon = 'fa-tasks';
+                        color = 'text-slate-700';
+                        bgColor = 'bg-slate-100';
+                        break;
+                    case 'communication':
+                        icon = 'fa-comment-alt';
+                        color = 'text-rose-600';
+                        bgColor = 'bg-rose-50';
+                        break;
+                    default:
+                        icon = 'fa-info-circle';
+                        color = 'text-slate-600';
+                        bgColor = 'bg-slate-100';
+                }
+                
+                return `
+                    <div class="activity-item p-4 pl-5 rounded-xl bg-white hover:shadow-sm">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg ${bgColor} flex items-center justify-center ${color}">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="text-sm font-bold text-slate-800">${activity.desc}</p>
+                                <div class="flex items-center gap-3 mt-1">
+                                    <span class="text-[10px] font-bold text-slate-500">${activity.time}</span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase">•</span>
+                                    <span class="text-[10px] font-bold text-slate-500">By ${activity.user || 'System'}</span>
+                                    ${activity.amount ? `<span class="text-[10px] font-black text-teal-600 ml-auto">${activity.amount}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Error loading recent activities:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initDashboard);
+</script>

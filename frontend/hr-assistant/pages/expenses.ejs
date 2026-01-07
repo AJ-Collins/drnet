@@ -1,0 +1,349 @@
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    .glass-panel { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
+    
+    .btn-loading { position: relative; color: transparent !important; pointer-events: none; }
+    .btn-loading::after {
+        content: ""; position: absolute; width: 16px; height: 16px; top: 0; left: 0; right: 0; bottom: 0;
+        margin: auto; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .animate-fade-up { animation: fade-in-up 0.4s ease-out forwards; }
+    @keyframes fade-in-up { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .custom-scroll::-webkit-scrollbar { width: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+    .filter-pill.active { background-color: #0f172a; color: white; border-color: #0f172a; }
+</style>
+
+<div class="max-w-full mx-auto">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+    <div class="mb-8 animate-fade-up">
+        <h1 class="text-3xl font-black text-slate-900">Expense Tracking</h1>
+        <p class="text-slate-500 font-medium">Monitor and record daily operational expenditures.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <div class="lg:col-span-8 order-2 lg:order-1 animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="glass-panel rounded-xl p-6 min-h-[720px] flex flex-col">
+                
+                <div class="flex flex-col gap-6 mb-8">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Expenditure</p>
+                            <h3 id="grandTotal" class="text-3xl font-black text-slate-900">KES 0.00</h3>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="setFilterType('all')" class="filter-pill active px-4 py-1.5 rounded-full border border-slate-200 text-[11px] font-black uppercase transition-all">All</button>
+                            <button onclick="setFilterType('daily')" class="filter-pill px-4 py-1.5 rounded-full border border-slate-200 text-[11px] font-black uppercase transition-all">Daily</button>
+                            <button onclick="setFilterType('weekly')" class="filter-pill px-4 py-1.5 rounded-full border border-slate-200 text-[11px] font-black uppercase transition-all">Weekly</button>
+                            <button onclick="setFilterType('monthly')" class="filter-pill px-4 py-1.5 rounded-full border border-slate-200 text-[11px] font-black uppercase transition-all">Monthly</button>                                                
+                            
+                            <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+                                <i class="far fa-calendar text-slate-400 text-xs"></i>
+                                <input type="date" id="historyFilter" class="bg-transparent border-none text-[11px] font-black text-slate-700 focus:ring-0 p-0 cursor-pointer">
+                            </div>
+
+                            <div class="h-6 w-[1px] bg-slate-200 mx-1"></div>
+
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
+                                <input type="text" id="searchInput" oninput="render()" placeholder="Search expenses..." 
+                                       class="pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-xs font-bold text-slate-700 outline-none focus:border-teal-500 w-44 transition-all">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="expenseTable" class="space-y-3 overflow-y-auto custom-scroll pr-1 flex-grow max-h-[500px]">
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 order-1 lg:order-2 animate-fade-up" style="animation-delay: 0.2s;">
+            <div class="bg-slate-900 text-white p-8 rounded-xl sticky top-6 shadow-2xl shadow-slate-200">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 rounded-2xl bg-teal-500/20 flex items-center justify-center text-teal-400">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h2 class="text-xl font-black">Record Outflow</h2>
+                </div>
+
+                <form id="expForm" class="space-y-5">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-2 block">Amount Spent</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">KES</span>
+                            <input type="number" id="expAmount" placeholder="0.00" required 
+                                   class="w-full pl-14 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-2xl outline-none text-teal-400 font-black text-2xl focus:border-teal-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-2 block">Category</label>
+                        <input type="text" id="expOnWhat" placeholder="e.g. Meals, Transport, Equipments" required 
+                               class="w-full p-2 bg-slate-800 border border-slate-700 rounded-2xl outline-none text-sm font-bold text-slate-200 focus:border-teal-500 transition-all">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-2 block">Description</label>
+                        <textarea id="expDesc" placeholder="Brief details..." 
+                                  class="w-full p-2 bg-slate-800 border border-slate-700 rounded-2xl outline-none text-sm font-medium text-slate-400 h-20 focus:border-teal-500 transition-all"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-2 block">Date</label>
+                            <input type="date" id="expDate" required 
+                                   class="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl outline-none text-[11px] font-bold text-slate-200 focus:border-teal-500 transition-all">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-2 block">Beneficiary (optional)</label>
+                            <input type="text" id="beneficiary" placeholder="Name" 
+                                   class="w-full p-2 bg-slate-800 border border-slate-700 rounded-xl outline-none text-[11px] font-bold text-slate-200 focus:border-teal-500 transition-all">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitExpBtn" class="w-full py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-teal-900/20 transition-all mt-4">
+                        Save Expense
+                    </button>
+                    <button type="button" id="cancelEdit" onclick="resetForm()" class="hidden w-full py-2 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">
+                        Cancel Edit
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const expenseApi = {
+        async getAll() {
+            const res = await fetch('/api/hr/expenses');
+            return await res.json();
+        },
+        async create(data) {
+            const res = await fetch('/api/hr/expenses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await res.json();
+        },
+        async update(id, data) {
+            const res = await fetch(`/api/hr/expenses/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await res.json();
+        },
+        async delete(id) {
+            await fetch(`/api/hr/expenses/${id}`, { method: 'DELETE' });
+            return true;
+        }
+    };
+
+    let expenses = [];
+    let activeFilterType = 'all'; // daily, weekly, monthly, all
+    const $ = id => document.getElementById(id);
+    let editingId = null;
+
+    async function init() {
+        $('expDate').valueAsDate = new Date();
+        $('historyFilter').valueAsDate = new Date();
+        expenses = await expenseApi.getAll();
+        render();
+    }
+
+    function setFilterType(type) {
+        activeFilterType = type;
+        document.querySelectorAll('.filter-pill').forEach(p => {
+            p.classList.toggle('active', p.innerText.toLowerCase() === type);
+        });
+        render();
+    }
+
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        const btn = $('submitExpBtn');
+        btn.classList.add('btn-loading');
+
+        const formData = {
+            amount: Number($('expAmount').value),
+            category: $('expOnWhat').value,
+            description: $('expDesc').value,
+            beneficiary: $('beneficiary').value || 'None',
+            expense_date: $('expDate').value
+        };
+
+        let saved;
+
+        if (editingId) {
+            saved = await expenseApi.update(editingId, formData);
+            showToast("SUCCESS", "Data Updated.");
+            expenses = expenses.map(e => e.id === editingId ? { ...e, ...saved } : e );
+            editingId = null;
+            btn.innerText = "Save Expense";
+        } else {
+            saved = await expenseApi.create(formData);
+            expenses.unshift(saved);
+            showToast("SUCCESS", "Data Created.");
+        }
+                
+        $('expForm').reset();
+        $('expDate').valueAsDate = new Date();
+        btn.classList.remove('btn-loading');
+        render();
+    }
+
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function render() {
+        const container = $('expenseTable');
+        const selectedDate = new Date($('historyFilter').value);
+        const searchQuery = $('searchInput').value.toLowerCase();
+        
+        let filtered = expenses.filter(e => {
+            const expDate = new Date(e.expense_date);
+            if (activeFilterType === 'all') {
+                return true; 
+            }
+            if (activeFilterType === 'daily') {
+                return expDate.toDateString() === selectedDate.toDateString();
+            } else if (activeFilterType === 'weekly') {
+                return getWeekNumber(expDate) === getWeekNumber(selectedDate) && 
+                       expDate.getFullYear() === selectedDate.getFullYear();
+            } else {
+                return expDate.getMonth() === selectedDate.getMonth() && 
+                       expDate.getFullYear() === selectedDate.getFullYear();
+            }
+        });
+
+        if (searchQuery) {
+            filtered = filtered.filter(e => 
+                e.category.toLowerCase().includes(searchQuery) || 
+                e.description.toLowerCase().includes(searchQuery) || 
+                e.beneficiary.toLowerCase().includes(searchQuery)
+            );
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="text-center py-20 text-slate-300 font-bold text-sm">No records found.</div>`;
+            $('grandTotal').textContent = 'KES 0.00';
+            return;
+        }
+
+        let total = 0;
+        container.innerHTML = filtered.map(e => {
+            const amount = Number(e.amount) || 0;
+            total += amount;
+            return `
+            <div class="flex items-center justify-between p-4 bg-slate-50 hover:bg-white border border-slate-100 hover:border-teal-200 rounded-2xl transition-all animate-fade-up">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex flex-col items-center justify-center font-black">
+                        <span class="text-[8px] uppercase text-slate-500">${new Date(e.expense_date).toLocaleString('default', {month: 'short'})}</span>
+                        <span class="text-xs text-slate-700">${new Date(e.expense_date).getDate()}</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-black text-slate-800">${e.category}</span>
+                            <span class="text-[8px] font-black uppercase text-teal-600 bg-teal-50 px-2 py-0.5 rounded">${e.beneficiary}</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 truncate w-40 sm:w-64">${e.description}</p>
+                    </div>
+                </div>
+                <div class="text-right flex items-center gap-4">
+                    <span class="text-sm font-black text-slate-900">KES ${Number(e.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>                    
+                    <div class="relative group/icon">
+                        <button onclick="editExpense(${e.id})" class="text-slate-300 hover:text-rose-500 transition-all"><i class="fas fa-edit text-xm"></i></button>
+                        <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
+                            whitespace-nowrap bg-slate-900 text-white text-[10px]
+                            px-2 py-1 rounded-md opacity-0
+                            group-hover/icon:opacity-100 transition
+                            pointer-events-none z-50
+
+                            after:content-[''] after:absolute after:top-1/2 after:left-full
+                            after:-translate-y-1/2
+                            after:border-4 after:border-transparent
+                            after:border-l-slate-900">
+                            Edit expense
+                        </span>
+                    </div>
+                    <div class="relative group/icon">
+                        <button onclick="deleteExpense(${e.id})" class="text-slate-300 hover:text-rose-500 transition-all"><i class="fas fa-trash-alt text-xm"></i></button>                
+                        <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
+                            whitespace-nowrap bg-slate-900 text-white text-[10px]
+                            px-2 py-1 rounded-md opacity-0
+                            group-hover/icon:opacity-100 transition
+                            pointer-events-none z-50
+
+                            after:content-[''] after:absolute after:top-1/2 after:left-full
+                            after:-translate-y-1/2
+                            after:border-4 after:border-transparent
+                            after:border-l-slate-900">
+                            Delete expense
+                        </span>
+                    </div>                        
+                </div>
+            </div>`;
+        }).join('');        
+
+        $('grandTotal').textContent = `KES ${Number(total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function resetForm() {
+        $('expForm').reset();
+        editingId = null;
+        $('expDate').valueAsDate = new Date();
+        $('submitExpBtn').innerText = "Save Expense";
+        $('cancelEdit').classList.add('hidden');
+    }
+
+    function editExpense(id) {
+        const item = expenses.find(e => e.id === id);
+        if (!item) return;
+
+        editingId = id;
+        $('expAmount').value = item.amount;
+        $('expOnWhat').value = item.category;
+        $('expDesc').value = item.description;
+        $('beneficiary').value = item.beneficiary;
+        $('expDate').value = item.expense_date.slice(0, 10);
+        
+        $('submitExpBtn').innerText = "Update Expense";
+        $('cancelEdit').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteExpense(id) {
+        if(!confirm("Delete record?")) return;
+        await expenseApi.delete(id);
+        showToast("SUCCESS", "Record deleted.");
+        expenses = expenses.filter(e => e.id !== id);
+        render();
+    }
+
+    function showToast(title, msg) {
+        const toast = document.createElement('div');
+        toast.className = "bg-slate-900 text-white p-4 rounded-xl shadow-xl min-w-[200px] animate-slide-in";
+        toast.innerHTML = `<h5 class="text-[10px] font-black uppercase text-teal-400 mb-1">${title}</h5><p class="text-xs font-medium">${msg}</p>`;
+        document.getElementById('toastContainer').appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
+    $('expForm').onsubmit = handleFormSubmit;
+    $('historyFilter').oninput = render;
+    init();
+</script>

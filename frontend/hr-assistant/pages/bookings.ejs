@@ -1,0 +1,336 @@
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    .glass-panel { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
+    
+    .btn-loading { position: relative; color: transparent !important; pointer-events: none; }
+    .btn-loading::after {
+        content: ""; position: absolute; width: 16px; height: 16px; top: 0; left: 0; right: 0; bottom: 0;
+        margin: auto; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .animate-fade-up { animation: fade-in-up 0.4s ease-out forwards; }
+    @keyframes fade-in-up { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .edit-mode-active { border: 2px solid #14b8a6 !important; background: #f0fdfa !important; }
+</style>
+
+<div class="max-w-full mx-auto">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+    <div class="mb-8 animate-fade-up flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Bookings</h1>
+            <p class="text-slate-500 font-bold text-sm">Client Booking</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <div class="lg:col-span-8 order-2 lg:order-1 animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="glass-panel rounded-xl p-6 min-h-[720px] flex flex-col">
+                <div class="flex justify-between items-center mb-6 px-2">
+                    <div>
+                        <h3 class="font-black text-slate-800 uppercase text-[14px] tracking-[0.2em]">Booking Records</h3>
+                        <p id="bookingCount" class="text-[11px] font-bold text-slate-400">0 bookings processed today</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+                            <input type="text" id="tableSearch" oninput="renderBookings()" placeholder="Search bookings..." 
+                                   class="pl-8 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-full text-[10px] font-bold outline-none focus:border-teal-300 w-48 transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-4 px-6 mb-3 text-[12px] font-black text-slate-400 uppercase tracking-widest">
+                    <div class="col-span-4">Client Identity / Location</div>
+                    <div class="col-span-3">Plan Details</div>
+                    <div class="col-span-2 text-right">Price</div>
+                    <div class="col-span-3 text-right">Actions</div>
+                </div>
+
+                <div id="bookingList" class="space-y-2 overflow-y-auto custom-scroll pr-1 flex-grow max-h-[500px]">
+                    <div class="flex flex-col items-center justify-center py-32 opacity-20">
+                        <i class="fas fa-cloud-upload-alt text-4xl mb-4"></i>
+                        <p class="text-xs font-bold italic">Ready for new entries</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 order-1 lg:order-2 animate-fade-up" style="animation-delay: 0.2s;">
+            <div id="formContainer" class="bg-slate-900 rounded-xl p-7 sticky top-6 shadow-2xl shadow-slate-200 border border-slate-800 transition-all duration-300">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div id="formIcon" class="w-9 h-9 rounded-xl bg-teal-500/20 flex items-center justify-center text-teal-400">
+                            <i class="fas fa-plus text-xs"></i>
+                        </div>
+                        <h2 id="formTitle" class="text-base font-black text-white">New Booking</h2>
+                    </div>
+                    <button id="cancelEditBtn" onclick="resetToCreateMode()" class="hidden text-[9px] font-black text-rose-400 uppercase tracking-widest hover:text-rose-300">
+                        Cancel Edit
+                    </button>
+                </div>
+
+                <form id="bookingForm" class="space-y-3.5">
+                    <input type="hidden" id="editId" value="">
+
+                    <div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
+                        <input type="text" id="clientName" required placeholder="Full Name" 
+                               class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xm font-bold outline-none focus:border-teal-500 transition-all">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="tel" id="clientPhone" required placeholder="Phone" 
+                               class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xm font-bold outline-none">
+                        <input type="email" id="clientEmail" required placeholder="Email" 
+                               class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xm font-bold outline-none">
+                    </div>
+
+                    <input type="text" id="location" required placeholder="Location (Estate/House)" 
+                           class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xm font-bold outline-none">
+
+                    <div class="relative">
+                        <select id="packageSelect" required 
+                                class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xm font-bold outline-none appearance-none cursor-pointer">
+                            <option value="">Loading...</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-[10px] pointer-events-none"></i>
+                    </div>
+
+                    <textarea id="notes" placeholder="Notes..." 
+                              class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xm font-medium outline-none h-16 resize-none"></textarea>
+
+                    <button type="submit" id="submitBtn" class="w-full py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all mt-2 shadow-lg shadow-teal-900/20">
+                        Create Record
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const $ = id => document.getElementById(id);
+    let bookings = [];
+
+    const getFormattedDate = () => {
+        return new Date().toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    };
+
+    async function loadPackages() {
+        const select = $('packageSelect');
+        try {
+            const res = await fetch('/api/packages');
+            if (!res.ok) throw new Error();
+            const packages = await res.json();
+            
+            select.innerHTML = '<option value="">Select Subscription</option>' + 
+                packages.map(p => `<option value="${p.id}" data-name="${p.name}" data-price="${p.price}">
+                    ${p.name} (${p.speed}MBs) — KES ${p.price}
+                </option>`).join('');
+        } catch (e) {
+            select.innerHTML = '<option value="">Error fetching API</option>';
+        }
+    }
+
+    async function fetchBookings() {
+        try {
+            const res = await fetch('/api/hr/bookings');
+            bookings = await res.json();
+            renderBookings();
+        } catch (e) {
+            showToast("ERROR", "Could not load records.");
+        }
+    }
+
+    function startEdit(id) {
+        const b = bookings.find(x => x.id === id);
+        if(!b) return;
+
+        $('editId').value = b.id;
+        $('clientName').value = b.name;
+        $('clientPhone').value = b.phone;
+        $('clientEmail').value = b.email;
+        $('location').value = b.location;
+        $('packageSelect').value = b.packageId;
+        $('notes').value = b.notes || "";
+
+        $('formTitle').innerText = "Edit Record";
+        $('submitBtn').innerText = "Update Record";
+        $('submitBtn').classList.replace('bg-teal-500', 'bg-amber-400');
+        $('formIcon').innerHTML = '<i class="fas fa-pen text-xs"></i>';
+        $('cancelEditBtn').classList.remove('hidden');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetToCreateMode() {
+        $('bookingForm').reset();
+        $('editId').value = "";
+        $('formTitle').innerText = "New Booking";
+        $('submitBtn').innerText = "Create Record";
+        $('submitBtn').classList.replace('bg-amber-400', 'bg-teal-500');
+        $('formIcon').innerHTML = '<i class="fas fa-plus text-xs"></i>';
+        $('cancelEditBtn').classList.add('hidden');
+    }
+
+    $('bookingForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const editId = $('editId').value;
+        const btn = $('submitBtn');
+        btn.classList.add('btn-loading');
+
+        const data = {
+            name: $('clientName').value,
+            phone: $('clientPhone').value,
+            email: $('clientEmail').value,
+            location: $('location').value,
+            packageId: parseInt($('packageSelect').value),
+            notes: $('notes').value,
+            date: getFormattedDate()
+        };
+
+        try {
+            const url = editId ? `/api/hr/bookings/${editId}` : '/api/hr/bookings';
+            const method = editId ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                showToast("SUCCESS", editId ? "Record updated." : "Record created.");
+                resetToCreateMode();
+                await fetchBookings(); // Refresh list
+            } else {
+                throw new Error();
+            }
+        } catch (err) {
+            showToast("ERROR", "Failed to save record.");
+        } finally {
+            btn.classList.remove('btn-loading');
+        }
+    };
+
+    async function deleteBooking(id) {
+        if(!confirm('Delete this record permanently?')) return;
+        
+        try {
+            const res = await fetch(`/api/hr/bookings/${id}`, { method: 'DELETE' });
+            if(res.ok) {
+                showToast("SUCCESS", "Record deleted.");
+                await fetchBookings();
+            }
+        } catch (e) {
+            showToast("ERROR", "Delete failed.");
+        }
+    }
+
+    function showToast(title, msg) {
+        const toast = document.createElement('div');
+        toast.className = "bg-slate-900 text-white p-4 rounded-xl shadow-xl min-w-[200px] animate-slide-in";
+        toast.innerHTML = `<h5 class="text-[10px] font-black uppercase text-teal-400 mb-1">${title}</h5><p class="text-xs font-medium">${msg}</p>`;
+        document.getElementById('toastContainer').appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
+    function renderBookings() {
+        const list = $('bookingList');
+        const query = $('tableSearch').value.toLowerCase();
+        
+        let filtered = bookings;
+        if(query) {
+            filtered = bookings.filter(b => 
+                b.name.toLowerCase().includes(query) || 
+                b.location.toLowerCase().includes(query) ||
+                (b.packageName && b.packageName.toLowerCase().includes(query))
+            );
+        }
+
+        $('bookingCount').innerText = `${filtered.length} record${filtered.length === 1 ? '' : 's'} visible`;
+
+        if (filtered.length === 0) {
+            list.innerHTML = `<div class="text-center py-20 text-slate-300 text-xs font-bold">No results found.</div>`;
+            return;
+        }
+
+        list.innerHTML = filtered.map(b => `
+            <div class="grid grid-cols-12 gap-4 px-6 py-4 bg-slate-50 hover:bg-white border border-slate-100 hover:border-teal-200 rounded-2xl transition-all group animate-fade-up items-center">
+                <div class="col-span-4">
+                    <p class="text-[14px] font-black text-slate-800">${b.name}</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt text-teal-500"></i> ${b.location}
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-300">•</span>
+                        <span class="text-[10px] font-bold text-slate-400">${b.phone}</span>
+                    </div>
+                </div>
+                <div class="col-span-3">
+                    <span class="text-[12px] font-black text-teal-600 bg-teal-50 px-2 py-0.5 rounded-lg uppercase tracking-wider">
+                        ${b.packageName || 'Unknown Plan'}
+                    </span>
+                </div>
+                <div class="col-span-2 text-right">
+                    <p class="text-[10px] font-black text-slate-700">KES ${parseFloat(b.price || 0).toLocaleString()}</p>
+                </div>
+                <div class="col-span-3 flex justify-end gap-2">
+                    <span class="text-[9px] font-black text-slate-500 uppercase ml-2 flex items-center">${b.date}</span>
+                    <div class="relative group/icon">                     
+                        <button onclick="startEdit(${b.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-all">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                        <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
+                            whitespace-nowrap bg-slate-900 text-white text-[10px]
+                            px-2 py-1 rounded-md opacity-0
+                            group-hover/icon:opacity-100 transition
+                            pointer-events-none z-50
+
+                            after:content-[''] after:absolute after:top-1/2 after:left-full
+                            after:-translate-y-1/2
+                            after:border-4 after:border-transparent
+                            after:border-l-slate-900">
+                            Edit booking
+                        </span>
+                    </div>   
+                    <div class="relative group/icon">                   
+                        <button onclick="deleteBooking(${b.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-all">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                        <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
+                            whitespace-nowrap bg-slate-900 text-white text-[10px]
+                            px-2 py-1 rounded-md opacity-0
+                            group-hover/icon:opacity-100 transition
+                            pointer-events-none z-50
+
+                            after:content-[''] after:absolute after:top-1/2 after:left-full
+                            after:-translate-y-1/2
+                            after:border-4 after:border-transparent
+                            after:border-l-slate-900">
+                            Delete booking
+                        </span>
+                    </div>                 
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function init() {
+        await loadPackages();
+        await fetchBookings();
+    }
+
+    init();
+</script>

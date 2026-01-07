@@ -32,15 +32,14 @@ const teamChat = require("./src/routes/teamChat");
 const announcement = require("./src/routes/announcements");
 const notificationsRoutes = require("./src/routes/notifications");
 const reports = require("./src/routes/reports");
-const hrDashboard = require("./src/routes/hrDashboardRouter");
-
-// Notify
-const notify = require("./src/routes/notify");
-
-// Hr
-const hrProjectsRoutes = require("./src/routes/hrProjectsRoutes");
-const HrTaskRoutes = require("./src/routes/hrTasksRoutes");
-const Folders = require("./src/routes/folders");
+//Hr assistant
+const hrexpenses = require("./src/routes/hrexpenses");
+const hrtasks = require("./src/routes/hrtasks");
+const hrbookings = require("./src/routes/hrbookings");
+const hrplanner = require("./src/routes/hrplanner");
+const hrcommslogs = require("./src/routes/hrcommslogs");
+const hrnotify = require("./src/routes/hrnotify");
+const hrdashboard = require("./src/routes/hrdashboard");
 
 // Session Configuration
 app.use(
@@ -249,12 +248,15 @@ app.use("/api", apiSessionAuth, teamChat);
 app.use("/api", apiSessionAuth, announcement);
 app.use("/api", apiSessionAuth, notificationsRoutes);
 app.use("/api", apiSessionAuth, reports);
-app.use("/api", apiSessionAuth, notify);
 //Hr
-app.use("/api", apiSessionAuth, hrProjectsRoutes);
-app.use("/api", apiSessionAuth, HrTaskRoutes);
-app.use("/api", apiSessionAuth, Folders);
-app.use("/api/hr", apiSessionAuth, hrDashboard);
+app.use("/api/hr", apiSessionAuth, hrexpenses);
+app.use("/api/hr", apiSessionAuth, hrtasks);
+app.use("/api/hr", apiSessionAuth, hrbookings);
+app.use("/api/hr", apiSessionAuth, hrplanner);
+app.use("/api/hr", apiSessionAuth, hrcommslogs);
+app.use("/api/hr", apiSessionAuth, hrnotify);
+app.use("/api/hr", apiSessionAuth, hrdashboard);
+
 
 // Create uploads folder
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
@@ -421,10 +423,12 @@ app.get("/customer-care", requireCustomerCareAuth, (req, res) => {
 //HR Assistant Routes
 const hrAssistantPages = [
   "dashboard",
-  "projects",
+  "expenses",
   "tasks",
-  "documents",
+  "bookings",
   "communication",
+  "planner",
+  "reminders",
   "profile",
 ];
 
