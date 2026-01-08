@@ -1,5 +1,3 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     :root { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -106,11 +104,16 @@
                 <div class="flex justify-between items-end mb-4">
                     <div class="flex-grow mr-4 border-b border-slate-100">
                         <p class="text-xm font-black text-slate-400 uppercase">Subject</p>
-                        <input type="text" id="msgSubject" class="text-sm font-bold text-slate-800 bg-transparent border-none outline-none w-full py-1" value="Executive Reminder">
+                        <input type="text" id="msgSubject" class="text-sm font-bold text-slate-800 bg-transparent border-none outline-none w-full py-1" value="Executive Info">
                     </div>
-                    <button onclick="generateOutline()" class="text-[10px] font-black text-white bg-slate-800 px-4 py-2 rounded-xl hover:bg-slate-700 shadow-md">
-                        <i class="fas fa-magic mr-2"></i>AUTO-DRAFT
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="generateOutline()" class="text-[10px] font-black text-white bg-slate-800 px-4 py-2 rounded-xl hover:bg-slate-700 shadow-md transition-all">
+                            <i class="fas fa-magic mr-2"></i>AUTO-DRAFT
+                        </button>                        
+                        <button onclick="generatePDF()" class="text-[10px] font-black text-white bg-rose-600 px-4 py-2 rounded-xl hover:bg-rose-500 shadow-md shadow-rose-900/20 transition-all">
+                            <i class="fas fa-file-pdf mr-2"></i>PDF REPORT
+                        </button>
+                    </div>
                 </div>
 
                 <div class="flex-grow memo-paper p-5 mb-4 relative">
@@ -127,14 +130,23 @@
                         class="w-full h-full bg-transparent border-none text-slate-700 font-medium text-xm leading-relaxed outline-none resize-none custom-scroll"></textarea>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <button id="btnEmail" onclick="handleSend('email')" class="btn-email flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
+                <div class="flex gap-4">
+                    <button id="btnEmail" onclick="handleSend('email')" class="btn-email flex-1 flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
                         <i id="spinnerEmail" class="fas fa-circle-notch fa-spin hidden"></i>
-                        <i id="iconEmail" class="fas fa-envelope-open-text text-lg"></i> Dispatch Email
+                        <i id="iconEmail" class="fas fa-envelope-open-text text-lg"></i>
+                        Dispatch Email
                     </button>
-                    <button id="btnWhatsapp" onclick="handleSend('whatsapp')" class="btn-email flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
+
+                    <button id="btnCEO" onclick="handleSend('ceo')" class="flex-1 bg-teal-600 flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:bg-teal-500 hover:scale-[1.02] active:scale-95 shadow-lg shadow-teal-900/10">
+                        <i id="spinnerCEO" class="fas fa-circle-notch fa-spin hidden"></i>
+                        <i id="iconCEO" class="fas fa-paper-plane text-lg"></i>
+                        Send to CEO Inbox
+                    </button>
+
+                    <button id="btnWhatsapp" onclick="handleSend('whatsapp')" class="btn-email flex-1 flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
                         <i id="spinnerWhatsapp" class="fas fa-circle-notch fa-spin hidden"></i>
-                        <i id="iconWhatsapp" class="fab fa-whatsapp text-xl p-2"></i> Dispatch WhatsApp
+                        <i id="iconWhatsapp" class="fab fa-whatsapp text-xl"></i>
+                        Dispatch WhatsApp
                     </button>
                 </div>
                 <button onclick="document.getElementById('msgBody').value = ''" class="mt-4 text-[9px] font-bold text-slate-500 hover:text-rose-500 uppercase tracking-widest transition-colors">
@@ -240,7 +252,7 @@
                 <div class="status-monitor-card shadow-sm border-l-4 border-l-${color}-500 animate-fade-up">
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <h4 class="text-[18px] font-black text-slate-800">${item.item_desc}</h4>
+                            <h4 class="text-[16px] text-slate-700">${item.item_desc}</h4>
                             <span class="text-[11px] font-black bg-${color}-50 text-${color}-600 px-2 py-0.5 rounded uppercase tracking-tighter">
                                 ${item.status} | ${item.type}
                             </span>
@@ -300,9 +312,27 @@
     }
 
     function setBtnLoading(method, isLoading) {
-        const btn = method === 'email' ? $('btnEmail') : $('btnWhatsapp');
-        const spinner = method === 'email' ? $('spinnerEmail') : $('spinnerWhatsapp');
-        const icon = method === 'email' ? $('iconEmail') : $('iconWhatsapp');
+        const btnMap = { 
+            email: $('btnEmail'), 
+            whatsapp: $('btnWhatsapp'), 
+            ceo: $('btnCEO') 
+        };
+        const spinnerMap = { 
+            email: $('spinnerEmail'), 
+            whatsapp: $('spinnerWhatsapp'), 
+            ceo: $('spinnerCEO') 
+        };
+        const iconMap = { 
+            email: $('iconEmail'), 
+            whatsapp: $('iconWhatsapp'), 
+            ceo: $('iconCEO') 
+        };
+
+        const btn = btnMap[method];
+        const spinner = spinnerMap[method];
+        const icon = iconMap[method];
+
+        if (!btn || !spinner || !icon) return;
 
         if (isLoading) {
             btn.classList.add('opacity-80', 'pointer-events-none');
@@ -328,13 +358,28 @@
 
         setBtnLoading(method, true);
 
-        try {
-            await saveToHistory(subject, method);
+        try {           
+            if(method === 'ceo') {
+                const response = await fetch('/api/hr/dispatch/reply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message_content: `[${subject}] ${body}`,
+                        priority: 'high' 
+                    })
+                });
 
-            if(method === 'email') {
+                if(response.ok) {
+                    showToast("SUCCESS", "Briefing reply sent.");
+                    await saveToHistory(subject, 'CEO FEED');
+                    $('msgBody').value = '';
+                } else {
+                    throw new Error("An error occured. Try again.");
+                }
+            } 
+            else if(method === 'email') {
                 if(!email) {
                     showToast("ERROR", "Recipient email is required");
-                    setBtnLoading(method, false);
                     return;
                 }
 
@@ -346,38 +391,62 @@
 
                 if(response.ok) {
                     showToast("SUCCESS", "Email dispatched successfully");
+                    await saveToHistory(subject, 'EMAIL');
                 } else {
-                    throw new Error("Dispatch failed");
+                    throw new Error("An error occured. Try again.");
                 }
-            } else {
+            } else if(method === 'whatsapp') {
                 const cleanPhone = phone.replace('+', '');
                 const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent('*' + subject + '*\n\n' + body)}`;
                 window.open(waUrl, '_blank');
+                await saveToHistory(subject, 'WHATSAPP');
             }
         } catch (e) {
-            showToast("ERROR", "Operation failed. Check server connection.");
+            showToast("ERROR", "An error occured. Try again.");
         } finally {
             setBtnLoading(method, false);
         }
     }
 
     async function saveToHistory(subject, method) {
+        const methodMap = {
+            'CEO FEED': 'ceo',
+            'EMAIL': 'email',
+            'WHATSAPP': 'whatsapp'
+        };
+
+        let recipientStr = '';
+        if (method === 'CEO FEED') {
+            recipientStr = 'CEO Office';
+        } else if (method === 'EMAIL') {
+            recipientStr = $('targetEmail').value || 'Unknown';
+        } else {
+            recipientStr = $('targetPhone').value || 'Unknown';
+        }
+
         const logData = {
             subject: subject,
-            recipient: method === 'email' ? $('targetEmail').value : $('targetPhone').value,
-            method: method,
+            recipient: recipientStr,
+            method: methodMap[method] || 'email',
             body: $('msgBody').value
         };
 
         try {
-            await fetch('/api/hr/logs', {
+            const response = await fetch('/api/hr/logs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(logData)
             });
+            
+            if(!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || "Log failed");
+            }
+            
             renderHistory();
         } catch (e) {
-            showToast("ERROR", "Failed to save log to database.");
+            console.error("History Log Error:", e.message);
+            showToast("ERROR", "Logging failed: " + e.message);
         }
     }
 
@@ -387,36 +456,45 @@
             const history = await res.json();
             
             const list = $('historyList');
-            list.innerHTML = history.map(h => `
-                <div class="group flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 text-[11px] font-bold shadow-sm transition-all hover:border-teal-200">
-                    <div class="flex flex-col truncate">
-                        <span class="truncate w-32 text-slate-600">${h.subject}</span>
-                        <span class="text-[9px] text-slate-400 font-medium">${h.method.toUpperCase()} to ${h.recipient}</span>
+            list.innerHTML = history.map(h => {
+                    const icons = {
+                        ceo: '<i class="fas fa-shield-halved text-amber-500 mr-2"></i>',
+                        email: '<i class="fas fa-envelope text-blue-500 mr-2"></i>',
+                        whatsapp: '<i class="fab fa-whatsapp text-green-500 mr-2"></i>'
+                    };
+                    return `
+                    <div class="group flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 text-[11px] font-bold shadow-sm transition-all hover:border-teal-200">
+                        <div class="flex items-center truncate">
+                            ${icons[h.method] || icons.email}
+                            <div class="flex flex-col truncate">
+                                <span class="truncate w-32 text-slate-600">${h.subject}</span>
+                                <span class="text-[9px] text-slate-400 font-medium">${h.method.toUpperCase()} to ${h.recipient}</span>
+                            </div>                            
+                        </div>
+                        <div class="flex items-center gap-2">
+                                <span class="text-teal-500 bg-teal-50 px-2 py-0.5 rounded-lg text-[8px]">
+                                    ${new Date(h.sent_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </span>
+                                <div class="relative group"> 
+                                    <button onclick="deleteLog(${h.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-opacity">
+                                        <i class="fas fa-times text-sm"></i>
+                                    </button>
+                                    <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
+                                        whitespace-nowrap bg-slate-900 text-white text-[10px]
+                                        px-2 py-1 rounded-md opacity-0
+                                        group-hover:opacity-100 transition
+                                        pointer-events-none z-50
+                                        after:content-[''] after:absolute after:top-1/2 after:left-full
+                                        after:-translate-y-1/2
+                                        after:border-4 after:border-transparent
+                                        after:border-l-slate-900">
+                                        Delete log
+                                    </span>
+                                </div>                        
+                            </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-teal-500 bg-teal-50 px-2 py-0.5 rounded-lg text-[8px]">
-                            ${new Date(h.sent_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </span>
-                        <div class="relative group"> 
-                            <button onclick="deleteLog(${h.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-opacity">
-                                <i class="fas fa-times text-sm"></i>
-                            </button>
-                            <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
-                                whitespace-nowrap bg-slate-900 text-white text-[10px]
-                                px-2 py-1 rounded-md opacity-0
-                                group-hover:opacity-100 transition
-                                pointer-events-none z-50
-
-                                after:content-[''] after:absolute after:top-1/2 after:left-full
-                                after:-translate-y-1/2
-                                after:border-4 after:border-transparent
-                                after:border-l-slate-900">
-                                Delete log
-                            </span>
-                        </div>                        
-                    </div>
-                </div>
-            `).join('') || '<p class="text-[10px] text-slate-400 italic text-center py-4">No recent activity</p>';
+                `;
+            }).join('') || '<p class="text-[10px] text-slate-400 italic text-center py-4">No recent activity</p>';
         } catch (e) {
             console.error("History fetch failed", e);
         }
@@ -450,6 +528,422 @@
         setTimeout(() => toast.remove(), 4000);
     }
 
+    async function getCurrentUserName() {
+        try {
+            const response = await fetch("/api/profile", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch profile");
+
+            const data = await response.json();
+            return data.profile?.name || "Unknown User";
+        } catch (err) {
+            console.error("Error fetching user:", err);
+            return "Unknown User";
+        }
+    }
+
+    async function generatePDF() {
+        if (!window.jspdf) {
+            showToast("ERROR", "PDF Library not loaded.");
+            return;
+        }
+
+        const userName = await getCurrentUserName();
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const subject = $('msgSubject').value || 'Executive Report';
+        const rawBody = $('msgBody').value;
+        const dateStr = new Date().toLocaleDateString('en-GB', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+        });
+        const timeStr = new Date().toLocaleTimeString('en-GB', { 
+            hour: '2-digit', minute: '2-digit' 
+        });
+        
+        if(!rawBody.trim()) {
+            showToast("WARNING", "Workspace is empty. Nothing to print.");
+            return;
+        }
+
+        // Parse and structure the content
+        const lines = rawBody.split('\n').filter(line => line.trim());
+        const structuredData = parseContent(lines);
+        
+        const margin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const contentWidth = pageWidth - (margin * 2);
+        let yPos = margin;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0); 
+        doc.text("TASK, EXPENSES, BOOKINGS REPORT", pageWidth / 2, yPos, { align: 'center' });
+        
+        yPos += 8;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(60, 60, 60);
+        doc.text("HR ASSISTANT", pageWidth / 2, yPos, { align: 'center' });
+        
+        yPos += 15;
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(0, 0, 0);
+        const titleWidth = doc.getTextWidth(subject);
+        const titleX = (pageWidth - titleWidth) / 2;
+        doc.text(subject, titleX, yPos);
+        
+        yPos += 10;
+        
+        doc.setDrawColor(200, 200, 200);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(margin, yPos, pageWidth - margin * 2, 25, 'F');
+        doc.rect(margin, yPos, pageWidth - margin * 2, 25);
+        
+        const metaY = yPos + 8;
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+
+        let xPos = margin + 2;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Date:", xPos, metaY);
+        doc.setFont("helvetica", "normal");
+
+        let displayDate = dateStr;
+        const maxDateWidth = 55;
+        if (doc.getTextWidth(dateStr) > maxDateWidth) {
+            displayDate = new Date().toLocaleDateString('en-GB', { 
+                day: 'numeric', month: 'short', year: 'numeric' 
+            });
+        }
+        doc.text(displayDate, xPos + doc.getTextWidth("Date: ") + 2, metaY);
+
+        xPos += doc.getTextWidth("Date: " + displayDate) + 15;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Time:", xPos, metaY);
+        doc.setFont("helvetica", "normal");
+        doc.text(timeStr, xPos + doc.getTextWidth("Time: ") + 2, metaY);
+
+        xPos += doc.getTextWidth("Time: " + timeStr) + 15;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Prepared By:", xPos, metaY);
+        doc.setFont("helvetica", "normal");
+        doc.text(userName, xPos + doc.getTextWidth("Prepared By: ") + 2, metaY);
+        
+        if (structuredData.statusSummary) {
+            doc.setFont("helvetica", "bold");
+            doc.text("Status Summary:", margin + 5, metaY + 10);
+            doc.setFont("helvetica", "normal");
+            const statusText = doc.splitTextToSize(structuredData.statusSummary, contentWidth - 35);
+            doc.text(statusText[0], margin + 35, metaY + 10);
+        }
+        
+        yPos += 35;
+        
+        if (structuredData.executiveSummary) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text("EXECUTIVE SUMMARY", margin, yPos);
+            
+            yPos += 8;
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.3);
+            doc.line(margin, yPos, pageWidth - margin, yPos);
+            
+            yPos += 12;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            
+            const summaryText = doc.splitTextToSize(structuredData.executiveSummary, contentWidth);
+            summaryText.forEach(line => {
+                if (yPos + 6 > pageHeight - margin) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+                doc.text(line, margin, yPos);
+                yPos += 6;
+            });
+            
+            yPos += 10;
+        }
+        
+        if (structuredData.tasks && structuredData.tasks.length > 0) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text("TASKS & ACTIVITIES OVERVIEW", margin, yPos);
+            
+            yPos += 8;
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.3);
+            doc.line(margin, yPos, pageWidth - margin, yPos);
+            
+            yPos += 12;
+            
+            // Task status counts - single line with proper spacing
+            if (structuredData.taskStats) {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                doc.text("Task Status Distribution:", margin, yPos);
+                
+                yPos += 6;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+                doc.setTextColor(0, 0, 0);
+                
+                let xPos = margin;
+                Object.entries(structuredData.taskStats).forEach(([status, count], index) => {
+                    const text = `${status.toUpperCase()}: ${count}`;
+                    const textWidth = doc.getTextWidth(text);
+                    
+                    // Check if it fits on current line
+                    if (xPos + textWidth + 10 > pageWidth - margin) {
+                        yPos += 5;
+                        xPos = margin;
+                    }
+                    
+                    doc.text(text, xPos, yPos);
+                    xPos += textWidth + 15; // Add spacing between items
+                });
+                
+                yPos += 10;
+            }
+            
+            // Individual tasks
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+            doc.text("DETAILED TASK BREAKDOWN:", margin, yPos);
+            yPos += 4;
+            
+            structuredData.tasks.forEach((task, index) => {
+                if (yPos + 20 > pageHeight - margin) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+                
+                // Task number
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`${index + 1}.`, margin + 5, yPos + 12);
+                
+                // Task description - truncated to fit
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                
+                const availableWidth = contentWidth - 80;
+                let taskDesc = task.description;
+                
+                if (doc.getTextWidth(taskDesc) > availableWidth) {
+                    taskDesc = doc.splitTextToSize(taskDesc, availableWidth)[0];
+                    if (taskDesc.length > 3) {
+                        taskDesc = taskDesc.substring(0, taskDesc.length - 3) + "...";
+                    }
+                }
+                
+                doc.text(taskDesc, margin + 15, yPos + 12);
+                
+                // Status - simple text
+                const statusText = task.status.toUpperCase();
+                const statusWidth = doc.getTextWidth(statusText);
+                const statusX = pageWidth - margin - statusWidth - 5;
+                
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(8);
+                doc.setTextColor(0, 0, 0);
+                doc.text(statusText, statusX, yPos + 12);
+                
+                yPos += 16;
+            });
+
+            yPos += 8;
+        }
+        
+        if (structuredData.observations && structuredData.observations.length > 0) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text("KEY OBSERVATIONS & NOTICES", margin, yPos);
+            
+            yPos += 8;
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.3);
+            doc.line(margin, yPos, pageWidth - margin, yPos);
+
+            yPos += 12;
+
+            structuredData.observations.forEach((obs, index) => {
+                if (yPos + 15 > pageHeight - margin) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+
+                const numberedObs = `${index + 1}. ${obs}`;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+
+                const obsText = doc.splitTextToSize(numberedObs, contentWidth - 10);
+
+                doc.text(obsText, margin + 2, yPos);
+                yPos += obsText.length * 6 + 4; 
+            });
+
+            yPos += 5;
+        }
+        
+        if (structuredData.recommendations && structuredData.recommendations.length > 0) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text("PENDING ACTIONS/TASKS", margin, yPos);
+            
+            yPos += 8;
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.3);
+            doc.line(margin, yPos, pageWidth - margin, yPos);
+            
+            yPos += 12;
+            
+            structuredData.recommendations.forEach((rec, index) => {
+                if (yPos + 15 > pageHeight - margin) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+                
+                // Numbered recommendation
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`${index + 1}.`, margin, yPos);
+                
+                // Recommendation text
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                
+                const recText = doc.splitTextToSize(` ${rec}`, contentWidth - 10);
+                doc.text(recText, margin + 10, yPos);
+                yPos += recText.length * 6;
+                
+                yPos += 6;
+            });
+        }
+        
+        // Add page if needed
+        if (yPos + 40 > pageHeight - margin) {
+            doc.addPage();
+            yPos = margin;
+        } else {
+            yPos += 20;
+        }
+        
+        // Signature line
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(margin, yPos, margin + 80, yPos);
+        
+        yPos += 6;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text("HR Assistant", margin, yPos);
+        
+        // Page number on all pages
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(60, 60, 60);
+            doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 20, pageHeight - 10);
+            doc.text(`Generated: ${displayDate || dateStr} ${timeStr}`, margin, pageHeight - 10);
+        }
+        
+        // Save the PDF
+        const safeFilename = subject.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_report';
+        doc.save(`${safeFilename}.pdf`);
+        showToast("SUCCESS", "Professional report generated successfully.");
+    }
+
+    // Helper function to parse and structure content
+    function parseContent(lines) {
+        const result = {
+            executiveSummary: '',
+            tasks: [],
+            observations: [],
+            recommendations: [],
+            taskStats: {},
+            statusSummary: ''
+        };
+        
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            
+            // Check for executive summary
+            if (trimmed.includes('DAILY OPS BRIEF') || trimmed.includes('STATUS:')) {
+                result.executiveSummary = trimmed;
+                return;
+            }
+            
+            // Check for status summary
+            if (trimmed.includes('PENDING') && trimmed.includes('TASKS')) {
+                result.statusSummary = trimmed;
+                return;
+            }
+            
+            // Parse bullet points
+            if (trimmed.startsWith('•')) {
+                const content = trimmed.substring(1).trim();
+                
+                // Determine if it's a task, observation, or recommendation
+                if (content.includes('(ACTION REQUIRED)')) {
+                    result.recommendations.push(content.replace('(ACTION REQUIRED)', '').trim());
+                    result.tasks.push({
+                        description: content.replace('(ACTION REQUIRED)', '').trim(),
+                        status: 'pending'
+                    });
+                } else if (content.includes('(COMPLETED)')) {
+                    result.tasks.push({
+                        description: content.replace('(COMPLETED)', '').trim(),
+                        status: 'completed'
+                    });
+                } else if (content.includes('(SUSPENDED)')) {
+                    result.tasks.push({
+                        description: content.replace('(SUSPENDED)', '').trim(),
+                        status: 'suspended'
+                    });
+                    result.observations.push(content.replace('(SUSPENDED)', '').trim());
+                } else {
+                    result.observations.push(content);
+                }
+            }
+        });
+        
+        // Calculate task statistics
+        const stats = {};
+        result.tasks.forEach(task => {
+            stats[task.status] = (stats[task.status] || 0) + 1;
+        });
+        result.taskStats = stats;
+        
+        return result;
+    }
     renderHistory();
     loadBackendData();
 </script>

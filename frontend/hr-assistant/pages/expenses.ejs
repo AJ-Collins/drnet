@@ -18,6 +18,58 @@
     .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
     .filter-pill.active { background-color: #0f172a; color: white; border-color: #0f172a; }
+
+    #inboxDrawer {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        bottom: 100px;
+        width: 520px;
+        z-index: 100;
+        background: white;
+        border-radius: 14px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.25);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        
+        transform-origin: bottom right;
+        transition: 
+            transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+            opacity 0.4s ease;
+    }
+
+    .drawer-hidden {
+        transform: scale(0) translate(50px, 50px);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .drawer-visible {
+        transform: scale(1) translate(0, 0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    #inboxOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.1);
+        backdrop-filter: blur(0px);
+        z-index: 90;
+        transition: opacity 0.4s ease;
+    }
+
+    #inboxList::-webkit-scrollbar { width: 4px; }
+    #inboxList::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+    @keyframes pulse-teal {
+        0% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(20, 184, 166, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
+    }
+    .highlight-field { animation: pulse-teal 1.5s ease-out; border-color: #14b8a6 !important; }
 </style>
 
 <div class="max-w-full mx-auto">
@@ -36,7 +88,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Expenditure</p>
-                            <h3 id="grandTotal" class="text-3xl font-black text-slate-900">KES 0.00</h3>
+                            <h3 id="grandTotal" class="text-2xl font-black text-slate-900">KES 0.00</h3>
                         </div>
                         
                         <div class="flex flex-wrap items-center gap-2">
@@ -50,13 +102,17 @@
                                 <input type="date" id="historyFilter" class="bg-transparent border-none text-[11px] font-black text-slate-700 focus:ring-0 p-0 cursor-pointer">
                             </div>
 
-                            <div class="h-6 w-[1px] bg-slate-200 mx-1"></div>
 
                             <div class="relative">
                                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
                                 <input type="text" id="searchInput" oninput="render()" placeholder="Search expenses..." 
                                        class="pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-xs font-bold text-slate-700 outline-none focus:border-teal-500 w-44 transition-all">
                             </div>
+                            <div class="h-6 w-[1px] bg-slate-200 mx-1"></div>
+                            <button onclick="exportToExcel()" class="group flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all">
+                                <i class="fas fa-file-excel text-emerald-600 text-xs"></i>
+                                <span class="text-[11px] font-black uppercase text-slate-600 group-hover:text-emerald-700">Export</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -94,7 +150,7 @@
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-2 block">Description</label>
                         <textarea id="expDesc" placeholder="Brief details..." 
-                                  class="w-full p-2 bg-slate-800 border border-slate-700 rounded-2xl outline-none text-sm font-medium text-slate-400 h-20 focus:border-teal-500 transition-all"></textarea>
+                                  class="w-full p-2 bg-slate-800 border border-slate-700 rounded-2xl outline-none text-sm font-medium text-slate-200 h-20 focus:border-teal-500 transition-all"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -120,6 +176,38 @@
             </div>
         </div>
     </div>
+
+    <!--Inbox-->
+    <button id="inboxBtn" onclick="toggleInbox()" class="fixed bottom-8 right-8 w-16 h-16 bg-slate-900 text-white rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all z-[70] flex items-center justify-center">
+        <div class="absolute -top-1 -right-1 w-6 h-6 bg-rose-500 border-4 border-white rounded-full text-[10px] font-black flex items-center justify-center" id="inboxCount">0</div>        
+        <i class="fas fa-comment-dots text-xl group-hover:scale-110 transition-transform"></i>
+    </button>
+
+    <div id="inboxDrawer" class="drawer-hidden">
+        <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
+            <div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-comment-dots text-xl group-hover:scale-110 transition-transform"></i>
+                    <h3 class="font-black text-lg tracking-tight leading-none">Inbox</h3>
+                </div>
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-2">Received Feeds</p>
+            </div>
+            <button onclick="toggleInbox()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-slate-500 transition-all">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+
+        <div id="inboxList" class="flex-grow overflow-y-auto p-5 space-y-4 bg-slate-50/50 custom-scroll">
+            </div>
+
+        <div class="p-4 bg-white border-t border-slate-100">
+            <button onclick="fetchCEOInbox()" class="w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
+                <i class="fas fa-sync-alt mr-2"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <div id="inboxOverlay" onclick="toggleInbox()" class="fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-[60] hidden opacity-0 transition-opacity duration-500"></div>
 </div>
 
 <script>
@@ -159,6 +247,8 @@
         $('expDate').valueAsDate = new Date();
         $('historyFilter').valueAsDate = new Date();
         expenses = await expenseApi.getAll();
+
+        await fetchCEOInbox();
         render();
     }
 
@@ -342,6 +432,176 @@
         document.getElementById('toastContainer').appendChild(toast);
         setTimeout(() => toast.remove(), 4000);
     }
+
+    function toggleInbox() {
+        const drawer = document.getElementById('inboxDrawer');
+        const overlay = document.getElementById('inboxOverlay');
+        const isHidden = drawer.classList.contains('drawer-hidden');
+
+        if (isHidden) {
+            drawer.classList.remove('drawer-hidden');
+            drawer.classList.add('drawer-visible');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.style.opacity = "1", 10);
+            markAllAsSeen();
+            fetchCEOInbox();
+        } else {
+            drawer.classList.add('drawer-hidden');
+            drawer.classList.remove('drawer-visible');
+            overlay.style.opacity = "0";
+            setTimeout(() => overlay.classList.add('hidden'), 400);
+        }
+    }
+
+    async function fetchCEOInbox() {
+        try {
+            const res = await fetch('/api/hr/inbox');
+            const data = await res.json();
+            const container = document.getElementById('inboxList');
+            const countBadge = document.getElementById('inboxCount');
+
+            const pendingCount = data.filter(m => m.status === 'pending').length;
+            
+            if (pendingCount > 0) {
+                countBadge.innerText = pendingCount;
+                countBadge.style.display = 'flex';
+            } else {
+                countBadge.style.display = 'none';
+            }
+
+            if (data.length === 0) {
+                container.innerHTML = `<div class="text-center py-20 text-slate-400 font-bold text-xs uppercase tracking-widest">Feed is Empty</div>`;
+                return;
+            }
+
+            container.innerHTML = data.map(msg => {
+                const isProcessed = msg.status === 'processed';
+                return `
+                    <div class="${isProcessed ? 'bg-slate-200 opacity-70' : 'bg-slate-200'} p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all animate-fade-up">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="px-2 py-1 rounded-lg bg-teal-50 text-teal-600 text-[9px] font-black uppercase">CTO</span>
+                            <span class="text-[10px] text-slate-400 font-bold">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        
+                        <p class="text-sm font-semibold text-slate-700 leading-relaxed mb-4">"${msg.message_content}"</p>
+                        
+                        <div class="flex gap-2 pt-3 border-t border-slate-50">
+                            ${isProcessed ? `
+                                <div class="w-full py-2 flex items-center justify-center gap-2 text-emerald-500 font-black uppercase text-[10px] tracking-widest">
+                                    <i class="fas fa-check-double"></i> Processed
+                                </div>
+                            ` : `
+                                <button onclick="captureMessage('${msg.message_content.replace(/'/g, "\\'")}', ${msg.id})" 
+                                        class="flex-1 bg-slate-900 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-teal-500 hover:text-slate-900 transition-all">
+                                    <i class="fas fa-file-export mr-2"></i> Capture to Input
+                                </button>
+                                <div class="relative group/icon">                     
+                                    <button onclick="updateInboxStatus(${msg.id}, 'processed')" 
+                                        class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all">
+                                        <i class="fas fa-check-circle text-xs"></i>
+                                    </button>
+                                    <span class="absolute top-1/2 right-full mr-2 -translate-y-1/2
+                                        whitespace-nowrap bg-slate-900 text-white text-[10px]
+                                        px-2 py-1 rounded-md opacity-0
+                                        group-hover/icon:opacity-100 transition
+                                        pointer-events-none z-50
+
+                                        after:content-[''] after:absolute after:top-1/2 after:left-full
+                                        after:-translate-y-1/2
+                                        after:border-4 after:border-transparent
+                                        after:border-l-slate-900">
+                                        Mark as complete
+                                    </span>
+                                </div> 
+                            `}                       
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            console.error("Inbox fetch failed");
+        }
+    }
+
+    async function markAllAsSeen() {
+        try {
+            await fetch('/api/hr/inbox/mark-seen', { method: 'PATCH' });
+        } catch (e) {
+            console.error("Failed to update seen status");
+        }
+    }
+
+    function captureMessage(content, id) {
+        const amountField = $('expAmount');
+        const descField = $('expDesc');
+        const categoryField = $('expOnWhat');
+
+        const numberMatch = content.match(/(\d+(\.\d{1,2})?)/);
+        
+        if (numberMatch) {
+            amountField.value = numberMatch[0];
+            descField.value = content.replace(numberMatch[0], '').trim();
+        } else {
+            descField.value = content;
+        }
+
+        toggleInbox();
+        
+        [amountField, descField].forEach(field => {
+            field.classList.add('highlight-field');
+            setTimeout(() => field.classList.remove('highlight-field'), 1500);
+        });
+
+        amountField.focus();
+        showToast("SUCCESS", "Captured & Parsed request details.");
+    }
+
+    async function updateInboxStatus(id, status) {
+        await fetch(`/api/hr/inbox/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        fetchCEOInbox();
+    }
+
+    function exportToExcel() {
+        if (!expenses || expenses.length === 0) {
+            showToast("WARNING", "No data available to export.");
+            return;
+        }
+        const headers = ["Date", "Category", "Beneficiary", "Description", "Amount (KES)"];
+        const totalSum = expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+        const csvRows = expenses.map(row => {
+            const date = new Date(row.expense_date).toLocaleDateString();
+            const cleanDesc = `"${(row.description || '').replace(/"/g, '""')}"`; 
+            const cleanCat = `"${(row.category || '').replace(/"/g, '""')}"`;
+            const cleanBen = `"${(row.beneficiary || '').replace(/"/g, '""')}"`;
+            
+            return [
+                date,
+                cleanCat,
+                cleanBen,
+                cleanDesc,
+                row.amount
+            ].join(",");
+        });
+        const totalRow = ["", "", "TOTAL EXPENDITURE", "", totalSum.toFixed(2)].join(",");
+        const csvContent = [headers.join(","), ...csvRows, "", totalRow].join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const timestamp = new Date().toISOString().slice(0,10);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Expenses_data_${timestamp}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast("SUCCESS", "Excel data file downloaded.");
+    }
+
+    setInterval(fetchCEOInbox, 60000);
 
     $('expForm').onsubmit = handleFormSubmit;
     $('historyFilter').oninput = render;

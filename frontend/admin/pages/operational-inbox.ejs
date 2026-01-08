@@ -1,0 +1,241 @@
+<div class="max-w-full mx-auto animate-fade-up">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+    <div class="mb-8 animate-fade-up">
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Operational Inbox</h1>
+        <p class="text-slate-500 font-medium">Sync daily tasks, expenses, and bookings with HR</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-8">
+            <div class="bg-white rounded-lg border border-slate-100 shadow-sm custom-scroll overflow-y-auto max-h-[720px] ">
+                <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest">Message Logs</h3>
+                    <button onclick="fetchCEOMessages()" class="text-slate-400 hover:text-emerald-600 transition-colors">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-50">
+                                <th class="px-6 py-4 font-black">Details</th>                                 
+                                <th class="px-6 py-4 font-black">Status</th>
+                                <th class="px-6 py-4 font-black text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ceoHistoryList" class="divide-y divide-slate-50">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 sticky top-6">
+            <div class="bg-white rounded-lg p-8 border border-slate-200 shadow-xl shadow-slate-200/50">
+                <h2 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+                    <span class="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                    New Dispatch
+                </h2>
+
+                <form id="ceoComposeForm" class="space-y-5">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Instruction</label>
+                        <textarea id="msgContent" required
+                            class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all resize-vertical h-40"
+                            placeholder="Type task or expense details..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Priority</label>
+                        <select id="msgPriority" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold uppercase outline-none focus:border-emerald-500">
+                            <option value="normal" style="font-size: 16px">Normal</option>
+                            <option value="urgent" style="font-size: 16px">Urgent</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" id="sendBtn" 
+                        class="w-full bg-slate-900 hover:bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg active:scale-95">
+                        Send to HR
+                    </button>
+                    <div id="cancelUpdateContainer" class="hidden text-center mt-4">
+                        <button type="button" onclick="resetForm()" class="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors">
+                            <i class="fas fa-times mr-1"></i> Cancel Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function getStatusBadge(msg) {
+    if (msg.status === 'processed' || msg.status === 'completed') {
+        return `<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase">
+                    <i class="fas fa-check-double"></i> Processed
+                </div>`;
+    } else if (msg.is_seen) {
+        return `<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase">
+                    <i class="fas fa-eye"></i> Seen
+                </div>`;
+    } else {
+        return `<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[10px] font-black uppercase">
+                    <i class="fas fa-check"></i> Sent
+                </div>`;
+    }
+}
+
+async function fetchCEOMessages() {
+    try {
+        const res = await fetch('/api/hr/inbox');
+        const messages = await res.json();
+        const container = document.getElementById('ceoHistoryList');
+
+        container.innerHTML = messages.map(msg => {
+            const isLong = msg.message_content.length > 120;
+            const displayContent = isLong 
+                ? `${msg.message_content.substring(0, 120)}...` 
+                : msg.message_content;
+
+            return `
+            <tr class="group hover:bg-slate-50/50 transition-colors">
+                <td class="px-6 py-5 max-w-md">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">
+                            ${new Date(msg.created_at).toLocaleDateString()}
+                        </span>
+                        <span class="text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
+                            msg.priority === 'urgent' 
+                            ? 'bg-rose-100 text-rose-600 border border-rose-200' 
+                            : 'bg-slate-100 text-slate-500 border border-slate-200'
+                        }">
+                            ${msg.priority}
+                        </span>
+                    </div>
+                    <div class="message-container">
+                        <p id="text-${msg.id}" class="text-sm font-semibold text-slate-700 leading-relaxed break-words">
+                            ${displayContent}
+                        </p>
+                        ${isLong ? `
+                            <button onclick="toggleMessage(${msg.id}, '${msg.message_content.replace(/'/g, "\\'")}')" 
+                                    class="text-[10px] font-bold text-emerald-600 uppercase mt-1 hover:underline tracking-widest" 
+                                    id="btn-${msg.id}">
+                                Read More
+                            </button>` : ''}
+                    </div>
+                </td>
+                <td class="px-6 py-5 vertical-align-top">${getStatusBadge(msg)}</td>
+                <td class="px-6 py-5 text-right vertical-align-top">
+                    <div class="flex justify-end gap-2">
+                        <button onclick="prepareEdit(${msg.id}, '${msg.message_content.replace(/'/g, "\\'")}', '${msg.priority}')" 
+                                class="w-8 h-8 rounded-lg border border-slate-100 text-slate-400 hover:text-blue-600 bg-white shadow-sm transition-all">
+                            <i class="fas fa-edit text-[12px]"></i>
+                        </button>
+                        <button onclick="deleteRecord(${msg.id})" 
+                                class="w-8 h-8 rounded-lg border border-slate-100 text-slate-400 hover:text-rose-600 bg-white shadow-sm transition-all">
+                            <i class="fas fa-trash-alt text-[12px]"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    } catch (err) { console.error("Error loading messages:", err); }
+}
+
+function toggleMessage(id, fullText) {
+    const textElem = document.getElementById(`text-${id}`);
+    const btnElem = document.getElementById(`btn-${id}`);
+    const isExpanded = btnElem.innerText === "SHOW LESS";
+
+    if (isExpanded) {
+        textElem.innerText = fullText.substring(0, 120) + "...";
+        btnElem.innerText = "READ MORE";
+    } else {
+        textElem.innerText = fullText;
+        btnElem.innerText = "SHOW LESS";
+    }
+}
+
+let editMode = false;
+let editId = null;
+
+function prepareEdit(id, content, priority) {
+    editMode = true;
+    editId = id;
+
+    document.getElementById('msgContent').value = content;
+    document.getElementById('msgPriority').value = priority;
+    document.getElementById('sendBtn').innerText = "Update Instruction";
+    document.getElementById('sendBtn').className = "w-full bg-teal-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg";
+    document.getElementById('cancelUpdateContainer').classList.remove('hidden');
+    document.getElementById('msgContent').focus();
+}
+
+function resetForm() {
+    editMode = false;
+    editId = null;
+    document.getElementById('msgContent').value = '';
+    document.getElementById('msgPriority').value = 'normal';
+    const btn = document.getElementById('sendBtn');
+    btn.innerText = "Send to HR";
+    btn.className = "w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg active:scale-95";
+    
+    document.getElementById('cancelUpdateContainer').classList.add('hidden');
+}
+
+async function deleteRecord(id) {
+    if(!confirm("Are you sure?")) return;
+    await fetch(`/api/hr/inbox/${id}`, { method: 'DELETE' });
+    showToast("REMOVED", "Record deleted successfully");
+    fetchCEOMessages();
+}
+
+document.getElementById('ceoComposeForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    btn.opacity = "0.7";
+
+    const payload = {
+        message_content: document.getElementById('msgContent').value,
+        priority: document.getElementById('msgPriority').value
+    };
+
+    const url = editMode ? `/api/hr/inbox/update/${editId}` : '/api/hr/inbox/send';
+    const method = editMode ? 'PATCH' : 'POST';
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            showToast("SUCCESS", method === 'POST' ? "Dispatch sent" : "Instruction updated");
+            resetForm();
+            fetchCEOMessages();
+        } else {
+            showToast("ERROR", "Server returned an error");
+        }
+    } catch (err) {
+        console.error("Submission error:", err);
+        showToast("ERROR", "Failed to connect to server");
+    } finally {
+        btn.disabled = false;
+        btn.opacity = "1";
+    }
+};
+
+function showToast(title, msg) {
+    const toast = document.createElement('div');
+    toast.className = "bg-slate-900 text-white p-4 rounded-xl shadow-xl min-w-[200px] animate-slide-in";
+    toast.innerHTML = `<h5 class="text-[10px] font-black uppercase text-teal-400 mb-1">${title}</h5><p class="text-xs font-medium">${msg}</p>`;
+    document.getElementById('toastContainer').appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+window.onload = fetchCEOMessages;
+</script>

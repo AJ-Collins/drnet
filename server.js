@@ -40,6 +40,8 @@ const hrplanner = require("./src/routes/hrplanner");
 const hrcommslogs = require("./src/routes/hrcommslogs");
 const hrnotify = require("./src/routes/hrnotify");
 const hrdashboard = require("./src/routes/hrdashboard");
+const hrinbox = require("./src/routes/hrinbox");
+const hrinboxreply = require("./src/routes/hrinboxreply");
 
 // Session Configuration
 app.use(
@@ -256,6 +258,8 @@ app.use("/api/hr", apiSessionAuth, hrplanner);
 app.use("/api/hr", apiSessionAuth, hrcommslogs);
 app.use("/api/hr", apiSessionAuth, hrnotify);
 app.use("/api/hr", apiSessionAuth, hrdashboard);
+app.use("/api/hr", apiSessionAuth, hrinbox);
+app.use("/api/hr", apiSessionAuth, hrinboxreply);
 
 
 // Create uploads folder
@@ -306,7 +310,8 @@ const adminPages = [
   "expired-users",
   "active-users",
   "notifications",
-  "reminders"
+  "reminders",
+  "operational-inbox"
 ];
 
 app.get("/admin/:page", requireAdminAuth, (req, res) => {

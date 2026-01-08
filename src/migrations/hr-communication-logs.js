@@ -6,7 +6,7 @@ async function createHrCommsLogsTable() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         subject VARCHAR(255) NOT NULL,
         recipient VARCHAR(255) NOT NULL,
-        method ENUM('email', 'whatsapp') NOT NULL,
+        method ENUM('email', 'whatsapp', 'ceo') NOT NULL,
         body TEXT NOT NULL,
         sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
