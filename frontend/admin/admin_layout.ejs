@@ -18,6 +18,8 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -75,11 +77,12 @@
             <% const pages = [ {slug:'dashboard', name:'Dashboard'},
             {slug:'operational-inbox', name:'Operational Inbox'},
             {slug:'staff-attendance', name:'Staff Attendance'},
+            {slug:'subscriptions', name:'Subscriptions'},
+            { slug: 'reminders', name:'Reminders' },
             { slug: 'my-packages', name: 'My Packages' },
             {slug:'manage-users', name:'User Management'},
             {slug:'service-management', name:'Service Management'},
-            { slug:'reports', name:'Generated Reports' },
-            { slug: 'reminders', name:'Reminders' },
+            { slug:'reports', name:'Generated Reports' },            
             {slug:'support-tickets', name:'Support Tickets'}, {slug:'finance',
             name:'Finance & Reports'}, {slug:'renewals', name:'Renewals'},
             {slug:'website-bookings', name:'Website Bookings'},
@@ -95,6 +98,7 @@
                   p.slug === 'dashboard' ? 'fa-chart-pie' :
                   p.slug === 'operational-inbox' ? 'fa-inbox' :
                   p.slug.includes('attendance') ? 'fa-user-check' :
+                  p.slug === 'subscriptions' ? 'fas fa-wifi' :
                   p.slug.includes('users') ? 'fa-users' :
                   p.slug.includes('service') ? 'fa-tools' :
                   p.slug.includes('reports') ? 'fa-calendar-day' :

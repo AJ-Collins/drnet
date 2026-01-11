@@ -1,4 +1,5 @@
 <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         :root { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         body { background-color: #f8fafc; }
@@ -12,21 +13,13 @@
 
         table { border-collapse: separate; border-spacing: 0; width: 100%; }
         th { 
-            background: #f8fafc; 
-            color: #64748b; 
-            font-size: 0.65rem; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            letter-spacing: 0.05em; 
-            padding: 1rem 1.5rem; 
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc; color: #64748b; font-size: 0.65rem; 
+            font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; 
+            padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid #e2e8f0;
         }
         td { 
-            padding: 1rem 1.5rem; 
-            border-bottom: 1px solid #f1f5f9; 
-            font-size: 0.85rem;
-            vertical-align: middle;
+            padding: 1rem 1.5rem; border-bottom: 1px solid #f1f5f9; 
+            font-size: 0.85rem; vertical-align: middle;
         }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background-color: #f8fafc; }
@@ -36,10 +29,7 @@
         .badge-overdue { background: #fff1f2; color: #be123c; border: 1px solid #ffe4e6; }
         .badge-inactive { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 
-        .drawer-overlay {
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(4px);
-        }
+        .drawer-overlay { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
         .drawer-panel {
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -47,17 +37,8 @@
         }
         .drawer-panel.open { transform: translateX(0); }
 
-        .search-input {
-            background: #f1f5f9;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .search-input:focus {
-            background: white;
-            border-color: #0d9488;
-            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
-        }
-
+        .search-input { background: #f1f5f9; border: 1px solid transparent; transition: all 0.2s; }
+        .search-input:focus { background: white; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
         .sms-editor {
             background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
             background-size: 20px 20px;
@@ -65,454 +46,586 @@
             line-height: 1.5;
         }
 
+        .custom-checkbox {
+            appearance: none; background-color: #fff; margin: 0;
+            font: inherit; color: currentColor; width: 1.15em; height: 1.15em;
+            border: 1px solid #cbd5e1; border-radius: 0.25em;
+            display: grid; place-content: center; cursor: pointer;
+        }
+        .custom-checkbox::before {
+            content: ""; width: 0.65em; height: 0.65em; transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em white;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        .custom-checkbox:checked { background-color: #0d9488; border-color: #0d9488; }
+        .custom-checkbox:checked::before { transform: scale(1); }
+
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
-        .copy-btn.copied { background: #10b981 !important; color: white !important; }
-</style>
-<div class="max-w-full mx-auto flex flex-col">
-        
-        <div class="mb-8">
+    </style>
+<div class="max-w-full mx-auto flex flex-col min-h-screen">
+    
+    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tight">Client Comms</h1>
-            <p class="text-slate-500 font-bold text-sm">Payment & Reminder System</p>
+            <p class="text-slate-500 font-bold text-sm">SMS Dispatch Center</p>
         </div>
-
-        <div class="glass-panel p-2 rounded-xl flex flex-col md:flex-row gap-2 mb-6 sticky top-4 z-20">
-            <div class="relative flex-grow">
-                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" placeholder="Search client name, phone, or package..." 
-                    class="w-full pl-10 pr-4 py-3 rounded-xl search-input text-sm font-semibold outline-none text-slate-700 placeholder:text-slate-400">
+        
+        <div id="balanceBadge" class="hidden bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <i class="fas fa-coins"></i>
             </div>
-            
-            <div class="flex gap-2">
-                <select id="statusFilter" class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
-                    <option value="">All Statuses</option>
-                    <option value="active">Active Only</option>
-                    <option value="overdue">Overdue Only</option>
-                    <option value="inactive">Inactive</option>
-                </select>
+            <div>
+                <p class="text-[10px] font-black uppercase text-slate-400">SMS Balance</p>
+                <p class="text-sm font-bold text-slate-900" id="smsBalanceVal">Loading...</p>
             </div>
         </div>
-
-        <div id="loadingState" class="hidden py-20 text-center">
-            <i class="fas fa-circle-notch fa-spin text-4xl text-teal-500 mb-4"></i>
-            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading Data...</p>
-        </div>
-
-        <div id="tableContainer" class="glass-panel rounded-xl overflow-hidden mb-6 hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr>
-                            <th>Client Identity</th>
-                            <th>Package</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Expiry Date</th>
-                            <th class="text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="clientsTableBody" class="bg-white">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="emptyState" class="hidden py-16 text-center">
-             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 text-slate-300 mb-4">
-                <i class="fas fa-folder-open text-2xl"></i>
-             </div>
-             <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">No Records Found</p>
-        </div>
-
-        <div id="paginationContainer" class="mt-auto pt-6 flex justify-between items-center border-t border-slate-200 hidden">
-            <span id="pageInfo" class="text-xs font-bold text-slate-400 uppercase">Showing 0-0 of 0</span>
-            <div class="flex gap-2">
-                <button id="btnPrev" class="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Previous</button>
-                <button id="btnNext" class="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Next</button>
-            </div>
-        </div>
-
     </div>
 
-    <div id="drawerOverlay" class="fixed inset-0 drawer-overlay hidden z-40 transition-opacity opacity-0" onclick="UI.closeDrawer()"></div>
-    
-    <div id="smsDrawer" class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
+    <div class="glass-panel p-2 rounded-xl flex flex-col md:flex-row gap-2 mb-6 sticky top-4 z-20">
+        <div class="relative flex-grow">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="searchInput" placeholder="Search clients..." 
+                class="w-full pl-10 pr-4 py-3 rounded-xl search-input text-sm font-semibold outline-none text-slate-700 placeholder:text-slate-400">
+        </div>
         
-        <div class="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
-            <div>
-                <h2 id="dName" class="text-xl font-black text-slate-800 tracking-tight">Client Name</h2>
-                <div class="flex items-center gap-2 mt-1">
-                    <span id="dPhone" class="text-xs font-bold text-slate-500 font-mono">07XX XXX XXX</span>
-                    <span id="dStatus" class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-600">Status</span>
-                </div>
-            </div>
-            <button onclick="UI.closeDrawer()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-colors">
-                <i class="fas fa-times"></i>
+        <div class="flex gap-2">
+            <select id="statusFilter" class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="overdue">Overdue</option>
+            </select>
+            
+            <button id="btnBulkAction" onclick="Actions.openBulkDrawer()" class="hidden px-6 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 font-bold text-xs flex items-center gap-2">
+                <i class="fas fa-paper-plane"></i>
+                <span id="bulkCount">0</span> SELECTED
+            </button>
+
+            <button onclick="initData()" class="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+                <i class="fas fa-sync-alt text-xs"></i>
             </button>
         </div>
+    </div>
 
-        <div class="flex-grow overflow-y-auto custom-scroll p-6 space-y-8">
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div class="p-3 rounded-xl bg-slate-100 border border-slate-100">
-                    <p class="text-[8px] font-black text-slate-400 uppercase">Package</p>
-                    <p id="dPackage" class="text-sm font-bold text-slate-900 truncate">--</p>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-100 border border-slate-100">
-                    <p class="text-[8px] font-black text-slate-400 uppercase">Amount Due</p>
-                    <p id="dPrice" class="text-sm font-bold text-slate-900">KES 0</p>
-                </div>
-            </div>
+    <div id="loadingState" class="hidden py-20 text-center">
+        <i class="fas fa-circle-notch fa-spin text-4xl text-teal-500 mb-4"></i>
+        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Syncing Data...</p>
+    </div>
 
-            <div class="space-y-3">
-                <div class="flex justify-between items-end">
-                    <label class="text-[10px] font-black text-rose-500 uppercase tracking-widest">
-                        <i class="fas fa-bell mr-1"></i> Payment Reminder
-                    </label>
-                    <button onclick="Actions.copyToClipboard('reminderText', this)" class="copy-btn text-[9px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-all">
-                        <i class="fas fa-copy mr-1"></i> COPY TEXT
-                    </button>
-                </div>
-                <div class="relative group">
-                    <textarea id="reminderText" class="w-full h-40 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-50 transition-all resize-none"></textarea>
-                    <div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span class="text-[9px] font-mono text-slate-400">~ DR.NET LABS</span>
-                    </div>
-                </div>
-            </div>
-
-            <hr class="border-slate-100">
-
-            <div class="space-y-3">
-                <div class="flex justify-between items-end">
-                    <label class="text-[10px] font-black text-teal-600 uppercase tracking-widest">
-                        <i class="fas fa-check-circle mr-1"></i> Payment Receipt
-                    </label>
-                    <button onclick="Actions.copyToClipboard('confirmText', this)" class="copy-btn text-[9px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-all">
-                        <i class="fas fa-copy mr-1"></i> COPY TEXT
-                    </button>
-                </div>
-                <div class="relative group">
-                    <textarea id="confirmText" class="w-full h-40 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50 transition-all resize-none"></textarea>
-                    <div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span class="text-[9px] font-mono text-slate-400">~ DR.NET LABS</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
-            <p class="text-[10px] text-slate-400 font-bold uppercase">Click copy, then paste into SMS app or Bulk Sender</p>
+    <div id="tableContainer" class="glass-panel rounded-xl overflow-hidden mb-6 hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th class="w-10">
+                            <input type="checkbox" id="selectAll" class="custom-checkbox" onchange="Actions.toggleSelectAll()">
+                        </th>
+                        <th>Client Identity</th>
+                        <th>Package Plan</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Expiry Date</th>
+                        <th>Counter</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="clientsTableBody" class="bg-white"></tbody>
+            </table>
         </div>
     </div>
 
-    <script>
-        const API_BASE = "/api";
-        const ITEMS_PER_PAGE = 20;
+    <div id="paginationContainer" class="mt-auto pt-6 flex justify-between items-center border-t border-slate-200 hidden">
+        <span id="pageInfo" class="text-xs font-bold text-slate-400 uppercase">Showing 0-0 of 0</span>
+        <div class="flex gap-2">
+            <button id="btnPrev" class="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Previous</button>
+            <button id="btnNext" class="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Next</button>
+        </div>
+    </div>
+
+</div>
+
+<div id="drawerOverlay" class="fixed inset-0 drawer-overlay hidden z-40 transition-opacity opacity-0" onclick="UI.closeAllDrawers()"></div>
+
+<div id="smsDrawer" class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
+    <div class="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
+        <div>
+            <h2 id="dName" class="text-xl font-black text-slate-800 tracking-tight">Client Name</h2>
+            <div class="flex items-center gap-2 mt-1">
+                <span id="dPhone" class="text-xs font-bold text-slate-500 font-mono">07XX XXX XXX</span>
+                <span id="dStatus" class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-600">Status</span>
+            </div>
+        </div>
+        <button onclick="UI.closeAllDrawers()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="flex-grow overflow-y-auto custom-scroll p-6 space-y-6">
+        <div class="flex p-1 bg-slate-100 rounded-lg">
+            <button onclick="Actions.setTemplate('reminder')" class="flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-slate-800 transition-all">Reminder</button>
+            <button onclick="Actions.setTemplate('receipt')" class="flex-1 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all">Confirmation</button>
+            <button onclick="Actions.setTemplate('custom')" class="flex-1 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all">Custom</button>
+        </div>
+
+        <div class="relative group">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Message Content</label>
+            <textarea id="singleSmsBody" class="w-full h-48 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50 transition-all resize-none"></textarea>            
+        </div>
+    </div>
+
+    <div class="p-6 bg-slate-50 border-t border-slate-100">
+        <button id="btnSendSingle" onclick="API.sendSingleSMS()" class="w-full py-4 rounded-xl bg-teal-600 text-white font-bold text-sm hover:bg-teal-700 shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2 transition-all">
+            <i class="fas fa-paper-plane"></i> SEND SMS NOW
+        </button>
+    </div>
+</div>
+
+<div id="bulkDrawer" class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
+    <div class="p-6 border-b border-slate-100 bg-slate-900 text-white">
+        <h2 class="text-xl font-black tracking-tight">Bulk Dispatch</h2>
+        <p class="text-xs font-medium text-slate-400 mt-1">Sending to <span id="bulkTotalBadge" class="text-white font-bold">0</span> recipients</p>
+    </div>
+
+    <div class="flex-grow overflow-y-auto custom-scroll p-6 space-y-6">
         
-        const State = {
-            allClients: [],
-            filteredClients: [],
-            currentPage: 1,
-            isLoading: false
-        };
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Recipient Summary</p>
+            <div class="flex flex-wrap gap-2" id="bulkRecipientList">
+                </div>
+            <p id="bulkHiddenCount" class="text-[10px] text-slate-400 font-bold mt-2 hidden">+ 12 others</p>
+        </div>
 
-        const Els = {
-            tableContainer: document.getElementById('tableContainer'),
-            tbody: document.getElementById('clientsTableBody'),
-            emptyState: document.getElementById('emptyState'),
-            search: document.getElementById('searchInput'),
-            filter: document.getElementById('statusFilter'),
-            loader: document.getElementById('loadingState'),
-            pagination: document.getElementById('paginationContainer'),
-            pageInfo: document.getElementById('pageInfo'),
-            prevBtn: document.getElementById('btnPrev'),
-            nextBtn: document.getElementById('btnNext'),
-            
-            drawer: document.getElementById('smsDrawer'),
-            overlay: document.getElementById('drawerOverlay'),
-            dName: document.getElementById('dName'),
-            dPhone: document.getElementById('dPhone'),
-            dStatus: document.getElementById('dStatus'),
-            dPackage: document.getElementById('dPackage'),
-            dPrice: document.getElementById('dPrice'),
-            txtReminder: document.getElementById('reminderText'),
-            txtConfirm: document.getElementById('confirmText')
-        };
+        <div class="relative">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Message to All</label>
+            <textarea id="bulkSmsBody" class="w-full h-48 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-100 transition-all resize-none" placeholder="Type your message here..."></textarea>
+            <p class="text-[10px] text-slate-400 mt-2">
+                <i class="fas fa-info-circle mr-1"></i> Same message will be sent to all selected clients.
+            </p>
+        </div>
+    </div>
 
-        async function loadClients() {
-            UI.toggleLoading(true);
+    <div class="p-6 bg-slate-50 border-t border-slate-100">
+        <button id="btnSendBulk" onclick="API.sendBulkSMS()" class="w-full py-4 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 shadow-lg shadow-slate-900/20 flex items-center justify-center gap-2 transition-all">
+            <i class="fas fa-mail-bulk"></i> SEND BULK BLAST
+        </button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = "/api/hr/dispatch"; 
+    const DATA_ENDPOINT = "/api/subscriptions/dashboard-data";
+    
+    const State = {
+        allData: [],
+        filteredData: [],
+        selectedIds: new Set(),
+        currentClient: null,
+        currentPage: 1,
+        itemsPerPage: 20
+    };
+
+    const Els = {
+        tableContainer: document.getElementById('tableContainer'),
+        tbody: document.getElementById('clientsTableBody'),
+        loader: document.getElementById('loadingState'),
+        search: document.getElementById('searchInput'),
+        filter: document.getElementById('statusFilter'),
+        selectAll: document.getElementById('selectAll'),
+        btnBulk: document.getElementById('btnBulkAction'),
+        bulkCount: document.getElementById('bulkCount'),
+        
+        smsDrawer: document.getElementById('smsDrawer'),
+        singleBody: document.getElementById('singleSmsBody'),
+        
+        bulkDrawer: document.getElementById('bulkDrawer'),
+        bulkBody: document.getElementById('bulkSmsBody'),
+        bulkRecipients: document.getElementById('bulkRecipientList'),
+        
+        overlay: document.getElementById('drawerOverlay')
+    };
+
+    async function initData() {
+        UI.toggleLoading(true);
+        try {
+            const res = await fetch(DATA_ENDPOINT);
+            if(!res.ok) throw new Error("Failed to load data");
+            const raw = await res.json();
             
+            State.allData = raw.subscriptions.map(sub => {
+                const now = new Date();
+                const expiryDate = new Date(sub.expiry_date.replace(' ', 'T'));
+                
+                const warningDate = new Date(expiryDate);
+                warningDate.setDate(warningDate.getDate() - 5);
+                
+                let displayStatus = 'active';
+                let isWarningPeriod = false;
+
+                if (now > expiryDate) {
+                    displayStatus = 'overdue';
+                } else if (now > warningDate) {
+                    displayStatus = 'overdue'; 
+                    isWarningPeriod = true;
+                }
+                return {
+                    id: sub.id,
+                    name: `${sub.first_name} ${sub.second_name}`,
+                    phone: sub.phone,
+                    pkgName: sub.package_name,
+                    price: sub.price,
+                    expiry: expiryDate,
+                    warningDate: warningDate,
+                    isWarningPeriod: isWarningPeriod,
+                    displayStatus: displayStatus
+                };
+            }).sort((a,b) => a.name.localeCompare(b.name));
+            
+            API.checkBalance();
+            
+            applyFilters();
+        } catch (error) {
+            console.error(error);
+            Swal.fire("Error", "Could not load client database.", "error");
+        } finally {
+            UI.toggleLoading(false);
+        }
+    }
+
+    function getCountdown(graceExpiry) {
+        const now = new Date();
+        const diff = graceExpiry - now;
+
+        if (diff <= 0) return "EXPIRED";
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        return `${days}d ${hours}h ${mins}m left`;
+    }
+
+    function applyFilters() {
+        const term = Els.search.value.toLowerCase().trim();
+        const filter = Els.filter.value;
+
+        State.filteredData = State.allData.filter(item => {
+            const matchesSearch = item.name.toLowerCase().includes(term) || item.phone.includes(term);
+            const matchesFilter = !filter || item.displayStatus === filter;
+            return matchesSearch && matchesFilter;
+        });
+
+        State.currentPage = 1;
+        State.selectedIds.clear();
+        UI.updateBulkButton();
+        renderTable();
+    }
+
+    function renderTable() {
+        const start = (State.currentPage - 1) * State.itemsPerPage;
+        const end = start + State.itemsPerPage;
+        const pageData = State.filteredData.slice(start, end);
+
+        Els.tbody.innerHTML = "";
+        Els.tableContainer.classList.remove('hidden');
+
+        pageData.forEach(client => {
+            const tr = document.createElement('tr');
+            const isSelected = State.selectedIds.has(client.id);
+            
+            const dateStr = client.expiry.toLocaleDateString('en-GB');
+            const badgeClass = client.displayStatus === 'active' ? 'badge-active' : 'badge-overdue';
+            const iconClass = client.displayStatus === 'active' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+
+            const now = new Date();
+            let countdownText = "";
+            let countdownClass = "text-slate-500";
+            let subLabel = "Time Remaining";
+
+            if (now > client.expiry) {
+                countdownText = "EXPIRED";
+                countdownClass = "text-rose-600 font-black";
+                subLabel = "Service Cut-off";
+            } else if (now > client.warningDate) {
+                countdownText = getCountdown(client.expiry); 
+                countdownClass = "text-rose-500 font-bold animate-pulse";
+                subLabel = "CRITICAL: PAY SOON";
+            } else {
+                const diff = client.expiry - now;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                countdownText = `${days} days left`;
+                countdownClass = "text-teal-600 font-bold";
+                subLabel = "Active Period";
+            }
+
+            tr.innerHTML = `
+                <td>
+                    <input type="checkbox" class="custom-checkbox" 
+                        onchange="Actions.toggleSelect(${client.id})" ${isSelected ? 'checked' : ''}>
+                </td>
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs overflow-hidden border border-slate-200">
+                            ${client.image ? `<img src="${client.image}" class="w-full h-full object-cover">` : client.name.charAt(0)}
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-slate-800 leading-tight">${client.name}</h2>
+                            <p class="text-[10px] font-mono text-slate-400">${client.phone}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="font-medium text-slate-600 text-xs">${client.pkgName}</td>
+                <td class="font-mono font-bold text-slate-700 text-xs">KES ${client.price}</td>
+                <td>
+                    <span class="badge ${badgeClass}">
+                        <i class="fas ${iconClass}"></i> ${client.displayStatus}
+                    </span>
+                </td>
+                <td class="text-xs font-medium text-slate-500 font-mono">${dateStr}</td>
+                <td class="text-xs">
+                    <div class="font-mono ${countdownClass} flex items-center gap-1">
+                        <i class="fas fa-clock opacity-70"></i> ${countdownText}
+                    </div>
+                    <div class="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-tighter">
+                        ${subLabel}
+                    </div>
+                </td>
+                <td class="text-right">
+                    <button onclick="Actions.openSingleDrawer(${client.id})" class="text-[9px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg border border-teal-100 transition-colors">
+                        Compose
+                    </button>
+                </td>
+            `;
+            Els.tbody.appendChild(tr);
+        });
+        
+        Els.selectAll.checked = pageData.length > 0 && pageData.every(c => State.selectedIds.has(c.id));
+    }
+
+    const API = {
+        checkBalance: async () => {
             try {
-                const res = await fetch(`${API_BASE}/clients`);
-                if (!res.ok) throw new Error("API Error");
-                const rawData = await res.json();
+                const res = await fetch(`${API_BASE}/sms/balance`);
+                const json = await res.json();
+                if(json.success) {
+                    document.getElementById('smsBalanceVal').innerText = `KES ${json.data.balance}`;
+                    document.getElementById('balanceBadge').classList.remove('hidden');
+                }
+            } catch(e) { console.warn("Balance check failed"); }
+        },
 
-                const enriched = await Promise.all(rawData.map(async (client) => {
-                    let details = {
-                        pkg: "No Package",
-                        price: 0,
-                        expiry: null,
-                        status: "inactive"
-                    };
+        sendSingleSMS: async () => {
+            const btn = document.getElementById('btnSendSingle');
+            const originalText = btn.innerHTML;
+            const message = Els.singleBody.value;
 
-                    try {
-                        const subRes = await fetch(`${API_BASE}/subscribe/client/current?userId=${client.id}`);
-                        if(subRes.ok) {
-                            const subs = await subRes.json();
-                            if(subs.length > 0) {
-                                const sub = subs[0];
-                                details.pkg = sub.package?.name || "Unknown";
-                                details.price = sub.package?.price || 0;
-                                details.expiry = sub.expiry_date;
-                                details.status = sub.subscription_status;
-                            }
-                        }
-                    } catch(e) { console.warn("Sub fetch failed", e); }
+            if(!message) return Swal.fire("Empty Message", "Please write a message first.", "warning");
 
-                    const today = new Date();
-                    const expDate = details.expiry ? new Date(details.expiry) : null;
-                    const isOverdue = expDate && expDate < today;
+            try {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`;
+                btn.disabled = true;
 
-                    let displayStatus = 'inactive';
-                    if(details.status === 'active') displayStatus = isOverdue ? 'overdue' : 'active';
-                    
-                    return { ...client, ...details, displayStatus, expDate };
-                }));
-
-                State.allClients = enriched.sort((a, b) => {
-                    const nA = (a.name || a.first_name).toLowerCase();
-                    const nB = (b.name || b.first_name).toLowerCase();
-                    return nA.localeCompare(nB);
+                const res = await fetch(`${API_BASE}/sms`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone: State.currentClient.phone,
+                        message: message
+                    })
                 });
+                
+                const result = await res.json();
+                if(!res.ok) throw new Error(result.error || "Failed");
 
-                applyFilters();
+                Swal.fire({
+                    title: "Sent!",
+                    text: "SMS dispatched successfully.",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                UI.closeAllDrawers();
+                API.checkBalance(); 
 
             } catch (error) {
-                console.error(error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Connection Error',
-                    text: 'Could not sync client database.',
-                    confirmButtonColor: '#0f172a'
-                });
+                Swal.fire("Failed", error.message, "error");
             } finally {
-                UI.toggleLoading(false);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
-        }
+        },
 
-        function applyFilters() {
-            const term = Els.search.value.toLowerCase().trim();
-            const filter = Els.filter.value;
+        sendBulkSMS: async () => {
+            const btn = document.getElementById('btnSendBulk');
+            const originalText = btn.innerHTML;
+            const message = Els.bulkBody.value;
 
-            State.filteredClients = State.allClients.filter(c => {
-                const name = (c.name || `${c.first_name} ${c.second_name}`).toLowerCase();
-                const phone = (c.phone || "").toLowerCase();
-                const pkg = (c.pkg || "").toLowerCase();
+            if(!message) return Swal.fire("Empty Message", "Please write a message.", "warning");
 
-                const matchesSearch = !term || name.includes(term) || phone.includes(term) || pkg.includes(term);
-                const matchesFilter = !filter || c.displayStatus === filter;
-
-                return matchesSearch && matchesFilter;
+            const messages = Array.from(State.selectedIds).map(id => {
+                const client = State.allData.find(c => c.id === id);
+                return { phone: client.phone, message: message };
             });
 
-            State.currentPage = 1;
+            try {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Dispatching ${messages.length} SMS...`;
+                btn.disabled = true;
+
+                const res = await fetch(`${API_BASE}/sms/bulk`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages })
+                });
+
+                const result = await res.json();
+                if(!res.ok) throw new Error(result.error || "Failed");
+
+                Swal.fire("Batch Sent!", `Successfully queued ${messages.length} messages.`, "success");
+                
+                State.selectedIds.clear();
+                UI.updateBulkButton();
+                renderTable();
+                UI.closeAllDrawers();
+                API.checkBalance();
+
+            } catch (error) {
+                Swal.fire("Bulk Failed", error.message, "error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    };
+
+    const Actions = {
+        toggleSelect: (id) => {
+            if(State.selectedIds.has(id)) State.selectedIds.delete(id);
+            else State.selectedIds.add(id);
+            UI.updateBulkButton();
+            renderTable();
+        },
+
+        toggleSelectAll: () => {
+            const start = (State.currentPage - 1) * State.itemsPerPage;
+            const pageData = State.filteredData.slice(start, start + State.itemsPerPage);
+            
+            const allSelected = pageData.every(c => State.selectedIds.has(c.id));
+            
+            pageData.forEach(c => {
+                if(allSelected) State.selectedIds.delete(c.id);
+                else State.selectedIds.add(c.id);
+            });
+            
+            UI.updateBulkButton();
+            renderTable();
+        },
+
+        openSingleDrawer: (id) => {
+            const client = State.allData.find(c => c.id === id);
+            if(!client) return;
+            State.currentClient = client;
+
+            document.getElementById('dName').innerText = client.name;
+            document.getElementById('dPhone').innerText = client.phone;
+            document.getElementById('dStatus').innerText = client.displayStatus;
+            
+            Actions.setTemplate('reminder');
+            
+            UI.openDrawer('smsDrawer');
+        },
+
+        openBulkDrawer: () => {
+            if(State.selectedIds.size === 0) return;
+            
+            Els.bulkRecipients.innerHTML = "";
+            let count = 0;
+            State.selectedIds.forEach(id => {
+                if(count >= 5) return;
+                const c = State.allData.find(x => x.id === id);
+                const div = document.createElement('div');
+                div.className = "w-8 h-8 rounded-full bg-indigo-100 border border-white shadow-sm flex items-center justify-center text-[10px] font-bold text-indigo-700";
+                div.innerText = c.name.charAt(0);
+                Els.bulkRecipients.appendChild(div);
+                count++;
+            });
+
+            const remaining = State.selectedIds.size - 5;
+            const hiddenCountEl = document.getElementById('bulkHiddenCount');
+            if(remaining > 0) {
+                hiddenCountEl.innerText = `+ ${remaining} others`;
+                hiddenCountEl.classList.remove('hidden');
+            } else {
+                hiddenCountEl.classList.add('hidden');
+            }
+
+            document.getElementById('bulkTotalBadge').innerText = State.selectedIds.size;
+            UI.openDrawer('bulkDrawer');
+        },
+
+        setTemplate: (type) => {
+            const c = State.currentClient;
+            if(!c) return;
+
+            const now = new Date();
+            
+            const firstName = c.name.split(" ")[0];
+            const diffTime = c.expiry - now;
+            const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const nextMonth = new Date(); 
+            nextMonth.setDate(now.getDate() + 30);
+            const dateStr = c.expiry.toLocaleDateString('en-GB');
+
+            let text = "";
+            if (type === 'reminder') {
+                if (daysLeft <= 0) {
+                    text = `Dear ${c.name}, This is to inform you that your internet subscription has expired and the service has been temporarily suspended. Amount: KES ${c.price}. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
+                } else {
+                    text = `REMINDER: ${firstName}, your ${c.pkgName} subscription is due to overdue in ${daysLeft} days. Please pay KES ${c.price} by ${dateStr} to avoid service suspension. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
+                }
+            } else if (type === 'receipt') {
+                text = `Payment Confirmed!\nThank you ${firstName}.\nAmount: KES ${c.price}\nPackage: ${c.pkgName}\n\nYour DR.NET internet service has been renewed for 30 days, active until ${nextMonth.toLocaleDateString('en-GB')}.\n\nQuestions? Call 0701782354\nDR.NET TECHNOLOGY LABS`;            } else {
+                text = "";
+            }
+            
+            Els.singleBody.value = text;
+        }
+    };
+
+    const UI = {
+        toggleLoading: (show) => {
+            Els.loader.classList.toggle('hidden', !show);
+            Els.tableContainer.classList.toggle('hidden', show);
+        },
+        updateBulkButton: () => {
+            const count = State.selectedIds.size;
+            Els.bulkCount.innerText = count;
+            Els.btnBulk.classList.toggle('hidden', count === 0);
+        },
+        openDrawer: (id) => {
+            Els.overlay.classList.remove('hidden');
+            setTimeout(() => {
+                Els.overlay.classList.remove('opacity-0');
+                document.getElementById(id).classList.add('open');
+            }, 10);
+        },
+        closeAllDrawers: () => {
+            Els.smsDrawer.classList.remove('open');
+            Els.bulkDrawer.classList.remove('open');
+            Els.overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                Els.overlay.classList.add('hidden');
+            }, 400);
+        }
+    };
+
+    Els.search.addEventListener('input', applyFilters);
+    Els.filter.addEventListener('change', applyFilters);
+    document.addEventListener('DOMContentLoaded', initData);
+
+    setInterval(() => {
+        if (!State.isLoading) {
             renderTable();
         }
+    }, 60000);
 
-        function renderTable() {
-            const start = (State.currentPage - 1) * ITEMS_PER_PAGE;
-            const end = start + ITEMS_PER_PAGE;
-            const pageData = State.filteredClients.slice(start, end);
-
-            Els.tbody.innerHTML = "";
-
-            if (pageData.length === 0) {
-                Els.tableContainer.classList.add('hidden');
-                Els.emptyState.classList.remove('hidden');
-                UI.updatePagination(0);
-                return;
-            }
-
-            Els.tableContainer.classList.remove('hidden');
-            Els.emptyState.classList.add('hidden');
-
-            pageData.forEach(client => {
-                const tr = document.createElement('tr');
-                
-                const name = client.name || `${client.first_name} ${client.second_name}`;
-                const price = Number(client.price).toLocaleString();
-                let statusClass = "badge-inactive";
-                let statusIcon = "fa-minus-circle";
-                
-                if(client.displayStatus === 'active') {
-                    statusClass = "badge-active";
-                    statusIcon = "fa-check-circle";
-                } else if(client.displayStatus === 'overdue') {
-                    statusClass = "badge-overdue";
-                    statusIcon = "fa-exclamation-circle";
-                }
-
-                const dateStr = client.expDate ? new Date(client.expDate).toLocaleDateString('en-GB') : "N/A";
-
-                tr.innerHTML = `
-                    <td>
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xm border border-slate-100">
-                                ${name.charAt(0)}
-                            </div>
-                            <div>
-                                <h2 class="font-bold text-slate-800 leading-tight">${name}</h2>
-                                <p class="text-[10px] font-mono text-slate-400">${client.phone || "No Phone"}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="font-medium text-slate-600">${client.pkg}</td>
-                    <td class="font-mono font-bold text-slate-700">KES ${price}</td>
-                    <td>
-                        <span class="badge ${statusClass}">
-                            <i class="fas ${statusIcon}"></i> ${client.displayStatus}
-                        </span>
-                    </td>
-                    <td class="text-xs font-medium text-slate-500">
-                        <i class="far fa-calendar-alt mr-1 opacity-50"></i> ${dateStr}
-                    </td>
-                    <td class="text-right">
-                        <button onclick="Actions.openDrawer(${client.id})" class="text-[9px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors">
-                            <i class="fas fa-comment-dots mr-1"></i> Compose sms
-                        </button>
-                    </td>
-                `;
-                Els.tbody.appendChild(tr);
-            });
-
-            UI.updatePagination(State.filteredClients.length);
-        }
-
-        const UI = {
-            toggleLoading: (show) => {
-                Els.loader.classList.toggle('hidden', !show);
-                Els.tableContainer.classList.toggle('hidden', show);
-                if(show) Els.emptyState.classList.add('hidden');
-            },
-
-            updatePagination: (total) => {
-                Els.pagination.classList.toggle('hidden', total === 0);
-                const maxPage = Math.ceil(total / ITEMS_PER_PAGE) || 1;
-                const start = (State.currentPage - 1) * ITEMS_PER_PAGE + 1;
-                const end = Math.min(start + ITEMS_PER_PAGE - 1, total);
-
-                Els.pageInfo.innerText = `Showing ${total === 0 ? 0 : start}-${end} of ${total}`;
-                Els.prevBtn.disabled = State.currentPage === 1;
-                Els.nextBtn.disabled = State.currentPage >= maxPage;
-            },
-
-            openDrawer: () => {
-                Els.overlay.classList.remove('hidden');
-                setTimeout(() => {
-                    Els.overlay.classList.remove('opacity-0');
-                    Els.drawer.classList.add('open');
-                }, 10);
-                document.body.style.overflow = 'hidden';
-            },
-
-            closeDrawer: () => {
-                Els.drawer.classList.remove('open');
-                Els.overlay.classList.add('opacity-0');
-                setTimeout(() => {
-                    Els.overlay.classList.add('hidden');
-                    document.body.style.overflow = '';
-                }, 400);
-            }
-        };
-
-        const Actions = {
-            openDrawer: (id) => {
-                const client = State.allClients.find(c => c.id === id);
-                if(!client) return;
-
-                const name = client.name || `${client.first_name} ${client.second_name}`;
-                Els.dName.innerText = name;
-                Els.dPhone.innerText = client.phone || "No Phone";
-                Els.dStatus.innerText = client.displayStatus;
-                
-                Els.dStatus.className = `text-[9px] font-black uppercase px-2 py-0.5 rounded ${
-                    client.displayStatus === 'overdue' ? 'bg-rose-100 text-rose-600' : 
-                    client.displayStatus === 'active' ? 'bg-teal-100 text-teal-600' : 
-                    'bg-slate-200 text-slate-600'
-                }`;
-
-                Els.dPackage.innerText = client.pkg;
-                Els.dPrice.innerText = `KES ${Number(client.price).toLocaleString()}`;
-
-                // Generate Templates
-                const firstName = name.split(" ")[0];
-                const amount = Number(client.price).toLocaleString();
-                const dateStr = client.expDate ? new Date(client.expDate).toLocaleDateString('en-GB') : "IMMEDIATELY";
-                
-                // Reminder Template
-                Els.txtReminder.value = 
-`REMINDER: ${firstName},
-Your DR.NET subscription payment is overdue.
-Amount Due: KES ${amount}.
-Please pay by ${dateStr} to avoid service suspension.
-Pay via M-PESA:
-• Buy Goods & Services
-• Till Number: 5626320
-DR.NET TECHNOLOGY LABS`;
-
-                // Receipt Template
-                Els.txtConfirm.value = 
-`Payment Confirmed!
-Thank you ${firstName}.
-Amount: KES ${amount}
-Package: ${client.pkg}
-Your DR.NET internet service has been renewed for 30 days.
-Questions? Call 0701782354
-DR.NET TECHNOLOGY LABS`;
-
-                UI.openDrawer();
-            },
-
-            copyToClipboard: (elementId, btn) => {
-                const text = document.getElementById(elementId).value;
-                navigator.clipboard.writeText(text).then(() => {
-                    const originalHTML = btn.innerHTML;
-                    btn.innerHTML = `<i class="fas fa-check mr-1"></i> COPIED!`;
-                    btn.classList.add('copied');
-                    
-                    setTimeout(() => {
-                        btn.innerHTML = originalHTML;
-                        btn.classList.remove('copied');
-                    }, 2000);
-                });
-            },
-
-            prevPage: () => {
-                if(State.currentPage > 1) {
-                    State.currentPage--;
-                    renderTable();
-                    window.scrollTo({top: 0, behavior: 'smooth'});
-                }
-            },
-
-            nextPage: () => {
-                const max = Math.ceil(State.filteredClients.length / ITEMS_PER_PAGE);
-                if(State.currentPage < max) {
-                    State.currentPage++;
-                    renderTable();
-                    window.scrollTo({top: 0, behavior: 'smooth'});
-                }
-            }
-        };
-
-        Els.search.addEventListener('input', applyFilters);
-        Els.filter.addEventListener('change', applyFilters);
-        Els.prevBtn.addEventListener('click', Actions.prevPage);
-        Els.nextBtn.addEventListener('click', Actions.nextPage);
-
-        document.addEventListener('DOMContentLoaded', loadClients);
-
-    </script>
+</script>

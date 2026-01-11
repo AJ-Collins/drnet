@@ -1,0 +1,660 @@
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+    .glass-panel { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .input-field { background: #f8fafc; border: 1px solid #e2e8f0; transition: all 0.2s; }
+    .input-field:focus-within { border-color: #0d9488; background: white; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.05); }
+        
+    .btn-teal { background: #0d9488; color: white; transition: all 0.2s; }
+    .btn-teal:hover { background: #0f766e; transform: translateY(-1px); }
+        
+    .status-badge { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .status-active { background: #f0fdfa; color: #0d9488; border: 1px solid #ccfbf1; }
+    .status-overdue { background: #fff1f2; color: #e11d48; border: 1px solid #ffe4e6; animation: pulse-red 2s infinite; }
+        
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(225, 29, 72, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+    }
+
+    .custom-table th { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 800; padding: 12px; background: #f8fafc; }
+    .custom-table th:not(:last-child) { text-align: left; }
+    .custom-table th:last-child { text-align: right; padding-right: 16px; }
+    .custom-table td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #334155; font-weight: 600; vertical-align: middle; }
+    .custom-table tr:hover td { background: #f8fafc; }
+
+    #paymentDrawer {
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateX(100%);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    }
+    #paymentDrawer.open { transform: translateX(0); }
+
+    @media (max-width: 1024px) {
+        .custom-table td .flex.justify-end {
+            opacity: 100 !important;
+            gap: 0.5rem;
+        }
+        
+        .custom-table td button {
+            height: 2.25rem !important;
+            min-width: 2.25rem !important;
+        }
+    }
+
+    .custom-table th:last-child, 
+    .custom-table td:last-child {
+        min-width: 140px;
+    }
+
+    .drawer-overlay {
+        transition: opacity 0.3s ease;
+        opacity: 0;
+        pointer-events: none;
+    }
+    .drawer-overlay.active {
+        opacity: 0.5;
+        pointer-events: auto;
+    }
+
+    .payment-step { position: relative; padding-left: 1.5rem; border-left: 2px solid #e2e8f0; }
+    .payment-step::before {
+        content: '';
+        position: absolute;
+        left: -7px;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #0d9488;
+        border: 2px solid white;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        width: 100%;
+    }
+
+    @media (min-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, min-content);
+            justify-content: flex-end;
+        }
+    }
+
+    .stat-card {
+        min-width: 140px;
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    select:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+        background-color: #f1f5f9;
+    }
+
+    .progress-dot-container {
+        mask-image: radial-gradient(circle, white 1.5px, transparent 1.5px);
+        mask-size: 6px 6px;
+    }
+
+    .segmented-progress {
+        display: flex;
+        gap: 2px;
+        height: 6px;
+        width: 100%;
+    }
+    .segment {
+        flex: 1;
+        height: 100%;
+        border-radius: 1px;
+        transition: all 0.3s ease;
+    }
+    .segment-empty { background: #f1f5f9; }
+    .segment-fill-active { background: #0d9488; }
+    .segment-fill-warning { background: #f59e0b; }
+    .segment-fill-critical { background: #e11d48; }
+</style>
+<div class="max-w-full mx-auto">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Client Subscriptions</h1>
+            <p class="text-slate-500 font-medium">Manage connectivity and track financial records.</p>
+        </div>
+        <div id="statsRow" class="stats-grid">
+            </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-8 space-y-4">
+            <div class="glass-panel rounded-xl flex flex-col h-[100vh]">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-xl">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search user, phone or package..." 
+                            class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-xs font-bold text-slate-700 outline-none focus:border-teal-500 w-72 transition-all">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="init()" class="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all" title="Refresh data"><i class="fas fa-sync-alt text-xs"></i></button>
+                    </div>
+                </div>
+
+                <div class="flex-grow overflow-auto">
+                    <table class="w-full custom-table">
+                        <thead class="sticky top-0 z-10">
+                            <tr>
+                                <th>Client Details</th>
+                                <th>Package Plan</th>
+                                <th>Timeline</th>
+                                <th>Status</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="p-3 border-t border-slate-100 bg-slate-50 text-center text-[10px] font-bold text-slate-400 rounded-b-xl">
+                    Showing all active and recent subscriptions
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4">
+            <div class="glass-panel rounded-xl p-6 sticky top-6 border-t-4 border-t-teal-500">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shadow-sm">
+                        <i class="fas fa-wifi text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-slate-900 leading-none">Subscription</h2>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1" id="formTitle">New Connection</p>
+                    </div>
+                </div>
+
+                <form id="subForm" onsubmit="handleSubmit(event)" class="space-y-5">
+                    <input type="hidden" id="editSubId" value="">
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1 block">Client</label>
+                        <div class="input-field rounded-xl p-1 flex items-center">
+                            <select id="userId" class="w-full bg-transparent border-none text-xs font-bold text-slate-700 p-2.5 outline-none cursor-pointer">
+                                <option value="">Select a user...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1 block">WiFi Package</label>
+                        <div class="input-field rounded-xl p-1 flex items-center">
+                            <select id="packageId" onchange="updateTotal()" class="w-full bg-transparent border-none text-xs font-bold text-slate-700 p-2.5 outline-none cursor-pointer">
+                                <option value="">Select a package...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1 block">Payment Method</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="payment_method" value="cash" checked class="peer hidden">
+                                <div class="py-3 px-2 rounded-xl border border-slate-200 peer-checked:bg-slate-800 peer-checked:text-white peer-checked:border-slate-800 text-center text-xs font-bold transition-all flex flex-row items-center justify-center gap-2">
+                                    <i class="fas fa-money-bill-wave"></i> 
+                                    <span>Cash</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="payment_method" value="mpesa" class="peer hidden">
+                                <div class="py-3 px-2 rounded-xl border border-slate-200 peer-checked:bg-green-600 peer-checked:text-white peer-checked:border-green-600 text-center text-xs font-bold transition-all flex flex-row items-center justify-center gap-2">
+                                    <i class="fas fa-mobile-alt"></i> 
+                                    <span>M-Pesa</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-500">Total Due</span>
+                        <span id="priceDisplay" class="text-xl font-black text-slate-900">KES 0.00</span>
+                    </div>
+
+                   <div class="flex flex-col gap-3">
+                        <button type="submit" id="submitBtn" class="w-full btn-teal py-3.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-teal-900/10">
+                            Confirm
+                        </button>
+
+                        <button type="button" onclick="resetForm()" id="cancelBtn" class="hidden w-full py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-all text-center">
+                            Cancel Renewal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="drawerOverlay" onclick="closeDrawer()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] drawer-overlay"></div>
+
+<div id="paymentDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[70] flex flex-col">
+    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+            <h3 class="text-lg font-black text-slate-900">Payment Ledger</h3>
+            <p id="drawerClientName" class="text-xs font-bold text-teal-600 uppercase tracking-wider"></p>
+        </div>
+        <button onclick="closeDrawer()" class="w-10 h-10 rounded-full hover:bg-white flex items-center justify-center text-slate-400 transition-all">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <div id="drawerContent" class="flex-grow overflow-y-auto p-6 space-y-6">
+        </div>
+
+    <div class="p-6 border-t border-slate-100 bg-slate-50">
+        <button onclick="closeDrawer()" class="w-full py-3 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest">
+            Close Records
+        </button>
+    </div>
+</div>
+<script>
+    const $ = id => document.getElementById(id);
+    let allData = { subscriptions: [], users: [], packages: [] };
+
+    async function init() {
+        try {
+            const res = await fetch('/api/subscriptions/dashboard-data');
+            allData = await res.json();
+            renderStats();
+            renderTable();
+            populateDropdowns();
+        } catch (e) {
+            showToast("ERROR", "Connection Error");
+        }
+    }
+
+    function renderStats() {
+        const active = allData.subscriptions.length;
+        const revenue = allData.subscriptions.reduce((sum, s) => sum + Number(s.price), 0);
+        
+        $('statsRow').innerHTML = `
+            <div class="stat-card bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                    <i class="fas fa-users text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-[12px] font-black text-slate-400 uppercase tracking-wider">Active</p>
+                    <p class="text-base font-black text-slate-800">${active}</p>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <i class="fas fa-wallet text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-[12px] font-black text-slate-400 uppercase tracking-wider">Revenue</p>
+                    <p class="text-base font-black text-slate-800">
+                        <span class="text-[12px] mr-0.5">KES</span>${revenue.toLocaleString()}
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderTable() {
+        const query = $('searchInput').value.toLowerCase();
+        const tbody = $('tableBody');
+        
+        const filtered = allData.subscriptions.filter(s => 
+            s.first_name.toLowerCase().includes(query) || 
+            s.second_name.toLowerCase().includes(query) ||
+            s.package_name.toLowerCase().includes(query) ||
+            s.phone.includes(query)
+        );
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 text-xs font-bold">No records found</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(sub => {
+            const now = new Date();
+            const start = new Date(sub.start_date);
+            const expiry = new Date(sub.expiry_date);
+            
+            const totalDurationMs = expiry.getTime() - start.getTime();
+            const timeRemainingMs = expiry.getTime() - now.getTime();
+            const timeElapsedMs = now.getTime() - start.getTime();
+            
+            const hoursRemaining = timeRemainingMs / (1000 * 60 * 60);
+            const daysRemaining = Math.floor(hoursRemaining / 24);
+            const exactHoursRemaining = Math.floor(hoursRemaining % 24);
+
+            let percentUsed = Math.floor((timeElapsedMs / totalDurationMs) * 100);
+            percentUsed = Math.max(0, Math.min(100, percentUsed));
+
+            const isExpired = timeRemainingMs <= 0;
+            const isCritical = hoursRemaining > 0 && hoursRemaining <= 120;
+            const isWarning = hoursRemaining > 120 && hoursRemaining <= 240;
+
+            let segmentClass = 'segment-fill-active';
+            if (isCritical) segmentClass = 'segment-fill-critical';
+            else if (isWarning) segmentClass = 'segment-fill-warning';
+
+            let segmentsHtml = '';
+            for (let i = 1; i <= 10; i++) {
+                const threshold = i * 10;
+                const isFilled = percentUsed >= threshold;
+                segmentsHtml += `<div class="segment ${isFilled ? segmentClass : 'segment-empty'}"></div>`;
+            }
+
+            let statusBadge = '';
+            if (isExpired) {
+                statusBadge = `<span class="status-badge bg-slate-100 text-slate-500 border border-slate-200">Expired</span>`;
+            } else if (isCritical) {
+                let timeLeftStr = daysRemaining > 0 
+                    ? `${daysRemaining}D ${exactHoursRemaining}H` 
+                    : `${exactHoursRemaining}H Left`;
+
+                statusBadge = `
+                    <div class="flex flex-col items-start gap-1">
+                        <span class="status-badge status-overdue">CRITICAL</span>
+                        <span class="text-[9px] font-black text-rose-600 animate-pulse uppercase tracking-tighter">
+                            <i class="fas fa-clock mr-0.5"></i> ${timeLeftStr}
+                        </span>
+                    </div>`;
+            } else {
+                statusBadge = `<span class="status-badge status-active">Active</span>`;
+            }
+
+            return `
+                <tr class="group transition-colors">
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 overflow-hidden border border-slate-200">
+                                ${sub.image ? `<img src="${sub.image}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-xs"></i>`}
+                            </div>
+                            <div>
+                                <div class="font-black text-slate-800 leading-tight truncate max-w-[150px]" title="${sub.first_name} ${sub.second_name}">${sub.first_name} ${sub.second_name}</div>
+                                <div class="text-[12px] font-bold text-slate-400">${sub.phone}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="font-bold text-slate-700 truncate max-w-[120px]" title="${sub.package_name}">${sub.package_name}</div>
+                        <div class="text-[10px] font-bold text-teal-600">${sub.speed}Mbps</div>
+                    </td>
+                    <td>
+                        <div class="flex flex-col gap-0.5">
+                            <div class="text-[10px] font-bold text-slate-400">
+                                <span class="uppercase text-[10px] opacity-70">Start:</span> ${start.toLocaleDateString()} <span class="opacity-50">${start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            </div>
+                            <div class="text-[10px] font-bold text-slate-600">
+                                <span class="uppercase text-[10px] opacity-70">Exp:</span> ${expiry.toLocaleDateString()} <span class="text-indigo-500">${expiry.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            </div>
+                        </div>
+                        <div class="w-24">
+                            <div class="segmented-progress">
+                                ${segmentsHtml}
+                            </div>
+                        </div>
+                    </td>
+                    <td>${statusBadge}</td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-2 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="viewPayments(${sub.user_id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-all" title="View payment history">
+                                <i class="fas fa-history text-[10px]"></i>
+                            </button>
+                            <button onclick="loadEdit(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="Edit Record">
+                                <i class="fas fa-pen text-[10px]"></i>
+                            </button>
+                            <button onclick="loadRenewal(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" title="Renew subscription">
+                                <i class="fas fa-sync-alt text-[10px]"></i>
+                            </button>
+                            <button onclick="deleteSub(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all">
+                                <i class="fas fa-trash-alt text-[10px]"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function populateDropdowns() {
+        const uSel = $('userId');
+        const pSel = $('packageId');
+
+        const subscribedUserIds = allData.subscriptions.map(s => Number(s.user_id));
+
+        const availableUsers = allData.users.filter(u => !subscribedUserIds.includes(Number(u.id)));
+
+        uSel.innerHTML = `<option value="">Select User</option>` + 
+            availableUsers.map(u => `
+                <option value="${u.id}">${u.first_name} ${u.second_name}</option>
+            `).join('');
+
+        pSel.innerHTML = `<option value="">Select Package</option>` + 
+            allData.packages.map(p => `
+                <option value="${p.id}" data-price="${p.price}">${p.name} - ${p.speed}</option>
+            `).join('');
+    }
+
+    function updateTotal() {
+        const sel = $('packageId');
+        const price = sel.options[sel.selectedIndex]?.getAttribute('data-price') || 0;
+        $('priceDisplay').innerText = `KES ${Number(price).toLocaleString()}`;
+    }
+
+    function loadRenewal(id) {
+        const sub = allData.subscriptions.find(s => s.id === id);
+        if(!sub) return;
+
+        $('editSubId').value = id;
+        
+        const uSel = $('userId');
+        
+        uSel.innerHTML = `<option value="${sub.user_id}">${sub.first_name} ${sub.second_name}</option>`;
+        uSel.value = sub.user_id;
+        uSel.disabled = true;
+
+        $('packageId').value = sub.package_id;
+        updateTotal();
+
+        $('formTitle').innerText = "Renewing / Upgrading Plan";
+        $('submitBtn').innerText = "Process Renewal";
+        $('cancelBtn').classList.remove('hidden');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        $('subForm').reset();
+        $('editSubId').value = '';
+        delete $('subForm').dataset.mode;
+        $('userId').disabled = false;
+        populateDropdowns();
+        $('priceDisplay').innerText = "KES 0.00";
+        $('formTitle').innerText = "New Connection";
+        $('submitBtn').innerText = "Confirm";
+        $('cancelBtn').classList.add('hidden');
+    }
+    function loadEdit(id) {
+        const sub = allData.subscriptions.find(s => s.id === id);
+        if(!sub) return;
+
+        $('editSubId').value = id;
+        $('subForm').dataset.mode = 'edit';
+        
+        const uSel = $('userId');
+        uSel.innerHTML = `<option value="${sub.user_id}">${sub.first_name} ${sub.second_name}</option>`;
+        uSel.value = sub.user_id;
+        uSel.disabled = true;
+
+        $('packageId').value = sub.package_id;
+        updateTotal();
+
+        $('formTitle').innerText = "Edit Subscription Details";
+        $('submitBtn').innerText = "Save Changes";
+        $('cancelBtn').innerText = "Cancel Edit";
+        $('cancelBtn').classList.remove('hidden');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        
+        const userId = $('userId').value;
+        const packageId = $('packageId').value;
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
+
+        if (!userId || !packageId) {
+            showToast("WARNING", "Please select both a Client and a Package Plan");
+            
+            if (!userId) $('userId').parentElement.classList.add('border-rose-300');
+            if (!packageId) $('packageId').parentElement.classList.add('border-rose-300');
+            
+            setTimeout(() => {
+                $('userId').parentElement.classList.remove('border-rose-300');
+                $('packageId').parentElement.classList.remove('border-rose-300');
+            }, 2000);
+            
+            return;
+        }
+
+        const id = $('editSubId').value;
+        const mode = $('subForm').dataset.mode;
+        const btn = $('submitBtn');
+        
+        const data = {
+            user_id: userId,
+            package_id: packageId,
+            payment_method: paymentMethod
+        };
+
+        btn.disabled = true;
+
+        try {
+            let url, method;
+            
+            if (!id) {
+                url = '/api/subscriptions/subscribe';
+                method = 'POST';
+            } else if (mode === 'edit') {
+                url = `/api/subscriptions/update/${id}`;
+                method = 'PUT';
+            } else {
+                url = `/api/subscriptions/renew/${id}`;
+                method = 'PUT';
+            }
+
+            const res = await fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+
+            if(res.ok) {
+                showToast("SUCCESS", "Record Updated Successfully");
+                resetForm();
+                init();
+            } else {
+                showToast("ERROR", "Server rejected the request");
+            }
+        } catch (err) {
+            showToast("ERROR", "Connection failed");
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function viewPayments(userId) {
+        const sub = allData.subscriptions.find(s => s.user_id == userId);
+        const drawer = $('paymentDrawer');
+        const overlay = $('drawerOverlay');
+        const content = $('drawerContent');
+        
+        $('drawerClientName').innerText = sub ? `${sub.first_name} ${sub.second_name}` : 'Client Records';
+        
+        drawer.classList.add('open');
+        overlay.classList.add('active');
+        
+        content.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-10 text-slate-400">
+                <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+                <span class="text-xs font-bold">Retrieving financial history...</span>
+            </div>
+        `;
+
+        try {
+            const res = await fetch(`/api/subscriptions/payments/${userId}`);
+            const payments = await res.json();
+
+            if (payments.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-20">
+                        <i class="fas fa-receipt text-slate-200 text-5xl mb-4"></i>
+                        <p class="text-slate-400 font-bold text-sm">No payment history found</p>
+                    </div>`;
+                return;
+            }
+
+            content.innerHTML = `
+                <div class="space-y-8">
+                    ${payments.map(p => `
+                        <div class="payment-step">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-xs font-black text-slate-800">KES ${Number(p.amount).toLocaleString()}</p>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">${p.payment_method} Payment</p>
+                                </div>
+                                <span class="text-[10px] font-bold px-2 py-1 bg-green-50 text-green-600 rounded">PAID</span>
+                            </div>
+                            <div class="mt-2 flex items-center gap-4 text-[10px] font-bold text-slate-400">
+                                <span><i class="far fa-calendar-alt mr-1"></i> ${new Date(p.payment_date).toLocaleDateString()}</span>
+                            </div>
+                            <div class="mt-2 text-[9px] text-slate-400 font-mono">TXN: REC-${p.id.toString().padStart(5, '0')}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } catch (e) {
+            content.innerHTML = `<p class="text-rose-500 text-xs font-bold">Error loading payments.</p>`;
+        }
+    }
+
+    function closeDrawer() {
+        $('paymentDrawer').classList.remove('open');
+        $('drawerOverlay').classList.remove('active');
+    }
+
+    async function deleteSub(id) {
+        if(!confirm("Disconnect this user?")) return;
+        try {
+            await fetch(`/api/subscriptions/delete/${id}`, { method: 'DELETE' });
+            showToast("SUCCESS", "Disconnected");
+            init();
+        } catch(e) { showToast("ERROR", "Failed"); }
+    }
+
+    function showToast(title, msg) {
+        const toast = document.createElement('div');
+        toast.className = "bg-slate-900 text-white p-4 rounded-xl shadow-xl min-w-[200px] animate-fade-up border border-teal-500";
+        toast.innerHTML = `<h5 class="text-[10px] font-black uppercase text-teal-400 mb-1">${title}</h5><p class="text-xs font-medium">${msg}</p>`;
+        $('toastContainer').appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
+    init();
+</script>

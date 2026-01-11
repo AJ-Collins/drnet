@@ -1,228 +1,45 @@
-const bcrypt = require("bcrypt");
 const db = require("../config/db");
-
+const bcrypt = require("bcrypt");
 const SALT_ROUNDS = 12;
 
 const Staff = {
-  create: async (data) => {
-    const {
-      first_name,
-      second_name,
-      email,
-      phone,
-      role_id,
-      department,
-      password,
-      is_active,
-      hire_date,
-      contract_end_date,
-      image,
-      role,
-      idNumber,
-    } = data;
+    create: async (data) => {
+        if (data.password) data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+        const cols = Object.keys(data).join(", ");
+        const placeholders = Object.keys(data).map(() => "?").join(", ");
+        const [result] = await db.query(`INSERT INTO staff (${cols}) VALUES (${placeholders})`, Object.values(data));
+        return result;
+    },
 
-    const employee_id = idNumber || data.employee_id || null;
-    const hashedPassword = password ? await bcrypt.hash(password, SALT_ROUNDS) : null;
+    findAll: async () => {
+        const [rows] = await db.query(`
+            SELECT s.*, r.name as role_name FROM staff s 
+            LEFT JOIN roles r ON s.role_id = r.id ORDER BY s.created_at DESC
+        `);
+        return rows;
+    },
 
-    const position = role || data.position || "N/A";
+    update: async (id, data) => {
+        if (data.password) data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+        
+        // Handle Salary if present in the update object
+        let salary = data.basic_salary;
+        delete data.basic_salary;
 
-    const [result] = await db.query(
-      `INSERT INTO staff (
-        first_name, second_name, email, phone, employee_id, role_id, position,
-        department, password, is_active, hire_date, contract_end_date, image
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        first_name,
-        second_name,
-        email,
-        phone,
-        employee_id,
-        role_id || 3,
-        position,
-        department,
-        hashedPassword,
-        is_active ?? true,
-        hire_date,
-        contract_end_date,
-        image,
-      ]
-    );
-    return result;
-  },
+        const fields = Object.keys(data).map(k => `${k}=?`).join(", ");
+        const values = [...Object.values(data), id];
+        const [result] = await db.query(`UPDATE staff SET ${fields} WHERE id=?`, values);
 
-  // 🔹 Get all staff with roles and normalize data
-  findAll: async () => {
-    const [rows] = await db.query(`
-      SELECT 
-        s.*, 
-        r.name AS role_name
-      FROM staff s
-      LEFT JOIN roles r ON s.role_id = r.id
-      ORDER BY s.created_at DESC
-    `);
+        if (salary !== undefined) {
+            await db.query("DELETE FROM staff_salaries WHERE staff_id = ?", [id]);
+            await db.query("INSERT INTO staff_salaries (staff_id, basic_salary, effective_from) VALUES (?, ?, NOW())", [id, salary]);
+        }
+        return result;
+    },
 
-    return rows.map(formatStaff);
-  },
-
-  // 🔹 Get single staff member with role
-  findById: async (id) => {
-    const [rows] = await db.query(
-      `
-      SELECT 
-        s.*, 
-        r.name AS role_name
-      FROM staff s
-      LEFT JOIN roles r ON s.role_id = r.id
-      WHERE s.id = ?
-    `,
-      [id]
-    );
-
-    return rows[0] ? formatStaff(rows[0]) : null;
-  },
-
-  findOne: async (id) => {
-    const [rows] = await db.query(`SELECT * FROM staff WHERE id = ? LIMIT 1`, [id]);
-    return rows[0];
-  },
-
-  findByRole: async (roleId) => {
-    const [rows] = await db.query(
-      `SELECT s.*, r.name AS role_name
-      FROM staff s
-      LEFT JOIN roles r ON s.role_id = r.id
-      WHERE s.role_id = ?
-      ORDER BY s.created_at DESC`,
-      [roleId]
-    );
-
-    return rows.map(formatStaff);
-  },
-
-  findAllWithSalary: async () => {
-    const [rows] = await db.query(`
-    SELECT 
-      s.*, 
-      r.name AS role_name,
-      ss.basic_salary,
-      ss.commision,
-      ss.deductions
-    FROM staff s
-    LEFT JOIN roles r ON s.role_id = r.id
-    LEFT JOIN staff_salaries ss 
-      ON ss.staff_id = s.id
-      AND ss.effective_from = (
-        SELECT MAX(effective_from) 
-        FROM staff_salaries 
-        WHERE staff_id = s.id
-      )
-    WHERE r.name != 'Admin' OR r.name IS NULL
-    ORDER BY s.created_at DESC
-  `);
-
-    return rows.map((member) => ({
-      ...formatStaff(member),
-      salary: {
-        basic_salary: Number(member.basic_salary || 0),
-        commission: Number(member.commission || 0),
-        deductions: Number(member.deductions || 0),
-      },
-    }));
-  },
-
-  // Update staff
-  update: async (id, data) => {
-    // Map frontend fields to DB columns
-    if (data.idNumber) {
-      data.employee_id = data.idNumber;
-      delete data.idNumber;
+    delete: async (id) => {
+        return await db.query("DELETE FROM staff WHERE id=?", [id]);
     }
-
-    // Map role_legacy to position
-    if (data.role_legacy) {
-      data.position = data.role_legacy;
-      delete data.role_legacy;
-    } else if (data.role) {
-      data.position = data.role;
-      delete data.role;
-    }
-
-    // Only include role_id if provided
-    if (data.role_id !== undefined) {
-      data.role_id = Number(data.role_id); // ensure it's a number
-    }
-
-    let salaryNum;
-    if (data.basic_salary !== undefined) {
-      salaryNum = Number(data.basic_salary);
-      delete data.basic_salary;
-    }
-
-    // Optional: hash password if provided
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
-    }
-
-    // Build staff update query
-    const fields = Object.keys(data)
-      .map((k) => `${k}=?`)
-      .join(",");
-    const values = Object.values(data);
-    values.push(id);
-
-    const [result] = await db.query(
-      `UPDATE staff SET ${fields} WHERE id=?`,
-      values
-    );
-
-    if (salaryNum !== undefined) {
-      // Delete any existing salary record
-      await db.query(`DELETE FROM staff_salaries WHERE staff_id = ?`, [id]);
-
-      // Insert new salary record
-      await db.query(
-        `INSERT INTO staff_salaries (staff_id, basic_salary, effective_from)
-       VALUES (?, ?, NOW())`,
-        [id, salaryNum]
-      );
-    }
-
-    return result;
-  },
-
-  // 🔹 Delete staff
-  delete: async (id) => {
-    const [result] = await db.query(`DELETE FROM staff WHERE id=?`, [id]);
-    return result;
-  },
 };
-
-// Get staff raw (include password)
-Staff.findByIdRaw = async (id) => {
-  const [rows] = await db.query(`SELECT * FROM staff WHERE id = ?`, [id]);
-  return rows[0] || null;
-};
-
-// 🔹 Helper to normalize staff record for frontend
-function formatStaff(member) {
-  return {
-    id: member.id,
-    name:
-      `${member.first_name || ""} ${member.second_name || ""}`.trim() ||
-      "No Name",
-    email: member.email || "No Email",
-    phone: member.phone || "N/A",
-    employeeId: member.employee_id || "N/A",
-    position: member.position || "N/A",
-    department: member.department || "Staff",
-    role: member.role_name || "Unassigned",
-    status: member.is_active ? "Active" : "Inactive",
-    hireDate: member.hire_date || "N/A",
-    contractEnd: member.contract_end_date || "N/A",
-    lastPayment: member.debt || "0.00",
-    paymentStatus: member.paid_subscription ? "Paid" : "Unpaid",
-    image: member.image || null,
-  };
-}
 
 module.exports = Staff;

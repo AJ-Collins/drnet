@@ -32,6 +32,9 @@ const teamChat = require("./src/routes/teamChat");
 const announcement = require("./src/routes/announcements");
 const notificationsRoutes = require("./src/routes/notifications");
 const reports = require("./src/routes/reports");
+//Subscriptions
+const subscriptionRoutes = require("./src/routes/subscriptionRoutes");
+
 //Hr assistant
 const hrexpenses = require("./src/routes/hrexpenses");
 const hrtasks = require("./src/routes/hrtasks");
@@ -42,6 +45,10 @@ const hrnotify = require("./src/routes/hrnotify");
 const hrdashboard = require("./src/routes/hrdashboard");
 const hrinbox = require("./src/routes/hrinbox");
 const hrinboxreply = require("./src/routes/hrinboxreply");
+//Client
+const clientRoutes = require('./src/routes/clientRoutes');
+//Staff
+const staffRoutes = require('./src/routes/staffRoutes');
 
 // Session Configuration
 app.use(
@@ -250,6 +257,13 @@ app.use("/api", apiSessionAuth, teamChat);
 app.use("/api", apiSessionAuth, announcement);
 app.use("/api", apiSessionAuth, notificationsRoutes);
 app.use("/api", apiSessionAuth, reports);
+//Client
+app.use('/api/clients', clientRoutes);
+//Staff
+app.use('/api/staff', staffRoutes);
+//Subsriptions
+app.use("/api/subscriptions", apiSessionAuth, subscriptionRoutes);
+
 //Hr
 app.use("/api/hr", apiSessionAuth, hrexpenses);
 app.use("/api/hr", apiSessionAuth, hrtasks);
@@ -288,6 +302,7 @@ app.get("/forgot_password", (req, res) =>
 const adminPages = [
   "dashboard",
   "staff-attendance",
+  "subscriptions",
   "my-packages",
   "manage-users",
   "service-management",

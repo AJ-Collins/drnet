@@ -143,10 +143,10 @@
                         Send to CEO Inbox
                     </button>
 
-                    <button id="btnWhatsapp" onclick="handleSend('whatsapp')" class="btn-email flex-1 flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
-                        <i id="spinnerWhatsapp" class="fas fa-circle-notch fa-spin hidden"></i>
-                        <i id="iconWhatsapp" class="fab fa-whatsapp text-xl"></i>
-                        Dispatch WhatsApp
+                    <button id="btnSMS" onclick="handleSend('sms')" class="btn-email flex-1 flex items-center justify-center gap-3 py-4 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
+                        <i id="spinnerSMS" class="fas fa-circle-notch fa-spin hidden"></i>
+                        <i id="iconSMS" class="fas fa-comment-sms text-lg"></i>
+                        Dispatch SMS
                     </button>
                 </div>
                 <button onclick="document.getElementById('msgBody').value = ''" class="mt-4 text-[9px] font-bold text-slate-500 hover:text-rose-500 uppercase tracking-widest transition-colors">
@@ -395,11 +395,38 @@
                 } else {
                     throw new Error("An error occured. Try again.");
                 }
-            } else if(method === 'whatsapp') {
-                const cleanPhone = phone.replace('+', '');
-                const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent('*' + subject + '*\n\n' + body)}`;
-                window.open(waUrl, '_blank');
-                await saveToHistory(subject, 'WHATSAPP');
+            } else if(method === 'sms') {
+                const phone = $('targetPhone').value;
+                if(!phone) {
+                    showToast("WARNING", "Recipient phone number is required");
+                    return;
+                }
+
+                const subject = $('msgSubject').value;
+                const body = $('msgBody').value;
+                const fullMessage = `*${subject}*\n\n${body}`;
+
+                try {
+                    const response = await fetch('/api/hr/dispatch/sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            phone: phone,
+                            message: fullMessage 
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if(response.ok) {
+                        showToast("SUCCESS", "SMS dispatched successfully");
+                        await saveToHistory(subject, 'SMS');
+                    } else {
+                        throw new Error(result.error || "Failed to send SMS");
+                    }
+                } catch (e) {
+                    showToast("ERROR", e.message || "Failed to send SMS");
+                }
             }
         } catch (e) {
             showToast("ERROR", "An error occured. Try again.");
@@ -412,7 +439,7 @@
         const methodMap = {
             'CEO FEED': 'ceo',
             'EMAIL': 'email',
-            'WHATSAPP': 'whatsapp'
+            'SMS': 'sms'
         };
 
         let recipientStr = '';
@@ -460,7 +487,7 @@
                     const icons = {
                         ceo: '<i class="fas fa-shield-halved text-amber-500 mr-2"></i>',
                         email: '<i class="fas fa-envelope text-blue-500 mr-2"></i>',
-                        whatsapp: '<i class="fab fa-whatsapp text-green-500 mr-2"></i>'
+                        sms: '<i class="fas fa-comment-sms text-emerald-500 mr-2"></i>'
                     };
                     return `
                     <div class="group flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 text-[11px] font-bold shadow-sm transition-all hover:border-teal-200">
