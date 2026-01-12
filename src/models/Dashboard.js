@@ -78,13 +78,13 @@ const Dashboard = {
       const [revenueData] = await db.query(`
         SELECT 
           DATE_FORMAT(payment_date, '%Y-%m') as month,
-          DATE_FORMAT(payment_date, '%b') as month_name,
+          DATE_FORMAT(payment_date, '%b %Y') as month_name, -- Added Year for clarity over 12 months
           COALESCE(SUM(amount), 0) as revenue
         FROM payments 
         WHERE status = 'paid'
-          AND payment_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-        GROUP BY DATE_FORMAT(payment_date, '%Y-%m'), DATE_FORMAT(payment_date, '%b')
-        ORDER BY DATE_FORMAT(payment_date, '%Y-%m')
+          AND payment_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+        GROUP BY DATE_FORMAT(payment_date, '%Y-%m'), DATE_FORMAT(payment_date, '%b %Y')
+        ORDER BY DATE_FORMAT(payment_date, '%Y-%m') ASC
       `);
 
       // 9. Package popularity
