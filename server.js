@@ -32,6 +32,8 @@ const teamChat = require("./src/routes/teamChat");
 const announcement = require("./src/routes/announcements");
 const notificationsRoutes = require("./src/routes/notifications");
 const reports = require("./src/routes/reports");
+// Admin dashboard
+const admindashboard = require("./src/routes/dashboard");
 //Subscriptions
 const subscriptionRoutes = require("./src/routes/subscriptionRoutes");
 
@@ -257,6 +259,8 @@ app.use("/api", apiSessionAuth, teamChat);
 app.use("/api", apiSessionAuth, announcement);
 app.use("/api", apiSessionAuth, notificationsRoutes);
 app.use("/api", apiSessionAuth, reports);
+// Admin dahsboard
+app.use("/api/dashboard", apiSessionAuth, admindashboard);
 //Client
 app.use('/api/manage/clients', clientRoutes);
 //Staff
