@@ -1,1066 +1,346 @@
 <style>
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  .animate-spin-slow {
-    animation: spin 2s linear infinite;
-  }
-  .skeleton {
-    background: #e5e7eb;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
-  .hidden {
-    display: none !important;
-  }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
 
-  #ticketsList .group:hover .border-gray-200 {
-    border-color: #14b8a6 !important;
-  }
-  select:focus {
-    outline: none !important;
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
-  }
+    /* Layout Containers */
+    .main-container { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .side-panel { 
+        position: fixed; top: 0; right: -100%; width: 100%; max-width: 500px; height: 100vh; 
+        background: white; z-index: 50; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex; flex-direction: column;
+    }
+    .side-panel.active { right: 0; }
+    .overlay { 
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); 
+        backdrop-filter: blur(4px); z-index: 40; display: none; 
+    }
+    .overlay.active { display: block; }
+
+    /* UI Components */
+    .glass-panel { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .input-field { background: #f1f5f9; border: 1px solid #e2e8f0; transition: all 0.2s; }
+    .input-field:focus { background: white; border-color: #0d9488; ring: 3px rgba(13, 148, 136, 0.1); }
+    
+    .ticket-card { border: 1px solid #e2e8f0; transition: all 0.3s; }
+    .ticket-card:hover { border-color: #0d9488; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+    .badge { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 10px; border-radius: 6px; }
+    .badge-critical { background: #fef2f2; color: #b91c1c; }
+    .badge-high { background: #fff7ed; color: #c2410c; }
+    .badge-medium { background: #fefce8; color: #a16207; }
+    .badge-low { background: #f0f9ff; color: #0369a1; }
+
+    /* Chat Bubbles */
+    .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; }
+    .chat-left { background: #f1f5f9; color: #1e293b; border-bottom-left-radius: 4px; }
+    .chat-right { background: #0d9488; color: white; border-bottom-right-radius: 4px; }
+    
+    .label-caps { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 </style>
-<div id="skeleton" class="p-8 space-y-6">
-  <div class="flex justify-between">
-    <div class="h-8 w-64 bg-gray-300 rounded skeleton"></div>
-    <div class="h-10 w-32 bg-gray-300 rounded-lg skeleton"></div>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="h-24 bg-gray-300 rounded-xl skeleton"></div>
-    <div class="h-24 bg-gray-300 rounded-xl skeleton"></div>
-    <div class="h-24 bg-gray-300 rounded-xl skeleton"></div>
-    <div class="h-24 bg-gray-300 rounded-xl skeleton"></div>
-  </div>
-  <div class="bg-white p-6 rounded-xl shadow">
-    <div class="h-6 w-48 bg-gray-300 rounded skeleton mb-4"></div>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-      <div class="h-12 bg-gray-300 rounded-lg skeleton"></div>
-      <div class="h-12 bg-gray-300 rounded-lg skeleton"></div>
-      <div class="h-12 bg-gray-300 rounded-lg skeleton"></div>
-      <div class="h-12 bg-gray-300 rounded-lg skeleton"></div>
+
+<div class="overlay" id="uiOverlay" onclick="closeAllPanels()"></div>
+
+<div class="main-container max-w-full mx-auto py-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Help Desk</h1>
+            <p class="text-slate-500 font-bold text-xs uppercase tracking-widest">Single-view Support Management</p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="loadTickets()" class="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <button onclick="openCreatePanel()" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-teal-600 shadow-xl transition-all flex items-center gap-2">
+                <i class="fas fa-plus"></i> Create Ticket
+            </button>
+        </div>
     </div>
-  </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="glass-panel p-5 rounded-[2rem] flex items-center gap-4 border-b-4 border-slate-200">
+            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500"><i class="fas fa-list"></i></div>
+            <div><p class="label-caps">Total</p><h4 id="totalTickets" class="text-xl font-black">0</h4></div>
+        </div>
+        <div class="glass-panel p-5 rounded-[2rem] flex items-center gap-4 border-b-4 border-yellow-400">
+            <div class="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-600"><i class="fas fa-door-open"></i></div>
+            <div><p class="label-caps text-yellow-600">Open</p><h4 id="openTickets" class="text-xl font-black">0</h4></div>
+        </div>
+        <div class="glass-panel p-5 rounded-[2rem] flex items-center gap-4 border-b-4 border-blue-500">
+            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600"><i class="fas fa-spinner"></i></div>
+            <div><p class="label-caps text-blue-600">Active</p><h4 id="inProgressTickets" class="text-xl font-black">0</h4></div>
+        </div>
+        <div class="glass-panel p-5 rounded-[2rem] flex items-center gap-4 border-b-4 border-teal-500">
+            <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600"><i class="fas fa-check"></i></div>
+            <div><p class="label-caps text-teal-600">Fixed</p><h4 id="resolvedTickets" class="text-xl font-black">0</h4></div>
+        </div>
+    </div>
+
+    <div class="glass-panel rounded-3xl p-4 mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="relative"><i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="searchInput" oninput="renderTickets()" placeholder="Search..." class="w-full pl-11 pr-4 py-3 rounded-2xl input-field text-sm font-bold outline-none">
+        </div>
+        <select id="priorityFilter" onchange="renderTickets()" class="py-3 px-4 rounded-2xl input-field text-sm font-bold outline-none">
+            <option value="">All Priorities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+        </select>
+        <select id="issueTypeFilter" onchange="renderTickets()" class="py-3 px-4 rounded-2xl input-field text-sm font-bold outline-none">
+            <option value="">All Issues</option><option value="Network Issue">Network Issue</option><option value="Hardware Problem">Hardware Problem</option>
+        </select>
+        <select id="statusFilter" onchange="renderTickets()" class="py-3 px-4 rounded-2xl input-field text-sm font-bold outline-none">
+            <option value="">All Statuses</option><option value="open">Open</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option>
+        </select>
+    </div>
+
+    <div id="ticketsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
 </div>
 
-<!-- Main Content -->
-<div id="content" class="hidden p-8 space-y-6">
-  <!-- Header -->
-  <div class="flex justify-between items-center">
-    <div>
-      <h1 class="text-3xl font-bold text-teal-800">Support Tickets</h1>
-      <p class="text-teal-600">Manage all customer support requests</p>
+<div id="formPanel" class="side-panel">
+    <div class="p-8 border-b flex justify-between items-center bg-slate-50">
+        <div>
+            <h3 id="panelTitle" class="text-xl font-black text-slate-900">New Ticket</h3>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Details & Assignment</p>
+        </div>
+        <button onclick="closeAllPanels()" class="w-10 h-10 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all"><i class="fas fa-times"></i></button>
     </div>
-    <button
-      id="newTicketBtn"
-      class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg"
-    >
-      <i class="fas fa-plus"></i> New Ticket
-    </button>
-  </div>
-
-  <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="bg-white p-5 rounded-xl shadow border border-teal-100">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-teal-600 text-sm font-bold">Total</p>
-          <p id="totalTickets" class="text-2xl font-bold text-gray-800">0</p>
+    <form id="ticketForm" class="p-8 flex-1 overflow-y-auto space-y-6" onsubmit="handleSaveTicket(event)">
+        <input type="hidden" id="editId">
+        <div class="space-y-4">
+            <div><label class="label-caps block mb-2">Customer Name</label>
+                <input required id="fullName" type="text" class="w-full px-4 py-3 rounded-2xl input-field text-sm font-bold outline-none"></div>
+            <div><label class="label-caps block mb-2">Contact Number</label>
+                <input id="phone" type="text" class="w-full px-4 py-3 rounded-2xl input-field text-sm font-bold outline-none"></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="label-caps block mb-2">Type</label>
+                    <select required id="issue_type" class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                        <option value="Network Issue">Network</option><option value="Hardware Problem">Hardware</option><option value="Maintenance">Maintenance</option>
+                    </select></div>
+                <div><label class="label-caps block mb-2">Priority</label>
+                    <select required id="priority" class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                        <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="critical">Critical</option>
+                    </select></div>
+            </div>
+            <div><label class="label-caps block mb-2">Assign Agent</label>
+                <select id="assigned_to" class="w-full px-4 py-3 rounded-2xl input-field text-sm font-bold outline-none"></select></div>
+            <div><label class="label-caps block mb-2">Issue Description</label>
+                <textarea id="initialMessage" rows="5" class="w-full px-4 py-3 rounded-2xl input-field text-sm font-bold outline-none"></textarea></div>
         </div>
-        <i class="fas fa-ticket-alt text-2xl text-teal-600"></i>
-      </div>
-    </div>
-    <div class="bg-white p-5 rounded-xl shadow border border-teal-100">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-yellow-600 text-sm font-bold">Open</p>
-          <p id="openTickets" class="text-2xl font-bold text-gray-800">0</p>
+        <div class="pt-6">
+            <button type="submit" class="w-full bg-teal-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-teal-200 hover:bg-slate-900 transition-all">
+                Save Ticket
+            </button>
         </div>
-        <i class="fas fa-inbox text-2xl text-yellow-600"></i>
-      </div>
-    </div>
-    <div class="bg-white p-5 rounded-xl shadow border border-teal-100">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-blue-600 text-sm font-bold">In Progress</p>
-          <p id="inProgressTickets" class="text-2xl font-bold text-gray-800">
-            0
-          </p>
-        </div>
-        <i class="fas fa-spinner text-2xl text-blue-600"></i>
-      </div>
-    </div>
-    <div class="bg-white p-5 rounded-xl shadow border border-teal-100">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-green-600 text-sm font-bold">Resolved</p>
-          <p id="resolvedTickets" class="text-2xl font-bold text-gray-800">0</p>
-        </div>
-        <i class="fas fa-check-circle text-2xl text-green-600"></i>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filters -->
-  <div class="bg-white p-6 rounded-xl shadow border border-teal-100">
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Search</label
-        >
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="Name, ticket ID..."
-          class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Priority</label
-        >
-        <select
-          id="priorityFilter"
-          class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-        >
-          <option value="">All</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="critical">Critical</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Issue Type</label
-        >
-        <select
-          id="issueTypeFilter"
-          class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-        >
-          <option value="">All</option>
-          <option value="Network Issue">Network Issue</option>
-          <option value="Hardware Problem">Hardware Problem</option>
-          <option value="Software Bug">Software Bug</option>
-          <option value="Installation Request">Installation Request</option>
-          <option value="Maintenance">Maintenance</option>
-          <option value="Repair">Repair</option>
-          <option value="Inspection">Inspection</option>
-          <option value="Asset Recovery">Asset Recovery</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Status</label
-        >
-        <select
-          id="statusFilter"
-          class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-        >
-          <option value="">All</option>
-          <option value="open">Open</option>
-          <option value="in_progress">In Progress</option>
-          <option value="resolved">Resolved</option>
-          <option value="closed">Closed</option>
-        </select>
-      </div>
-      <div>
-        <button
-          id="refreshBtn"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 w-full"
-        >
-          <i class="fas fa-sync"></i> Refresh
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tickets List -->
-  <div id="ticketsList" class="space-y-3">
-    <p class="text-center text-gray-500 py-8">Loading tickets...</p>
-  </div>
-</div>
-
-<!-- Create/Edit Modal -->
-<div
-  id="ticketModal"
-  class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50"
->
-  <div
-    class="bg-white w-full max-w-2xl rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto"
-  >
-    <div
-      class="bg-teal-600 text-white p-5 flex justify-between items-center rounded-t-xl"
-    >
-      <h3 id="modalTitle" class="text-xl font-bold">Create Ticket</h3>
-      <button id="closeModalBtn" class="text-white hover:text-gray-200">
-        <i class="fas fa-times text-xl"></i>
-      </button>
-    </div>
-    <form id="ticketForm" class="p-6 space-y-4">
-      <input type="hidden" id="editId" />
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-semibold mb-1">Full Name *</label>
-          <input
-            required
-            id="fullName"
-            type="text"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Phone</label>
-          <input
-            id="phone"
-            type="text"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Issue Type *</label>
-          <select
-            required
-            id="issue_type"
-            class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="Network Issue">Network Issue</option>
-            <option value="Hardware Problem">Hardware Problem</option>
-            <option value="Software Bug">Software Bug</option>
-            <option value="Installation Request">Installation Request</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Repair">Repair</option>
-            <option value="Inspection">Inspection</option>
-            <option value="Asset Recovery">Asset Recovery</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Priority *</label>
-          <select
-            required
-            id="priority"
-            class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="low">Low</option>
-            <option value="medium" selected>Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Status</label>
-          <select
-            id="status"
-            class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Assign Staff</label>
-          <select
-            id="assigned_to"
-            class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="">Unassigned</option>
-            <option value="1">John (Admin)</option>
-            <option value="2">Sarah (Tech)</option>
-            <option value="3">Mike (Support)</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold mb-1">Initial Message</label>
-        <textarea
-          id="initialMessage"
-          rows="3"
-          class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-        ></textarea>
-      </div>
-      <div class="flex justify-end gap-3 pt-4 border-t">
-        <button
-          type="submit"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-semibold"
-        >
-          <i class="fas fa-save"></i> Save
-        </button>
-        <button
-          type="button"
-          id="cancelModalBtn"
-          class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg font-semibold"
-        >
-          Cancel
-        </button>
-      </div>
     </form>
-  </div>
 </div>
 
-<!-- Chat Modal -->
-<div
-  id="chatModal"
-  class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50"
->
-  <div
-    class="bg-white w-full max-w-4xl rounded-xl shadow-2xl max-h-[90vh] flex flex-col"
-  >
-    <div
-      class="bg-teal-600 text-white p-5 flex justify-between items-center rounded-t-xl"
-    >
-      <h3 class="text-xl font-bold">
-        Chat - <span id="chatTicketNumber"></span>
-      </h3>
-      <button id="closeChatBtn" class="text-white hover:text-gray-200">
-        <i class="fas fa-times text-xl"></i>
-      </button>
+<div id="chatPanel" class="side-panel !max-w-[600px]">
+    <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-teal-500 flex items-center justify-center text-white shadow-lg"><i class="fas fa-comments"></i></div>
+            <div><h3 id="chatTicketNumber" class="text-lg font-black">#TKT-000</h3><p class="text-[9px] font-bold text-teal-400 uppercase tracking-widest">Real-time Support</p></div>
+        </div>
+        <button onclick="closeAllPanels()" class="w-10 h-10 rounded-full hover:bg-white/10 transition-all"><i class="fas fa-times"></i></button>
     </div>
-    <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
-    <div class="p-4 border-t bg-gray-50">
-      <div class="flex gap-2">
-        <textarea
-          id="adminMessage"
-          rows="2"
-          placeholder="Type your reply..."
-          class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-        ></textarea>
-        <button
-          id="sendMessageBtn"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-semibold"
-        >
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50"></div>
+    <div class="p-6 bg-white border-t">
+        <div class="flex gap-2 bg-slate-100 p-2 rounded-2xl">
+            <textarea id="adminMessage" rows="1" placeholder="Type a reply..." class="flex-1 bg-transparent border-none focus:ring-0 p-3 text-sm font-bold resize-none"></textarea>
+            <button onclick="sendMessage()" class="w-12 h-12 bg-slate-900 text-white rounded-xl hover:bg-teal-600 transition-all"><i class="fas fa-paper-plane"></i></button>
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
-  const API_BASE = "/api";
+    // --- State Management ---
+    let allTickets = [];
+    let allMessages = [];
+    let allStaff = [];
+    let currentTicketId = null;
 
-  // State
-  let allTickets = [];
-  let allMessages = [];
-  let currentTicketId = null;
-  let allStaff = [];
+    const API_BASE = "/api";
+    const getEl = (id) => document.getElementById(id);
+    const escapeHtml = (text) => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) : '';
+    const formatStatus = (s) => s.replace('_', ' ').toUpperCase();
 
-  // Utility: Get element safely
-  function getEl(id) {
-    const el = document.getElementById(id);
-    return el;
-  }
+    // --- Core Functions ---
+    async function loadTickets() {
+        try {
+            const [tRes, mRes, sRes] = await Promise.all([
+                fetch(`${API_BASE}/tickets`), fetch(`${API_BASE}/messages`), fetch(`${API_BASE}/tickets/staff`)
+            ]);
+            allTickets = await tRes.json();
+            const mData = await mRes.json();
+            allMessages = mData.messages || mData;
+            allStaff = await sRes.json();
 
-  // Utility: Escape HTML
-  function escapeHtml(text) {
-    if (!text) return "";
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Utility: Format status
-  function formatStatus(s) {
-    const map = {
-      open: "Open",
-      in_progress: "In Progress",
-      resolved: "Resolved",
-      closed: "Closed",
-    };
-    return map[s] || s;
-  }
-
-  // Initialize when DOM is ready
-  document.addEventListener("DOMContentLoaded", () => {
-    // Attach event listeners
-    const form = getEl("ticketForm");
-    if (form) form.addEventListener("submit", handleSaveTicket);
-
-    const newTicketBtn = getEl("newTicketBtn");
-    if (newTicketBtn) newTicketBtn.addEventListener("click", openCreateModal);
-
-    const closeModalBtn = getEl("closeModalBtn");
-    if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
-
-    const cancelModalBtn = getEl("cancelModalBtn");
-    if (cancelModalBtn) cancelModalBtn.addEventListener("click", closeModal);
-
-    const refreshBtn = getEl("refreshBtn");
-    if (refreshBtn) refreshBtn.addEventListener("click", loadTickets);
-
-    const closeChatBtn = getEl("closeChatBtn");
-    if (closeChatBtn) closeChatBtn.addEventListener("click", closeChat);
-
-    const sendMessageBtn = getEl("sendMessageBtn");
-    if (sendMessageBtn) sendMessageBtn.addEventListener("click", sendMessage);
-
-    // Attach filter listeners
-    attachFilters();
-
-    // Load initial data
-    loadTickets();
-  });
-
-  // Attach filter event listeners
-  function attachFilters() {
-    const filterIds = [
-      "searchInput",
-      "priorityFilter",
-      "issueTypeFilter",
-      "statusFilter",
-    ];
-    filterIds.forEach((id) => {
-      const el = getEl(id);
-      if (el) {
-        el.addEventListener("input", renderTickets);
-      }
-    });
-  }
-
-  // Load tickets and messages from API
-  async function loadTickets() {
-    const skeleton = getEl("skeleton");
-    const content = getEl("content");
-
-    if (skeleton) skeleton.classList.remove("hidden");
-    if (content) content.classList.add("hidden");
-
-    try {
-      // 1. Load tickets
-      const ticketsRes = await fetch(`${API_BASE}/tickets`);
-      if (!ticketsRes.ok) throw new Error("Failed to fetch tickets");
-      const ticketsData = await ticketsRes.json();
-
-      // 2. Load messages
-      const messagesRes = await fetch(`${API_BASE}/messages`);
-      if (!messagesRes.ok) throw new Error("Failed to fetch messages");
-      const messagesData = await messagesRes.json();
-
-      // 3. LOAD STAFF FIRST — BEFORE RENDERING
-      const staffRes = await fetch(`${API_BASE}/tickets/staff`);
-      allStaff = staffRes.ok ? await staffRes.json() : [];
-
-      // Now assign data
-      allTickets = Array.isArray(ticketsData) ? ticketsData : [];
-      allMessages = Array.isArray(messagesData?.messages)
-        ? messagesData.messages
-        : messagesData || [];
-
-      // Update stats & render
-      updateStats();
-      renderTickets(); // Now allStaff is ready!
-
-      // Also populate the modal dropdown
-      loadStaffIntoDropdown();
-    } catch (err) {
-      const ticketsList = getEl("ticketsList");
-      if (ticketsList) {
-        ticketsList.innerHTML = `
-          <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-3"></i>
-            <p class="text-red-700 font-semibold text-lg">Error Loading Data</p>
-            <p class="text-red-600 text-sm mt-2">${escapeHtml(err.message)}</p>
-            <button onclick="loadTickets()" class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-              Retry
-            </button>
-          </div>`;
-      }
-    } finally {
-      if (skeleton) skeleton.classList.add("hidden");
-      if (content) content.classList.remove("hidden");
-    }
-  }
-
-  // Update statistics cards
-  function updateStats() {
-    const total = allTickets.length;
-    const open = allTickets.filter((t) => t.status === "open").length;
-    const inProgress = allTickets.filter(
-      (t) => t.status === "in_progress"
-    ).length;
-    const resolved = allTickets.filter((t) => t.status === "resolved").length;
-
-    const totalEl = getEl("totalTickets");
-    const openEl = getEl("openTickets");
-    const inProgressEl = getEl("inProgressTickets");
-    const resolvedEl = getEl("resolvedTickets");
-
-    if (totalEl) totalEl.textContent = total;
-    if (openEl) openEl.textContent = open;
-    if (inProgressEl) inProgressEl.textContent = inProgress;
-    if (resolvedEl) resolvedEl.textContent = resolved;
-  }
-
-  // Render tickets list with filters
-  function renderTickets() {
-    const list = getEl("ticketsList");
-    if (!list) return;
-
-    const search = (getEl("searchInput")?.value || "").toLowerCase();
-    const priority = getEl("priorityFilter")?.value || "";
-    const issueType = getEl("issueTypeFilter")?.value || "";
-    const status = getEl("statusFilter")?.value || "";
-
-    let filtered = allTickets.filter((t) => {
-      const matchesSearch =
-        (t.fullName || "").toLowerCase().includes(search) ||
-        (t.ticket_number || "").toLowerCase().includes(search) ||
-        (t.subject || "").toLowerCase().includes(search) ||
-        (t.description || "").toLowerCase().includes(search);
-      const matchesPriority = !priority || t.priority === priority;
-      const matchesIssue = !issueType || t.issue_type === issueType;
-      const matchesStatus = !status || t.status === status;
-      return matchesSearch && matchesPriority && matchesIssue && matchesStatus;
-    });
-
-    if (!filtered.length) {
-      list.innerHTML = `
-      <div class="text-center py-16">
-        <i class="fas fa-inbox text-8xl text-gray-200 mb-6"></i>
-        <p class="text-xl font-semibold text-gray-500">No tickets found</p>
-        <p class="text-gray-400 mt-2">Try adjusting your filters</p>
-      </div>`;
-      return;
+            updateStats();
+            renderTickets();
+            populateStaffDropdowns();
+        } catch (err) { console.error("Load failed", err); }
     }
 
-    list.innerHTML = filtered
-      .map((t) => {
-        const ticketMessages = allMessages.filter((m) => m.ticket_id == t.id);
-        const totalMessages = ticketMessages.length;
-        const staffMessages = ticketMessages.filter(
-          (m) => m.sender_staff_id != null
+    function updateStats() {
+        getEl("totalTickets").textContent = allTickets.length;
+        getEl("openTickets").textContent = allTickets.filter(t => t.status === 'open').length;
+        getEl("inProgressTickets").textContent = allTickets.filter(t => t.status === 'in_progress').length;
+        getEl("resolvedTickets").textContent = allTickets.filter(t => t.status === 'resolved').length;
+    }
+
+    function renderTickets() {
+        const list = getEl("ticketsList");
+        const q = getEl("searchInput").value.toLowerCase();
+        const pFilter = getEl("priorityFilter").value;
+        const sFilter = getEl("statusFilter").value;
+
+        const filtered = allTickets.filter(t => 
+            (t.fullName.toLowerCase().includes(q) || t.ticket_number.includes(q)) &&
+            (!pFilter || t.priority === pFilter) &&
+            (!sFilter || t.status === sFilter)
         );
-        const hasStaffReplied = staffMessages.length > 0;
-        const lastActivity =
-          ticketMessages[ticketMessages.length - 1]?.created_at || t.created_at;
 
-        const assignedStaff = allStaff.find((s) => s.id == t.assigned_to);
-        const assignedName = assignedStaff
-          ? escapeHtml(assignedStaff.name)
-          : null;
-
-        // Priority & Status Badges
-        const priorityBadge =
-          {
-            critical: "bg-red-100 text-red-800 border-red-300",
-            high: "bg-orange-100 text-orange-800 border-orange-300",
-            medium: "bg-yellow-100 text-yellow-800 border-yellow-300",
-            low: "bg-blue-100 text-blue-800 border-blue-300",
-          }[t.priority] || "bg-gray-100 text-gray-800";
-
-        const statusBadge =
-          {
-            open: "bg-yellow-100 text-yellow-800",
-            in_progress: "bg-blue-100 text-blue-800",
-            resolved: "bg-green-100 text-green-800",
-            closed: "bg-gray-200 text-gray-700",
-          }[t.status] || "bg-gray-100 text-gray-700";
-
-        const staffActivity = t.assigned_to
-          ? hasStaffReplied
-            ? `<span class="text-green-600 font-bold text-xs"><i class="fas fa-check-circle"></i> Staff replied</span>`
-            : `<span class="text-red-600 font-bold text-xs"><i class="fas fa-clock"></i> Awaiting reply</span>`
-          : `<span class="text-gray-500 italic text-xs">Not assigned</span>`;
-
-        // Truncate description for preview
-        const shortDesc =
-          t.description?.length > 120
-            ? escapeHtml(t.description.slice(0, 120)) + "..."
-            : escapeHtml(t.description || "No description provided");
-
-        return `
-        <div class="bg-white rounded-2xl shadow-lg border-2 border-gray-200 hover:border-teal-500 hover:shadow-2xl transition-all duration-300 group">
-          <div class="p-6">
-
-            <!-- Header -->
-            <div class="flex justify-between items-start mb-5">
-              <div>
-                <h3 class="text-xl font-bold text-gray-900">${escapeHtml(
-                  t.fullName
-                )}</h3>
-                <div class="flex items-center gap-3 mt-2">
-                  <p class="text-teal-600 font-mono text-lg font-bold">#${escapeHtml(
-                    t.ticket_number
-                  )}</p>
-                  <span class="px-4 py-1.5 rounded-full text-xs font-bold border ${priorityBadge}">
-                    ${t.priority.toUpperCase()}
-                  </span>
-                  <span class="px-4 py-1.5 rounded-full text-xs font-bold ${statusBadge}">
-                    ${formatStatus(t.status)}
-                  </span>
+        list.innerHTML = filtered.map(t => {
+            const mCount = allMessages.filter(m => m.ticket_id == t.id).length;
+            return `
+            <div class="glass-panel rounded-[2rem] p-6 ticket-card flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="badge badge-${t.priority}">${t.priority}</span>
+                    <span class="text-[10px] font-black text-slate-400">#${t.ticket_number}</span>
                 </div>
-              </div>
-            </div>
-
-            <!-- Customer Description -->
-            <div class="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-200">
-              <p class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <i class="fas fa-quote-left text-teal-600"></i>
-                Customer Message
-              </p>
-              <div class="text-gray-800 text-sm leading-relaxed">
-                <span class="description-preview">${shortDesc}</span>
-                ${
-                  t.description?.length > 120
-                    ? `
-                  <button onclick="this.previousElementSibling.innerHTML = '${escapeHtml(
-                    t.description
-                  )}'; this.remove();" 
-                    class="text-teal-600 hover:text-teal-700 font-medium text-xs ml-2">
-                    Show more
-                  </button>
-                `
-                    : ""
-                }
-              </div>
-            </div>
-
-            <!-- Staff Assignment -->
-            <div class="bg-gradient-to-r from-teal-50 to-blue-50 rounded-xl p-5 mb-6 border border-teal-200">
-              <div class="flex justify-between items-center mb-3">
-                <p class="font-semibold text-gray-800">Assigned Staff</p>
-                ${staffActivity}
-              </div>
-              
-              <select onchange="assignTicket(${t.id}, this.value)"
-                class="w-full px-5 py-3.5 border-2 rounded-xl text-base font-medium transition-all
-                  ${
-                    t.assigned_to
-                      ? "border-teal-500 bg-white text-teal-900"
-                      : "border-gray-300 bg-white text-gray-600"
-                  }
-                  focus:ring-4 focus:ring-teal-200 focus:border-teal-600">
-                <option value="">Unassigned</option>
-                ${allStaff
-                  .map(
-                    (s) => `
-                  <option value="${s.id}" ${
-                      t.assigned_to == s.id ? "selected" : ""
-                    }>
-                    ${escapeHtml(s.name)} (${s.role || "Staff"})
-                  </option>
-                `
-                  )
-                  .join("")}
-              </select>
-
-              ${
-                t.assigned_to
-                  ? `
-                <p class="mt-3 text-sm">
-                  <span class="font-medium text-gray-700">Currently assigned to:</span>
-                  <span class="ml-2 font-bold text-teal-700">${assignedName}</span>
-                </p>
-              `
-                  : ""
-              }
-            </div>
-
-            <!-- Footer -->
-            <div class="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-gray-200">
-              <div class="flex items-center gap-6 text-sm text-gray-600">
-                <span class="flex items-center gap-2">
-                  <i class="fas fa-comments text-teal-600"></i>
-                  <strong>${totalMessages}</strong> message${
-          totalMessages !== 1 ? "s" : ""
-        }
-                  ${
-                    staffMessages.length > 0
-                      ? ` (${staffMessages.length} from staff)`
-                      : ""
-                  }
-                </span>
-                <span class="text-gray-500">
-                  ${new Date(lastActivity).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </div>
-
-              <div class="flex gap-3">
-                <button onclick="openChat(${t.id})"
-                  class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
-                  <i class="fas fa-comments"></i> Open Chat
-                </button>
-                <button onclick="deleteTicket(${t.id})"
-                  class="p-3 text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                  title="Delete Ticket">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>`;
-      })
-      .join("");
-  }
-
-  async function assignTicket(ticketId, staffId) {
-    if (staffId === "") staffId = null;
-
-    try {
-      const res = await fetch(`${API_BASE}/tickets/${ticketId}/assign`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assigned_to: staffId }),
-      });
-
-      if (!res.ok) throw new Error("Failed to assign");
-
-      const updatedTicket = await res.json();
-
-      // Update local data
-      const index = allTickets.findIndex((t) => t.id === updatedTicket.id);
-      if (index !== -1) {
-        allTickets[index] = updatedTicket;
-      } else {
-        allTickets.push(updatedTicket);
-      }
-
-      renderTickets();
-      updateStats();
-    } catch (err) {
-      alert("Assign failed: " + err.message);
-    }
-  }
-
-  // Load staff into assign dropdown
-  async function loadStaffIntoDropdown() {
-    const select = getEl("assigned_to");
-    if (!select) return;
-
-    try {
-      const res = await fetch(`${API_BASE}/tickets/staff`);
-      if (!res.ok) throw new Error("Failed to load staff");
-
-      const staff = await res.json();
-
-      select.innerHTML = '<option value="">Unassigned</option>';
-
-      staff.forEach((s) => {
-        const opt = document.createElement("option");
-        opt.value = s.id;
-        opt.textContent = `${s.name} (${s.role || "Staff"})`;
-        select.appendChild(opt);
-      });
-    } catch (err) {
-      console.error("Failed to load staff:", err);
-      select.innerHTML += '<option value="">Error loading staff</option>';
-    }
-  }
-
-  // Open create modal
-  function openCreateModal() {
-    const modal = getEl("ticketModal");
-    const modalTitle = getEl("modalTitle");
-    const form = getEl("ticketForm");
-    const editId = getEl("editId");
-
-    if (modalTitle) modalTitle.textContent = "Create New Ticket";
-    if (form) form.reset();
-    if (editId) editId.value = "";
-    if (modal) {
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
-    }
-    loadStaffIntoDropdown();
-  }
-
-  // Handle save ticket (create or update)
-  async function handleSaveTicket(e) {
-    e.preventDefault();
-
-    const editId = getEl("editId");
-    const fullName = getEl("fullName");
-    const phone = getEl("phone");
-    const issueType = getEl("issue_type");
-    const priority = getEl("priority");
-    const status = getEl("status");
-    const assignedTo = getEl("assigned_to");
-    const initialMessage = getEl("initialMessage");
-
-    const id = editId?.value;
-    const payload = {
-      fullName: fullName?.value.trim() || "",
-      phone: phone?.value.trim() || "",
-      issue_type: issueType?.value || "",
-      priority: priority?.value || "",
-      status: status?.value || "",
-      assigned_to: assignedTo?.value || null,
-    };
-
-    if (!payload.fullName) {
-      alert("Full Name is required");
-      return;
+                <h4 class="text-lg font-black text-slate-900 mb-1">${escapeHtml(t.fullName)}</h4>
+                <div class="flex items-center gap-2 mb-4 text-[10px] font-bold text-slate-500">
+                    <span class="px-2 py-0.5 rounded bg-slate-100">${formatStatus(t.status)}</span>
+                    <span>•</span>
+                    <span>${t.issue_type}</span>
+                </div>
+                <p class="text-sm text-slate-500 font-medium mb-6 line-clamp-2">${escapeHtml(t.description)}</p>
+                
+                <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <button onclick="openChatPanel(${t.id})" class="text-xs font-black text-teal-600 hover:text-slate-900 transition-all flex items-center gap-2">
+                        <i class="fas fa-comment-dots"></i> ${mCount} MESSAGES
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="openEditPanel(${t.id})" class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteTicket(${t.id})" class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:text-rose-500 transition-all"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+            </div>`;
+        }).join("");
     }
 
-    try {
-      if (id) {
-        // Update existing ticket
-        const response = await fetch(`${API_BASE}/tickets/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) throw new Error("Failed to update ticket");
-      } else {
-        // Create new ticket
-        const ticket_number = `TKT-${Date.now().toString().slice(-6)}`;
-        const response = await fetch(`${API_BASE}/tickets`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, ticket_number }),
-        });
-
-        if (!response.ok) throw new Error("Failed to create ticket");
-
-        const ticket = await response.json();
-        const msg = initialMessage?.value.trim();
-
-        // Add initial message if provided
-        if (msg && ticket.id) {
-          await fetch(`${API_BASE}/messages`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ticket_id: ticket.id,
-              sender_staff_id: 1,
-              message: msg,
-            }),
-          });
-        }
-      }
-
-      closeModal();
-      await loadTickets();
-    } catch (err) {
-      alert("Save failed: " + err.message);
-    }
-  }
-
-  // Delete ticket
-  async function deleteTicket(id) {
-    if (
-      !confirm(
-        "Are you sure you want to delete this ticket and all associated messages?"
-      )
-    ) {
-      return;
+    // --- Panel Controls ---
+    function openCreatePanel() {
+        getEl("panelTitle").textContent = "New Ticket";
+        getEl("ticketForm").reset();
+        getEl("editId").value = "";
+        togglePanel("formPanel", true);
     }
 
-    try {
-      // Delete messages first
-      await fetch(`${API_BASE}/messages/ticket/${id}`, {
-        method: "DELETE",
-      });
-
-      // Then delete the ticket
-      const response = await fetch(`${API_BASE}/tickets/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete ticket");
-
-      await loadTickets();
-    } catch (err) {
-      alert("Delete failed: " + err.message);
-    }
-  }
-
-  // Close modal
-  function closeModal() {
-    const modal = getEl("ticketModal");
-    if (modal) {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-    }
-  }
-
-  // Open chat modal
-  async function openChat(id) {
-    currentTicketId = id;
-    const t = allTickets.find((x) => x.id === id);
-    if (!t) return;
-
-    const modal = getEl("chatModal");
-    const ticketNumber = getEl("chatTicketNumber");
-
-    if (ticketNumber) ticketNumber.textContent = `#${t.ticket_number}`;
-    if (modal) {
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
+    function openEditPanel(id) {
+        const t = allTickets.find(x => x.id === id);
+        if (!t) return;
+        getEl("panelTitle").textContent = "Edit Ticket";
+        getEl("editId").value = t.id;
+        getEl("fullName").value = t.fullName;
+        getEl("phone").value = t.phone || '';
+        getEl("issue_type").value = t.issue_type;
+        getEl("priority").value = t.priority;
+        getEl("assigned_to").value = t.assigned_to || '';
+        getEl("initialMessage").value = t.description;
+        togglePanel("formPanel", true);
     }
 
-    await loadMessages(id);
-  }
-
-  // Load messages for a ticket
-  async function loadMessages(ticketId) {
-    const container = getEl("chatMessages");
-    if (!container) return;
-
-    try {
-      const response = await fetch(`${API_BASE}/messages/ticket/${ticketId}`);
-
-      let msgs = [];
-
-      if (response.ok) {
-        const data = await response.json();
-        msgs = Array.isArray(data) ? data : data.messages || [];
-      } else if (response.status === 404) {
-        // 404 = No messages yet → perfectly normal!
-        msgs = [];
-      } else {
-        throw new Error("Failed to load messages");
-      }
-
-      renderChat(msgs);
-    } catch (err) {
-      console.error("Message load error:", err);
-      container.innerHTML = `
-      <div class="text-center py-16 text-gray-500">
-        <i class="fas fa-wifi-slash text-6xl mb-4 text-gray-300"></i>
-        <p class="text-lg font-medium">Connection issue</p>
-        <p class="text-sm mt-2">We couldn't load messages. Please try again.</p>
-        <button onclick="loadMessages(${ticketId})" class="mt-4 px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
-          Retry
-        </button>
-      </div>`;
-    }
-  }
-
-  // Render chat messages
-  function renderChat(msgs) {
-    const container = getEl("chatMessages");
-    if (!container) return;
-
-    if (!msgs || msgs.length === 0) {
-      container.innerHTML = `
-      <div class="text-center py-20 text-gray-500">
-        <div class="mb-6">
-          <i class="fas fa-comments text-9xl text-gray-200"></i>
-        </div>
-        <p class="text-2xl font-bold text-gray-600 mb-2">No messages yet</p>
-        <p class="text-lg text-gray-500">Start the conversation by typing below</p>
-        <div class="mt-8 flex justify-center">
-          <div class="bg-teal-100 border-2 border-dashed border-teal-300 rounded-xl w-24 h-24 flex items-center justify-center">
-            <i class="fas fa-paper-plane text-teal-600 text-4xl"></i>
-          </div>
-        </div>
-      </div>`;
-      return;
+    async function openChatPanel(id) {
+        currentTicketId = id;
+        const t = allTickets.find(x => x.id === id);
+        getEl("chatTicketNumber").textContent = `#${t.ticket_number}`;
+        togglePanel("chatPanel", true);
+        await loadMessages(id);
     }
 
-    container.innerHTML = msgs
-      .map((m) => {
-        const isStaff = !!m.sender_staff_id;
-        const bgColor = isStaff ? "bg-blue-50" : "bg-gray-50";
-        const alignClass = isStaff ? "flex-row-reverse" : "";
-        const avatarColor = isStaff
-          ? "bg-blue-100 text-blue-700"
-          : "bg-teal-100 text-teal-700";
-
-        return `
-        <div class="flex items-start gap-3 ${alignClass}">
-          <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center text-sm font-bold">
-            ${isStaff ? "A" : "U"}
-          </div>
-          <div class="max-w-md">
-            <div class="${bgColor} p-3 rounded-lg shadow-sm">
-              <p class="text-xs font-semibold text-gray-600 mb-1">
-                ${isStaff ? "Support Team" : "Customer"}
-              </p>
-              <p class="text-gray-900">${escapeHtml(m.message)}</p>
-              <p class="text-xs text-gray-500 mt-2">
-                ${new Date(m.created_at).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>`;
-      })
-      .join("");
-
-    container.scrollTop = container.scrollHeight;
-  }
-
-  // Send message
-  async function sendMessage() {
-    const input = getEl("adminMessage");
-    if (!input) return;
-
-    const msg = input.value.trim();
-    if (!msg || !currentTicketId) return;
-
-    try {
-      const response = await fetch(`${API_BASE}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticket_id: currentTicketId,
-          sender_staff_id: 1,
-          message: msg,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to send message");
-
-      input.value = "";
-      await loadMessages(currentTicketId);
-      await loadTickets(); // Refresh to update message count
-      renderTickets();
-    } catch (err) {
-      alert("Failed to send message: " + err.message);
+    function togglePanel(id, show) {
+        getEl(id).classList.toggle("active", show);
+        getEl("uiOverlay").classList.toggle("active", show);
     }
-  }
 
-  async function fetchMessages() {
-    try {
-      const res = await fetch(`${API_BASE}/messages`);
-      if (!res.ok) throw new Error("Failed to fetch messages");
-      const data = await res.json();
-      allMessages = Array.isArray(data) ? data : data.messages || [];
-    } catch (err) {
-      console.error("Error fetching messages:", err);
+    function closeAllPanels() {
+        document.querySelectorAll('.side-panel').forEach(p => p.classList.remove("active"));
+        getEl("uiOverlay").classList.remove("active");
+        currentTicketId = null;
     }
-  }
 
-  // Close chat modal
-  function closeChat() {
-    const modal = getEl("chatModal");
-    if (modal) {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
+    // --- CRUD Actions ---
+    async function handleSaveTicket(e) {
+        e.preventDefault();
+        const id = getEl("editId").value;
+        const payload = {
+            fullName: getEl("fullName").value,
+            phone: getEl("phone").value,
+            issue_type: getEl("issue_type").value,
+            priority: getEl("priority").value,
+            assigned_to: getEl("assigned_to").value || null,
+            description: getEl("initialMessage").value,
+            status: id ? undefined : 'open'
+        };
+
+        try {
+            const url = id ? `${API_BASE}/tickets/${id}` : `${API_BASE}/tickets`;
+            const method = id ? 'PUT' : 'POST';
+            if (!id) payload.ticket_number = `TKT-${Date.now().toString().slice(-6)}`;
+
+            const res = await fetch(url, {
+                method, headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) { closeAllPanels(); loadTickets(); }
+        } catch (err) { alert("Save failed"); }
     }
-    currentTicketId = null;
-  }
 
-  // Make functions globally available
-  window.loadTickets = loadTickets;
-  window.openCreateModal = openCreateModal;
-  window.deleteTicket = deleteTicket;
-  window.openChat = openChat;
-  window.sendMessage = sendMessage;
-  window.closeModal = closeModal;
-  window.closeChat = closeChat;
+    async function sendMessage() {
+        const msg = getEl("adminMessage").value.trim();
+        if (!msg || !currentTicketId) return;
+
+        try {
+            await fetch(`${API_BASE}/messages`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ticket_id: currentTicketId, sender_staff_id: 1, message: msg })
+            });
+            getEl("adminMessage").value = '';
+            loadMessages(currentTicketId);
+        } catch (err) { alert("Send failed"); }
+    }
+
+    async function loadMessages(tid) {
+        const res = await fetch(`${API_BASE}/messages/ticket/${tid}`);
+        const data = await res.json();
+        const msgs = data.messages || data;
+        const container = getEl("chatMessages");
+        
+        container.innerHTML = msgs.map(m => `
+            <div class="flex ${m.sender_staff_id ? 'justify-end' : 'justify-start'}">
+                <div class="chat-bubble ${m.sender_staff_id ? 'chat-right shadow-lg' : 'chat-left'}">
+                    <p class="font-bold text-[9px] uppercase mb-1 opacity-70">${m.sender_staff_id ? 'Staff' : 'Customer'}</p>
+                    <p class="font-medium">${escapeHtml(m.message)}</p>
+                </div>
+            </div>`).join("");
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function populateStaffDropdowns() {
+        const html = '<option value="">Unassigned</option>' + allStaff.map(s => `<option value="${s.id}">${s.first_name} ${s.second_name}</option>`).join("");
+        getEl("assigned_to").innerHTML = html;
+    }
+
+    async function deleteTicket(id) {
+        if (!confirm("Delete this ticket?")) return;
+        await fetch(`${API_BASE}/tickets/${id}`, { method: 'DELETE' });
+        loadTickets();
+    }
+
+    // Init
+    document.addEventListener("DOMContentLoaded", loadTickets);
 </script>

@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const bcrypt = require("bcrypt");
 
 const Client = {
 
@@ -25,12 +26,24 @@ const Client = {
         const warning = await Client.checkExisting(data);
         if (warning) throw new Error(warning);
 
-        const cols = Object.keys(data).join(", ");
-        const placeholders = Object.keys(data).map(() => "?").join(", ");
+        const SALT_ROUNDS = 12;
+        const plainPassword = data.password.toString(); 
+        const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+
+        const dataToSave = { 
+            ...data, 
+            password: hashedPassword,
+            is_active: true
+        };
+
+        const cols = Object.keys(dataToSave).join(", ");
+        const placeholders = Object.keys(dataToSave).map(() => "?").join(", ");
+
         const [result] = await db.query(
             `INSERT INTO users (${cols}) VALUES (${placeholders})`,
-            Object.values(data)
+            Object.values(dataToSave)
         );
+
         return result;
     },
 

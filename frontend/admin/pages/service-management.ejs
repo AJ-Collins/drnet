@@ -511,27 +511,53 @@
   }
 
   function populateSelects() {
-    const populate = (id, list, valueKey, labelKey) => {
-      const sel = $(id);
-      sel.innerHTML = '<option value="">Select…</option>';
-      list.forEach((item) => {
-        const opt = document.createElement("option");
-        opt.value = item[valueKey];
-        opt.textContent = item[labelKey];
-        sel.appendChild(opt);
-      });
+    const populate = (id, list, valueKey) => {
+        const sel = $(id);
+        if (!sel) return;
+        sel.innerHTML = '<option value="">Select…</option>';
+        
+        list.forEach((item) => {
+            // Check if item is valid and has an ID
+            if (item && item[valueKey] !== undefined) {
+                const opt = document.createElement("option");
+                opt.value = item[valueKey];
+                // Use getFullName to combine first and second names
+                opt.textContent = getFullName(item) || `ID: ${item[valueKey]}`;
+                sel.appendChild(opt);
+            }
+        });
     };
-    populate("technicianId", technicians, "id", "name");
-    populate("supervisorId", supervisors, "id", "name");
-    populate(
-      "technicianFilter",
-      [{ id: "", name: "All Technicians" }, ...technicians],
-      "id",
-      "name"
-    );
+
+    // Populate Technicians
+    populate("technicianId", technicians, "id");
+    
+    // Populate Supervisors
+    populate("supervisorId", supervisors, "id");
+
+    // Populate the Filter dropdown (includes an "All" option)
+    const techFilter = $("technicianFilter");
+    if (techFilter) {
+        techFilter.innerHTML = '<option value="">All Technicians</option>';
+        technicians.forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t.id;
+            opt.textContent = getFullName(t);
+            techFilter.appendChild(opt);
+        });
+    }
   }
 
-  // === FILTER & RENDER ===
+// Ensure this helper handles missing names gracefully
+function getFullName(person) {
+    if (!person) return "";
+    // If person has a name property (like some APIs do), use it, otherwise combine first/second
+    if (person.name) return person.name;
+    return [person.first_name, person.second_name]
+        .filter(Boolean)
+        .join(" ") || "Unnamed User";
+}
+
+
   function applyFilters() {
     let list = [...assignments];
     const q = $("searchInput").value.toLowerCase().trim();
@@ -543,7 +569,8 @@
       list = list.filter((a) => {
         const idStr = String(a.id).toLowerCase();
         const clientStr = (a.clientName || "").toLowerCase();
-        const techName = technicians.find((t) => t.id === a.technicianId)?.name || "";
+        const tech = technicians.find(t => t.id === a.technicianId);
+        const techName = getFullName(tech);
         const techStr = techName.toLowerCase();
 
         return (
@@ -575,8 +602,8 @@
 
     tbody.innerHTML = pageItems
       .map((a) => {
-        const tech =
-          technicians.find((t) => t.id === a.technicianId)?.name || "—";
+        const techObj = technicians.find((t) => t.id === a.technicianId);
+        const tech = getFullName(techObj);
         return `
         <tr class="hover:bg-teal-50 transition">
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${

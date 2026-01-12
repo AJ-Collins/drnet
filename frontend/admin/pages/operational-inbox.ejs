@@ -9,11 +9,16 @@
         
         <div class="lg:col-span-8">
             <div class="bg-white rounded-lg border border-slate-100 shadow-sm custom-scroll overflow-y-auto max-h-[720px] ">
-                <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                <div class="p-6 border-b border-slate-50 flex items-center bg-slate-50/50">
                     <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest">Message Logs</h3>
-                    <button onclick="fetchCEOMessages()" class="text-slate-400 hover:text-emerald-600 transition-colors">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                    <div class="ml-auto flex items-center gap-3">
+                        <button onclick="fetchCEOMessages()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-300 text-slate-400 hover:text-slate-600 hover:border-emerald-300 transition-all">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button onclick="toggleAdminDrawer(true)" class="h-10 px-4 flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-emerald-300 hover:text-emerald-700  transition-all font-bold text-[10px] uppercase tracking-widest">
+                            <i class="fas fa-inbox text-emerald-500"></i>Inbox
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -65,6 +70,32 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="adminDrawerOverlay" class="fixed inset-0 bg-slate-900/40 z-[200] hidden transition-opacity duration-300" onclick="toggleAdminDrawer(false)">
+    <div id="adminDrawer" class="absolute top-0 right-0 h-full w-full max-w-lg bg-white shadow-2xl translate-x-full transition-transform duration-500 ease-out flex flex-col" onclick="event.stopPropagation()">
+        
+        <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <div>
+                <h2 class="text-xl font-black text-slate-900 tracking-tight">Reply Inbox</h2>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Hr inbox replies</p>
+            </div>
+            <button onclick="toggleAdminDrawer(false)" class="w-10 h-10 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all flex items-center justify-center">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-4" id="adminInboxCards">
+            </div>
+
+        <div class="p-6 border-t border-slate-100 bg-white">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest" id="adminCount">0 Messages Total</span>
+                <button onclick="fetchCEOMessages()" class="text-emerald-600 font-black text-[10px] uppercase tracking-widest hover:underline">
+                    Refresh List
+                </button>
             </div>
         </div>
     </div>
@@ -235,6 +266,171 @@ function showToast(title, msg) {
     toast.innerHTML = `<h5 class="text-[10px] font-black uppercase text-teal-400 mb-1">${title}</h5><p class="text-xs font-medium">${msg}</p>`;
     document.getElementById('toastContainer').appendChild(toast);
     setTimeout(() => toast.remove(), 4000);
+}
+
+function toggleAdminDrawer(isOpen) {
+    const overlay = document.getElementById('adminDrawerOverlay');
+    const drawer = document.getElementById('adminDrawer');
+
+    if (isOpen) {
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.add('opacity-100');
+        }, 10);
+        
+        fetchAdminInbox(); 
+    } else {
+        drawer.classList.add('translate-x-full');
+        overlay.classList.remove('opacity-100');
+        setTimeout(() => overlay.classList.add('hidden'), 500);
+    }
+}
+
+async function fetchAdminInbox() {
+    const container = document.getElementById('adminInboxCards');
+    const countElem = document.getElementById('adminCount');
+    
+    // Modern Loading State
+    container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-20">
+            <div class="relative">
+                <div class="w-10 h-10 border-4 border-emerald-100 border-t-emerald-500 rounded-full animate-spin"></div>
+            </div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-4">Loading Records</p>
+        </div>`;
+
+    try {
+        const res = await fetch('/api/hr/dispatch/inbox');
+        const messages = await res.json();
+        
+        countElem.innerText = messages.length;
+
+        if (messages.length === 0) {
+            container.innerHTML = `
+                <div class="py-20 text-center">
+                    <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-envelope-open text-slate-300 text-xl"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Clear Skies. No Messages.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = messages.map(msg => {
+            const isUrgent = msg.priority === 'urgent';
+            const isRead = msg.status === 'read' || msg.status === 'processed';
+
+            return `
+            <div class="group relative bg-white border-b border-slate-100 hover:bg-slate-50/50 transition-all cursor-default">
+                <div class="absolute left-0 top-0 bottom-0 w-1 ${isUrgent ? 'bg-rose-500' : 'bg-transparent'}"></div>
+
+                <div class="flex items-start gap-4 p-4 sm:px-6">
+                    <div class="mt-1" id="status-icon-${msg.id}">
+                        ${msg.status === 'processed' 
+                            ? '<i class="fas fa-check-circle text-emerald-500 text-sm"></i>' 
+                            : isUrgent 
+                                ? '<i class="fas fa-exclamation-circle text-rose-500 text-sm animate-pulse"></i>'
+                                : '<i class="far fa-circle text-slate-300 text-sm"></i>'}
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] font-black uppercase tracking-tight ${isRead ? 'text-slate-400' : 'text-slate-900'}">
+                                ${isUrgent ? '<span class="text-rose-600 mr-2">Urgent Dispatch</span>' : 'System Message'}
+                            </span>
+                            <span class="text-[9px] font-medium text-slate-400">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        
+                        <p class="text-sm ${isRead ? 'text-slate-500 font-normal' : 'text-slate-800 font-semibold'} line-clamp-2 leading-relaxed mb-3">
+                            ${msg.message_content}
+                        </p>
+
+                        <div class="flex items-center justify-between">
+                            <div id="status-container-${msg.id}" class="flex items-center gap-1.5">
+                                ${['pending', 'read', 'processed'].map(status => `
+                                    <button 
+                                        onclick="updateAdminStatus(${msg.id}, '${status}')"
+                                        class="status-btn-${msg.id} px-2.5 py-1 rounded-md text-[8px] font-bold uppercase transition-all 
+                                        ${msg.status === status 
+                                            ? 'bg-slate-900 text-white shadow-sm' 
+                                            : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'}">
+                                        ${status}
+                                    </button>
+                                `).join('')}
+                            </div>
+
+                            <button onclick="deleteAdminRecord(${msg.id})" 
+                                class="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-slate-400 hover:text-rose-500">
+                                <i class="fas fa-trash-alt text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        container.innerHTML = `
+            <div class="p-8 text-center bg-rose-50 rounded-xl m-4">
+                <i class="fas fa-circle-exclamation text-rose-400 mb-2"></i>
+                <p class="text-rose-600 text-xs font-bold uppercase tracking-widest">Network Error</p>
+            </div>`;
+    }
+}
+
+async function updateAdminStatus(id, newStatus) {
+    const container = document.getElementById(`status-container-${id}`);
+    const iconContainer = document.getElementById(`status-icon-${id}`);
+    const buttons = container.querySelectorAll('button');
+    const isUrgent = iconContainer.innerHTML.includes('text-rose-500');
+
+    if (newStatus === 'processed') {
+        iconContainer.innerHTML = '<i class="fas fa-check-circle text-emerald-500 text-sm"></i>';
+    } else if (isUrgent) {
+        iconContainer.innerHTML = '<i class="fas fa-exclamation-circle text-rose-500 text-sm animate-pulse"></i>';
+    } else {
+        iconContainer.innerHTML = '<i class="far fa-circle text-slate-300 text-sm"></i>';
+    }
+
+    buttons.forEach(btn => {
+        const btnText = btn.innerText.toLowerCase();
+        if (btnText === newStatus) {
+            btn.className = `px-2.5 py-1 rounded-md text-[8px] font-bold uppercase transition-all bg-slate-900 text-white shadow-sm`;
+        } else {
+            btn.className = `px-2.5 py-1 rounded-md text-[8px] font-bold uppercase transition-all bg-white border border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600`;
+        }
+    });
+
+    try {
+        const response = await fetch(`/api/hr/dispatch/inbox/update/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        if (response.ok) {
+            showToast("UPDATED", `Status: ${newStatus}`);
+            fetchCEOMessages();
+        }
+    } catch (err) {
+        showToast("ERROR", "Failed to sync status");
+        fetchAdminInbox();
+    }
+}
+
+async function deleteAdminRecord(id) {
+    if(!confirm("Delete this dispatch permanentely?")) return;
+    try {
+        const res = await fetch(`/api/hr/dispatch/inbox/${id}`, { method: 'DELETE' });
+        if(res.ok) {
+            showToast("REMOVED", "Dispatch deleted");
+            fetchAdminInbox();
+        }
+    } catch (err) {
+        showToast("ERROR", "Delete failed");
+    }
 }
 
 window.onload = fetchCEOMessages;

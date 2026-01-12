@@ -9,7 +9,6 @@ const SupportTicket = require("../models/SupportTicket");
 const Payment = require("../models/Payment");
 const Renewals = require("../models/Renewal");
 const StaffSalary = require("../models/StaffSalary");
-const UserSubscription = require("../models/UserSubscription");
 const db = require("../config/db");
 
 function formatDateForMySQL(date) {
@@ -557,7 +556,7 @@ router.get("/dashboard/revenue-trend", async (req, res) => {
 // Staff Attendance Routes
 router.get("/staff", async (req, res) => {
   try {
-    const staff = await Staff.findAllWithSalary();
+    const staff = await Staff.findAll();
     res.json(staff);
   } catch (err) {
     console.error("Error fetching staff:", err);

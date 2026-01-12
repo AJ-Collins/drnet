@@ -15,7 +15,13 @@ router.get('/', async (req, res) => {
 // Create Staff
 router.post('/', async (req, res) => {
     try {
-        const result = await Staff.create(req.body);
+        const data = {
+            ...req.body,
+            employee_id: req.body.id_number
+        };
+        delete data.id_number;
+
+        const result = await Staff.create(data);
         res.status(201).json({ message: "Staff created", id: result.insertId });
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -25,7 +31,14 @@ router.post('/', async (req, res) => {
 // Update Staff
 router.put('/:id', async (req, res) => {
     try {
-        await Staff.update(req.params.id, req.body);
+        const { id } = req.params;
+        const data = {
+            ...req.body,
+            employee_id: req.body.id_number
+        };
+        delete data.id_number;
+
+        const result = await Staff.update(id, data); 
         res.json({ message: "Staff updated successfully" });
     } catch (err) {
         res.status(400).json({ error: err.message });

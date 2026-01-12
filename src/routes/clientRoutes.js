@@ -16,6 +16,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const result = await Client.create(req.body);
+        delete req.body.password;
         res.status(201).json({ message: "Client created", id: result.insertId });
     } catch (err) {
         res.status(400).json({ error: err.message });

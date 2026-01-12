@@ -23,7 +23,7 @@ router.post('/dispatch/reply', async (req, res) => {
     }
 });
 
-// GET: Fetch all CEO messages
+// Fetch all CEO messages
 router.get('/dispatch/inbox', async (req, res) => {
     try {
         const rows = await HrInboxReply.getAll();
@@ -34,30 +34,26 @@ router.get('/dispatch/inbox', async (req, res) => {
     }
 });
 
-// PATCH: Update status (e.g., mark as read/processed)
-router.patch('/dispatch/inbox/:id', async (req, res) => {
-    const { status } = req.body;
+// Update status (e.g., mark as read/processed)
+router.patch('/dispatch/inbox/update/:id', async (req, res) => {
     const { id } = req.params;
+    const { status } = req.body;
 
     try {
-        const updated = await HrInboxReply.updateStatus(id, status);
-        
-        if (!updated) {
-            return res.status(404).json({ error: "Record not found" });
+        if (!status) {
+            return res.status(400).json({ error: "Status is required" });
         }
 
-        res.json({ 
-            success: true, 
-            message: "Status updated", 
-            data: updated 
-        });
+        const updated = await HrInboxReply.updateStatus(id, status);
+
+        res.json({ success: true, data: updated });
     } catch (err) {
-        console.error("Update Error:", err);
-        res.status(500).json({ error: "Failed to update status" });
+        console.error("Patch Error:", err);
+        res.status(500).json({ error: err.message });
     }
 });
 
-// DELETE: Remove record
+// Remove record
 router.delete('/dispatch/inbox/:id', async (req, res) => {
     try {
         await HrInboxReply.remove(req.params.id);

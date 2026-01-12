@@ -40,7 +40,9 @@ const Staff = {
                    s.employee_id, s.position, s.department, s.is_active, 
                    s.hire_date, image, r.name as role_name 
             FROM staff s 
-            LEFT JOIN roles r ON s.role_id = r.id ORDER BY s.created_at DESC
+            LEFT JOIN roles r ON s.role_id = r.id 
+            WHERE r.name != 'admin' OR r.name IS NULL
+            ORDER BY s.created_at DESC
         `);
         return rows;
     },
@@ -58,23 +60,31 @@ const Staff = {
     },
 
     update: async (id, data) => {
-        const warning = await Staff.checkExisting(data, id);
-        if (warning) throw new Error(warning);
+        const [existing] = await db.query("SELECT id FROM staff WHERE id = ?", [id]);
+        if (existing.length === 0) {
+            throw new Error("Staff member not found in the database.");
+        }
 
-        if (data.password) data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+        if (data.password && data.password.trim() !== "") {
+            const SALT_ROUNDS = 12;
+            data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+        } else {
+            delete data.password; 
+        }
         
-        // Handle Salary if present in the update object
         let salary = data.basic_salary;
         delete data.basic_salary;
 
         const fields = Object.keys(data).map(k => `${k}=?`).join(", ");
         const values = [...Object.values(data), id];
+        
         const [result] = await db.query(`UPDATE staff SET ${fields} WHERE id=?`, values);
 
         if (salary !== undefined) {
             await db.query("DELETE FROM staff_salaries WHERE staff_id = ?", [id]);
             await db.query("INSERT INTO staff_salaries (staff_id, basic_salary, effective_from) VALUES (?, ?, NOW())", [id, salary]);
         }
+        
         return result;
     },
 
