@@ -42,4 +42,14 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// GEt roles
+router.get('/roles', async (req, res) => {
+    try {
+        const roles = await Staff.getRoles();
+        res.json(roles);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

@@ -258,9 +258,9 @@ app.use("/api", apiSessionAuth, announcement);
 app.use("/api", apiSessionAuth, notificationsRoutes);
 app.use("/api", apiSessionAuth, reports);
 //Client
-app.use('/api/clients', clientRoutes);
+app.use('/api/manage/clients', clientRoutes);
 //Staff
-app.use('/api/staff', staffRoutes);
+app.use('/api/manage/staff', staffRoutes);
 //Subsriptions
 app.use("/api/subscriptions", apiSessionAuth, subscriptionRoutes);
 
