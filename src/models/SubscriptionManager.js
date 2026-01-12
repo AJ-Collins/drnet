@@ -181,27 +181,26 @@ const SubscriptionManager = {
 
     getSubscriptionMetrics: async (nowTimestamp) => {
         try {
-        const [activeRows] = await db.query(`
-            SELECT COUNT(DISTINCT us.user_id) as count
-            FROM user_subscriptions us
-            JOIN users u ON us.user_id = u.id
-            WHERE us.expiry_date > ? 
-            AND u.is_active = TRUE
-        `, [nowTimestamp]);
+            const [activeRows] = await db.query(`
+                SELECT COUNT(DISTINCT us.user_id) as count
+                FROM user_subscriptions us
+                WHERE us.expiry_date > ?
+            `, [nowTimestamp]);
 
-        const [revenueRows] = await db.query(`
-            SELECT COALESCE(SUM(amount), 0) as total 
-            FROM payments 
-            WHERE status = 'paid'
-        `);
+            const [activeRevenueRows] = await db.query(`
+                SELECT COALESCE(SUM(p.price), 0) as total 
+                FROM user_subscriptions us
+                JOIN packages p ON us.package_id = p.id
+                WHERE us.expiry_date > ?
+            `, [nowTimestamp]);
 
-        return {
-            activeCount: activeRows[0].count,
-            totalRevenue: revenueRows[0].total
-        };
+            return {
+                activeCount: activeRows[0].count,
+                totalRevenue: activeRevenueRows[0].total
+            };
         } catch (error) {
-        console.error("Metric retrieval error:", error);
-        throw error;
+            console.error("Metric retrieval error:", error);
+            throw error;
         }
     }
 };

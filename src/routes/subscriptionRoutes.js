@@ -75,7 +75,7 @@ router.get('/metrics', async (req, res) => {
         const metrics = await SubscriptionManager.getSubscriptionMetrics(nowTimestamp);
         res.json(metrics);
     } catch (error) {
-        console.error("Route Error:", error); // Log the actual error for debugging
+        console.error("Route Error:", error); 
         res.status(500).json({ error: "Failed to fetch dashboard metrics" });
     }
 });
