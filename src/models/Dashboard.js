@@ -30,6 +30,7 @@ const Dashboard = {
     const monthStart = toSqlDatetime(dayjs().startOf('month').toDate());
     const monthEnd = toSqlDatetime(dayjs().endOf('month').toDate());
     const threeDaysOut = toSqlDatetime(dayjs().add(3, 'day').endOf('day').toDate());
+    const nowTimestamp = toSqlDatetime(new Date());
 
     try {
       // 1. Monthly Revenue from payments
@@ -55,10 +56,9 @@ const Dashboard = {
         SELECT COUNT(DISTINCT us.user_id) as count
         FROM user_subscriptions us
         JOIN users u ON us.user_id = u.id
-        WHERE us.status = 'active' 
-          AND us.expiry_date >= ?
+        WHERE us.expiry_date > ? 
           AND u.is_active = TRUE
-      `, [todayStart]);
+      `, [nowTimestamp]);
 
       // 4. New clients this week
       const [newClientsWeek] = await db.query(`
@@ -114,8 +114,7 @@ const Dashboard = {
           p.speed
         FROM user_subscriptions us
         JOIN packages p ON us.package_id = p.id
-        WHERE us.status = 'active'
-          AND us.expiry_date >= ?
+        WHERE us.expiry_date > ?
         GROUP BY p.id, p.name, p.price, p.speed
         ORDER BY subscription_count DESC
         LIMIT 5
