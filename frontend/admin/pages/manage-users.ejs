@@ -180,7 +180,7 @@
             filteredData = allData;
             renderTable();
         } catch (e) {
-            showToast("ERROR", 'Could not load ' + currentContext, 'error');
+            showToast("ERROR", 'Could not load ' + currentContext);
         }
     }
 
@@ -218,39 +218,70 @@
 
     function renderTable() {
         const tbody = document.getElementById('directoryTable');
-        tbody.innerHTML = filteredData.map(item => `
-            <tr class="table-row group">
-                <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 font-bold border border-slate-200 overflow-hidden">
-                            ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : item.first_name[0] + item.second_name[0]}
+        
+        if (!filteredData || !Array.isArray(filteredData) || filteredData.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="px-6 py-20 text-center">
+                        <i class="fas fa-folder-open text-slate-200 text-5xl mb-4 block"></i>
+                        <p class="text-slate-400 font-bold tracking-tight">No record found</p>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filteredData.map(item => {
+            const fName = item.first_name ?? 'User';
+            const sName = item.second_name ?? '';
+            const initials = (fName[0] || '?') + (sName[0] || '');
+            const position = item.position ?? (currentContext === 'staff' ? 'Employee' : 'Customer');
+            // Safe check for ID/Address columns
+            const idVal = currentContext === 'clients' 
+                ? (item.id_number ?? 'No ID') 
+                : (item.employee_id ?? '---');
+                
+            const subVal = currentContext === 'clients' 
+                ? (item.address ?? 'No Address Provided') 
+                : (item.department ?? 'General');
+
+            return `
+                <tr class="table-row group">
+                    <td class="px-6 py-4 text-nowrap">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 font-bold border border-slate-200 overflow-hidden shrink-0">
+                                ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : initials}
+                            </div>
+                            <div>
+                                <div class="text-sm font-black text-slate-800 uppercase">${fName} ${sName}</div>
+                                <div class="text-[10px] font-bold text-teal-600 uppercase tracking-tighter">${position}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="text-sm font-black text-slate-800">${item.first_name} ${item.second_name}</div>
-                            <div class="text-[10px] font-bold text-teal-600 uppercase tracking-tighter">${currentContext === 'staff' ? (item.position || 'Employee') : 'Customer'}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-xs font-bold text-slate-600">${idVal}</div>
+                        <div class="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">${subVal}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-xs font-bold text-slate-600">
+                            <i class="fas fa-envelope mr-1.5 opacity-40"></i>${item.email ?? '---'}
                         </div>
-                    </div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="text-xs font-bold text-slate-600">${currentContext === 'clients' ? (item.id_number || 'No ID') : (item.employee_id || '---')}</div>
-                    <div class="text-[10px] text-slate-400 font-medium">${currentContext === 'clients' ? (item.address || 'N/A') : (item.department || 'General')}</div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="text-xs font-bold text-slate-600"><i class="fas fa-envelope mr-1 opacity-50"></i> ${item.email}</div>
-                    <div class="text-xs font-bold text-slate-600"><i class="fas fa-phone mr-1 opacity-50"></i> ${item.phone}</div>
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <div class="flex justify-end gap-2">
-                        <button onclick="showEditor('edit', ${item.id})" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center shadow-sm">
-                            <i class="fas fa-edit text-xs"></i>
-                        </button>
-                        <button onclick="deleteEntry(${item.id})" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shadow-sm">
-                            <i class="fas fa-trash text-xs"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+                        <div class="text-xs font-bold text-slate-600">
+                            <i class="fas fa-phone mr-1.5 opacity-40"></i>${item.phone ?? '---'}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex justify-end gap-2">
+                            <button onclick="showEditor('edit', ${item.id})" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center shadow-sm">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button onclick="deleteEntry(${item.id})" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shadow-sm">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 
     function showEditor(mode, id = null) {
