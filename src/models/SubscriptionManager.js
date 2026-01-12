@@ -182,9 +182,9 @@ const SubscriptionManager = {
     getSubscriptionMetrics: async (nowTimestamp) => {
         try {
             const [activeRows] = await db.query(`
-                SELECT COUNT(DISTINCT us.user_id) as count
-                FROM user_subscriptions us
-                WHERE us.expiry_date > ?
+                SELECT COUNT(DISTINCT user_id) as count
+                FROM user_subscriptions
+                WHERE expiry_date > ?
             `, [nowTimestamp]);
 
             const [activeRevenueRows] = await db.query(`
