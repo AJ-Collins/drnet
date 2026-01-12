@@ -112,20 +112,19 @@
             <p id="nextInstall" class="text-[10px] font-bold text-slate-400 mt-2">Next: <span class="text-slate-700">Loading...</span></p>
         </div>
 
-        <!-- Staff on Duty -->
-        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-indigo-500 animate-fade-up" style="animation-delay: 0.4s;">
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                    <i class="fas fa-user-check text-xl"></i>
-                </div>
-                <span id="staffStatus" class="text-[10px] font-black px-2 py-1 rounded-full bg-indigo-50 text-indigo-600">On Duty</span>
-            </div>
-            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Staff on Duty</p>
-            <h2 id="staffOnDuty" class="text-2xl font-black text-slate-900 mt-1">0</h2>
-            <p class="text-[10px] font-bold text-slate-400 mt-2">
-                Pending Tickets: <span id="pendingTickets" class="text-slate-700">0</span>
-            </p>
-        </div>
+        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-rose-500 animate-fade-up" style="animation-delay: 0.4s;">
+          <div class="flex justify-between items-start mb-4">
+              <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
+                  <i class="fas fa-boxes text-xl"></i>
+              </div>
+              <span id="inventoryStatusBadge" class="text-[10px] font-black px-2 py-1 rounded-full bg-rose-50 text-rose-600">Stock Alert</span>
+          </div>
+          <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Inventory Value</p>
+          <h2 id="inventoryValue" class="text-2xl font-black text-slate-900 mt-1">KES 0</h2>
+          <p class="text-[10px] font-bold text-slate-400 mt-2">
+              Out of Stock: <span id="outOfStockCount" class="text-rose-600">0</span> items
+          </p>
+      </div>
     </div>
 
     <!-- Charts Section -->
@@ -151,32 +150,33 @@
             <p class="text-xs font-bold text-slate-400 mb-6">Frequent administrative tasks</p>
             
             <div class="grid grid-cols-2 gap-3">
-                <a href="/users/create" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
+              <% const manageusersSlug = "manage-users"; %>
+                <a href="/admin/<%= manageusersSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
                     <div class="w-10 h-10 rounded-full bg-teal-50 group-hover:bg-teal-100 text-teal-600 flex items-center justify-center mb-2 transition-colors">
                         <i class="fas fa-user-plus"></i>
                     </div>
                     <span class="text-xs font-bold text-slate-700">Add Client</span>
                 </a>
-                
-                <a href="/bookings/create" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
+                <% const remindersSlug = "reminders"; %>
+                <a href="/admin/<%= remindersSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
                     <div class="w-10 h-10 rounded-full bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 transition-colors">
-                        <i class="fas fa-calendar-plus"></i>
+                        <i class="fas fa-bell"></i>
                     </div>
-                    <span class="text-xs font-bold text-slate-700">New Booking</span>
+                    <span class="text-xs font-bold text-slate-700">New Reminders</span>
                 </a>
-
-                <a href="/support/tickets/create" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
+                <% const supportSlug = "support-tickets"; %>
+                <a href="/admin/<%= supportSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
                     <div class="w-10 h-10 rounded-full bg-rose-50 group-hover:bg-rose-100 text-rose-600 flex items-center justify-center mb-2 transition-colors">
                         <i class="fas fa-ticket-alt"></i>
                     </div>
                     <span class="text-xs font-bold text-slate-700">New Ticket</span>
                 </a>
-
-                <a href="/announcements/create" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
+                <% const equipmentsSlug = "equipments"; %>
+                <a href="/admin/<%= equipmentsSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
                     <div class="w-10 h-10 rounded-full bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2 transition-colors">
-                        <i class="fas fa-bullhorn"></i>
+                        <i class="fas fa-boxes"></i>
                     </div>
-                    <span class="text-xs font-bold text-slate-700">Send Alert</span>
+                    <span class="text-xs font-bold text-slate-700">Stock</span>
                 </a>
             </div>
         </div>
@@ -191,7 +191,8 @@
                     <h3 class="text-lg font-black text-slate-800">Recent Invoices</h3>
                     <p class="text-xs font-bold text-slate-400">Latest payments and invoices</p>
                 </div>
-                <a href="/payments" class="text-xs font-black text-teal-600 hover:text-teal-700">View All</a>
+                <% const financeSlug = "finance"; %>
+                <a href="/admin/<%= financeSlug %>" class="text-xs font-black text-teal-600 hover:text-teal-700">View All</a>
             </div>
             
             <div class="overflow-x-auto">
@@ -230,27 +231,53 @@
                 <canvas id="packageChart"></canvas>
             </div>
             <div id="packageLegend" class="mt-4 flex flex-wrap gap-2 justify-center">
-                <!-- Legend will be populated by JavaScript -->
             </div>
         </div>
     </div>
 
-    <!-- Upcoming Installations -->
-    <div class="glass-panel p-6 rounded-2xl animate-fade-up" style="animation-delay: 0.9s;">
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h3 class="text-lg font-black text-slate-800">Upcoming Installations</h3>
-                <p class="text-xs font-bold text-slate-400">Next 3 days scheduled installations</p>
-            </div>
-            <a href="/bookings?status=pending" class="text-xs font-black text-teal-600 hover:text-teal-700">View Schedule</a>
-        </div>
-        
-        <div id="upcomingInstallations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="text-center py-8 text-slate-400">
-                <i class="fas fa-spinner fa-spin mr-2"></i> Loading schedule...
-            </div>
-        </div>
-    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-panel p-6 rounded-2xl animate-fade-up" style="animation-delay: 0.9s;">
+          <div class="flex justify-between items-center mb-6">
+              <div>
+                  <h3 class="text-lg font-black text-slate-800 tracking-tight">Upcoming Installs</h3>
+                  <p class="text-xs font-bold text-slate-400">Next 72 hours schedule</p>
+              </div>
+              <a href="/bookings?status=pending" class="text-xs font-black text-teal-600 hover:underline">View All</a>
+          </div>
+          
+          <div id="upcomingInstallations" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+              <div class="text-center py-8 text-slate-400">
+                  <i class="fas fa-spinner fa-spin mr-2"></i> Loading schedule...
+              </div>
+          </div>
+      </div>
+
+      <div class="glass-panel rounded-2xl overflow-hidden animate-fade-up" style="animation-delay: 1.0s;">
+          <div class="px-6 py-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
+              <div>
+                  <h3 class="text-lg font-black text-slate-800 tracking-tight">Stock Control</h3>
+                  <p id="inventoryValue" class="text-xs font-black text-teal-600">KES 0</p>
+              </div>
+              <span id="inventoryStatusBadge" class="status-badge">Checking...</span>
+          </div>
+          
+          <div class="p-6">
+              <div id="inventoryCategoryGrid" class="space-y-5">
+                  <div class="text-center py-8 text-slate-400">
+                      <i class="fas fa-boxes fa-pulse mr-2"></i> Analyzing stock...
+                  </div>
+              </div>
+          </div>
+
+          <div class="px-6 py-3 bg-slate-50/30 border-t border-slate-50 flex justify-between">
+              <span class="text-[10px] font-bold text-slate-400 uppercase">Alerts:</span>
+              <div class="flex gap-3">
+                  <span class="text-[10px] font-black text-rose-500"><span id="outOfStockCount">0</span> Out</span>
+                  <span class="text-[10px] font-black text-amber-500"><span id="lowStockCount">0</span> Low</span>
+              </div>
+          </div>
+      </div>
+  </div>
 </div>
 
 <script>
@@ -268,10 +295,11 @@
             showLoadingState();
             
             // Load main dashboard data
-            const [summaryRes, metricsRes, activityRes] = await Promise.all([
+            const [summaryRes, metricsRes, activityRes, inventoryRes] = await Promise.all([
                 fetch('/api/dashboard/summary'),
                 fetch('/api/dashboard/metrics'),
-                fetch('/api/dashboard/recent-activity')
+                fetch('/api/dashboard/recent-activity'),
+                fetch('/api/dashboard/inventory-status')
             ]);
 
             if (!summaryRes.ok || !metricsRes.ok || !activityRes.ok) {
@@ -280,12 +308,12 @@
 
             const summary = await summaryRes.json();
             const metrics = await metricsRes.json();
-            const activity = await activityRes.json();
+            const inventory = await inventoryRes.json();
 
             dashboardData = {
                 ...summary.data,
                 metrics: metrics.data,
-                activity: activity.data
+                inventory: inventory.data
             };
 
             updateDashboardUI(dashboardData);
@@ -361,23 +389,11 @@
         } else {
             nextInstallEl.innerHTML = 'Next: <span class="text-slate-700">No upcoming</span>';
         }
-        
-        // Staff on duty
-        document.getElementById('staffOnDuty').innerText = fmt(data.financial.staff_on_duty);
-        document.getElementById('pendingTickets').innerText = fmt(data.financial.pending_tickets);
-        
-        // Update staff status badge
-        const staffStatus = document.getElementById('staffStatus');
-        if (data.financial.staff_on_duty > 15) {
-            staffStatus.innerText = 'Full Crew';
-            staffStatus.className = 'text-[10px] font-black px-2 py-1 rounded-full bg-indigo-100 text-indigo-700';
-        } else if (data.financial.staff_on_duty > 5) {
-            staffStatus.innerText = 'On Duty';
-            staffStatus.className = 'text-[10px] font-black px-2 py-1 rounded-full bg-indigo-50 text-indigo-600';
-        } else {
-            staffStatus.innerText = 'Limited';
-            staffStatus.className = 'text-[10px] font-black px-2 py-1 rounded-full bg-amber-50 text-amber-600';
+
+        if (data.inventory) {
+            renderInventoryStatus(data.inventory);
         }
+        
         
         // Render charts
         renderRevenueChart(data.charts.monthlyRevenue);
@@ -392,6 +408,49 @@
         // Hide loading states
         hideLoadingState();
     }
+
+    function renderInventoryStatus(inventory) {
+      document.getElementById('inventoryValue').innerText = `KES ${Number(inventory.inventory_value).toLocaleString()}`;
+      document.getElementById('outOfStockCount').innerText = inventory.out_of_stock;
+      document.getElementById('lowStockCount').innerText = inventory.low_stock;
+
+      const badge = document.getElementById('inventoryStatusBadge');
+      if (inventory.out_of_stock > 0) {
+          badge.innerText = "Critical"; badge.className = "status-badge status-overdue";
+      } else if (inventory.low_stock > 0) {
+          badge.innerText = "Restock"; badge.className = "status-badge status-pending";
+      } else {
+          badge.innerText = "Healthy"; badge.className = "status-badge status-paid";
+      }
+
+      const container = document.getElementById('inventoryCategoryGrid');
+      if (!inventory.by_category || inventory.by_category.length === 0) {
+          container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs font-bold">Empty Warehouse</p>';
+          return;
+      }
+
+      // Capacity for the bars
+      const target = 50; 
+
+      container.innerHTML = inventory.by_category.map(cat => {
+          const percentage = Math.min((cat.total_quantity / target) * 100, 100);
+          let barColor = 'bg-teal-500'; 
+          if (percentage < 30) barColor = 'bg-rose-500';
+          else if (percentage < 60) barColor = 'bg-amber-500';
+
+          return `
+              <div class="space-y-1.5">
+                  <div class="flex justify-between items-end">
+                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${cat.category}</span>
+                      <span class="text-xs font-black text-slate-800">${cat.total_quantity} <span class="text-slate-400 font-bold">qty</span></span>
+                  </div>
+                  <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div class="h-full ${barColor} rounded-full transition-all duration-700" style="width: ${percentage}%"></div>
+                  </div>
+              </div>
+          `;
+      }).join('');
+  }
 
     function renderRecentInvoices(invoices) {
         const tbody = document.getElementById('invoicesTable');
@@ -437,37 +496,77 @@
     }
 
     function renderUpcomingInstallations(installations) {
-        const container = document.getElementById('upcomingInstallations');
+    const container = document.getElementById('upcomingInstallations');
+    
+    if (!installations || installations.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-bold">No installations scheduled</div>`;
+        return;
+    }
+    
+    // Rendered as a vertical list to fit the half-width column
+    container.innerHTML = installations.map(inst => {
+        const date = new Date(inst.installation_date).toLocaleDateString('en-US', { 
+            weekday: 'short', month: 'short', day: 'numeric' 
+        });
         
-        if (!installations || installations.length === 0) {
-            container.innerHTML = `
-                <div class="col-span-full text-center py-8 text-slate-400">
-                    <i class="fas fa-calendar-check mr-2"></i> No upcoming installations
+        return `
+            <div class="action-btn p-3 rounded-xl flex items-center gap-4 group">
+                <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-amber-100">
+                    <i class="fas fa-calendar-day"></i>
                 </div>
-            `;
-            return;
-        }
-        
-        container.innerHTML = installations.map(inst => {
-            const date = new Date(inst.installation_date);
-            const formattedDate = date.toLocaleDateString('en-US', { 
-                weekday: 'short', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-            
-            return `
-                <div class="action-btn p-4 rounded-xl text-center group">
-                    <div class="w-12 h-12 rounded-full bg-amber-50 group-hover:bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-3 transition-colors">
-                        <i class="fas fa-calendar-day"></i>
-                    </div>
-                    <h4 class="text-sm font-black text-slate-800 truncate" title="${inst.client_name}">
-                        ${inst.client_name}
-                    </h4>
-                    <p class="text-xs text-slate-500 mt-1">${formattedDate}</p>
-                    <p class="text-[10px] text-slate-400 mt-2 truncate" title="${inst.location}">
+                <div class="flex-grow min-w-0">
+                    <h4 class="text-sm font-black text-slate-800 truncate">${inst.client_name}</h4>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
                         <i class="fas fa-map-marker-alt mr-1"></i> ${inst.location}
                     </p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <p class="text-[11px] font-black text-slate-700">${date}</p>
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">PENDING</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+    function renderInventoryStatus(inventory) {
+        document.getElementById('inventoryValue').innerText = `KES ${Number(inventory.inventory_value).toLocaleString()}`;
+        document.getElementById('outOfStockCount').innerText = inventory.out_of_stock;
+        document.getElementById('lowStockCount').innerText = inventory.low_stock;
+
+        const badge = document.getElementById('inventoryStatusBadge');
+        if (inventory.out_of_stock > 0) {
+            badge.innerText = "Critical"; badge.className = "status-badge status-overdue";
+        } else if (inventory.low_stock > 0) {
+            badge.innerText = "Restock"; badge.className = "status-badge status-pending";
+        } else {
+            badge.innerText = "Healthy"; badge.className = "status-badge status-paid";
+        }
+
+        const container = document.getElementById('inventoryCategoryGrid');
+        if (!inventory.by_category || inventory.by_category.length === 0) {
+            container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs font-bold">Empty Stock</p>';
+            return;
+        }
+
+        // Capacity for the bars
+        const target = 50; 
+
+        container.innerHTML = inventory.by_category.map(cat => {
+            const percentage = Math.min((cat.total_quantity / target) * 100, 100);
+            let barColor = 'bg-teal-500'; 
+            if (percentage < 30) barColor = 'bg-rose-500';
+            else if (percentage < 60) barColor = 'bg-amber-500';
+
+            return `
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-end">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${cat.category}</span>
+                        <span class="text-xs font-black text-slate-800">${cat.total_quantity} <span class="text-slate-400 font-bold">qty</span></span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full ${barColor} rounded-full transition-all duration-700" style="width: ${percentage}%"></div>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -651,7 +750,7 @@
     function showLoadingState() {
         // Add loading indicators to all sections
         const elements = [
-            'monthlyRevenue', 'activeClients', 'pendingInstalls', 'staffOnDuty'
+            'monthlyRevenue', 'activeClients', 'pendingInstalls'
         ];
         
         elements.forEach(id => {

@@ -56,6 +56,15 @@ router.get("/performance", async (req, res) => {
   }
 });
 
+router.get("/inventory-status", async (req, res) => {
+  try {
+    const status = await Dashboard.getInventoryStatus();
+    res.json({ success: true, data: status });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // GET /api/dashboard/recent-activity
 router.get("/recent-activity", async (req, res) => {
   try {

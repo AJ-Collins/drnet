@@ -1,18 +1,35 @@
 const db = require("../config/db");
 const dayjs = require("dayjs");
 
+/**
+ * Helper to convert JS Date objects to MySQL DATETIME strings
+ * Format: YYYY-MM-DD HH:mm:ss
+ */
+const toSqlDatetime = (date) => {
+    const pad = (n) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+        `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
 const Dashboard = {
-  // Get all dashboard statistics
   getSummary: async () => {
-    const currentMonth = dayjs().month() + 1;
-    const currentYear = dayjs().year();
-    const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
-    const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+    // Current Time Reference
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    // Previous Month Logic
+    const lastMonthDate = dayjs().subtract(1, 'month').toDate();
+    const previousMonth = lastMonthDate.getMonth() + 1;
+    const previousYear = lastMonthDate.getFullYear();
     
-    const weekStart = dayjs().startOf('week').format('YYYY-MM-DD');
-    const weekEnd = dayjs().endOf('week').format('YYYY-MM-DD');
-    const monthStart = dayjs().startOf('month').format('YYYY-MM-DD');
-    const monthEnd = dayjs().endOf('month').format('YYYY-MM-DD');
+    // Formatted Time Boundaries
+    const todayStart = toSqlDatetime(dayjs().startOf('day').toDate());
+    const weekStart = toSqlDatetime(dayjs().startOf('week').toDate());
+    const weekEnd = toSqlDatetime(dayjs().endOf('week').toDate());
+    const monthStart = toSqlDatetime(dayjs().startOf('month').toDate());
+    const monthEnd = toSqlDatetime(dayjs().endOf('month').toDate());
+    const threeDaysOut = toSqlDatetime(dayjs().add(3, 'day').endOf('day').toDate());
 
     try {
       // 1. Monthly Revenue from payments
@@ -33,17 +50,17 @@ const Dashboard = {
           AND YEAR(payment_date) = ?
       `, [previousMonth, previousYear]);
 
-      // 3. Active subscribers (users with active subscriptions)
+      // 3. Active subscribers
       const [activeSubscriptions] = await db.query(`
         SELECT COUNT(DISTINCT us.user_id) as count
         FROM user_subscriptions us
         JOIN users u ON us.user_id = u.id
         WHERE us.status = 'active' 
-          AND us.expiry_date >= CURDATE()
+          AND us.expiry_date >= ?
           AND u.is_active = TRUE
-      `);
+      `, [todayStart]);
 
-      // 4. New clients this week (users created in current week)
+      // 4. New clients this week
       const [newClientsWeek] = await db.query(`
         SELECT COUNT(*) as count
         FROM users 
@@ -64,8 +81,8 @@ const Dashboard = {
         SELECT COUNT(*) as count
         FROM bookings 
         WHERE status = 'pending'
-          AND installation_date >= CURDATE()
-      `);
+          AND installation_date >= ?
+      `, [todayStart]);
 
       // 7. Pending support tickets
       const [pendingTickets] = await db.query(`
@@ -74,18 +91,18 @@ const Dashboard = {
         WHERE status IN ('open', 'in_progress')
       `);
 
-      // 8. Recent revenue data for chart (last 6 months)
+      // 8. Recent revenue data for chart (last 12 months)
       const [revenueData] = await db.query(`
         SELECT 
           DATE_FORMAT(payment_date, '%Y-%m') as month,
-          DATE_FORMAT(payment_date, '%b %Y') as month_name, -- Added Year for clarity over 12 months
+          DATE_FORMAT(payment_date, '%b %Y') as month_name,
           COALESCE(SUM(amount), 0) as revenue
         FROM payments 
         WHERE status = 'paid'
-          AND payment_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-        GROUP BY DATE_FORMAT(payment_date, '%Y-%m'), DATE_FORMAT(payment_date, '%b %Y')
-        ORDER BY DATE_FORMAT(payment_date, '%Y-%m') ASC
-      `);
+          AND payment_date >= DATE_SUB(?, INTERVAL 12 MONTH)
+        GROUP BY 1, 2
+        ORDER BY 1 ASC
+      `, [todayStart]);
 
       // 9. Package popularity
       const [packagePopularity] = await db.query(`
@@ -98,19 +115,19 @@ const Dashboard = {
         FROM user_subscriptions us
         JOIN packages p ON us.package_id = p.id
         WHERE us.status = 'active'
-          AND us.expiry_date >= CURDATE()
+          AND us.expiry_date >= ?
         GROUP BY p.id, p.name, p.price, p.speed
         ORDER BY subscription_count DESC
         LIMIT 5
-      `);
+      `, [todayStart]);
 
       // 10. Staff on duty today
       const [staffOnDuty] = await db.query(`
         SELECT COUNT(DISTINCT staff_id) as count
         FROM staff_attendance 
-        WHERE DATE(attendance_date) = CURDATE()
+        WHERE DATE(attendance_date) = DATE(?)
           AND status = 'present'
-      `);
+      `, [todayStart]);
 
       // 11. Recent invoices/payments (last 5)
       const [recentInvoices] = await db.query(`
@@ -141,10 +158,10 @@ const Dashboard = {
           b.location
         FROM bookings b
         WHERE b.status = 'pending'
-          AND b.installation_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY)
+          AND b.installation_date BETWEEN ? AND ?
         ORDER BY b.installation_date ASC
         LIMIT 5
-      `);
+      `, [todayStart, threeDaysOut]);
 
       // Calculate revenue trend percentage
       const currentRev = monthlyRevenue[0]?.revenue || 0;
@@ -153,7 +170,7 @@ const Dashboard = {
       if (prevRev > 0) {
         revenueTrend = ((currentRev - prevRev) / prevRev) * 100;
       } else if (currentRev > 0) {
-        revenueTrend = 100; // First month with revenue
+        revenueTrend = 100;
       }
 
       return {
@@ -182,34 +199,27 @@ const Dashboard = {
     }
   },
 
-  // Get additional metrics for expanded view
   getExpandedMetrics: async () => {
+    const today = toSqlDatetime(new Date());
+    const sevenDaysOut = toSqlDatetime(dayjs().add(7, 'day').toDate());
+
     try {
-      // Total active staff
-      const [activeStaff] = await db.query(`
-        SELECT COUNT(*) as count FROM staff WHERE is_active = TRUE
-      `);
-
-      // Total available equipment
-      const [availableEquipment] = await db.query(`
-        SELECT COUNT(*) as count FROM items WHERE status = 'available'
-      `);
-
-      // Monthly expenses
+      const [activeStaff] = await db.query(`SELECT COUNT(*) as count FROM staff WHERE is_active = TRUE`);
+      const [availableEquipment] = await db.query(`SELECT COUNT(*) as count FROM items WHERE status = 'available'`);
+      
       const [monthlyExpenses] = await db.query(`
         SELECT COALESCE(SUM(amount), 0) as amount
         FROM expenses 
-        WHERE MONTH(expense_date) = MONTH(CURDATE())
-          AND YEAR(expense_date) = YEAR(CURDATE())
-      `);
+        WHERE MONTH(expense_date) = MONTH(?)
+          AND YEAR(expense_date) = YEAR(?)
+      `, [today, today]);
 
-      // Renewals due this week
       const [renewalsDue] = await db.query(`
         SELECT COUNT(*) as count
         FROM user_subscriptions 
         WHERE status = 'active'
-          AND expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-      `);
+          AND expiry_date BETWEEN ? AND ?
+      `, [today, sevenDaysOut]);
 
       return {
         active_staff: activeStaff[0]?.count || 0,
@@ -223,47 +233,33 @@ const Dashboard = {
     }
   },
 
-  // Get performance comparison (current vs previous period)
-  getPerformanceComparison: async () => {
-    const currentMonth = dayjs().month() + 1;
-    const currentYear = dayjs().year();
-    const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
-    const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+  getInventoryStatus: async () => {
+    const sevenDaysAgo = toSqlDatetime(dayjs().subtract(7, 'day').toDate());
 
     try {
-      const [comparison] = await db.query(`
-        SELECT 
-          'current' as period,
-          COUNT(DISTINCT CASE WHEN us.status = 'active' AND us.expiry_date >= CURDATE() THEN us.user_id END) as active_subs,
-          COALESCE(SUM(CASE WHEN p.status = 'paid' THEN p.amount END), 0) as revenue,
-          COUNT(DISTINCT CASE WHEN b.status = 'completed' THEN b.id END) as completed_installs,
-          COUNT(DISTINCT CASE WHEN s.is_active = TRUE THEN s.id END) as active_staff
-        FROM (SELECT ? as month, ? as year) as dates
-        
-        LEFT JOIN user_subscriptions us ON MONTH(us.start_date) = dates.month AND YEAR(us.start_date) = dates.year
-        LEFT JOIN payments p ON MONTH(p.payment_date) = dates.month AND YEAR(p.payment_date) = dates.year
-        LEFT JOIN bookings b ON MONTH(b.installation_date) = dates.month AND YEAR(b.installation_date) = dates.year
-        LEFT JOIN staff s ON MONTH(s.hire_date) = dates.month AND YEAR(s.hire_date) = dates.year
-        
-        UNION ALL
-        
-        SELECT 
-          'previous' as period,
-          COUNT(DISTINCT CASE WHEN us.status = 'active' AND us.expiry_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) THEN us.user_id END) as active_subs,
-          COALESCE(SUM(CASE WHEN p.status = 'paid' THEN p.amount END), 0) as revenue,
-          COUNT(DISTINCT CASE WHEN b.status = 'completed' THEN b.id END) as completed_installs,
-          COUNT(DISTINCT CASE WHEN s.is_active = TRUE THEN s.id END) as active_staff
-        FROM (SELECT ? as month, ? as year) as dates
-        
-        LEFT JOIN user_subscriptions us ON MONTH(us.start_date) = dates.month AND YEAR(us.start_date) = dates.year
-        LEFT JOIN payments p ON MONTH(p.payment_date) = dates.month AND YEAR(p.payment_date) = dates.year
-        LEFT JOIN bookings b ON MONTH(b.installation_date) = dates.month AND YEAR(b.installation_date) = dates.year
-        LEFT JOIN staff s ON MONTH(s.hire_date) = dates.month AND YEAR(s.hire_date) = dates.year
-      `, [currentMonth, currentYear, previousMonth, previousYear]);
+      const [lowStock] = await db.query(`SELECT COUNT(*) as count FROM items WHERE quantity < 10 AND quantity > 0`);
+      const [outOfStock] = await db.query(`SELECT COUNT(*) as count FROM items WHERE quantity = 0`);
+      const [totalValue] = await db.query(`
+        SELECT COUNT(*) as total_items, COALESCE(SUM(quantity * unit_price), 0) as total_value FROM items
+      `);
+      
+      const [recentItems] = await db.query(`SELECT COUNT(*) as count FROM items WHERE created_at >= ?`, [sevenDaysAgo]);
 
-      return comparison;
+      const [itemsByCategory] = await db.query(`
+        SELECT category, COUNT(*) as item_count, SUM(quantity) as total_quantity
+        FROM items GROUP BY category ORDER BY item_count DESC LIMIT 5
+      `);
+
+      return {
+        low_stock: lowStock[0]?.count || 0,
+        out_of_stock: outOfStock[0]?.count || 0,
+        inventory_value: totalValue[0]?.total_value || 0,
+        total_items: totalValue[0]?.total_items || 0,
+        recent_items: recentItems[0]?.count || 0,
+        by_category: itemsByCategory
+      };
     } catch (error) {
-      console.error("Performance comparison error:", error);
+      console.error("Inventory status error:", error);
       throw error;
     }
   }
