@@ -158,7 +158,7 @@ const UserSubscription = {
   deleteRenewalById: async (id) => {
     const [result] = await db.query(`DELETE FROM renewals WHERE id = ?`, [id]);
     return result;
-  },
+  },  
 };
 
 module.exports = UserSubscription;

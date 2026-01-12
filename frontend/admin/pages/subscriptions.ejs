@@ -274,7 +274,7 @@
         try {
             const res = await fetch('/api/subscriptions/dashboard-data');
             allData = await res.json();
-            renderStats();
+            await renderStats();
             renderTable();
             populateDropdowns();
         } catch (e) {
@@ -282,33 +282,37 @@
         }
     }
 
-    function renderStats() {
-        const active = allData.subscriptions.length;
-        const revenue = allData.subscriptions.reduce((sum, s) => sum + Number(s.price), 0);
-        
-        $('statsRow').innerHTML = `
-            <div class="stat-card bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
-                    <i class="fas fa-users text-sm"></i>
+    async function renderStats() {
+        try {
+            const res = await fetch('/api/subscriptions/metrics');
+            const data = await res.json();
+            
+            $('statsRow').innerHTML = `
+                <div class="stat-card bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                        <i class="fas fa-users text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[12px] font-black text-slate-400 uppercase tracking-wider">Active</p>
+                        <p class="text-base font-black text-slate-800">${data.activeCount}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-[12px] font-black text-slate-400 uppercase tracking-wider">Active</p>
-                    <p class="text-base font-black text-slate-800">${active}</p>
-                </div>
-            </div>
 
-            <div class="stat-card bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                    <i class="fas fa-wallet text-sm"></i>
+                <div class="stat-card bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                        <i class="fas fa-wallet text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[12px] font-black text-slate-400 uppercase tracking-wider">Revenue</p>
+                        <p class="text-base font-black text-slate-800">
+                            <span class="text-[12px] mr-0.5">KES</span>${Number(data.totalRevenue).toLocaleString()}
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-[12px] font-black text-slate-400 uppercase tracking-wider">Revenue</p>
-                    <p class="text-base font-black text-slate-800">
-                        <span class="text-[12px] mr-0.5">KES</span>${revenue.toLocaleString()}
-                    </p>
-                </div>
-            </div>
-        `;
+            `;
+        } catch (e) {
+            console.error("Metric UI Error", e);
+        }
     }
 
     function renderTable() {

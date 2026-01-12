@@ -177,7 +177,34 @@ const SubscriptionManager = {
     // 5. Delete Subscription
     async deleteSubscription(id) {
         return await db.execute("DELETE FROM user_subscriptions WHERE id = ?", [id]);
+    },
+
+    getSubscriptionMetrics: async (nowTimestamp) => {
+        try {
+        const [activeRows] = await db.query(`
+            SELECT COUNT(DISTINCT us.user_id) as count
+            FROM user_subscriptions us
+            JOIN users u ON us.user_id = u.id
+            WHERE us.expiry_date > ? 
+            AND u.is_active = TRUE
+        `, [nowTimestamp]);
+
+        const [revenueRows] = await db.query(`
+            SELECT COALESCE(SUM(amount), 0) as total 
+            FROM payments 
+            WHERE status = 'paid'
+        `);
+
+        return {
+            activeCount: activeRows[0].count,
+            totalRevenue: revenueRows[0].total
+        };
+        } catch (error) {
+        console.error("Metric retrieval error:", error);
+        throw error;
+        }
     }
 };
+
 
 module.exports = SubscriptionManager;

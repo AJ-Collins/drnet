@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const SubscriptionManager = require('../models/SubscriptionManager');
 
+const toSqlDatetime = (date) => {
+    const pad = (n) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+        `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
 // 1. Dashboard Init Data
 router.get('/dashboard-data', async (req, res) => {
     try {
@@ -61,6 +66,17 @@ router.delete('/delete/:id', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+router.get('/metrics', async (req, res) => {
+    try {
+        const nowTimestamp = toSqlDatetime(new Date());
+        const metrics = await SubscriptionManager.getSubscriptionMetrics(nowTimestamp);
+        res.json(metrics);
+    } catch (error) {
+        console.error("Route Error:", error); // Log the actual error for debugging
+        res.status(500).json({ error: "Failed to fetch dashboard metrics" });
     }
 });
 
