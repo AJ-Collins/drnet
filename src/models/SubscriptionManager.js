@@ -202,6 +202,19 @@ const SubscriptionManager = {
             console.error("Metric retrieval error:", error);
             throw error;
         }
+    },
+
+    async extendExpiry(id, newExpiryDate) {
+        const dateObj = new Date(newExpiryDate);
+        
+        const query = `
+            UPDATE user_subscriptions 
+            SET expiry_date = ?, 
+                status = 'active' 
+            WHERE id = ?
+        `;
+        
+        return await db.execute(query, [toSqlDatetime(dateObj), id]);
     }
 };
 

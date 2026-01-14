@@ -144,42 +144,25 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="glass-panel p-6 rounded-2xl animate-fade-up" style="animation-delay: 0.6s;">
-            <h3 class="text-lg font-black text-slate-800 mb-1">Quick Actions</h3>
-            <p class="text-xs font-bold text-slate-400 mb-6">Frequent administrative tasks</p>
-            
-            <div class="grid grid-cols-2 gap-3">
-              <% const manageusersSlug = "manage-users"; %>
-                <a href="/admin/<%= manageusersSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
-                    <div class="w-10 h-10 rounded-full bg-teal-50 group-hover:bg-teal-100 text-teal-600 flex items-center justify-center mb-2 transition-colors">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <span class="text-xs font-bold text-slate-700">Add Client</span>
-                </a>
-                <% const remindersSlug = "reminders"; %>
-                <a href="/admin/<%= remindersSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
-                    <div class="w-10 h-10 rounded-full bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 transition-colors">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <span class="text-xs font-bold text-slate-700">New Reminders</span>
-                </a>
-                <% const supportSlug = "support-tickets"; %>
-                <a href="/admin/<%= supportSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
-                    <div class="w-10 h-10 rounded-full bg-rose-50 group-hover:bg-rose-100 text-rose-600 flex items-center justify-center mb-2 transition-colors">
-                        <i class="fas fa-ticket-alt"></i>
-                    </div>
-                    <span class="text-xs font-bold text-slate-700">New Ticket</span>
-                </a>
-                <% const equipmentsSlug = "equipments"; %>
-                <a href="/admin/<%= equipmentsSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
-                    <div class="w-10 h-10 rounded-full bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2 transition-colors">
-                        <i class="fas fa-boxes"></i>
-                    </div>
-                    <span class="text-xs font-bold text-slate-700">Stock</span>
-                </a>
+         <div class="glass-panel p-6 rounded-2xl animate-fade-up flex flex-col h-full" style="animation-delay: 0.9s;">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="text-lg font-black text-slate-800 tracking-tight">Dispatch Inbox</h3>
+                    <p class="text-xs font-bold text-slate-400">Executive sync & reminder status</p>                    
+                </div>
+                <% const inboxSlug = "operational-inbox"; %>
+                <a href="/admin/<%= inboxSlug %>" class="text-[10px] font-black text-teal-600 hover:underline">Full Inbox →</a>
             </div>
-        </div>
+            
+            <div id="dispatchInboxContainer" class="flex-1 overflow-y-auto pr-1 custom-scroll" style="max-height: 400px;">
+                <div id="dispatchInboxContent" class="space-y-3">
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fas fa-satellite-dish fa-spin mb-3 text-xl"></i>
+                        <p class="text-[10px] font-black uppercase tracking-widest">Fetching Inbox replies...</p>
+                    </div>
+                </div>
+            </div>
+        </div>        
     </div>
 
     <!-- Recent Activity & Package Distribution -->
@@ -235,23 +218,42 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="glass-panel p-6 rounded-2xl animate-fade-up" style="animation-delay: 0.9s;">
-          <div class="flex justify-between items-center mb-6">
-              <div>
-                  <h3 class="text-lg font-black text-slate-800 tracking-tight">Upcoming Installs</h3>
-                  <p class="text-xs font-bold text-slate-400">Next 72 hours schedule</p>
-              </div>
-              <a href="/bookings?status=pending" class="text-xs font-black text-teal-600 hover:underline">View All</a>
-          </div>
-          
-          <div id="upcomingInstallations" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-              <div class="text-center py-8 text-slate-400">
-                  <i class="fas fa-spinner fa-spin mr-2"></i> Loading schedule...
-              </div>
-          </div>
-      </div>
-
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">        
+        <div class="glass-panel p-6 rounded-2xl animate-fade-up" style="animation-delay: 0.6s;">
+            <h3 class="text-lg font-black text-slate-800 mb-1">Quick Actions</h3>
+            <p class="text-xs font-bold text-slate-400 mb-6">Frequent administrative tasks</p>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <% const manageusersSlug = "manage-users"; %>
+                <a href="/admin/<%= manageusersSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
+                    <div class="w-10 h-10 rounded-full bg-teal-50 group-hover:bg-teal-100 text-teal-600 flex items-center justify-center mb-2 transition-colors">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700">Add Client</span>
+                </a>
+                <% const remindersSlug = "reminders"; %>
+                <a href="/admin/<%= remindersSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
+                    <div class="w-10 h-10 rounded-full bg-emerald-50 group-hover:bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2 transition-colors">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700">New Reminders</span>
+                </a>
+                <% const supportSlug = "support-tickets"; %>
+                <a href="/admin/<%= supportSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
+                    <div class="w-10 h-10 rounded-full bg-rose-50 group-hover:bg-rose-100 text-rose-600 flex items-center justify-center mb-2 transition-colors">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700">New Ticket</span>
+                </a>
+                <% const equipmentsSlug = "equipments"; %>
+                <a href="/admin/<%= equipmentsSlug %>" class="action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center group">
+                    <div class="w-10 h-10 rounded-full bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 flex items-center justify-center mb-2 transition-colors">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700">Stock</span>
+                </a>
+            </div>
+        </div>
       <div class="glass-panel rounded-2xl overflow-hidden animate-fade-up" style="animation-delay: 1.0s;">
           <div class="px-6 py-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
               <div>
@@ -317,6 +319,7 @@
             };
 
             updateDashboardUI(dashboardData);
+            fetchAdminInbox();
             updateLastUpdated();
 
         } catch (error) {
@@ -401,9 +404,6 @@
         
         // Render recent invoices
         renderRecentInvoices(data.recent.invoices);
-        
-        // Render upcoming installations
-        renderUpcomingInstallations(data.recent.installations);
         
         // Hide loading states
         hideLoadingState();
@@ -494,40 +494,6 @@
             `;
         }).join('');
     }
-
-    function renderUpcomingInstallations(installations) {
-    const container = document.getElementById('upcomingInstallations');
-    
-    if (!installations || installations.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs font-bold">No installations scheduled</div>`;
-        return;
-    }
-    
-    // Rendered as a vertical list to fit the half-width column
-    container.innerHTML = installations.map(inst => {
-        const date = new Date(inst.installation_date).toLocaleDateString('en-US', { 
-            weekday: 'short', month: 'short', day: 'numeric' 
-        });
-        
-        return `
-            <div class="action-btn p-3 rounded-xl flex items-center gap-4 group">
-                <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-amber-100">
-                    <i class="fas fa-calendar-day"></i>
-                </div>
-                <div class="flex-grow min-w-0">
-                    <h4 class="text-sm font-black text-slate-800 truncate">${inst.client_name}</h4>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                        <i class="fas fa-map-marker-alt mr-1"></i> ${inst.location}
-                    </p>
-                </div>
-                <div class="text-right flex-shrink-0">
-                    <p class="text-[11px] font-black text-slate-700">${date}</p>
-                    <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">PENDING</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
 
     function renderInventoryStatus(inventory) {
         document.getElementById('inventoryValue').innerText = `KES ${Number(inventory.inventory_value).toLocaleString()}`;
@@ -782,5 +748,44 @@
         
         // Replace main content with error
         document.querySelector('.max-w-full').innerHTML = errorHtml;
+    }
+
+    async function fetchAdminInbox() {
+        const container = document.getElementById('dispatchInboxContent');
+        
+        try {
+            const response = await fetch('/api/hr/dispatch/inbox');
+            if (!response.ok) throw new Error('Network response error');
+            const data = await response.json();
+
+            if (data.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs font-bold uppercase">No records found</div>`;
+                return;
+            }
+
+            container.innerHTML = data.slice(0, 15).map(msg => {
+                const isHigh = msg.priority === 'high';
+                const isDone = msg.status === 'processed' || msg.status === 'COMPLETED';
+                
+                return `
+                    <div class="action-btn p-3 rounded-xl border border-slate-50 flex flex-col gap-2 transition-all ${isDone ? 'opacity-60 grayscale-[0.5]' : 'bg-white shadow-sm'}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full ${isHigh ? 'bg-rose-500' : 'bg-blue-400'}"></span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">${msg.priority} priority</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-400">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        
+                        <p class="text-xs font-bold text-slate-700 leading-relaxed line-clamp-2" title="${msg.message_content}">
+                            ${msg.message_content}
+                        </p>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (err) {
+            container.innerHTML = `<div class="text-center py-10 text-rose-400 text-xs font-black uppercase">Sync Failed</div>`;
+        }
     }
 </script>

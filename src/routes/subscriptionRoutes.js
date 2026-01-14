@@ -80,4 +80,21 @@ router.get('/metrics', async (req, res) => {
     }
 });
 
+// Route to manually extend/set expiry date
+router.patch('/extend-expiry/:id', async (req, res) => {
+    try {
+        const { expiry_date } = req.body;
+        
+        if (!expiry_date) {
+            return res.status(400).json({ error: "New expiry date is required" });
+        }
+
+        await SubscriptionManager.extendExpiry(req.params.id, expiry_date);
+        res.json({ success: true, message: "Subscription expiry updated" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to update expiry date" });
+    }
+});
+
 module.exports = router;

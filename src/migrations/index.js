@@ -22,6 +22,7 @@ const createHrBookingsTable = require("./hr-bookings");
 const createHrCommsLogsTable = require("./hr-communication-logs");
 const createHrInboxTable = require("./hr_inbox");
 const createHrInboxReplyTable = require("./hr_inbox_reply");
+const createSmsLogsTable = require("./create_sms_logs");
 
 
 //Seeders
@@ -109,6 +110,7 @@ async function runMigrations() {
   await createHrCommsLogsTable();
   await createHrInboxTable();
   await createHrInboxReplyTable();
+  await createSmsLogsTable();
 
   console.log("All migrations completed. Running seeders...");
 

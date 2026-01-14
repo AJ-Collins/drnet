@@ -47,6 +47,7 @@ const hrnotify = require("./src/routes/hrnotify");
 const hrdashboard = require("./src/routes/hrdashboard");
 const hrinbox = require("./src/routes/hrinbox");
 const hrinboxreply = require("./src/routes/hrinboxreply");
+const smslogs = require("./src/routes/smslogsRoutes");
 //Client
 const clientRoutes = require('./src/routes/clientRoutes');
 //Staff
@@ -278,6 +279,7 @@ app.use("/api/hr", apiSessionAuth, hrnotify);
 app.use("/api/hr", apiSessionAuth, hrdashboard);
 app.use("/api/hr", apiSessionAuth, hrinbox);
 app.use("/api/hr", apiSessionAuth, hrinboxreply);
+app.use("/api/hr", apiSessionAuth, smslogs);
 
 
 // Create uploads folder

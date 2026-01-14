@@ -266,9 +266,55 @@
         </button>
     </div>
 </div>
+
+<div id="extensionModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeExtensionModal()"></div>
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 relative animate-fade-up">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shadow-sm">
+                <i class="fas fa-calendar-plus text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-black text-slate-900">Extend Subscription</h3>
+                <p id="extClientName" class="text-xs font-bold text-slate-400 truncate w-48"></p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Quick Add Days</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setExtensionDays(7)" class="py-2 rounded-lg bg-slate-50 border border-slate-100 text-xs font-black text-slate-600 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-600 transition-all">+7 Days</button>
+                    <button onclick="setExtensionDays(14)" class="py-2 rounded-lg bg-slate-50 border border-slate-100 text-xs font-black text-slate-600 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-600 transition-all">+14 Days</button>
+                    <button onclick="setExtensionDays(30)" class="py-2 rounded-lg bg-slate-50 border border-slate-100 text-xs font-black text-slate-600 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-600 transition-all">+30 Days</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Custom Duration (Days)</label>
+                <input type="number" id="customDaysInput" oninput="calculatePreviewDate()" placeholder="Enter number of days" 
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-teal-500 transition-all">
+            </div>
+
+            <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-[10px] font-black text-indigo-400 uppercase">New Expiry Date</span>
+                    <i class="fas fa-clock text-indigo-300 text-xs"></i>
+                </div>
+                <p id="newExpiryPreview" class="text-sm font-black text-indigo-700">Select duration...</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mt-6">
+            <button onclick="closeExtensionModal()" class="py-3 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all">Cancel</button>
+            <button id="confirmExtBtn" onclick="submitExtension()" class="py-3 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest shadow-lg hover:bg-slate-800 transition-all">Confirm</button>
+        </div>
+    </div>
+</div>
 <script>
     const $ = id => document.getElementById(id);
     let allData = { subscriptions: [], users: [], packages: [] };
+    let activeExtSubId = null;
 
     async function init() {
         try {
@@ -421,6 +467,9 @@
                             </button>
                             <button onclick="loadEdit(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="Edit Record">
                                 <i class="fas fa-pen text-[10px]"></i>
+                            </button>
+                            <button onclick="manuallyExtendDays(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-teal-500 hover:bg-teal-50 transition-all" title="Add Days">
+                                <i class="fas fa-calendar-plus text-[10px]"></i>
                             </button>
                             <button onclick="loadRenewal(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" title="Renew subscription">
                                 <i class="fas fa-sync-alt text-[10px]"></i>
@@ -650,6 +699,90 @@
             showToast("SUCCESS", "Disconnected");
             init();
         } catch(e) { showToast("ERROR", "Failed"); }
+    }    
+
+    function manuallyExtendDays(id) {
+        const sub = allData.subscriptions.find(s => s.id === id);
+        if (!sub) return;
+
+        activeExtSubId = id;
+        $('extClientName').innerText = `${sub.first_name} ${sub.second_name}`;
+        $('customDaysInput').value = '';
+        $('newExpiryPreview').innerText = 'Select duration...';
+        
+        // Show Modal
+        const modal = $('extensionModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function setExtensionDays(days) {
+        $('customDaysInput').value = days;
+        calculatePreviewDate();
+    }
+
+    function calculatePreviewDate() {
+        const days = parseInt($('customDaysInput').value);
+        const sub = allData.subscriptions.find(s => s.id === activeExtSubId);
+        
+        if (!days || days < 1 || !sub) {
+            $('newExpiryPreview').innerText = 'Select duration...';
+            return;
+        }
+
+        const currentExpiry = new Date(sub.expiry_date);
+        const baseDate = currentExpiry > new Date() ? currentExpiry : new Date();
+        const newExpiry = new Date(baseDate);
+        newExpiry.setDate(baseDate.getDate() + days);
+
+        $('newExpiryPreview').innerText = newExpiry.toLocaleDateString('en-GB', {
+            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    async function submitExtension() {
+        const days = parseInt($('customDaysInput').value);
+        const btn = $('confirmExtBtn');
+        
+        if (!days || days < 1) {
+            showToast("WARNING", "Please enter valid number of days");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
+
+        try {
+            const sub = allData.subscriptions.find(s => s.id === activeExtSubId);
+            const currentExpiry = new Date(sub.expiry_date);
+            const baseDate = currentExpiry > new Date() ? currentExpiry : new Date();
+            const newExpiry = new Date(baseDate);
+            newExpiry.setDate(baseDate.getDate() + days);
+
+            const res = await fetch(`/api/subscriptions/extend-expiry/${activeExtSubId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ expiry_date: newExpiry.toISOString() })
+            });
+
+            if (res.ok) {
+                showToast("SUCCESS", `Subscription extended by ${days} days`);
+                closeExtensionModal();
+                init(); // Refresh table
+            }
+        } catch (err) {
+            showToast("ERROR", "Connection Error");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Confirm";
+        }
+    }
+
+    function closeExtensionModal() {
+        const modal = $('extensionModal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        activeExtSubId = null;
     }
 
     function showToast(title, msg) {

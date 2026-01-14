@@ -251,45 +251,67 @@
     </div>
     
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="glass-panel p-6 rounded-2xl animate-fade-up" style="animation-delay: 0.7s;">
-            <h3 class="text-lg font-black text-slate-800 mb-6">Quick Actions</h3>
-            <div class="grid grid-cols-2 gap-3">
-                <a href="/hr-assistant/<%= expensesSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
-                    <i class="fas fa-plus-circle text-teal-500 text-xl mb-2"></i>
-                    <span class="text-xs font-bold text-slate-700">New Expense</span>
-                </a>
-                <a href="/hr-assistant/<%= bookingsSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
-                    <i class="fas fa-calendar-plus text-indigo-500 text-xl mb-2"></i>
-                    <span class="text-xs font-bold text-slate-700">New Booking</span>
-                </a>
-                <% const tasksSlug = "tasks"; %>
-                <a href="/hr-assistant/<%= tasksSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
-                    <i class="fas fa-tasks text-slate-700 text-xl mb-2"></i>
-                    <span class="text-xs font-bold text-slate-700">Add Task</span>
-                </a>
-                <% const remindersSlug = "reminders"; %>
-                <a href="/hr-assistant/<%= remindersSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
-                    <i class="fas fa-comment-alt text-rose-500 text-xl mb-2"></i>
-                    <span class="text-xs font-bold text-slate-700">Send Reminder</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Recent Activities -->
-        <div class="glass-panel p-6 rounded-2xl lg:col-span-2 animate-fade-up" style="animation-delay: 0.8s;">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-black text-slate-800">Recent Activities</h3>
-                <span class="text-[10px] font-black text-slate-400 uppercase">Last 24 hours</span>
-            </div>
-            
-            <div id="recentActivities" class="space-y-3 max-h-64 overflow-y-auto pr-2">
-                <div class="text-center py-8 text-slate-300">
-                    <i class="fas fa-history text-2xl mb-2"></i>
-                    <p class="text-xs font-bold">Loading activities...</p>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+        <div class="lg:col-span-4 flex flex-col gap-6">
+            <!-- Recent Activities -->
+            <div class="glass-panel p-6 rounded-2xl animate-fade-up bg-slate-50/30 flex-1" style="animation-delay: 0.9s;">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-lg font-black text-slate-800">Live Feed</h3>
+                        <span id="liveFeedCount" class="bg-indigo-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </div>
+                    <i class="fas fa-circle text-[8px] text-emerald-500"></i>
+                </div>
+                <div id="dashboardInboundFeed" class="space-y-3 max-h-[320px] overflow-y-auto pr-2 custom-scroll">
+                    <div class="text-center py-8 text-slate-300">
+                        <i class="fas fa-satellite-dish text-2xl mb-2 animate-bounce"></i>
+                    </div>
                 </div>
             </div>
+            <div class="glass-panel p-6 rounded-2xl animate-fade-up h-1/2" style="animation-delay: 0.7s;">
+                <h3 class="text-lg font-black text-slate-800 mb-6">Quick Actions</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="/hr-assistant/<%= expensesSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-plus-circle text-teal-500 text-xl mb-2"></i>
+                        <span class="text-xs font-bold text-slate-700">New Expense</span>
+                    </a>
+                    <a href="/hr-assistant/<%= bookingsSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-calendar-plus text-indigo-500 text-xl mb-2"></i>
+                        <span class="text-xs font-bold text-slate-700">New Booking</span>
+                    </a>
+                    <% const tasksSlug = "tasks"; %>
+                    <a href="/hr-assistant/<%= tasksSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-tasks text-slate-700 text-xl mb-2"></i>
+                        <span class="text-xs font-bold text-slate-700">Add Task</span>
+                    </a>
+                    <% const remindersSlug = "reminders"; %>
+                    <a href="/hr-assistant/<%= remindersSlug %>" class="quick-action-btn p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-comment-alt text-rose-500 text-xl mb-2"></i>
+                        <span class="text-xs font-bold text-slate-700">Send Reminder</span>
+                    </a>
+                </div>
+            </div>            
         </div>
+
+        <div class="lg:col-span-8">
+            <div class="glass-panel p-6 rounded-2xl animate-fade-up h-full flex flex-col" style="animation-delay: 0.8s;">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800">Recent Activities</h3>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Operation Logs</p>
+                    </div>
+                    <span class="text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">Last 24 hours</span>
+                </div>
+                
+                <div id="recentActivities" class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scroll" style="max-height: 600px;">
+                    <div class="text-center py-20 text-slate-300">
+                        <i class="fas fa-history text-3xl mb-4 animate-spin"></i>
+                        <p class="text-xs font-bold uppercase tracking-widest">Syncing activity logs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>    
     </div>
 </div>
 
@@ -304,6 +326,7 @@
         updateDashboardStats();
         updateTaskStatus();
         updateRecentActivities();
+        updateDashboardInboundFeed();
         
         // Update every 60 seconds
         setInterval(async () => {
@@ -515,6 +538,52 @@
             }).join('');
         } catch (error) {
             console.error('Error loading recent activities:', error);
+        }
+    }
+
+    async function updateDashboardInboundFeed() {
+        try {
+            const res = await fetch('/api/hr/inbox');
+            const data = await res.json();
+            const container = document.getElementById('dashboardInboundFeed');
+            const badge = document.getElementById('liveFeedCount');
+
+            const pendingCount = data.filter(m => m.status === 'pending').length;
+            if (pendingCount > 0) {
+                badge.innerText = pendingCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="py-12 text-center text-slate-400">
+                        <p class="text-[10px] font-black uppercase tracking-widest">No incoming feeds</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = data.slice(0, 10).map(msg => {
+                const isProcessed = msg.status === 'processed';
+                return `
+                <div class="p-3 rounded-xl border border-slate-100 bg-white ${isProcessed ? 'opacity-50' : ''} transition-all">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[8px] font-black uppercase tracking-tighter ${isProcessed ? 'text-slate-400' : 'text-indigo-600'}">
+                            ${isProcessed ? 'Captured' : 'New Inbound'}
+                        </span>
+                        <span class="text-[8px] font-bold text-slate-400">
+                            ${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-700 leading-tight line-clamp-2">
+                        "${msg.message_content}"
+                    </p>
+                </div>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Error loading dashboard feed:', error);
         }
     }
 
