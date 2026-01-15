@@ -7,7 +7,7 @@ const toSqlDatetime = (date) => {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
         `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 };
-// 1. Dashboard Init Data
+// Dashboard Init Data
 router.get('/dashboard-data', async (req, res) => {
     try {
         const data = await SubscriptionManager.getDashboardData();
@@ -17,7 +17,7 @@ router.get('/dashboard-data', async (req, res) => {
     }
 });
 
-// 2. Get Payments for a specific user
+// Get Payments for a specific user
 router.get('/payments/:userId', async (req, res) => {
     try {
         const payments = await SubscriptionManager.getUserPayments(req.params.userId);
@@ -27,7 +27,7 @@ router.get('/payments/:userId', async (req, res) => {
     }
 });
 
-// 3. Create Subscription
+// Create Subscription
 router.post('/subscribe', async (req, res) => {
     try {
         await SubscriptionManager.createSubscription(req.body);

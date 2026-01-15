@@ -263,9 +263,9 @@ app.use("/api", apiSessionAuth, reports);
 // Admin dahsboard
 app.use("/api/dashboard", apiSessionAuth, admindashboard);
 //Client
-app.use('/api/manage/clients', clientRoutes);
+app.use('/api/manage/clients', apiSessionAuth,clientRoutes);
 //Staff
-app.use('/api/manage/staff', staffRoutes);
+app.use('/api/manage/staff', apiSessionAuth,staffRoutes);
 //Subsriptions
 app.use("/api/subscriptions", apiSessionAuth, subscriptionRoutes);
 
