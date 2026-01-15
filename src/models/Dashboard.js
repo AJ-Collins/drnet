@@ -53,9 +53,9 @@ const Dashboard = {
 
       // 3. Active subscribers
       const [activeSubscriptions] = await db.query(`
-        SELECT COUNT(DISTINCT us.user_id) as count
+        SELECT COUNT(DISTINCT user_id) as count
         FROM user_subscriptions
-        WHERE us.expiry_date > ?
+        WHERE expiry_date > ?
       `, [nowTimestamp]);
 
       // 4. New clients this week
