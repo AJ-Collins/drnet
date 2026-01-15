@@ -667,7 +667,7 @@
                     text = `REMINDER: ${firstName}, your ${c.pkgName} subscription is due to overdue in ${daysLeft} days. Please pay KES ${c.price} by ${dateStr} to avoid service suspension. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
                 }
             } else if (type === 'receipt') {
-                text = `Payment Confirmed!\nThank you ${firstName}.\nAmount: KES ${c.price}\nPackage: ${c.pkgName}\n\nYour DR.NET internet service has been renewed for 30 days, active until ${nextMonth.toLocaleDateString('en-GB')}.\n\nQuestions? Call 0701782354\nDR.NET TECHNOLOGY LABS`;            } else {
+                text = `Payment Confirmed! Thank you ${firstName}.\nAmount: KES ${c.price}\nPackage: ${c.pkgName}\n\nYour DR.NET internet service has been renewed for 30 days, active until ${nextMonth.toLocaleDateString('en-GB')}.\n\nQuestions? Call 0701782354\nDR.NET TECHNOLOGY LABS`;            } else {
                 text = "";
             }
             
