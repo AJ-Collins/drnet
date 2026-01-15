@@ -355,7 +355,7 @@
         Els.tbody.innerHTML = "";
         Els.tableContainer.classList.remove('hidden');
 
-        state.filteredData.forEach(client => {
+        State.filteredData.forEach(client => {
             const tr = document.createElement('tr');
             const isSelected = State.selectedIds.has(client.id);
             

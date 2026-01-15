@@ -239,9 +239,7 @@
         allData: [],
         filteredData: [],
         selectedIds: new Set(),
-        currentClient: null,
-        currentPage: 1,
-        itemsPerPage: 20
+        currentClient: null
     };
 
     const Els = {
@@ -348,21 +346,16 @@
             return matchesSearch && matchesFilter;
         });
 
-        State.currentPage = 1;
         State.selectedIds.clear();
         UI.updateBulkButton();
         renderTable();
     }
 
     function renderTable() {
-        const start = (State.currentPage - 1) * State.itemsPerPage;
-        const end = start + State.itemsPerPage;
-        const pageData = State.filteredData.slice(start, end);
-
         Els.tbody.innerHTML = "";
         Els.tableContainer.classList.remove('hidden');
 
-        pageData.forEach(client => {
+        State.filteredData.forEach(client => {
             const tr = document.createElement('tr');
             const isSelected = State.selectedIds.has(client.id);
             
@@ -445,7 +438,7 @@
             Els.tbody.appendChild(tr);
         });
         
-        Els.selectAll.checked = pageData.length > 0 && pageData.every(c => State.selectedIds.has(c.id));
+        Els.selectAll.checked = State.filteredData.length > 0 && State.filteredData.every(c => State.selectedIds.has(c.id));
     }
 
     const API = {
@@ -585,12 +578,9 @@
         },
 
         toggleSelectAll: () => {
-            const start = (State.currentPage - 1) * State.itemsPerPage;
-            const pageData = State.filteredData.slice(start, start + State.itemsPerPage);
+            const allSelected = State.filteredData.every(c => State.selectedIds.has(c.id));
             
-            const allSelected = pageData.every(c => State.selectedIds.has(c.id));
-            
-            pageData.forEach(c => {
+            State.filteredData.forEach(c => {
                 if(allSelected) State.selectedIds.delete(c.id);
                 else State.selectedIds.add(c.id);
             });
