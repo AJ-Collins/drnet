@@ -239,8 +239,19 @@
         allData: [],
         filteredData: [],
         selectedIds: new Set(),
-        currentClient: null
+        currentClient: null,
+        isLoading: false,
+        renderTimeout: null 
     };
+
+    function debouncedRender() {
+        if (State.renderTimeout) {
+            clearTimeout(State.renderTimeout);
+        }
+        State.renderTimeout = setTimeout(() => {
+            renderTable();
+        }, 100);
+    }
 
     const Els = {
         tableContainer: document.getElementById('tableContainer'),
@@ -263,6 +274,8 @@
     };
 
     async function initData() {
+        if (State.isLoading) return; 
+        State.isLoading = true;
         UI.toggleLoading(true);
         try {
             const res = await fetch(DATA_ENDPOINT);
@@ -319,6 +332,7 @@
             console.error(error);
             Swal.fire("Error", "Could not load data.", "error");
         } finally {
+            State.isLoading = false;
             UI.toggleLoading(false);
         }
     }
@@ -348,17 +362,20 @@
 
         State.selectedIds.clear();
         UI.updateBulkButton();
-        renderTable();
+        debouncedRender();
     }
 
     function renderTable() {
+        if (State.isLoading) return;
+        
         Els.tbody.innerHTML = "";
         Els.tableContainer.classList.remove('hidden');
 
         State.filteredData.forEach(client => {
             const tr = document.createElement('tr');
-            const isSelected = State.selectedIds.has(client.id);
+            tr.dataset.clientId = client.id
             
+            const isSelected = State.selectedIds.has(client.id);
             const dateStr = client.expiry.toLocaleDateString('en-GB');
             const badgeClass = client.displayStatus === 'active' ? 'badge-active' : 'badge-overdue';
             const iconClass = client.displayStatus === 'active' ? 'fa-check-circle' : 'fa-exclamation-triangle';
@@ -391,8 +408,7 @@
 
             tr.innerHTML = `
                 <td>
-                    <input type="checkbox" class="custom-checkbox" 
-                        onchange="Actions.toggleSelect(${client.id})" ${isSelected ? 'checked' : ''}>
+                    <input type="checkbox" class="custom-checkbox row-checkbox" ${isSelected ? 'checked' : ''}>
                 </td>
                 <td>
                     <div class="flex items-center gap-3">
@@ -416,7 +432,7 @@
                 <td class="text-xs">
                     <div class="flex flex-col">
                         <span class="${countClass}">${count} sent <span class="text-[9px] opacity-60">/ 24h</span></span>
-                        <button onclick="Actions.viewHistory(${client.id}, '${client.name}')" class="text-[10px] text-indigo-500 font-bold hover:underline text-left uppercase mt-1">
+                        <button class="view-history text-[10px] text-indigo-500 font-bold hover:underline text-left uppercase mt-1">
                             History
                         </button>
                     </div>
@@ -430,7 +446,7 @@
                     </div>
                 </td>
                 <td class="text-right">
-                    <button onclick="Actions.openSingleDrawer(${client.id})" class="text-[9px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg border border-teal-100 transition-colors">
+                    <button class="compose-btn text-[9px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg border border-teal-100 transition-colors">
                         Compose
                     </button>
                 </td>
@@ -440,6 +456,22 @@
         
         Els.selectAll.checked = State.filteredData.length > 0 && State.filteredData.every(c => State.selectedIds.has(c.id));
     }
+
+    Els.tbody.addEventListener('click', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        
+        const clientId = parseInt(row.dataset.clientId);
+        
+        if (e.target.classList.contains('row-checkbox')) {
+            Actions.toggleSelect(clientId);
+        } else if (e.target.classList.contains('compose-btn')) {
+            Actions.openSingleDrawer(clientId);
+        } else if (e.target.classList.contains('view-history')) {
+            const client = State.allData.find(c => c.id === clientId);
+            if (client) Actions.viewHistory(clientId, client.name);
+        }
+    });
 
     const API = {
         checkBalance: async () => {
@@ -517,10 +549,14 @@
 
             if(!message) return Swal.fire("Empty Message", "Please write a message.", "warning");
 
-            const messages = Array.from(State.selectedIds).map(id => {
-                const client = State.allData.find(c => c.id === id);
-                return { phone: client.phone, message: message };
-            });
+            const selectedClients = Array.from(State.selectedIds).map(id => 
+                State.allData.find(c => c.id === id)
+            ).filter(Boolean);
+
+            const messages = selectedClients.map(client => ({
+                phone: client.phone,
+                message: message
+            }));
 
             try {
                 btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Dispatching ${messages.length} SMS...`;
@@ -534,6 +570,7 @@
 
                 const result = await res.json();
                 if(!res.ok) throw new Error(result.error || "Failed");
+
                 try {
                     await fetch('/api/hr/sms/log/bulk', {
                         method: 'POST',
@@ -555,7 +592,7 @@
                 
                 State.selectedIds.clear();
                 UI.updateBulkButton();
-                renderTable();
+                debouncedRender();
                 UI.closeAllDrawers();
                 initData();
                 API.checkBalance();
@@ -667,7 +704,7 @@
                     text = `REMINDER: ${firstName}, your ${c.pkgName} subscription is due to overdue in ${daysLeft} days. Please pay KES ${c.price} by ${dateStr} to avoid service suspension. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
                 }
             } else if (type === 'receipt') {
-                text = `Payment Confirmed! Thank you ${firstName}.\nAmount: KES ${c.price}\nPackage: ${c.pkgName}\n\nYour DR.NET internet service has been renewed for 30 days, active until ${nextMonth.toLocaleDateString('en-GB')}.\n\nQuestions? Call 0701782354\nDR.NET TECHNOLOGY LABS`;            } else {
+                text = `Payment Confirmed!\nThank you ${firstName}.\nAmount: KES ${c.price}\nPackage: ${c.pkgName}\n\nYour DR.NET internet service has been renewed for 30 days, active until ${nextMonth.toLocaleDateString('en-GB')}.\n\nQuestions? Call 0701782354\nDR.NET TECHNOLOGY LABS`;            } else {
                 text = "";
             }
             
@@ -777,14 +814,14 @@
         }
     };
 
-    Els.search.addEventListener('input', applyFilters);
+    let searchTimeout;
+    Els.search.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            applyFilters();
+        }, 300);
+    });
     Els.filter.addEventListener('change', applyFilters);
     document.addEventListener('DOMContentLoaded', initData);
-
-    setInterval(() => {
-        if (!State.isLoading) {
-            renderTable();
-        }
-    }, 60000);
 
 </script>
