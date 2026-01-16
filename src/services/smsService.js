@@ -3,7 +3,7 @@ const axios = require('axios');
 class SMSService {
     constructor() {
         this.apiKey = process.env.SMS_API_KEY;
-        this.senderId = process.env.SMS_SENDER_ID || '23107';
+        this.senderId = process.env.SMS_SENDER_ID;
         this.baseURL = process.env.SMS_BASE_URL || 'https://sms.blessedtexts.com/api/sms/v1';
     }
 

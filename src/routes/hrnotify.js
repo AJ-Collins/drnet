@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mailService = require('../services/mailService');
 const smsService = require('../services/smsService');
+const SmsLog = require('../models/SmsLogsModel');
 
 router.post('/dispatch/mail', async (req, res) => {
     const { recipient, subject, body } = req.body;
@@ -24,7 +25,7 @@ router.post('/dispatch/mail', async (req, res) => {
  * @desc Send SMS to recipient
  */
 router.post('/dispatch/sms', async (req, res) => {
-    const { phone, message } = req.body;
+    const { phone, message, subscriptionId, messageType } = req.body;
 
     if (!phone || !message) {
         return res.status(400).json({ 
@@ -33,7 +34,31 @@ router.post('/dispatch/sms', async (req, res) => {
     }
 
     try {
+        // Rate limit
+        if (subscriptionId && (messageType === 'reminder' || messageType === 'receipt')) {
+            const canSend = await SmsLog.canSendMessageType(subscriptionId, messageType);
+            
+            if (!canSend) {
+                const timeInfo = await SmsLog.getTimeUntilNextAllowed(subscriptionId, messageType);
+                return res.status(429).json({ 
+                    error: `Rate limit: ${messageType} SMS already sent in last 24 hours. Try again in ${timeInfo.hoursRemaining} hour(s).`,
+                    rateLimited: true,
+                    hoursRemaining: timeInfo.hoursRemaining,
+                    messageType: messageType
+                });
+            }
+        }
+
         const result = await smsService.sendSMS(phone, message);
+
+        if (subscriptionId) {
+            await SmsLog.logSingle({
+                subscriptionId,
+                phone,
+                type: messageType || 'custom',
+                message
+            });
+        }
         
         res.json({
             success: true,

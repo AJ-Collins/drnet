@@ -55,22 +55,23 @@ const SubscriptionManager = {
             const validity = pkg[0].validity_days || 30;
             const price = pkg[0].price;
 
-            const now = new Date();
-            const expiry = new Date();
-            expiry.setDate(now.getDate() + validity);
+            const startDate = data.start_date ? new Date(data.start_date) : new Date();
+            const expiry = new Date(startDate);
+            expiry.setDate(startDate.getDate() + validity);
 
             // A. Insert Subscription
             const [subResult] = await connection.execute(
                 `INSERT INTO user_subscriptions (user_id, package_id, start_date, expiry_date, status) 
                  VALUES (?, ?, ?, ?, 'active')`,
-                [data.user_id, data.package_id, toSqlDatetime(now), toSqlDatetime(expiry)]
+                [data.user_id, data.package_id, toSqlDatetime(startDate), toSqlDatetime(expiry)]
             );
 
             // B. Record Payment
+            const paymentDate = new Date();
             await connection.execute(
                 `INSERT INTO payments (user_id, subscription_id, amount, status, payment_method, payment_date) 
                  VALUES (?, ?, ?, 'paid', ?, ?)`,
-                [data.user_id, subResult.insertId, price, data.payment_method || 'cash', toSqlDatetime(now)]
+                [data.user_id, subResult.insertId, price, data.payment_method || 'cash', toSqlDatetime(paymentDate)]
             );
 
             await connection.commit();
@@ -88,8 +89,8 @@ const SubscriptionManager = {
         if (!pkg.length) throw new Error("Package not found");
 
         const validity = pkg[0].validity_days || 30;
-        const startDate = new Date(); 
-        const expiryDate = new Date();
+        const startDate = data.start_date ? new Date(data.start_date) : new Date();
+        const expiryDate = new Date(startDate);
         expiryDate.setDate(startDate.getDate() + validity);
 
         const [result] = await db.execute(`
@@ -101,8 +102,8 @@ const SubscriptionManager = {
             WHERE id = ?
         `, [
             data.package_id, 
-            startDate, 
-            expiryDate, 
+            toSqlDatetime(startDate), 
+            toSqlDatetime(expiryDate), 
             data.status || 'active', 
             id
         ]);

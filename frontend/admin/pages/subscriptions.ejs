@@ -1,5 +1,4 @@
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     :root { font-family: 'Plus Jakarta Sans', sans-serif; }
         
     .glass-panel { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
@@ -202,6 +201,19 @@
                                 <option value="">Select a package...</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1 block">Start Date (Optional)</label>
+                        <div class="input-field rounded-xl p-1 flex items-center">
+                            <input 
+                                type="datetime-local" 
+                                id="startDate" 
+                                class="w-full bg-transparent border-none text-xs font-bold text-slate-700 p-2.5 outline-none"
+                                placeholder="Leave empty for immediate activation"
+                            >
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-1 ml-1">Leave blank to use current date and time</p>
                     </div>
 
                     <div>
@@ -534,6 +546,7 @@
     function resetForm() {
         $('subForm').reset();
         $('editSubId').value = '';
+        $('startDate').value = '';
         delete $('subForm').dataset.mode;
         $('userId').disabled = false;
         populateDropdowns();
@@ -571,6 +584,7 @@
         const userId = $('userId').value;
         const packageId = $('packageId').value;
         const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
+        const startDateInput = $('startDate').value;
 
         if (!userId || !packageId) {
             showToast("WARNING", "Please select both a Client and a Package Plan");
@@ -595,6 +609,10 @@
             package_id: packageId,
             payment_method: paymentMethod
         };
+
+        if (startDateInput) {
+            data.start_date = new Date(startDateInput).toISOString();
+        }
 
         btn.disabled = true;
 

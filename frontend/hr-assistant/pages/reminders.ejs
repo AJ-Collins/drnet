@@ -1,5 +1,4 @@
 <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         :root { font-family: 'Plus Jakarta Sans', sans-serif; }
         
         body { background-color: #f8fafc; }
@@ -241,8 +240,43 @@
         selectedIds: new Set(),
         currentClient: null,
         isLoading: false,
-        renderTimeout: null 
+        renderTimeout: null,
+        displayedData: [],
+
+        currentPage: 1,
+        itemsPerPage: 50,
+        totalPages: 1
     };
+
+    function updatePagination() {
+        State.totalPages = Math.ceil(State.filteredData.length / State.itemsPerPage);
+        
+        const startIdx = (State.currentPage - 1) * State.itemsPerPage;
+        const endIdx = startIdx + State.itemsPerPage;
+        
+        State.displayedData = State.filteredData.slice(startIdx, endIdx);
+        
+        const pageInfo = document.getElementById('pageInfo');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const paginationContainer = document.getElementById('paginationContainer');
+        
+        if (State.filteredData.length > State.itemsPerPage) {
+            paginationContainer.classList.remove('hidden');
+            pageInfo.textContent = `Showing ${startIdx + 1}-${Math.min(endIdx, State.filteredData.length)} of ${State.filteredData.length}`;
+            
+            btnPrev.disabled = State.currentPage === 1;
+            btnNext.disabled = State.currentPage === State.totalPages;
+        } else {
+            paginationContainer.classList.add('hidden');
+        }
+    }
+
+    function goToPage(page) {
+        State.currentPage = Math.max(1, Math.min(page, State.totalPages));
+        updatePagination();
+        debouncedRender();
+    }
 
     function debouncedRender() {
         if (State.renderTimeout) {
@@ -274,24 +308,18 @@
     };
 
     async function initData() {
-        if (State.isLoading) return; 
+        if (State.isLoading) return;
+        
         State.isLoading = true;
         UI.toggleLoading(true);
+        
         try {
+            // Only fetch subscription data first
             const res = await fetch(DATA_ENDPOINT);
             if(!res.ok) throw new Error("Failed to load data");
             const raw = await res.json();
 
-            let logData = { subscriptions: [] };
-            try {
-                const logRes = await fetch('/api/hr/sms/log');
-                if(logRes.ok) {
-                    logData = await logRes.json();
-                }
-            } catch (e) {
-                console.warn("An error occured. Try again");
-            }
-            
+            // Process subscriptions WITHOUT SMS counts initially
             State.allData = raw.subscriptions.map(sub => {
                 const now = new Date();
                 const expiryDate = new Date(sub.expiry_date.replace(' ', 'T'));
@@ -309,9 +337,6 @@
                     isWarningPeriod = true;
                 }
 
-                const logEntry = logData.subscriptions.find(l => l.id === sub.id);
-                const smsCount = logEntry ? logEntry.sms_24h_count : 0;
-
                 return {
                     id: sub.id,
                     name: `${sub.first_name} ${sub.second_name}`,
@@ -322,18 +347,46 @@
                     warningDate: warningDate,
                     isWarningPeriod: isWarningPeriod,
                     displayStatus: displayStatus,
-                    sms_24h_count: smsCount
+                    sms_24h_count: 0  // Default to 0, load later
                 };
             }).sort((a,b) => a.name.localeCompare(b.name));
             
             API.checkBalance();            
             applyFilters();
+            
+            // Load SMS counts in background (non-blocking)
+            loadSmsCountsAsync();
+            
         } catch (error) {
-            console.error(error);
+            console.error("Init data error:", error);
             Swal.fire("Error", "Could not load data.", "error");
         } finally {
             State.isLoading = false;
             UI.toggleLoading(false);
+        }
+    }
+
+    async function loadSmsCountsAsync() {
+        try {
+            const logRes = await fetch('/api/hr/sms/log');
+            if(!logRes.ok) return;
+            
+            const logData = await logRes.json();
+            
+            // Update counts in existing data
+            State.allData.forEach(client => {
+                const logEntry = logData.subscriptions.find(l => l.id === client.id);
+                if (logEntry) {
+                    client.sms_24h_count = logEntry.sms_24h_count;
+                }
+            });
+            
+            // Re-render only if user is still on first page
+            if (!State.isLoading) {
+                debouncedRender();
+            }
+        } catch (e) {
+            console.warn("SMS log fetch failed:", e);
         }
     }
 
@@ -360,8 +413,14 @@
             return matchesSearch && matchesFilter;
         });
 
-        State.selectedIds.clear();
+        // Reset to page 1 when filtering
+        State.currentPage = 1;
+        
+        // Don't clear selections on filter - let user keep their selections
+        // State.selectedIds.clear();  // REMOVED
+        
         UI.updateBulkButton();
+        updatePagination();
         debouncedRender();
     }
 
@@ -371,9 +430,10 @@
         Els.tbody.innerHTML = "";
         Els.tableContainer.classList.remove('hidden');
 
-        State.filteredData.forEach(client => {
+        // Only render displayedData (current page)
+        State.displayedData.forEach(client => {
             const tr = document.createElement('tr');
-            tr.dataset.clientId = client.id
+            tr.dataset.clientId = client.id;
             
             const isSelected = State.selectedIds.has(client.id);
             const dateStr = client.expiry.toLocaleDateString('en-GB');
@@ -413,7 +473,7 @@
                 <td>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs overflow-hidden border border-slate-200">
-                            ${client.image ? `<img src="${client.image}" class="w-full h-full object-cover">` : client.name.charAt(0)}
+                            ${client.image ? `<img src="${client.image}" class="w-full h-full object-cover" loading="lazy">` : client.name.charAt(0)}
                         </div>
                         <div>
                             <h2 class="font-bold text-slate-800 leading-tight">${client.name}</h2>
@@ -454,7 +514,10 @@
             Els.tbody.appendChild(tr);
         });
         
-        Els.selectAll.checked = State.filteredData.length > 0 && State.filteredData.every(c => State.selectedIds.has(c.id));
+        // Update "Select All" checkbox based on CURRENT PAGE only
+        const allCurrentPageSelected = State.displayedData.length > 0 && 
+                                        State.displayedData.every(c => State.selectedIds.has(c.id));
+        Els.selectAll.checked = allCurrentPageSelected;
     }
 
     Els.tbody.addEventListener('click', (e) => {
@@ -501,27 +564,25 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         phone: State.currentClient.phone,
-                        message: message
+                        message: message,
+                        subscriptionId: State.currentClient.id,  // Add this
+                        messageType: State.currentTemplateType || 'custom' 
                     })
                 });
                 
                 const result = await res.json();
-                if(!res.ok) throw new Error(result.error || "Failed");
-
-                try {
-                    await fetch('/api/hr/sms/log', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            subscriptionId: State.currentClient.id,
-                            phone: State.currentClient.phone,
-                            message: message,
-                            type: State.currentTemplateType || 'custom'
-                        })
+                if(res.status === 429) {
+                    return Swal.fire({
+                        title: "Rate Limit Exceeded",
+                        html: `
+                            <p>${result.error}</p>
+                            <p class="text-sm text-gray-600 mt-2">This prevents multiple sms and ensures quality communication.</p>
+                        `,
+                        icon: "warning",
+                        confirmButtonText: "Got it"
                     });
-                } catch (e) {
-                    console.warn("SMS sent but logging failed", e);
                 }
+                if(!res.ok) throw new Error(result.error || "Failed");
 
                 Swal.fire({
                     title: "Sent!",
@@ -615,10 +676,10 @@
         },
 
         toggleSelectAll: () => {
-            const allSelected = State.filteredData.every(c => State.selectedIds.has(c.id));
+            const allCurrentPageSelected = State.displayedData.every(c => State.selectedIds.has(c.id));
             
-            State.filteredData.forEach(c => {
-                if(allSelected) State.selectedIds.delete(c.id);
+            State.displayedData.forEach(c => {
+                if(allCurrentPageSelected) State.selectedIds.delete(c.id);
                 else State.selectedIds.add(c.id);
             });
             
@@ -813,6 +874,14 @@
             }, 400);
         }
     };
+
+    document.getElementById('btnPrev').addEventListener('click', () => {
+        goToPage(State.currentPage - 1);
+    });
+
+    document.getElementById('btnNext').addEventListener('click', () => {
+        goToPage(State.currentPage + 1);
+    });
 
     let searchTimeout;
     Els.search.addEventListener('input', () => {

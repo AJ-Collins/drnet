@@ -8,9 +8,54 @@ const toSqlDatetime = (date) => {
 };
 
 const SmsLogsModel = {
+
+  /**
+   * Check if a specific message type can be sent (24hr rate limit)
+   * Returns true if allowed, false if blocked
+   */
+  async canSendMessageType(subscriptionId, messageType) {
+    const sql = `
+      SELECT COUNT(*) as count 
+      FROM sms_logs 
+      WHERE subscription_id = ? 
+      AND message_type = ?
+      AND sent_at >= NOW() - INTERVAL 24 HOUR
+    `;
+    
+    const [rows] = await db.execute(sql, [subscriptionId, messageType]);
+    return rows[0].count === 0; // Returns true
+  },
+
+  /**
+   * Get time remaining until next allowed message
+   */
+  async getTimeUntilNextAllowed(subscriptionId, messageType) {
+    const sql = `
+      SELECT sent_at 
+      FROM sms_logs 
+      WHERE subscription_id = ? 
+      AND message_type = ?
+      AND sent_at >= NOW() - INTERVAL 24 HOUR
+      ORDER BY sent_at DESC 
+      LIMIT 1
+    `;
+    
+    const [rows] = await db.execute(sql, [subscriptionId, messageType]);
+    
+    if (rows.length === 0) {
+      return null; // Can send now
+    }
+    
+    const lastSent = new Date(rows[0].sent_at);
+    const nextAllowed = new Date(lastSent.getTime() + 24 * 60 * 60 * 1000);
+    const hoursRemaining = Math.ceil((nextAllowed - new Date()) / (1000 * 60 * 60));
+    
+    return { nextAllowed, hoursRemaining };
+  },
   
   // Log a Single SMS
   async logSingle({ subscriptionId, phone, type, message }) {
+    
     const timeStamp = toSqlDatetime(new Date());
 
     const sql = `
