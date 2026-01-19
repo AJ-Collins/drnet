@@ -4167,15 +4167,17 @@ function copySMS(type) {
 
 // Download receipt as PDF (uses frontend data)
 function downloadReceipt(id) {
-  // Find receipt in the receiptsCache
-  const receipt = receiptClientsCache.find(r => r.id == id);
-  
-  if (!receipt) {
-    Swal.fire("Error", "Receipt not found", "error");
-    return;
+  let receipt = null;
+  viewReceiptForDownload(id);
+}
+
+async function viewReceiptForDownload(id) {
+  try {
+    const receipt = await api(`/receipts/${id}`);
+    generateReceiptPDF(receipt);
+  } catch (e) {
+    Swal.fire("Error", e.message || "Could not load receipt for download", "error");
   }
-  
-  generateReceiptPDF(receipt);
 }
 
 /**
