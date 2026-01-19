@@ -4259,7 +4259,7 @@ function generateReceiptPDF(receipt) {
   let y = startY + 20;
 
   // Payment description
-  const description = `Payment for ${billingPeriod || "Internet Service"}`;
+  const description = `${billingPeriod || "Internet Service"}`;
   pdf.text(description, 25, y);
   pdf.text(Number(receipt.amount).toLocaleString(), 167, y);
   y += 10;
