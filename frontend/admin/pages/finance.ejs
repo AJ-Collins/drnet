@@ -4165,6 +4165,184 @@ function copySMS(type) {
   });
 }
 
+// Download receipt as PDF (uses frontend data)
+function downloadReceipt(id) {
+  // Find receipt in the receiptsCache
+  const receipt = receiptClientsCache.find(r => r.id == id);
+  
+  if (!receipt) {
+    Swal.fire("Error", "Receipt not found", "error");
+    return;
+  }
+  
+  generateReceiptPDF(receipt);
+}
+
+/**
+ * Generates a DR.NET-branded receipt PDF (matching invoice format).
+ * @param {Object} receipt – receipt data from frontend cache
+ */
+function generateReceiptPDF(receipt) {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  // Extract client info (handle both formats)
+  const clientName = receipt.clientName || receipt.client?.name || "Unknown Client";
+  const clientPhone = receipt.clientPhone || receipt.client?.phone || "N/A";
+  const clientEmail = receipt.clientEmail || receipt.client?.email || "";
+  const clientLocation = receipt.clientLocation || receipt.client?.location || "";
+  const billingPeriod = receipt.billingPeriod || receipt.client?.period || "";
+
+  // ────── COMPANY BRANDING ──────
+  pdf.setFontSize(24);
+  pdf.setFont("helvetica", "bold");
+  pdf.setTextColor(220, 38, 127);
+  pdf.text("DR.NET INNOVATIONS", 20, 25);
+
+  pdf.setFontSize(10);
+  pdf.setFont("helvetica", "normal");
+  pdf.setTextColor(100, 100, 100);
+  pdf.text("INNOVATIVE CONNECTIONS WITH DOCTORS PRECISION", 20, 33);
+  pdf.text(
+    "Email: dr.netinnovations@gmail.com | Website: https://drnet.co.ke/",
+    20,
+    40
+  );
+  pdf.text("P.O. Box 105876 - 00100 NAIROBI", 20, 47);
+  pdf.text("Phone: +254111357066", 20, 54);
+
+  // ────── RECEIPT HEADER ──────
+  pdf.setFontSize(20);
+  pdf.setFont("helvetica", "bold");
+  pdf.setTextColor(0, 0, 0);
+  pdf.text("PAYMENT RECEIPT", 135, 25);
+
+  // ────── RECEIPT DETAILS BOX ──────
+  pdf.setDrawColor(220, 38, 127);
+  pdf.setLineWidth(0.5);
+  pdf.rect(120, 35, 70, 25);
+
+  pdf.setFontSize(10);
+  pdf.setFont("helvetica", "normal");
+  pdf.text(`Receipt #: ${receipt.id}`, 125, 42);
+
+  const paymentDate = dayjs(receipt.paymentDate).format("MMM D, YYYY");
+  pdf.text(`Payment Date: ${paymentDate}`, 125, 48);
+  pdf.text(`Method: ${receipt.paymentMethod}`, 125, 54);
+
+  // ────── RECEIVED FROM ──────
+  pdf.setFontSize(14);
+  pdf.setFont("helvetica", "bold");
+  pdf.text("RECEIVED FROM:", 20, 80);
+
+  pdf.setFontSize(12);
+  pdf.setFont("helvetica", "normal");
+  pdf.text(clientName, 20, 90);
+  pdf.text(`Phone: ${clientPhone}`, 20, 98);
+  if (clientLocation) pdf.text(`Location: ${clientLocation}`, 20, 106);
+  if (clientEmail) pdf.text(`Email: ${clientEmail}`, 20, 114);
+  if (billingPeriod) pdf.text(`Period: ${billingPeriod}`, 20, 122);
+
+  // ────── PAYMENT DETAILS TABLE ──────
+  const startY = 140;
+  pdf.setFillColor(240, 240, 240);
+  pdf.rect(20, startY, 170, 10, "F");
+
+  pdf.setFontSize(10);
+  pdf.setFont("helvetica", "bold");
+  pdf.text("DESCRIPTION", 25, startY + 7);
+  pdf.text("AMOUNT", 165, startY + 7);
+
+  pdf.setFont("helvetica", "normal");
+  let y = startY + 20;
+
+  // Payment description
+  const description = `Payment for ${billingPeriod || "Internet Service"}`;
+  pdf.text(description, 25, y);
+  pdf.text(Number(receipt.amount).toLocaleString(), 167, y);
+  y += 10;
+
+  // Transaction reference (if exists)
+  if (receipt.transactionRef || receipt.txRef) {
+    pdf.setFontSize(9);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(`Transaction Ref: ${receipt.transactionRef || receipt.txRef}`, 25, y);
+    y += 8;
+  }
+
+  // Note (if exists)
+  if (receipt.note) {
+    pdf.text(`Note: ${receipt.note}`, 25, y);
+    y += 8;
+  }
+
+  pdf.setTextColor(0, 0, 0);
+
+  // ────── TOTALS (matching invoice format) ──────
+  const totalY = y + 15;
+  pdf.setDrawColor(0, 0, 0);
+  pdf.line(120, totalY - 5, 190, totalY - 5);
+
+  const subtotal = Number(receipt.amount);
+  const vat = 0; // No VAT on receipts
+
+  pdf.setFontSize(10);
+  pdf.setFont("helvetica", "bold");
+  pdf.text("SUBTOTAL:", 120, totalY);
+  pdf.text(
+    `KSH ${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+    160,
+    totalY
+  );
+
+  pdf.text("VAT (0%):", 120, totalY + 8);
+  pdf.text(
+    `KSH ${vat.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+    160,
+    totalY + 8
+  );
+
+  pdf.setFontSize(12);
+  pdf.setTextColor(220, 38, 127);
+  pdf.text("TOTAL PAID:", 120, totalY + 18);
+  pdf.text(
+    `KSH ${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+    160,
+    totalY + 18
+  );
+
+  // ────── FOOTER NOTE ──────
+  const footerY = totalY + 35;
+  pdf.setFontSize(10);
+  pdf.setFont("helvetica", "italic");
+  pdf.setTextColor(100, 100, 100);
+  pdf.text("Thank you for your payment!", 20, footerY);
+  pdf.text(
+    "This is a computer-generated receipt. No signature required.",
+    20,
+    footerY + 8
+  );
+
+  // ────── SIGNATURE LINE ──────
+  pdf.setDrawColor(0, 0, 0);
+  pdf.setLineWidth(0.3);
+  pdf.line(20, footerY + 25, 80, footerY + 25);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  pdf.text("Authorized Signature", 30, footerY + 31);
+
+  // ────── SAVE ──────
+  pdf.save(`DR-NET-Receipt-${receipt.id}.pdf`);
+
+  Swal.fire({
+    title: "Success",
+    text: "Receipt PDF downloaded successfully!",
+    icon: "success",
+    timer: 2000,
+    showConfirmButton: false,
+  });
+}
+
 // Auto-fill SMS when viewing an invoice
 function populateSMSTemplates(invoice) {
   const clientName = invoice.client?.name || "Valued Customer";
