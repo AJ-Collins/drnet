@@ -3875,7 +3875,7 @@
     pdf.setFontSize(24);
     pdf.setFont("helvetica", "bold");
     pdf.setTextColor(220, 38, 127);
-    pdf.text("DR.NET INNOVATIONS", 20, 25);
+    pdf.text("DR.NET Technology Labs ", 20, 25);
 
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "normal");
@@ -4199,7 +4199,7 @@ function generateReceiptPDF(receipt) {
   pdf.setFontSize(24);
   pdf.setFont("helvetica", "bold");
   pdf.setTextColor(220, 38, 127);
-  pdf.text("DR.NET INNOVATIONS", 20, 25);
+  pdf.text("DR.NET Technology Labs", 20, 25);
 
   pdf.setFontSize(10);
   pdf.setFont("helvetica", "normal");
@@ -4319,19 +4319,6 @@ function generateReceiptPDF(receipt) {
   pdf.setFont("helvetica", "italic");
   pdf.setTextColor(100, 100, 100);
   pdf.text("Thank you for your payment!", 20, footerY);
-  pdf.text(
-    "This is a computer-generated receipt. No signature required.",
-    20,
-    footerY + 8
-  );
-
-  // ────── SIGNATURE LINE ──────
-  pdf.setDrawColor(0, 0, 0);
-  pdf.setLineWidth(0.3);
-  pdf.line(20, footerY + 25, 80, footerY + 25);
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(9);
-  pdf.text("Authorized Signature", 30, footerY + 31);
 
   // ────── SAVE ──────
   pdf.save(`DR-NET-Receipt-${receipt.id}.pdf`);
