@@ -1,93 +1,53 @@
 const db = require("../config/db");
 
 const Item = {
-  create: async (data) => {
-    const {
-      name,
-      serial,
-      category,
-      totalQty,
-      status = "available",
-      brand,
-      price,
-      added_by,
-      description,
-    } = data;
+  // CREATE multiple units (one query for efficiency)
+  createBulk: async (data) => {
+    const { name, category, brand, unit_price, added_by, serial_numbers } = data;
+    const values = serial_numbers.map(sn => [
+      name, sn, category, brand, unit_price || 0, 'in-stock', added_by
+    ]);
 
     const [result] = await db.query(
-      `INSERT INTO items 
-      (name, serial_number, category, quantity, status, brand, unit_price, added_by, description)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        name,
-        serial,
-        category,
-        totalQty,
-        status,
-        brand,
-        price,
-        added_by,
-        description,
-      ]
+      `INSERT INTO items (name, serial_number, category, brand, unit_price, status, added_by) VALUES ?`,
+      [values]
     );
-
     return result;
   },
 
   findAll: async () => {
     const [rows] = await db.query(`
-      SELECT 
-        i.*,
-        CONCAT(s.first_name, ' ', s.second_name) AS added_by
+      SELECT i.*, CONCAT(s.first_name, ' ', s.second_name) AS added_by_name
       FROM items i
       LEFT JOIN staff s ON i.added_by = s.id
+      ORDER BY i.name ASC, i.created_at DESC
     `);
     return rows;
   },
 
   findById: async (id) => {
-    const [rows] = await db.query(
-      `
-      SELECT 
-        i.*,
-        CONCAT(s.first_name, ' ', s.second_name) AS added_by
-      FROM items i
-      LEFT JOIN staff s ON i.added_by = s.id
-      WHERE i.id=?
-    `,
-      [id]
-    );
+    const [rows] = await db.query(`SELECT * FROM items WHERE id = ?`, [id]);
     return rows[0];
   },
 
   update: async (id, data) => {
-    const mapping = {
-      serial: "serial_number",
-      totalQty: "quantity",
-      price: "unit_price",
-    };
-
+    const allowed = ['name', 'serial_number', 'category', 'brand', 'unit_price'];
     const fields = [];
     const values = [];
 
     for (const key in data) {
-      const column = mapping[key] || key; // use mapped name if exists
-      fields.push(`${column}=?`);
-      values.push(data[key]);
+      if (allowed.includes(key)) {
+        fields.push(`${key}=?`);
+        values.push(data[key]);
+      }
     }
-
     values.push(id);
-    const [result] = await db.query(
-      `UPDATE items SET ${fields.join(",")} WHERE id=?`,
-      values
-    );
-    return result;
+    return await db.query(`UPDATE items SET ${fields.join(", ")} WHERE id=?`, values);
   },
 
   delete: async (id) => {
-    const [result] = await db.query(`DELETE FROM items WHERE id=?`, [id]);
-    return result;
-  },
+    return await db.query(`DELETE FROM items WHERE id=?`, [id]);
+  }
 };
 
 module.exports = Item;

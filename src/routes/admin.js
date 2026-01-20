@@ -3,7 +3,6 @@ const router = express.Router();
 const Staff = require("../models/Staff");
 const Booking = require("../models/Booking");
 const StaffClientAssignment = require("../models/StaffClientAssignment");
-const Item = require("../models/Item");
 const User = require("../models/User");
 const SupportTicket = require("../models/SupportTicket");
 const Payment = require("../models/Payment");
@@ -703,84 +702,6 @@ router.delete("/bookings/:id", async (req, res) => {
   }
 });
 
-// Inventory Routes
-router.get("/inventory", async (req, res) => {
-  try {
-    const items = await Item.findAll();
-    res.json(items);
-  } catch (err) {
-    console.error("Error fetching items:", err);
-    res.status(500).json({ error: "Failed to fetch items" });
-  }
-});
-
-// GET single item
-router.get("/inventory/:id", async (req, res) => {
-  try {
-    const item = await Item.findById(req.params.id);
-    if (!item) return res.status(404).json({ error: "Item not found" });
-    res.json(item);
-  } catch (err) {
-    console.error("Error fetching item:", err);
-    res.status(500).json({ error: "Failed to fetch item" });
-  }
-});
-
-// CREATE item
-router.post("/inventory", async (req, res) => {
-  try {
-    const data = {
-      ...req.body,
-      added_by: req.session.user?.id || null,
-    };
-
-    const result = await Item.create(data);
-    const newItem = await Item.findById(result.insertId);
-    res.status(201).json(newItem);
-  } catch (err) {
-    console.error("Error creating item:", err);
-    res.status(500).json({ error: "Failed to create item" });
-  }
-});
-
-// UPDATE item
-router.put("/inventory/:id", async (req, res) => {
-  try {
-    const existingItem = await Item.findById(req.params.id);
-    if (!existingItem) return res.status(404).json({ error: "Item not found" });
-
-    // Optional validation
-    if (
-      req.body.available &&
-      req.body.available > (req.body.quantity || existingItem.quantity)
-    ) {
-      return res
-        .status(400)
-        .json({ error: "Available quantity cannot exceed total quantity" });
-    }
-
-    await Item.update(req.params.id, req.body);
-    const updatedItem = await Item.findById(req.params.id);
-    res.json(updatedItem);
-  } catch (err) {
-    console.error("Error updating item:", err);
-    res.status(500).json({ error: "Failed to update item" });
-  }
-});
-
-// DELETE item
-router.delete("/inventory/:id", async (req, res) => {
-  try {
-    const existingItem = await Item.findById(req.params.id);
-    if (!existingItem) return res.status(404).json({ error: "Item not found" });
-
-    await Item.delete(req.params.id);
-    res.json({ success: true, message: "Item deleted" });
-  } catch (err) {
-    console.error("Error deleting item:", err);
-    res.status(500).json({ error: "Failed to delete item" });
-  }
-});
 
 // Staff Client Assignments Routes
 router.get("/assignments", async (req, res) => {

@@ -10,6 +10,8 @@ const app = express();
 const runMigrations = require("./src/migrations/index");
 const authRoutes = require("./src/routes/authRoutes");
 const admin = require("./src/routes/admin");
+const inventory = require("./src/routes/inventory");
+
 const staff = require("./src/routes/staff");
 const client = require("./src/routes/client");
 const bookings = require("./src/routes/bookings");
@@ -238,6 +240,9 @@ function requireHrAssistantAuth(req, res, next){
 // API ROUTES
 app.use("/api", authRoutes);
 app.use("/api", apiSessionAuth, admin);
+// Inventory
+app.use("/api", apiSessionAuth, inventory);
+
 app.use("/api", apiSessionAuth, attendance);
 app.use("/api", apiSessionAuth, packages);
 app.use("/api", apiSessionAuth, users);
