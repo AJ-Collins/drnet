@@ -4,34 +4,27 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const Package = require("../models/Package");
 
-async function getPackageName(packageId) {
-  if (!packageId) return "No Plan";
-  const pkg = await Package.findById(packageId);
-  return pkg ? pkg.name : "No Plan";
-}
 
+// GET /api/clients
 router.get("/clients", async (req, res) => {
   try {
     const clients = await User.findAll();
 
-    // Transform the data to match frontend expectations
-    const formattedClients = await Promise.all(
-      clients.map(async (client) => ({
-        id: client.id,
-        name:
-          `${client.first_name || ""} ${client.second_name || ""}`.trim() ||
-          "No Name",
-        email: client.email || "No Email",
-        phone: client.phone || "N/A",
-        idNumber: client.id_number,
-        address: client.address,
-        plan: await getPackageName(client.package_id),
-        status: client.is_active ? "Active" : "Inactive",
-        lastPayment: client.debt || "0.00",
-        paymentStatus: client.paid_subscription ? "Paid" : "Unpaid",
-        ...client,
-      }))
-    );
+    const formattedClients = clients.map((client) => ({
+      id: client.id,
+      name: `${client.first_name || ""} ${client.second_name || ""}`.trim() || "No Name",
+      email: client.email || "No Email",
+      phone: client.phone || "N/A",
+      idNumber: client.id_number,
+      address: client.address,
+      // Now using the joined package name
+      plan: client.subscription_plan || "No Plan", 
+      status: client.is_active ? "Active" : "Inactive",
+      // Keep other metadata
+      paymentStatus: client.subscription_status || "inactive",
+      expiryDate: client.plan_expiry,
+      ...client,
+    }));
 
     res.json(formattedClients);
   } catch (err) {
@@ -40,29 +33,18 @@ router.get("/clients", async (req, res) => {
   }
 });
 
+// POST /api/clients
 router.post("/clients", async (req, res) => {
   try {
-    const {
-      first_name,
-      second_name,
-      email,
-      phone,
-      idNumber,
-      address,
-      password,
-      plan,
-    } = req.body;
+    const { first_name, second_name, email, phone, idNumber, address, password, plan } = req.body;
 
-    // Validate required fields
     if (!first_name || !email || !password) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the user
-    const newUser = await User.create({
+    const result = await User.create({
       first_name,
       second_name,
       email,
@@ -70,21 +52,22 @@ router.post("/clients", async (req, res) => {
       id_number: idNumber,
       address,
       password: hashedPassword,
-      role_id: null, // clients may not have a role
-      package_id: plan ? parseInt(plan, 10) : null,
-      paid_subscription: false,
-      last_payment_date: null,
-      expiry_date: null,
-      debt: 0,
-      router_purchased: false,
-      router_cost: 0,
-      image: null,
-      is_active: true,
+      is_active: true
     });
 
-    res.status(201).json({ message: "Client created", id: newUser.insertId });
+    const newUserId = result.insertId;
+
+    // If a plan was selected, create the subscription entry immediately
+    if (plan) {
+      await db.query(
+        `INSERT INTO user_subscriptions (user_id, package_id, status, start_date) VALUES (?, ?, ?, NOW())`,
+        [newUserId, parseInt(plan, 10), 'active']
+      );
+    }
+
+    res.status(201).json({ message: "Client created and subscribed", id: newUserId });
   } catch (err) {
-    console.error("Error creating client:", err);
+    console.error("Error:", err);
     res.status(500).json({ error: "Failed to create client" });
   }
 });

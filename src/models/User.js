@@ -34,18 +34,13 @@ const User = {
   findAll: async () => {
     const [rows] = await db.query(`
       SELECT 
-        id,
-        first_name,
-        second_name,
-        email,
-        phone,
-        id_number,
-        address,
-        image,
-        is_active,
-        created_at,
-        updated_at
-      FROM users
+        u.*, 
+        p.name AS subscription_plan,
+        s.status AS subscription_status,
+        s.expiry_date AS plan_expiry
+      FROM users u
+      LEFT JOIN user_subscriptions s ON u.id = s.user_id
+      LEFT JOIN packages p ON s.package_id = p.id
     `);
     return rows;
   },

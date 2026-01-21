@@ -87,16 +87,50 @@
         </div>
 
         <!-- Active Subscribers -->
-        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-teal-500 animate-fade-up" style="animation-delay: 0.2s;">
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
-                    <i class="fas fa-users text-xl"></i>
+        <div class="glass-panel stat-card p-5 rounded-2xl border-l-4 border-teal-500 animate-fade-up bg-white shadow-sm" style="animation-delay: 0.2s;">
+            <div class="flex justify-between items-center mb-4">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
+                    <i class="fas fa-users text-lg"></i>
                 </div>
-                <span id="subscriptionStatus" class="text-[10px] font-black px-2 py-1 rounded-full bg-slate-100 text-slate-500">Active</span>
+                <div class="text-right">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Clients</p>
+                    <h2 id="totalClients" class="text-lg font-black text-slate-900 leading-none">0</h2>
+                </div>
             </div>
-            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Active Subscribers</p>
-            <h2 id="activeClients" class="text-2xl font-black text-slate-900 mt-1">0</h2>
-            <p id="newClients" class="text-[10px] font-bold text-teal-600 mt-2">+0 added this week</p>
+
+            <div class="grid grid-cols-2 gap-y-3 gap-x-4">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active</p>
+                    </div>
+                    <p id="activeClients" class="text-sm font-bold text-slate-800 mt-0.5">0</p>
+                </div>
+
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Overdue</p>
+                    </div>
+                    <p id="overdueClients" class="text-sm font-bold text-amber-600 mt-0.5">0</p>
+                </div>
+
+                <div class="flex flex-col pt-2 border-t border-slate-50">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Inactive</p>
+                    </div>
+                    <p id="inactiveClients" class="text-sm font-bold text-slate-500 mt-0.5">0</p>
+                </div>
+
+                <div class="flex flex-col pt-2 border-t border-slate-50">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Expired</p>
+                    </div>
+                    <p id="expiredClients" class="text-sm font-bold text-rose-600 mt-0.5">0</p>
+                </div>
+            </div>
         </div>
 
         <!-- Scheduled Installs -->
@@ -112,19 +146,40 @@
             <p id="nextInstall" class="text-[10px] font-bold text-slate-400 mt-2">Next: <span class="text-slate-700">Loading...</span></p>
         </div>
 
-        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-rose-500 animate-fade-up" style="animation-delay: 0.4s;">
-          <div class="flex justify-between items-start mb-4">
-              <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
-                  <i class="fas fa-boxes text-xl"></i>
-              </div>
-              <span id="inventoryStatusBadge" class="text-[10px] font-black px-2 py-1 rounded-full bg-rose-50 text-rose-600">Stock Alert</span>
-          </div>
-          <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Inventory Value</p>
-          <h2 id="inventoryValue" class="text-2xl font-black text-slate-900 mt-1">KES 0</h2>
-          <p class="text-[10px] font-bold text-slate-400 mt-2">
-              Out of Stock: <span id="outOfStockCount" class="text-rose-600">0</span> items
-          </p>
-      </div>
+        <div class="glass-panel stat-card p-5 rounded-2xl border-l-4 border-rose-500 animate-fade-up bg-white shadow-sm" style="animation-delay: 0.4s;">
+            <div class="flex justify-between items-center mb-4">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
+                    <i class="fas fa-boxes text-lg"></i>
+                </div>
+                <span id="salesTrend" class="text-[10px] font-black px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">+0%</span>                
+            </div>
+
+            <div class="grid grid-cols-2 gap-y-4 gap-x-2">
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Inventory Value</p>
+                    <h2 id="inventoryValue" class="text-base font-black text-slate-900 leading-tight">KES 0</h2>
+                </div>
+
+                <div>
+                    <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Sales Value</p>
+                    <h2 id="inventorySalesValue" class="text-base font-black text-slate-900 leading-tight">KES 0</h2>
+                </div>
+
+                <div class="pt-2 border-t border-slate-50">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">In Stock</p>
+                    <p class="text-xs font-bold text-slate-700 mt-0.5">
+                        <span id="inStockCount">0</span> <span class="text-[10px] font-medium text-slate-400">Items</span>
+                    </p>
+                </div>
+
+                <div class="pt-2 border-t border-slate-50">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Out of Stock</p>
+                    <p class="text-xs font-bold text-rose-600 mt-0.5">
+                        <span id="outOfStockCount">0</span> <span class="text-[10px] font-medium text-slate-400">Items</span>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Charts Section -->
@@ -359,21 +414,9 @@
         
         // Active subscribers
         document.getElementById('activeClients').innerText = fmt(data.financial.active_subscriptions);
-        document.getElementById('newClients').innerText = `+${data.financial.new_clients_week} added this week`;
         
         // Update subscription status badge
         const newMonth = data.financial.new_clients_month;
-        const statusBadge = document.getElementById('subscriptionStatus');
-        if (newMonth > 20) {
-            statusBadge.innerText = 'Growing';
-            statusBadge.className = 'text-[10px] font-black px-2 py-1 rounded-full bg-teal-100 text-teal-700';
-        } else if (newMonth > 10) {
-            statusBadge.innerText = 'Steady';
-            statusBadge.className = 'text-[10px] font-black px-2 py-1 rounded-full bg-blue-100 text-blue-700';
-        } else {
-            statusBadge.innerText = 'Active';
-            statusBadge.className = 'text-[10px] font-black px-2 py-1 rounded-full bg-slate-100 text-slate-500';
-        }
         
         // Pending installs
         document.getElementById('pendingInstalls').innerText = fmt(data.financial.pending_bookings);

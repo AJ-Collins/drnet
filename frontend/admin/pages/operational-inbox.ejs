@@ -102,6 +102,16 @@
 </div>
 
 <script>
+function escapeHTMLAttr(str) {
+    if (!str) return "";
+    return str
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")  
+        .replace(/"/g, "&quot;")
+        .replace(/\n/g, "\\n")  
+        .replace(/\r/g, "");    
+}
+
 function getStatusBadge(msg) {
     if (msg.status === 'processed' || msg.status === 'completed') {
         return `<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase">
@@ -130,6 +140,8 @@ async function fetchCEOMessages() {
                 ? `${msg.message_content.substring(0, 120)}...` 
                 : msg.message_content;
 
+            const safeContent = escapeHTMLAttr(msg.message_content);
+
             return `
             <tr class="group hover:bg-slate-50/50 transition-colors">
                 <td class="px-6 py-5 max-w-md">
@@ -150,7 +162,7 @@ async function fetchCEOMessages() {
                             ${displayContent}
                         </p>
                         ${isLong ? `
-                            <button onclick="toggleMessage(${msg.id}, '${msg.message_content.replace(/'/g, "\\'")}')" 
+                            <button onclick="toggleMessage(${msg.id}, '${safeContent}')" 
                                     class="text-[10px] font-bold text-emerald-600 uppercase mt-1 hover:underline tracking-widest" 
                                     id="btn-${msg.id}">
                                 Read More
@@ -160,7 +172,7 @@ async function fetchCEOMessages() {
                 <td class="px-6 py-5 vertical-align-top">${getStatusBadge(msg)}</td>
                 <td class="px-6 py-5 text-right vertical-align-top">
                     <div class="flex justify-end gap-2">
-                        <button onclick="prepareEdit(${msg.id}, '${msg.message_content.replace(/'/g, "\\'")}', '${msg.priority}')" 
+                        <button onclick="prepareEdit(${msg.id}, '${safeContent}', '${msg.priority}')" 
                                 class="w-8 h-8 rounded-lg border border-slate-100 text-slate-400 hover:text-blue-600 bg-white shadow-sm transition-all">
                             <i class="fas fa-edit text-[12px]"></i>
                         </button>

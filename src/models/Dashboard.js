@@ -58,6 +58,12 @@ const Dashboard = {
         WHERE expiry_date > ?
       `, [nowTimestamp]);
 
+      const [rows] = await db.query(`
+        SELECT COUNT(*) as count
+        FROM users
+      `);
+      const totalUsers = rows[0].count;
+
       // 4. New clients this week
       const [newClientsWeek] = await db.query(`
         SELECT COUNT(*) as count
@@ -174,6 +180,7 @@ const Dashboard = {
         financial: {
           monthly_revenue: currentRev,
           revenue_trend: revenueTrend.toFixed(1),
+          total_users: totalUsers,
           active_subscriptions: activeSubscriptions[0]?.count || 0,
           new_clients_week: newClientsWeek[0]?.count || 0,
           new_clients_month: newClientsMonth[0]?.count || 0,

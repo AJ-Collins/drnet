@@ -88,10 +88,10 @@
             {slug:'service-management', name:'Service Management'},
             { slug:'reports', name:'Generated Reports' },            
             {slug:'support-tickets', name:'Support Tickets'}, {slug:'finance',
-            name:'Finance & Reports'}, {slug:'renewals', name:'Renewals'},
+            name:'Finance'},
             {slug:'website-bookings', name:'Website Bookings'},
             {slug:'communication-team', name:'Team Communication'},
-            {slug:'equipments', name:'Equipments & Tools'}, {slug:'profile',
+            {slug:'inventory', name:'Inventory'}, {slug:'profile',
             name:'Profile'} ]; %> <% pages.forEach(p => { %>
             <a
               href="/admin/<%= p.slug %>"
@@ -109,10 +109,9 @@
                   p.slug.includes('reminders') ? 'fa-bell':
                   p.slug.includes('ticket') ? 'fa-ticket-alt' :
                   p.slug.includes('finance') ? 'fa-dollar-sign' :
-                  p.slug.includes('renewals') ? 'fa-sync-alt' :
                   p.slug.includes('booking') ? 'fa-globe' :
                   p.slug.includes('communication') ? 'fa-comments' :
-                  p.slug.includes('equipments') ? 'fa-tools' :
+                  p.slug.includes('inventory') ? 'fa-tools' :
                   p.slug === 'my-packages' ? 'fa-box' :  // Added this line
                   'fa-cog' 
                 %> w-6 text-lg"

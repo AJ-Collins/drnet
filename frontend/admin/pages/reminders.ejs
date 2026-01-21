@@ -27,6 +27,7 @@
         .badge-active { background: #f0fdfa; color: #0d9488; border: 1px solid #ccfbf1; }
         .badge-overdue { background: #fff1f2; color: #be123c; border: 1px solid #ffe4e6; }
         .badge-inactive { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+        .badge-expired { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
         .drawer-overlay { background: rgba(15, 23, 42, 0.093); backdrop-filter: blur(0px); }
         .drawer-panel {
@@ -94,7 +95,8 @@
             <select id="statusFilter" class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
-                <option value="overdue">Overdue</option>
+                <option value="overdue">Overdue (Warning)</option>
+                <option value="expired">Expired (Disconnected)</option>
             </select>
             
             <button id="btnBulkAction" onclick="Actions.openBulkDrawer()" class="hidden px-6 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 font-bold text-xs flex items-center gap-2">
@@ -331,10 +333,12 @@
                 let isWarningPeriod = false;
 
                 if (now > expiryDate) {
-                    displayStatus = 'overdue';
+                    displayStatus = 'expired';
                 } else if (now > warningDate) {
                     displayStatus = 'overdue'; 
                     isWarningPeriod = true;
+                } else {
+                    displayStatus = 'active';
                 }
 
                 return {
@@ -437,18 +441,26 @@
             
             const isSelected = State.selectedIds.has(client.id);
             const dateStr = client.expiry.toLocaleDateString('en-GB');
-            const badgeClass = client.displayStatus === 'active' ? 'badge-active' : 'badge-overdue';
-            const iconClass = client.displayStatus === 'active' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            let badgeClass = 'badge-active';
+            let iconClass = 'fa-check-circle';
+
+            if (client.displayStatus === 'expired') {
+                badgeClass = 'badge-expired bg-rose-50 text-rose-700 border border-rose-100'; // Added inline styles for safety
+                iconClass = 'fa-times-circle';
+            } else if (client.displayStatus === 'overdue') {
+                badgeClass = 'badge-overdue';
+                iconClass = 'fa-exclamation-triangle';
+            }
 
             const now = new Date();
             let countdownText = "";
             let countdownClass = "text-slate-500";
-            let subLabel = "Time Remaining";
+            let subLabel = "";
 
             if (now > client.expiry) {
-                countdownText = "EXPIRED";
-                countdownClass = "text-rose-600 font-black";
-                subLabel = "Service Cut-off";
+                countdownText = "0 days left";
+                countdownClass = "text-slate-400 font-medium";
+                subLabel = "Service Disconnected";
             } else if (now > client.warningDate) {
                 countdownText = getCountdown(client.expiry); 
                 countdownClass = "text-rose-500 font-bold animate-pulse";
@@ -462,9 +474,7 @@
             }
 
             const count = client.sms_24h_count || 0;
-            let countClass = "text-slate-400"; 
-            if(count > 0) countClass = "text-teal-600 font-bold";
-            if(count > 3) countClass = "text-rose-500 font-black animate-pulse";
+            let countClass = count > 3 ? "text-rose-500 font-black animate-pulse" : (count > 0 ? "text-teal-600 font-bold" : "text-slate-400");
 
             tr.innerHTML = `
                 <td>
@@ -514,7 +524,6 @@
             Els.tbody.appendChild(tr);
         });
         
-        // Update "Select All" checkbox based on CURRENT PAGE only
         const allCurrentPageSelected = State.displayedData.length > 0 && 
                                         State.displayedData.every(c => State.selectedIds.has(c.id));
         Els.selectAll.checked = allCurrentPageSelected;
