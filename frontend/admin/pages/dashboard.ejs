@@ -414,6 +414,10 @@
         
         // Active subscribers
         document.getElementById('activeClients').innerText = fmt(data.financial.active_subscriptions);
+        document.getElementById('totalClients').innerText = fmt(data.financial.total_users);
+        document.getElementById('overdueClients').innerText = fmt(data.financial.overdue_users);
+        document.getElementById('inactiveClients').innerText = fmt(data.financial.inactive_users);
+        document.getElementById('expiredClients').innerText = fmt(data.financial.expired_users);
         
         // Update subscription status badge
         const newMonth = data.financial.new_clients_month;
@@ -435,10 +439,6 @@
         } else {
             nextInstallEl.innerHTML = 'Next: <span class="text-slate-700">No upcoming</span>';
         }
-
-        if (data.inventory) {
-            renderInventoryStatus(data.inventory);
-        }
         
         
         // Render charts
@@ -451,49 +451,6 @@
         // Hide loading states
         hideLoadingState();
     }
-
-    function renderInventoryStatus(inventory) {
-      document.getElementById('inventoryValue').innerText = `KES ${Number(inventory.inventory_value).toLocaleString()}`;
-      document.getElementById('outOfStockCount').innerText = inventory.out_of_stock;
-      document.getElementById('lowStockCount').innerText = inventory.low_stock;
-
-      const badge = document.getElementById('inventoryStatusBadge');
-      if (inventory.out_of_stock > 0) {
-          badge.innerText = "Critical"; badge.className = "status-badge status-overdue";
-      } else if (inventory.low_stock > 0) {
-          badge.innerText = "Restock"; badge.className = "status-badge status-pending";
-      } else {
-          badge.innerText = "Healthy"; badge.className = "status-badge status-paid";
-      }
-
-      const container = document.getElementById('inventoryCategoryGrid');
-      if (!inventory.by_category || inventory.by_category.length === 0) {
-          container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs font-bold">Empty Warehouse</p>';
-          return;
-      }
-
-      // Capacity for the bars
-      const target = 50; 
-
-      container.innerHTML = inventory.by_category.map(cat => {
-          const percentage = Math.min((cat.total_quantity / target) * 100, 100);
-          let barColor = 'bg-teal-500'; 
-          if (percentage < 30) barColor = 'bg-rose-500';
-          else if (percentage < 60) barColor = 'bg-amber-500';
-
-          return `
-              <div class="space-y-1.5">
-                  <div class="flex justify-between items-end">
-                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${cat.category}</span>
-                      <span class="text-xs font-black text-slate-800">${cat.total_quantity} <span class="text-slate-400 font-bold">qty</span></span>
-                  </div>
-                  <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div class="h-full ${barColor} rounded-full transition-all duration-700" style="width: ${percentage}%"></div>
-                  </div>
-              </div>
-          `;
-      }).join('');
-  }
 
     function renderRecentInvoices(invoices) {
         const tbody = document.getElementById('invoicesTable');
@@ -534,49 +491,6 @@
                     <td><span class="status-badge ${statusClass}">${inv.status || 'pending'}</span></td>
                     <td class="text-right pr-2 text-xs text-slate-400">${inv.payment_date || 'N/A'}</td>
                 </tr>
-            `;
-        }).join('');
-    }
-
-    function renderInventoryStatus(inventory) {
-        document.getElementById('inventoryValue').innerText = `KES ${Number(inventory.inventory_value).toLocaleString()}`;
-        document.getElementById('outOfStockCount').innerText = inventory.out_of_stock;
-        document.getElementById('lowStockCount').innerText = inventory.low_stock;
-
-        const badge = document.getElementById('inventoryStatusBadge');
-        if (inventory.out_of_stock > 0) {
-            badge.innerText = "Critical"; badge.className = "status-badge status-overdue";
-        } else if (inventory.low_stock > 0) {
-            badge.innerText = "Restock"; badge.className = "status-badge status-pending";
-        } else {
-            badge.innerText = "Healthy"; badge.className = "status-badge status-paid";
-        }
-
-        const container = document.getElementById('inventoryCategoryGrid');
-        if (!inventory.by_category || inventory.by_category.length === 0) {
-            container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs font-bold">Empty Stock</p>';
-            return;
-        }
-
-        // Capacity for the bars
-        const target = 50; 
-
-        container.innerHTML = inventory.by_category.map(cat => {
-            const percentage = Math.min((cat.total_quantity / target) * 100, 100);
-            let barColor = 'bg-teal-500'; 
-            if (percentage < 30) barColor = 'bg-rose-500';
-            else if (percentage < 60) barColor = 'bg-amber-500';
-
-            return `
-                <div class="space-y-1.5">
-                    <div class="flex justify-between items-end">
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${cat.category}</span>
-                        <span class="text-xs font-black text-slate-800">${cat.total_quantity} <span class="text-slate-400 font-bold">qty</span></span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="h-full ${barColor} rounded-full transition-all duration-700" style="width: ${percentage}%"></div>
-                    </div>
-                </div>
             `;
         }).join('');
     }
@@ -759,7 +673,7 @@
     function showLoadingState() {
         // Add loading indicators to all sections
         const elements = [
-            'monthlyRevenue', 'activeClients', 'pendingInstalls'
+            'monthlyRevenue', 'activeClients', 'totalClients', 'overdueClients', 'inactiveClients', 'expiredClients', 'inventoryValue', 'inventorySalesValue', 'inventorySalesValue', 'inStockCount', 'outOfStockCount', 'pendingInstalls'
         ];
         
         elements.forEach(id => {

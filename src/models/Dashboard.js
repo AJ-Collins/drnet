@@ -64,6 +64,31 @@ const Dashboard = {
       `);
       const totalUsers = rows[0].count;
 
+      const [inactiveRows] = await db.query(`
+        SELECT COUNT(u.id) as count
+        FROM users u
+        LEFT JOIN user_subscriptions s ON u.id = s.user_id
+        WHERE s.id IS NULL
+      `);
+      const inactiveUsers = inactiveRows[0].count;
+
+      const [overdueRows] = await db.query(`
+        SELECT COUNT(DISTINCT user_id) AS count
+        FROM user_subscriptions
+        WHERE TIMESTAMPDIFF(DAY, ?, expiry_date) <= 5
+          AND expiry_date > ?
+      `, [nowTimestamp, nowTimestamp]);
+
+      const overdueUsers = overdueRows[0].count;
+
+      const [expiredRows] = await db.query(`
+          SELECT COUNT(DISTINCT user_id) as count
+          FROM user_subscriptions
+          WHERE expiry_date <= ?
+      `, [nowTimestamp]);
+
+      const expiredClients = expiredRows[0].count;
+
       // 4. New clients this week
       const [newClientsWeek] = await db.query(`
         SELECT COUNT(*) as count
@@ -182,6 +207,9 @@ const Dashboard = {
           revenue_trend: revenueTrend.toFixed(1),
           total_users: totalUsers,
           active_subscriptions: activeSubscriptions[0]?.count || 0,
+          inactive_users: inactiveUsers,
+          overdue_users: overdueUsers,
+          expired_users: expiredClients,
           new_clients_week: newClientsWeek[0]?.count || 0,
           new_clients_month: newClientsMonth[0]?.count || 0,
           pending_bookings: pendingBookings[0]?.count || 0,
