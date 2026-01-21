@@ -21,6 +21,7 @@ const schedules = require("./src/routes/schedules");
 const SupportTickets = require("./src/routes/supportTickets");
 const attendance = require("./src/routes/attendance");
 const packages = require("./src/routes/packages");
+const sitePackages = require("./src/routes/sitePackages");
 const users = require("./src/routes/users");
 const subscription = require("./src/routes/subscription");
 const invoices = require("./src/routes/invoices");
@@ -239,7 +240,10 @@ function requireHrAssistantAuth(req, res, next){
 
 // API ROUTES
 app.use("/api", authRoutes);
+app.use("/api/site/", sitePackages);
+app.use("/api/client", bookings);
 app.use("/api", apiSessionAuth, admin);
+
 // Inventory
 app.use("/api", apiSessionAuth, inventory);
 
@@ -260,7 +264,6 @@ app.use("/api", apiSessionAuth, expenses);
 app.use("/api", apiSessionAuth, payslips);
 app.use("/api", apiSessionAuth, profile);
 app.use("/api", apiSessionAuth, userProfile);
-app.use("/api/client", bookings);
 app.use("/api", apiSessionAuth, teamChat);
 app.use("/api", apiSessionAuth, announcement);
 app.use("/api", apiSessionAuth, notificationsRoutes);

@@ -133,17 +133,39 @@
             </div>
         </div>
 
-        <!-- Scheduled Installs -->
-        <div class="glass-panel stat-card p-6 rounded-2xl border-l-4 border-amber-500 animate-fade-up" style="animation-delay: 0.3s;">
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-                    <i class="fas fa-truck text-xl"></i>
+        <!-- Schedules -->
+        <div class="glass-panel stat-card p-5 rounded-2xl border-l-4 border-amber-500 animate-fade-up bg-white shadow-sm" style="animation-delay: 0.3s;">
+            <div class="flex justify-between items-center mb-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                    <i class="fas fa-truck text-lg"></i>
                 </div>
-                <span id="installStatus" class="text-[10px] font-black px-2 py-1 rounded-full bg-amber-50 text-amber-600">Pending</span>
+                <div class="text-right">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Bookings</p>
+                    <h2 id="totalBookings" class="text-lg font-black text-slate-900 leading-none">0</h2>
+                </div>
             </div>
-            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Scheduled Installs</p>
-            <h2 id="pendingInstalls" class="text-2xl font-black text-slate-900 mt-1">0</h2>
-            <p id="nextInstall" class="text-[10px] font-bold text-slate-400 mt-2">Next: <span class="text-slate-700">Loading...</span></p>
+
+            <div class="grid grid-cols-2 gap-y-3 gap-x-4">
+                <div class="flex flex-col">
+                    <p class="text-[9px] font-black text-amber-600 uppercase tracking-widest">Pending Bookings</p>
+                    <h2 id="pendingBookings" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
+                </div>
+
+                <div class="flex flex-col">
+                    <p class="text-[9px] font-black text-rose-500 uppercase tracking-widest">Pending Tickets</p>
+                    <h2 id="pendingTickets" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
+                </div>
+
+                <div class="flex flex-col pt-2 border-t border-slate-50">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Received Reports</p>
+                    <h2 id="receivedReports" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
+                </div>
+
+                <div class="flex flex-col pt-2 border-t border-slate-50">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pending Assignments</p>
+                    <h2 id="pendingTasks" class="text-sm font-bold text-emerald-600 mt-0.5">0</h2>
+                </div>
+            </div>
         </div>
 
         <div class="glass-panel stat-card p-5 rounded-2xl border-l-4 border-rose-500 animate-fade-up bg-white shadow-sm" style="animation-delay: 0.4s;">
@@ -423,22 +445,7 @@
         const newMonth = data.financial.new_clients_month;
         
         // Pending installs
-        document.getElementById('pendingInstalls').innerText = fmt(data.financial.pending_bookings);
-        
-        // Update next installation
-        const nextInstallEl = document.getElementById('nextInstall');
-        if (data.recent.installations && data.recent.installations.length > 0) {
-            const nextInstall = data.recent.installations[0];
-            const date = new Date(nextInstall.installation_date);
-            const formattedDate = date.toLocaleDateString('en-US', { 
-                weekday: 'short', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-            nextInstallEl.innerHTML = `Next: <span class="text-slate-700">${formattedDate}</span>`;
-        } else {
-            nextInstallEl.innerHTML = 'Next: <span class="text-slate-700">No upcoming</span>';
-        }
+        document.getElementById('pendingBookings').innerText = fmt(data.financial.pending_bookings);
         
         
         // Render charts
@@ -671,9 +678,9 @@
     }
 
     function showLoadingState() {
-        // Add loading indicators to all sections
+        // Add loading indicator
         const elements = [
-            'monthlyRevenue', 'activeClients', 'totalClients', 'overdueClients', 'inactiveClients', 'expiredClients', 'inventoryValue', 'inventorySalesValue', 'inventorySalesValue', 'inStockCount', 'outOfStockCount', 'pendingInstalls'
+            'monthlyRevenue', 'activeClients', 'totalClients', 'overdueClients', 'inactiveClients', 'expiredClients', 'inventoryValue', 'inventorySalesValue', 'inventorySalesValue', 'inStockCount', 'outOfStockCount', 'pendingBookings', 'totalBookings', 'pendingTickets', 'receivedReports', 'pendingTasks'
         ];
         
         elements.forEach(id => {

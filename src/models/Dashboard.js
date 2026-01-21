@@ -89,7 +89,6 @@ const Dashboard = {
 
       const expiredClients = expiredRows[0].count;
 
-      // 4. New clients this week
       const [newClientsWeek] = await db.query(`
         SELECT COUNT(*) as count
         FROM users 
@@ -97,7 +96,6 @@ const Dashboard = {
           AND is_active = TRUE
       `, [weekStart, weekEnd]);
 
-      // 5. New clients this month
       const [newClientsMonth] = await db.query(`
         SELECT COUNT(*) as count
         FROM users 
@@ -105,7 +103,6 @@ const Dashboard = {
           AND is_active = TRUE
       `, [monthStart, monthEnd]);
 
-      // 6. Pending bookings (installations)
       const [pendingBookings] = await db.query(`
         SELECT COUNT(*) as count
         FROM bookings 
@@ -113,7 +110,6 @@ const Dashboard = {
           AND installation_date >= ?
       `, [todayStart]);
 
-      // 7. Pending support tickets
       const [pendingTickets] = await db.query(`
         SELECT COUNT(*) as count
         FROM support_tickets 
