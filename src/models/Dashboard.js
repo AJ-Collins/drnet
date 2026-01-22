@@ -107,8 +107,7 @@ const Dashboard = {
         SELECT COUNT(*) as count
         FROM bookings 
         WHERE status = 'pending'
-          AND installation_date >= ?
-      `, [todayStart]);
+      `);
 
       const [pendingTickets] = await db.query(`
         SELECT COUNT(*) as count
@@ -177,13 +176,10 @@ const Dashboard = {
           b.id,
           b.name as client_name,
           b.phone,
-          b.installation_date,
-          b.package as package_name,
+          b.packageId as package_name,
           b.location
         FROM bookings b
         WHERE b.status = 'pending'
-          AND b.installation_date BETWEEN ? AND ?
-        ORDER BY b.installation_date ASC
         LIMIT 5
       `, [todayStart, threeDaysOut]);
 
