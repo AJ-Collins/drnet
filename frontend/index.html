@@ -1339,7 +1339,7 @@
                           <div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center mr-3 text-teal-500">
                               <i class="fas fa-bolt text-xs"></i>
                           </div>
-                          <span class="text-sm font-bold">Speed: <span class="text-teal-700">${pkg.speed}</span></span>
+                          <span class="text-sm font-bold">Speed: <span class="text-teal-700">${pkg.speed} Mbps</span></span>
                       </div>
                       <div class="flex items-center text-slate-700 p-2">
                           <div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center mr-3 text-teal-500">
@@ -1367,7 +1367,7 @@
               if (selectElement) {
                   const option = document.createElement('option');
                   option.value = pkg.id;
-                  option.textContent = `${pkg.name} - ${pkg.speed}`;
+                  option.textContent = `${pkg.name} - ${pkg.speed} Mbps`;
                   selectElement.appendChild(option);
               }
           });
