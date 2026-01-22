@@ -22,15 +22,44 @@
             background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
         }
 
-        #video-bg {
+        #bg-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            object-fit: cover;
             z-index: -1;
+        }
+
+        #bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             filter: brightness(0.6);
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        #video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6);
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        #video-bg.loaded {
+            opacity: 1;
+        }
+
+        #bg-image.hidden {
+            opacity: 0;
         }
 
         .glass-card {
@@ -221,9 +250,12 @@
 </head>
 
 <body class="relative">
-    <video id="video-bg" autoplay muted loop playsinline>
-        <source src="/static/images/videos/11960445_3840_2160_24fps.mp4" type="video/mp4" />
-    </video>
+    <div id="bg-container">
+        <img id="bg-image" src="/static/images/bg.png" alt="Background">
+        <video id="video-bg" autoplay muted loop playsinline>
+            <source src="/static/images/videos/11960445_3840_2160_24fps.mp4" type="video/mp4" />
+        </video>
+    </div>
     
     <!-- Sticky Header -->
     <header class="sticky top-0 z-50">
@@ -1222,16 +1254,30 @@
     </div>
 
     <script>
-        // Initialize AOS and Lucide
+      const video = document.getElementById('video-bg');
+      const bgImage = document.getElementById('bg-image');
+      
+      video.addEventListener('canplaythrough', function() {
+          video.classList.add('loaded');
+          bgImage.classList.add('hidden');
+      }, { once: true });
+      
+      video.addEventListener('loadeddata', function() {
+          setTimeout(() => {
+              if (!video.classList.contains('loaded')) {
+                  video.classList.add('loaded');
+                  bgImage.classList.add('hidden');
+              }
+          }, 500);
+      }, { once: true });
+
         AOS.init({ duration: 800, once: true, offset: 50 });
         lucide.createIcons();
         
-        // Mobile menu toggle
         document.getElementById('menu-btn').addEventListener('click', () => {
             document.getElementById('mobile-menu').classList.toggle('hidden');
         });
         
-        // Fetch and render packages
         async function fetchPackages() {
             try {
                 const response = await fetch('/api/site/packages');
