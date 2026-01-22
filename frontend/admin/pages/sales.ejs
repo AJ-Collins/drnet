@@ -340,7 +340,6 @@
         date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
         $("soldDate").value = date.toISOString().slice(0,16);
 
-        $("cancelEditBtn").classList.remove("hidden");
         calcTotal();
         
         // Scroll to form on mobile
@@ -352,7 +351,6 @@
         $("saleId").value = "";
         $("selectedItemId").value = "";
         $("formTitle").innerText = "Record Sale";
-        $("cancelEditBtn").classList.add("hidden");
         $("displayTotal").innerText = "0.00";
         
         // Reset date
