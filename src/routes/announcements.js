@@ -3,6 +3,9 @@ const router = express.Router();
 const Announcement = require("../models/Announcement");
 const db = require("../config/db");
 const notificationService = require("../services/notificationService");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // GET all active announcements (everyone)
 router.get("/team/announcements", async (req, res) => {

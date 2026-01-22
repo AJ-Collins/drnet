@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Notification = require("../models/Notification");
 const notificationService = require("../services/notificationService");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 /**
  * GET /api/notifications

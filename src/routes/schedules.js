@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const StaffSchedule = require("../models/StaffSchedule");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // GET all schedules for logged-in staff
 router.get("/schedules", async (req, res) => {

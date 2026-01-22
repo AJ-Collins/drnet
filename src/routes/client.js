@@ -3,6 +3,9 @@ const router = express.Router();
 const dayjs = require("dayjs");
 const Package = require("../models/Package");
 const UserSubscription = require("../models/UserSubscription");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // Get current subscription
 router.get("/subscription/current", async (req, res) => {

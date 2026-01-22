@@ -3,6 +3,9 @@ const db = require("../config/db");
 const path = require("path");
 const router = express.Router();
 const Package = require("../models/Package");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 //Admin manage packages routes
 // GET packages

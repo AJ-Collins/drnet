@@ -3,6 +3,9 @@ const db = require("../config/db");
 const path = require("path");
 const router = express.Router();
 const StaffAttendance = require("../models/StaffAttendance");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // Admin Attendance Routes
 //Get all attendance records

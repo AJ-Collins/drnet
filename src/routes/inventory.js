@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Item = require("../models/Item");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // GET all records
 router.get("/inventory", async (req, res) => {

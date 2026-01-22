@@ -9,6 +9,9 @@ const Payment = require("../models/Payment");
 const Renewals = require("../models/Renewal");
 const StaffSalary = require("../models/StaffSalary");
 const db = require("../config/db");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 function formatDateForMySQL(date) {
   const d = date || new Date();

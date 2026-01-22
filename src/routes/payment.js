@@ -8,6 +8,9 @@ const path = require("path");
 const fs = require("fs");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 const execFileAsync = promisify(execFile);
 

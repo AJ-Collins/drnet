@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const TeamMessage = require("../models/TeamMessage");
 const db = require("../config/db");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // GET all team messages (latest first)
 router.get("/team/messages", async (req, res) => {

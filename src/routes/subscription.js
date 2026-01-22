@@ -8,6 +8,9 @@ const User = require("../models/User");
 const Renewals = require("../models/Renewal");
 const Payment = require("../models/Payment");
 const notificationService = require("../services/notificationService");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // Renew subscription
 router.post("/subscribe/client/renew", async (req, res) => {

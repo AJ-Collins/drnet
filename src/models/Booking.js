@@ -1,10 +1,21 @@
 const db = require("../config/db");
 
 class Booking {
-    // Fetch all bookings with package details
+    // CREATE a new booking
+    static async create(data) {
+        const { name, phone, email, location, exact_location, packageId, extra_notes } = data;
+        const [result] = await db.query(
+            `INSERT INTO bookings (name, phone, email, location, exact_location, packageId, extra_notes) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [name, phone, email, location, exact_location, packageId, extra_notes]
+        );
+        return result.insertId;
+    }
+
+    // READ all bookings
     static async findAll() {
         const [rows] = await db.query(`
-            SELECT b.*, p.name as package_name 
+            SELECT b.*, p.name as package_name, p.price as package_price
             FROM bookings b
             LEFT JOIN packages p ON b.packageId = p.id
             ORDER BY b.created_at DESC
@@ -12,7 +23,19 @@ class Booking {
         return rows;
     }
 
-    // Update only the status (Used by the inline dropdown)
+    // Find specific booking by ID
+    static async findById(id) {
+        const [rows] = await db.query(
+            `SELECT b.*, p.name as package_name 
+             FROM bookings b
+             LEFT JOIN packages p ON b.packageId = p.id
+             WHERE b.id = ?`, 
+            [id]
+        );
+        return rows[0];
+    }
+
+    // Update Status
     static async updateStatus(id, status) {
         const [result] = await db.query(
             "UPDATE bookings SET status = ? WHERE id = ?",
@@ -21,16 +44,10 @@ class Booking {
         return result;
     }
 
-    // Delete a booking
+    // Remove a booking
     static async delete(id) {
         const [result] = await db.query("DELETE FROM bookings WHERE id = ?", [id]);
         return result;
-    }
-
-    // Find specific booking (needed for SMS dispatch context)
-    static async findById(id) {
-        const [rows] = await db.query("SELECT * FROM bookings WHERE id = ?", [id]);
-        return rows[0];
     }
 }
 

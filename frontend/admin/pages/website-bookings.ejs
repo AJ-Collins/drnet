@@ -52,7 +52,7 @@
         .drawer-panel.active { transform: translateX(0); }
         .drawer-overlay { 
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.3); 
-            backdrop-filter: blur(4px); z-index: 90; display: none; 
+            backdrop-filter: blur(0px); z-index: 90; display: none; 
         }
         .drawer-overlay.active { display: block; }
 
@@ -127,8 +127,50 @@
             padding: 0.5rem 0.75rem; background: white; border: 1px solid #e2e8f0;
             border-radius: 8px; font-size: 0.75rem; font-weight: 600;
         }
+
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .note-cell {
+            cursor: pointer;
+            position: relative;
+            max-width: 200px;
+        }
+
+        .note-cell.expanded {
+            max-width: none;
+        }
+
+        .note-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .note-text.expanded {
+            display: block;
+            -webkit-line-clamp: unset;
+            white-space: pre-wrap;
+        }
+
+        .expand-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(to right, transparent, #f8fafc 50%);
+            padding-left: 2rem;
+            font-weight: 800;
+            color: #0d9488;
+        }
+
+        .note-cell.expanded .expand-indicator {
+            display: none;
+        }
 </style>
 <div class="max-w-full mx-auto flex flex-col min-h-screen">
+  <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
         <div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tight">Installation <span class="text-teal-600">Hub.</span></h1>
@@ -259,24 +301,24 @@ let currentClient = null;
 
 // API Calls
 const API = {
-    fetchBookings: () => fetch('/api/client/bookings').then(r => r.json()),
-    updateStatus: (id, status) => fetch(`/api/client/bookings/${id}/status`, {
+    fetchBookings: () => fetch('/api/bookings').then(r => r.json()),
+    updateStatus: (id, status) => fetch(`/api/bookings/${id}/status`, {
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ status })
     }),
-    deleteBooking: (id) => fetch(`/api/client/bookings/${id}`, { method: 'DELETE' }),
+    deleteBooking: (id) => fetch(`/api/bookings/${id}`, { method: 'DELETE' }),
     getBalance: () => fetch('/api/hr/dispatch/sms/balance').then(r => r.json()),
-    sendSMS: (recipients, message) => fetch('/api/hr/dispatch/sms/send', {
+    sendSMS: (phone, message) => fetch('/api/hr/dispatch/sms', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ recipients, message })
+        body: JSON.stringify({ phone, message })
     }).then(r => r.json())
 };
 
 // Templates
 const getDefaultMessage = (client) => {
-    return `Dear ${client.name}, your installation for ${client.package} at ${client.exact_location} has been confirmed. Our technicians will reach out shortly. Dr.Net Technology Labs - 0111357066`;
+    return `Dear ${client.name}, your installation for ${client.package_name} at ${client.exact_location} has been confirmed. Our technicians will reach out shortly. Dr.Net Technology Labs - 0111357066`;
 };
 
 // Initialize
@@ -292,7 +334,7 @@ async function refreshData() {
         renderTable();
     } catch (e) {
         console.error("Fetch failed:", e);
-        Swal.fire('Error', 'Failed to load bookings', 'error');
+        showToast('Failed to load bookings', 'error');
     }
 }
 
@@ -336,14 +378,21 @@ function renderTable() {
                 <div class="text-[10px] font-black text-teal-600 uppercase tracking-widest mt-0.5">${b.phone}</div>
             </td>
             <td class="p-6">
-                <div class="text-xs font-black text-slate-800 uppercase tracking-tighter">${b.package}</div>
+                <div class="text-xs font-black text-slate-800 uppercase tracking-tighter">${b.package_name}</div>
                 <div class="text-xs text-slate-400 font-bold">${b.location} • <span class="italic font-medium">${b.exact_location}</span></div>
             </td>
             <td class="p-6">
-                <div class="text-xs text-slate-500 italic max-w-[200px] truncate">${b.extra_notes || 'No notes'}</div>
+                ${b.extra_notes ? `
+                    <div class="note-cell" onclick="toggleNote(event, ${b.id})">
+                        <div class="note-text text-xs text-slate-700" id="note-${b.id}">
+                            ${b.extra_notes}
+                        </div>
+                        ${b.extra_notes.length > 60 ? '<span class="expand-indicator text-[10px]">... more</span>' : ''}
+                    </div>
+                ` : '<div class="text-xs text-slate-400 italic">No notes</div>'}
             </td>
             <td class="p-6">
-                <select onchange="changeStatus(${b.id}, this.value)" class="inline-status-select st-${b.status}">
+                <select onchange="changeStatus(${b.id}, this.value)" class="inline-status-select st-${b.status} w-36">
                     <option value="pending" ${b.status === 'pending' ? 'selected' : ''}>Pending</option>
                     <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
                     <option value="installed" ${b.status === 'installed' ? 'selected' : ''}>Installed</option>
@@ -354,7 +403,7 @@ function renderTable() {
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="openSMS(${b.id})" class="flex items-center gap-2 px-4 h-10 rounded-xl text-teal-500 hover:bg-teal-300 hover:text-teal-600 transition-all duration-200 ease-in-out shadow-sm">
                       <i class="fas fa-comment-dots"></i>
-                      <span class="text-sm font-medium">Conduct</span>
+                      <span class="text-sm font-medium">Contact</span>
                     </button>
                     <button onclick="confirmDelete(${b.id})" class="w-10 h-10 rounded-xl text-rose-500 flex items-center justify-center hover:bg-rose-300 hover:text-rose-600 transition-all">
                         <i class="fas fa-trash-alt"></i>
@@ -372,35 +421,30 @@ async function changeStatus(id, newStatus) {
             const b = allBookings.find(x => x.id === id);
             b.status = newStatus;
             renderTable();
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Status Updated', showConfirmButton: false, timer: 1500 });
+            showToast('Status updated successfully', 'success');
         }
     } catch (e) {
-        Swal.fire('Error', 'Failed to update status', 'error');
+        showToast('Failed to update status', 'error');
     }
 }
 
 function confirmDelete(id) {
-    Swal.fire({ 
-        title: 'Remove Booking?', 
-        text: 'This action cannot be undone',
-        icon: 'warning', 
-        showCancelButton: true, 
-        confirmButtonColor: '#e11d48',
-        confirmButtonText: 'Yes, delete it'
-    }).then(async (result) => {
-        if(result.isConfirmed) {
+    showConfirm(
+        'Remove Booking?',
+        'This action cannot be undone',
+        async () => {
             try {
                 await API.deleteBooking(id);
                 allBookings = allBookings.filter(x => x.id !== id);
                 selectedIds.delete(id);
                 renderTable();
                 updateBulkUI();
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Booking Deleted', showConfirmButton: false, timer: 1500 });
+                showToast('Booking deleted successfully', 'success');
             } catch (e) {
-                Swal.fire('Error', 'Failed to delete booking', 'error');
+                showToast('Failed to delete booking', 'error');
             }
         }
-    });
+    );
 }
 
 function openSMS(id) {
@@ -420,21 +464,21 @@ function openSMS(id) {
 async function sendSingleSMS() {
     const message = document.getElementById('singleSmsBody').value.trim();
     if (!message) {
-        Swal.fire('Error', 'Please enter a message', 'warning');
+        showToast('Please enter a message', 'error');
         return;
     }
 
     try {
         const result = await API.sendSMS([currentClient.phone], message);
         if (result.success) {
-            Swal.fire('Success', 'SMS sent successfully!', 'success');
+            showToast('SMS sent successfully!', 'success');
             closeAllDrawers();
             await loadBalance();
         } else {
-            Swal.fire('Error', result.error || 'Failed to send SMS', 'error');
+          showToast(result.error || 'Failed to send SMS', 'error');
         }
     } catch (e) {
-        Swal.fire('Error', 'Failed to send SMS', 'error');
+      showToast('Failed to send SMS', 'error');
     }
 }
 
@@ -457,27 +501,36 @@ function openBulkDrawer() {
 async function sendBulkSMS() {
     const message = document.getElementById('bulkSmsBody').value.trim();
     if (!message) {
-        Swal.fire('Error', 'Please enter a message', 'warning');
+        showToast('Please enter a message', 'error');
         return;
     }
 
     const selected = allBookings.filter(b => selectedIds.has(b.id));
-    const phones = selected.map(b => b.phone);
+    
+    const messages = selected.map(b => ({
+        phone: b.phone,
+        message: message
+    }));
 
     try {
-        const result = await API.sendSMS(phones, message);
+        const result = await fetch('/api/hr/dispatch/sms/bulk', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ messages })
+        }).then(r => r.json());
+        
         if (result.success) {
-            Swal.fire('Success', `SMS sent to ${phones.length} recipients!`, 'success');
+            showToast(`SMS sent to ${messages.length} recipients!`, 'success');
             closeAllDrawers();
             selectedIds.clear();
             renderTable();
             updateBulkUI();
             await loadBalance();
         } else {
-            Swal.fire('Error', result.error || 'Failed to send SMS', 'error');
+            showToast(result.error || 'Failed to send SMS', 'error');
         }
     } catch (e) {
-        Swal.fire('Error', 'Failed to send SMS', 'error');
+        showToast('Failed to send SMS', 'error');
     }
 }
 
@@ -514,5 +567,64 @@ function setupEventListeners() {
         renderTable();
         updateBulkUI();
     });
+}
+
+function toggleNote(event, bookingId) {
+    event.stopPropagation();
+    const noteCell = event.currentTarget;
+    const noteText = document.getElementById(`note-${bookingId}`);
+    
+    noteCell.classList.toggle('expanded');
+    noteText.classList.toggle('expanded');
+}
+
+function showToast(msg, type = 'error') {
+      const toastContainer = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-slate-900';
+      const title = type === 'error' ? 'Error' : 'Success';
+      
+      toast.className = `${bgColor} text-white p-4 rounded-2xl shadow-2xl min-w-[280px] animate-fade-in flex flex-col`;
+      toast.innerHTML = `
+          <span class="text-[10px] font-black uppercase tracking-widest opacity-70">${title}</span>
+          <span class="text-sm font-bold">${msg}</span>
+      `;
+      
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 500);
+      }, 4000);
+  }
+
+  function showConfirm(title, text, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[200] flex items-center justify-center';
+    overlay.innerHTML = `
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-rose-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-rose-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-900 mb-2">${title}</h3>
+                <p class="text-sm text-slate-600">${text}</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="this.closest('.fixed').remove()" class="flex-1 px-4 py-3 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm hover:bg-slate-200 transition-all">
+                    Cancel
+                </button>
+                <button id="confirmBtn" class="flex-1 px-4 py-3 rounded-xl bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 transition-all">
+                    Yes, delete it
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    document.getElementById('confirmBtn').onclick = () => {
+        overlay.remove();
+        onConfirm();
+    };
 }
 </script>

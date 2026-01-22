@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const HrInboxReply = require('../models/HrInboxReply');
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // POST: Send info to CEO
 router.post('/dispatch/reply', async (req, res) => {

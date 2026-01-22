@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const HrCommunication = require("../models/HrCommsLogs");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 router.get("/logs", async (req, res) => {
   try {

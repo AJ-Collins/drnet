@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Dashboard = require("../models/Dashboard");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // GET /api/dashboard/summary
 router.get("/summary", async (req, res) => {

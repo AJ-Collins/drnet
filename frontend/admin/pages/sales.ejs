@@ -1,0 +1,376 @@
+<style>
+    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    .glass-panel {
+        background: white;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Status Pills */
+    .pill-paid { background: #f0fdfa; color: #0d9488; border: 1px solid #ccfbf1; }
+    .pill-pending { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
+    .pill-partial { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+    .pill-refunded { background: #fef2f2; color: #be123c; border: 1px solid #ffe4e6; }
+
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    /* Input Styling */
+    .input-field {
+        width: 100%; padding: 0.75rem 1rem;
+        background: #f8fafc; border: 1px solid #e2e8f0;
+        border-radius: 0.75rem; font-size: 0.875rem; font-weight: 600;
+        color: #334155; outline: none; transition: all 0.2s;
+    }
+    .input-field:focus { background: white; border-color: #0f766e; ring: 2px solid #0f766e; }
+    
+    .anim-fade { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="max-w-full mx-auto">
+    
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 anim-fade">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Sales & Revenue</h1>
+            <p class="text-slate-500 font-medium text-sm mt-1">Transaction History</p>
+        </div>
+        
+        <div class="flex gap-4">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm min-w-[140px]">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Sales</p>
+                <p class="text-2xl font-black text-slate-800" id="statTotalSales">0</p>
+            </div>
+            <div class="bg-teal-50 p-4 rounded-2xl border border-teal-100 min-w-[140px]">
+                <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest">Revenue</p>
+                <p class="text-2xl font-black text-teal-800" id="statRevenue">KES 0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-8 space-y-4 anim-fade" style="animation-delay: 0.1s;">
+            <div class="glass-panel p-2 rounded-xl flex gap-3">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search transactions..." class="input-field pl-10 bg-white">
+                </div>
+                <select id="filterStatus" onchange="renderTable()" class="input-field w-auto bg-white">
+                    <option value="">All Status</option>
+                    <option value="paid">Paid</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden min-h-[500px] flex flex-col">
+                <div class="overflow-x-auto custom-scroll flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 sticky top-0 z-10">
+                            <tr class="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-200">
+                                <th class="px-6 py-4">Item Details</th>
+                                <th class="px-6 py-4">Customer</th>
+                                <th class="px-6 py-4">Financials</th>
+                                <th class="px-6 py-4">Date</th>
+                                <th class="px-6 py-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody" class="divide-y divide-slate-100 bg-white">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 anim-fade sticky top-4" style="animation-delay: 0.2s;">
+            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-40 h-40 bg-teal-500 rounded-full blur-[80px] opacity-20 -mr-10 -mt-10"></div>
+
+                <div class="relative z-10 flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-black tracking-tight flex items-center gap-2">
+                        <i class="fas fa-cash-register text-teal-400"></i> <span id="formTitle">Record Sale</span>
+                    </h3>                    
+                </div>
+
+                <form id="salesForm" class="relative space-y-4">
+                    <input type="hidden" id="saleId">
+                    
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Select Item / Enter Name</label>
+                        <div class="relative">
+                            <input type="text" id="itemNameInput" list="inventoryList" onchange="handleItemSelect(this)" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-sm font-semibold text-white placeholder-slate-500 outline-none focus:border-teal-500 transition-all" placeholder="Type or select item..." autocomplete="off">
+                            <datalist id="inventoryList"></datalist>
+                            <input type="hidden" id="selectedItemId">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Customer</label>
+                            <input type="text" id="customerName" required class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-sm font-semibold text-white outline-none focus:border-teal-500" placeholder="Name">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Contact</label>
+                            <input type="text" id="customerContact" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-sm font-semibold text-white outline-none focus:border-teal-500" placeholder="Phone">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Quantity</label>
+                            <input type="number" id="qty" value="1" min="1" oninput="calcTotal()" class="w-full p-2 bg-slate-800 border border-slate-600 rounded-lg text-sm font-bold text-white text-center">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Unit Price</label>
+                            <input type="number" id="unitPrice" oninput="calcTotal()" class="w-full p-2 bg-slate-800 border border-slate-600 rounded-lg text-sm font-bold text-white text-right" placeholder="0.00">
+                        </div>
+                        <div class="col-span-2 pt-2 border-t border-slate-700 flex justify-between items-center">
+                            <span class="text-xs text-slate-400 font-bold uppercase">Total</span>
+                            <span class="text-xl font-black text-teal-400" id="displayTotal">0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Status</label>
+                            <select id="paymentStatus" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none">
+                                <option value="paid">Paid</option>
+                                <option value="pending">Pending</option>
+                                <option value="partial">Partial</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Date</label>
+                            <input type="datetime-local" id="soldDate" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 font-black text-sm uppercase tracking-wider rounded-xl transition-all shadow-lg hover:shadow-teal-500/20 active:scale-[0.98] mt-4">
+                        <i class="fas fa-save mr-2"></i> Save Transaction
+                    </button>
+                    <button type="button" onclick="resetForm()" id="cancelEditBtn" class="hidden mt-2 text-xs text-red-500 hover:text-red-700 flex items-center gap-1 mx-auto">
+                        <i class="fas fa-trash"></i> Cancel
+                    </button>                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // State
+    let salesData = [];
+    let inventoryData = [];
+    const $ = id => document.getElementById(id);
+
+    // Initial Load
+    window.onload = async () => {
+        // Set default date to now
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        $("soldDate").value = now.toISOString().slice(0,16);
+
+        await Promise.all([loadInventory(), loadSales()]);
+    };
+
+    // --- API Calls ---
+    async function loadInventory() {
+        try {
+            const res = await fetch('/api/inventory');
+            inventoryData = await res.json();
+            
+            const datalist = $("inventoryList");
+            datalist.innerHTML = inventoryData.map(item => 
+                `<option value="${item.name}" data-id="${item.id}" data-price="${item.unit_price}">${item.name} | ${item.serial_number || ''}</option>`
+            ).join('');
+        } catch(e) { console.error("Inventory load failed", e); }
+    }
+
+    async function loadSales() {
+        try {
+            const res = await fetch('/api/sales');
+            salesData = await res.json();
+            renderTable();
+            updateStats();
+        } catch(e) { console.error("Sales load failed", e); }
+    }
+
+    // --- Form Logic ---
+    function handleItemSelect(input) {
+        const val = input.value;
+        const options = Array.from($("inventoryList").options);
+        const match = options.find(opt => opt.value === val);
+
+        if (match) {
+            $("selectedItemId").value = match.getAttribute('data-id');
+            $("unitPrice").value = match.getAttribute('data-price');
+        } else {
+            // Manual Entry mode
+            $("selectedItemId").value = ""; 
+        }
+        calcTotal();
+    }
+
+    function calcTotal() {
+        const qty = parseFloat($("qty").value) || 0;
+        const price = parseFloat($("unitPrice").value) || 0;
+        $("displayTotal").textContent = (qty * price).toLocaleString('en-KE', { style: 'currency', currency: 'KES' });
+    }
+
+    $("salesForm").onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const payload = {
+            item_id: $("selectedItemId").value || null,
+            item_name: $("itemNameInput").value,
+            customer_name: $("customerName").value,
+            customer_contact: $("customerContact").value,
+            quantity: $("qty").value,
+            unit_price: $("unitPrice").value,
+            payment_status: $("paymentStatus").value,
+            sold_date: $("soldDate").value
+        };
+
+        const id = $("saleId").value;
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/sale/${id}` : '/api/sale';
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if(res.ok) {
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'success', 
+                    title: id ? 'Sale Updated' : 'Sale Recorded', 
+                    showConfirmButton: false, timer: 1500
+                });
+                resetForm();
+                loadSales();
+            } else {
+                Swal.fire("Error", "Operation failed", "error");
+            }
+        } catch(e) { console.error(e); }
+    };
+
+    // --- Table & Display ---
+    function renderTable() {
+        const tbody = $("salesTableBody");
+        const search = $("searchInput").value.toLowerCase();
+        const statusFilter = $("filterStatus").value;
+
+        const filtered = salesData.filter(row => {
+            const matchesSearch = row.item_name.toLowerCase().includes(search) || 
+                                  row.customer_name.toLowerCase().includes(search);
+            const matchesStatus = statusFilter ? row.payment_status === statusFilter : true;
+            return matchesSearch && matchesStatus;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 italic">No transactions found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(row => {
+            const date = new Date(row.sold_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' });
+            const total = parseFloat(row.total_amount).toLocaleString();
+            
+            return `
+            <tr class="group hover:bg-slate-50 transition-colors border-b border-slate-50">
+                <td class="px-6 py-4">
+                    <div class="font-bold text-slate-800 text-sm">${row.item_name}</div>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                        ${row.serial_number ? `S/N: ${row.serial_number}` : 'Manual Entry'}
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="font-bold text-slate-700 text-sm">${row.customer_name}</div>
+                    <div class="text-xs text-slate-400 font-mono">${row.customer_contact || ''}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="font-black text-slate-800 text-sm">KES ${total}</div>
+                    <div class="text-[10px] text-slate-400 font-bold">
+                        ${row.quantity} x ${parseFloat(row.unit_price).toLocaleString()}
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-xs font-bold text-slate-500">${date}</div>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider pill-${row.payment_status}">
+                        ${row.payment_status}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <button onclick="editSale(${row.id})" class="w-8 h-8 rounded-lg text-slate-300 hover:text-teal-600 hover:bg-teal-50 transition-all"><i class="fas fa-pen text-xs"></i></button>
+                    <button onclick="deleteSale(${row.id})" class="w-8 h-8 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all"><i class="fas fa-trash text-xs"></i></button>
+                </td>
+            </tr>
+            `;
+        }).join('');
+    }
+
+    function updateStats() {
+        const total = salesData.length;
+        const revenue = salesData.reduce((sum, row) => sum + parseFloat(row.total_amount), 0);
+        
+        $("statTotalSales").innerText = total;
+        $("statRevenue").innerText = revenue.toLocaleString('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 });
+    }
+
+    // --- Actions ---
+    function editSale(id) {
+        const sale = salesData.find(s => s.id === id);
+        if(!sale) return;
+
+        $("formTitle").innerText = "Update Sale";
+        $("saleId").value = sale.id;
+        $("itemNameInput").value = sale.item_name;
+        $("selectedItemId").value = sale.item_id || "";
+        $("customerName").value = sale.customer_name;
+        $("customerContact").value = sale.customer_contact;
+        $("qty").value = sale.quantity;
+        $("unitPrice").value = sale.unit_price;
+        $("paymentStatus").value = sale.payment_status;
+        
+        // Format date for datetime-local input
+        const date = new Date(sale.sold_date);
+        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+        $("soldDate").value = date.toISOString().slice(0,16);
+
+        $("cancelEditBtn").classList.remove("hidden");
+        calcTotal();
+        
+        // Scroll to form on mobile
+        if(window.innerWidth < 1024) $("salesForm").scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        $("salesForm").reset();
+        $("saleId").value = "";
+        $("selectedItemId").value = "";
+        $("formTitle").innerText = "Record Sale";
+        $("cancelEditBtn").classList.add("hidden");
+        $("displayTotal").innerText = "0.00";
+        
+        // Reset date
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        $("soldDate").value = now.toISOString().slice(0,16);
+    }
+
+    function deleteSale(id) {
+        Swal.fire({
+            title: 'Delete Record?', text: "Cannot be undone.", icon: 'warning',
+            showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Delete'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await fetch(`/api/sale/${id}`, { method: 'DELETE' });
+                loadSales();
+                Swal.fire("Deleted", "", "success");
+            }
+        });
+    }
+</script>

@@ -3,6 +3,9 @@ const router = express.Router();
 const StaffClientAssignment = require("../models/StaffClientAssignment");
 const db = require("../config/db");
 const dayjs = require("dayjs");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // GET: My Assignments
 router.get("/my/assignments", async (req, res) => {

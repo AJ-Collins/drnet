@@ -4,6 +4,9 @@ const Report = require("../models/Reports");
 const notificationService = require("../services/notificationService");
 const Staff = require("../models/Staff");
 const Role = require("../models/Role");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // GET all reports
 router.get("/reports", async (req, res) => {

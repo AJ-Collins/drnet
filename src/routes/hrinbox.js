@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const HrInbox = require("../models/HrInbox");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // all active messages
 router.get('/inbox', async (req, res) => {

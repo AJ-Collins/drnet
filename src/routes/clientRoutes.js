@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // Get All Clients
 router.get('/', async (req, res) => {

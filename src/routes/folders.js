@@ -4,6 +4,9 @@ const Hub = require('../models/Folders');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {

@@ -3,6 +3,9 @@ const router = express.Router();
 const mailService = require('../services/mailService');
 const smsService = require('../services/smsService');
 const SmsLog = require('../models/SmsLogsModel');
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 router.post('/dispatch/mail', async (req, res) => {
     const { recipient, subject, body } = req.body;

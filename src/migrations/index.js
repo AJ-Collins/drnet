@@ -24,6 +24,9 @@ const createHrInboxTable = require("./hr_inbox");
 const createHrInboxReplyTable = require("./hr_inbox_reply");
 const createSmsLogsTable = require("./create_sms_logs");
 
+// Sales
+const createSalesTable = require("./sales");
+
 
 //Seeders
 const seedRoles = require("../seeders/roles_seeder");
@@ -111,6 +114,9 @@ async function runMigrations() {
   await createHrInboxTable();
   await createHrInboxReplyTable();
   await createSmsLogsTable();
+
+  // Sales
+  await createSalesTable();
 
   console.log("All migrations completed. Running seeders...");
 

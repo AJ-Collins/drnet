@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const SmsLog = require('../models/SmsLogsModel');
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // GET Dashboard Data
 router.get('/sms/log', async (req, res) => {

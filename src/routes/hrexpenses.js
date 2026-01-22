@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const HrExpense = require("../models/HrExpenses");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // Get all expenses
 router.get("/expenses", async (req, res) => {

@@ -5,7 +5,6 @@ const cors = require("cors");
 const session = require("express-session");
 const fs = require("fs");
 const ejs = require("ejs");
-const apiSessionAuth = require("./src/middleware/apiSessionAuth");
 const app = express();
 const runMigrations = require("./src/migrations/index");
 const authRoutes = require("./src/routes/authRoutes");
@@ -14,6 +13,7 @@ const inventory = require("./src/routes/inventory");
 
 const staff = require("./src/routes/staff");
 const client = require("./src/routes/client");
+const sitebookings = require("./src/routes/sitebookings");
 const bookings = require("./src/routes/bookings");
 const payment = require("./src/routes/payment");
 const staffAssignment = require("./src/routes/staff");
@@ -26,7 +26,7 @@ const users = require("./src/routes/users");
 const subscription = require("./src/routes/subscription");
 const invoices = require("./src/routes/invoices");
 const receipts = require("./src/routes/receipts");
-const sales = require("./src/routes/sales");
+const sales = require("./src/routes/salesRoutes");
 const expenses = require("./src/routes/expenses");
 const payslips = require("./src/routes/payslips");
 const profile = require("./src/routes/profile");
@@ -240,54 +240,55 @@ function requireHrAssistantAuth(req, res, next){
 
 // API ROUTES
 app.use("/api", authRoutes);
-app.use("/api/site/", sitePackages);
-app.use("/api/client", bookings);
-app.use("/api", apiSessionAuth, admin);
+app.use("/api/site", sitePackages);
+app.use("/api/client/web", sitebookings);
+app.use("/api", bookings);
+app.use("/api", admin);
 
 // Inventory
-app.use("/api", apiSessionAuth, inventory);
+app.use("/api", inventory);
 
-app.use("/api", apiSessionAuth, attendance);
-app.use("/api", apiSessionAuth, packages);
-app.use("/api", apiSessionAuth, users);
-app.use("/api", apiSessionAuth, staff);
-app.use("/api", apiSessionAuth, client);
-app.use("/api", apiSessionAuth, payment);
-app.use("/api", apiSessionAuth, staffAssignment);
-app.use("/api", apiSessionAuth, schedules);
-app.use("/api", apiSessionAuth, SupportTickets);
-app.use("/api", apiSessionAuth, subscription);
-app.use("/api", apiSessionAuth, invoices);
-app.use("/api", apiSessionAuth, receipts);
-app.use("/api", apiSessionAuth, sales);
-app.use("/api", apiSessionAuth, expenses);
-app.use("/api", apiSessionAuth, payslips);
-app.use("/api", apiSessionAuth, profile);
-app.use("/api", apiSessionAuth, userProfile);
-app.use("/api", apiSessionAuth, teamChat);
-app.use("/api", apiSessionAuth, announcement);
-app.use("/api", apiSessionAuth, notificationsRoutes);
-app.use("/api", apiSessionAuth, reports);
+app.use("/api", attendance);
+app.use("/api", packages);
+app.use("/api", users);
+app.use("/api", staff);
+app.use("/api", client);
+app.use("/api", payment);
+app.use("/api", staffAssignment);
+app.use("/api", schedules);
+app.use("/api", SupportTickets);
+app.use("/api", subscription);
+app.use("/api", invoices);
+app.use("/api", receipts);
+app.use("/api", sales);
+app.use("/api", expenses);
+app.use("/api", payslips);
+app.use("/api", profile);
+app.use("/api", userProfile);
+app.use("/api", teamChat);
+app.use("/api", announcement);
+app.use("/api", notificationsRoutes);
+app.use("/api", reports);
 // Admin dahsboard
-app.use("/api/dashboard", apiSessionAuth, admindashboard);
+app.use("/api/dashboard", admindashboard);
 //Client
-app.use('/api/manage/clients', apiSessionAuth,clientRoutes);
+app.use('/api/manage/clients',clientRoutes);
 //Staff
-app.use('/api/manage/staff', apiSessionAuth,staffRoutes);
+app.use('/api/manage/staff',staffRoutes);
 //Subsriptions
-app.use("/api/subscriptions", apiSessionAuth, subscriptionRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 
 //Hr
-app.use("/api/hr", apiSessionAuth, hrexpenses);
-app.use("/api/hr", apiSessionAuth, hrtasks);
-app.use("/api/hr", apiSessionAuth, hrbookings);
-app.use("/api/hr", apiSessionAuth, hrplanner);
-app.use("/api/hr", apiSessionAuth, hrcommslogs);
-app.use("/api/hr", apiSessionAuth, hrnotify);
-app.use("/api/hr", apiSessionAuth, hrdashboard);
-app.use("/api/hr", apiSessionAuth, hrinbox);
-app.use("/api/hr", apiSessionAuth, hrinboxreply);
-app.use("/api/hr", apiSessionAuth, smslogs);
+app.use("/api/hr", hrexpenses);
+app.use("/api/hr", hrtasks);
+app.use("/api/hr", hrbookings);
+app.use("/api/hr", hrplanner);
+app.use("/api/hr", hrcommslogs);
+app.use("/api/hr", hrnotify);
+app.use("/api/hr", hrdashboard);
+app.use("/api/hr", hrinbox);
+app.use("/api/hr", hrinboxreply);
+app.use("/api/hr", smslogs);
 
 
 // Create uploads folder
@@ -339,7 +340,8 @@ const adminPages = [
   "active-users",
   "notifications",
   "reminders",
-  "operational-inbox"
+  "operational-inbox",
+  "sales"
 ];
 
 app.get("/admin/:page", requireAdminAuth, (req, res) => {

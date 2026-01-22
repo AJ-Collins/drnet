@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const HrTask = require("../models/HrTasks");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 router.get("/tasks", async (req, res) => {
   try {

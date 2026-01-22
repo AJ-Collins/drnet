@@ -6,6 +6,9 @@ const SupportTicketMessage = require("../models/SupportTicketMessage");
 const Staff = require("../models/Staff");
 const db = require("../config/db");
 const notificationService = require("../services/notificationService");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 router.get("/my/tickets", async (req, res) => {
   try {

@@ -6,6 +6,9 @@ const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
 const db = require("../config/db");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 const SALT_ROUNDS = 12;
 

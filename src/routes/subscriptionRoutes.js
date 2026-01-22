@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const SubscriptionManager = require('../models/SubscriptionManager');
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 const toSqlDatetime = (date) => {
     const pad = (n) => n.toString().padStart(2, '0');

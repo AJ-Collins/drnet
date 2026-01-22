@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const HrBooking = require("../models/HrBooking");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 router.get("/bookings", async (req, res) => {
   try {

@@ -3,7 +3,9 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const Package = require("../models/Package");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
 
+router.use(apiSessionAuth);
 
 // GET /api/clients
 router.get("/clients", async (req, res) => {
