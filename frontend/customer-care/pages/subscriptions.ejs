@@ -39,12 +39,6 @@
 
         .search-input { background: #f1f5f9; border: 1px solid transparent; transition: all 0.2s; }
         .search-input:focus { background: white; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
-        .sms-editor {
-            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px;
-            font-family: 'Courier New', monospace;
-            line-height: 1.5;
-        }
 
         .custom-checkbox {
             appearance: none; background-color: #fff; margin: 0;
@@ -70,17 +64,7 @@
     <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tight">Client Comms</h1>
-            <p class="text-slate-500 font-bold text-sm">SMS Dispatch Center</p>
-        </div>
-        
-        <div id="balanceBadge" class="hidden bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <i class="fas fa-coins"></i>
-            </div>
-            <div>
-                <p class="text-[10px] font-black uppercase text-slate-400">SMS Balance</p>
-                <p class="text-sm font-bold text-slate-900" id="smsBalanceVal">Loading...</p>
-            </div>
+            <p class="text-slate-500 font-bold text-sm">Client Management Dashboard</p>
         </div>
     </div>
 
@@ -98,11 +82,6 @@
                 <option value="overdue">Overdue (Warning)</option>
                 <option value="expired">Expired (Disconnected)</option>
             </select>
-            
-            <button id="btnBulkAction" onclick="Actions.openBulkDrawer()" class="hidden px-6 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 font-bold text-xs flex items-center gap-2">
-                <i class="fas fa-paper-plane"></i>
-                <span id="bulkCount">0</span> SELECTED
-            </button>
 
             <button onclick="initData()" class="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
                 <i class="fas fa-sync-alt text-xs"></i>
@@ -130,7 +109,6 @@
                         <th>Expiry Date</th>
                         <th>Sms</th>
                         <th>Counter</th>
-                        <th class="text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody id="clientsTableBody" class="bg-white"></tbody>
@@ -149,69 +127,6 @@
 </div>
 
 <div id="drawerOverlay" class="fixed inset-0 drawer-overlay hidden z-40 transition-opacity opacity-0" onclick="UI.closeAllDrawers()"></div>
-
-<div id="smsDrawer" class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
-    <div class="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
-        <div>
-            <h2 id="dName" class="text-xl font-black text-slate-800 tracking-tight">Client Name</h2>
-            <div class="flex items-center gap-2 mt-1">
-                <span id="dPhone" class="text-xs font-bold text-slate-500 font-mono">07XX XXX XXX</span>
-                <span id="dStatus" class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-600">Status</span>
-            </div>
-        </div>
-        <button onclick="UI.closeAllDrawers()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><i class="fas fa-times"></i></button>
-    </div>
-
-    <div class="flex-grow overflow-y-auto custom-scroll p-6 space-y-6">
-        <div id="templateToggleContainer" class="flex p-1 bg-slate-100 rounded-lg">
-            <button data-type="reminder" onclick="Actions.setTemplate('reminder', this)" class="flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-slate-800 transition-all">Reminder</button>
-            <button data-type="receipt" onclick="Actions.setTemplate('receipt', this)" class="flex-1 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all">Confirmation</button>
-            <button data-type="custom" onclick="Actions.setTemplate('custom', this)" class="flex-1 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all">Custom</button>
-        </div>
-
-        <div class="relative group">
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Message Content</label>
-            <textarea id="singleSmsBody" class="w-full h-48 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50 transition-all resize-none"></textarea>            
-        </div>
-    </div>
-
-    <div class="p-6 bg-slate-50 border-t border-slate-100">
-        <button id="btnSendSingle" onclick="API.sendSingleSMS()" class="w-full py-4 rounded-xl bg-teal-600 text-white font-bold text-sm hover:bg-teal-700 shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2 transition-all">
-            <i class="fas fa-paper-plane"></i> SEND SMS NOW
-        </button>
-    </div>
-</div>
-
-<div id="bulkDrawer" class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
-    <div class="p-6 border-b border-slate-100 bg-slate-900 text-white">
-        <h2 class="text-xl font-black tracking-tight">Bulk Dispatch</h2>
-        <p class="text-xs font-medium text-slate-400 mt-1">Sending to <span id="bulkTotalBadge" class="text-white font-bold">0</span> recipients</p>
-    </div>
-
-    <div class="flex-grow overflow-y-auto custom-scroll p-6 space-y-6">
-        
-        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Recipient Summary</p>
-            <div class="flex flex-wrap gap-2" id="bulkRecipientList">
-                </div>
-            <p id="bulkHiddenCount" class="text-[10px] text-slate-400 font-bold mt-2 hidden">+ 12 others</p>
-        </div>
-
-        <div class="relative">
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Message to All</label>
-            <textarea id="bulkSmsBody" class="w-full h-48 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-100 transition-all resize-none" placeholder="Type your message here..."></textarea>
-            <p class="text-[10px] text-slate-400 mt-2">
-                <i class="fas fa-info-circle mr-1"></i> Same message will be sent to all selected clients.
-            </p>
-        </div>
-    </div>
-
-    <div class="p-6 bg-slate-50 border-t border-slate-100">
-        <button id="btnSendBulk" onclick="API.sendBulkSMS()" class="w-full py-4 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 shadow-lg shadow-slate-900/20 flex items-center justify-center gap-2 transition-all">
-            <i class="fas fa-mail-bulk"></i> SEND BULK BLAST
-        </button>
-    </div>
-</div>
 
 <div id="historyDrawer" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white z-50 drawer-panel flex flex-col border-l border-slate-200 shadow-2xl">
     <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
@@ -233,14 +148,12 @@
 </div>
 
 <script>
-    const API_BASE = "/api/hr/dispatch"; 
     const DATA_ENDPOINT = "/api/subscriptions/dashboard-data";
     
     const State = {
         allData: [],
         filteredData: [],
         selectedIds: new Set(),
-        currentClient: null,
         isLoading: false,
         renderTimeout: null,
         displayedData: [],
@@ -296,16 +209,6 @@
         search: document.getElementById('searchInput'),
         filter: document.getElementById('statusFilter'),
         selectAll: document.getElementById('selectAll'),
-        btnBulk: document.getElementById('btnBulkAction'),
-        bulkCount: document.getElementById('bulkCount'),
-        
-        smsDrawer: document.getElementById('smsDrawer'),
-        singleBody: document.getElementById('singleSmsBody'),
-        
-        bulkDrawer: document.getElementById('bulkDrawer'),
-        bulkBody: document.getElementById('bulkSmsBody'),
-        bulkRecipients: document.getElementById('bulkRecipientList'),
-        
         overlay: document.getElementById('drawerOverlay')
     };
 
@@ -355,7 +258,6 @@
                 };
             }).sort((a,b) => a.name.localeCompare(b.name));
             
-            API.checkBalance();            
             applyFilters();
             
             // Load SMS counts in background (non-blocking)
@@ -423,7 +325,6 @@
         // Don't clear selections on filter - let user keep their selections
         // State.selectedIds.clear();  // REMOVED
         
-        UI.updateBulkButton();
         updatePagination();
         debouncedRender();
     }
@@ -515,11 +416,6 @@
                         ${subLabel}
                     </div>
                 </td>
-                <td class="text-right">
-                    <button class="compose-btn text-[9px] font-black uppercase tracking-widest text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg border border-teal-100 transition-colors">
-                        Compose
-                    </button>
-                </td>
             `;
             Els.tbody.appendChild(tr);
         });
@@ -537,150 +433,16 @@
         
         if (e.target.classList.contains('row-checkbox')) {
             Actions.toggleSelect(clientId);
-        } else if (e.target.classList.contains('compose-btn')) {
-            Actions.openSingleDrawer(clientId);
         } else if (e.target.classList.contains('view-history')) {
             const client = State.allData.find(c => c.id === clientId);
             if (client) Actions.viewHistory(clientId, client.name);
         }
     });
 
-    const API = {
-        checkBalance: async () => {
-            try {
-                const res = await fetch(`${API_BASE}/sms/balance`);
-                const json = await res.json();
-                if(json.success) {
-                    document.getElementById('smsBalanceVal').innerText = `KES ${json.data.balance}`;
-                    document.getElementById('balanceBadge').classList.remove('hidden');
-                }
-            } catch(e) { console.warn("Balance check failed"); }
-        },
-
-        sendSingleSMS: async () => {
-            const btn = document.getElementById('btnSendSingle');
-            const originalText = btn.innerHTML;
-            const message = Els.singleBody.value;
-
-            if(!message) return Swal.fire("Empty Message", "Please write a message first.", "warning");
-
-            try {
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`;
-                btn.disabled = true;
-
-                const res = await fetch(`${API_BASE}/sms`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        phone: State.currentClient.phone,
-                        message: message,
-                        subscriptionId: State.currentClient.id,  // Add this
-                        messageType: State.currentTemplateType || 'custom' 
-                    })
-                });
-                
-                const result = await res.json();
-                if(res.status === 429) {
-                    return Swal.fire({
-                        title: "Rate Limit Exceeded",
-                        html: `
-                            <p>${result.error}</p>
-                            <p class="text-sm text-gray-600 mt-2">This prevents multiple sms and ensures quality communication.</p>
-                        `,
-                        icon: "warning",
-                        confirmButtonText: "Got it"
-                    });
-                }
-                if(!res.ok) throw new Error(result.error || "Failed");
-
-                Swal.fire({
-                    title: "Sent!",
-                    text: "SMS dispatched successfully.",
-                    icon: "success",
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                UI.closeAllDrawers();
-                initData();
-                API.checkBalance(); 
-
-            } catch (error) {
-                Swal.fire("Failed", error.message, "error");
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        },
-
-        sendBulkSMS: async () => {
-            const btn = document.getElementById('btnSendBulk');
-            const originalText = btn.innerHTML;
-            const message = Els.bulkBody.value;
-
-            if(!message) return Swal.fire("Empty Message", "Please write a message.", "warning");
-
-            const selectedClients = Array.from(State.selectedIds).map(id => 
-                State.allData.find(c => c.id === id)
-            ).filter(Boolean);
-
-            const messages = selectedClients.map(client => ({
-                phone: client.phone,
-                message: message
-            }));
-
-            try {
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Dispatching ${messages.length} SMS...`;
-                btn.disabled = true;
-
-                const res = await fetch(`${API_BASE}/sms/bulk`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages })
-                });
-
-                const result = await res.json();
-                if(!res.ok) throw new Error(result.error || "Failed");
-
-                try {
-                    await fetch('/api/hr/sms/log/bulk', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            logs: selectedClients.map(c => ({
-                                subscriptionId: c.id,
-                                phone: c.phone,
-                                message: message,
-                                type: 'reminder'
-                            }))
-                        })
-                    });
-                } catch (e) {
-                    console.warn("SMS sent but logging failed", e);
-                }
-
-                Swal.fire("Batch Sent!", `Successfully queued ${messages.length} messages.`, "success");
-                
-                State.selectedIds.clear();
-                UI.updateBulkButton();
-                debouncedRender();
-                UI.closeAllDrawers();
-                initData();
-                API.checkBalance();
-
-            } catch (error) {
-                Swal.fire("Bulk Failed", error.message, "error");
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-    };
-
     const Actions = {
         toggleSelect: (id) => {
             if(State.selectedIds.has(id)) State.selectedIds.delete(id);
             else State.selectedIds.add(id);
-            UI.updateBulkButton();
             renderTable();
         },
 
@@ -692,93 +454,7 @@
                 else State.selectedIds.add(c.id);
             });
             
-            UI.updateBulkButton();
             renderTable();
-        },
-
-        openSingleDrawer: (id) => {
-            const client = State.allData.find(c => c.id === id);
-            if(!client) return;
-            State.currentClient = client;
-
-            document.getElementById('dName').innerText = client.name;
-            document.getElementById('dPhone').innerText = client.phone;
-            document.getElementById('dStatus').innerText = client.displayStatus;
-
-            const firstBtn = document.querySelector('#templateToggleContainer button');
-            Actions.setTemplate('reminder', firstBtn);
-            
-            UI.openDrawer('smsDrawer');
-        },
-
-        openBulkDrawer: () => {
-            if(State.selectedIds.size === 0) return;
-            
-            Els.bulkRecipients.innerHTML = "";
-            let count = 0;
-            State.selectedIds.forEach(id => {
-                if(count >= 5) return;
-                const c = State.allData.find(x => x.id === id);
-                const div = document.createElement('div');
-                div.className = "w-8 h-8 rounded-full bg-indigo-100 border border-white shadow-sm flex items-center justify-center text-[10px] font-bold text-indigo-700";
-                div.innerText = c.name.charAt(0);
-                Els.bulkRecipients.appendChild(div);
-                count++;
-            });
-
-            const remaining = State.selectedIds.size - 5;
-            const hiddenCountEl = document.getElementById('bulkHiddenCount');
-            if(remaining > 0) {
-                hiddenCountEl.innerText = `+ ${remaining} others`;
-                hiddenCountEl.classList.remove('hidden');
-            } else {
-                hiddenCountEl.classList.add('hidden');
-            }
-
-            document.getElementById('bulkTotalBadge').innerText = State.selectedIds.size;
-            UI.openDrawer('bulkDrawer');
-        },
-
-        setTemplate: (type, el) => {
-            State.currentTemplateType = type;
-            const c = State.currentClient;
-            if(!c) return;
-
-            if (el) {
-                const buttons = el.parentElement.querySelectorAll('button');
-                
-                buttons.forEach(btn => {
-                    btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
-                    btn.classList.add('text-slate-500', 'hover:text-slate-700');
-                });
-
-                el.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
-                el.classList.remove('text-slate-500', 'hover:text-slate-700');
-            }
-
-            const now = new Date();
-            
-            const firstName = c.name.split(" ")[0];
-            const diffTime = c.expiry - now;
-            const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            const nextMonth = new Date(); 
-            nextMonth.setDate(now.getDate() + 30);
-            const dateStr = c.expiry.toLocaleDateString('en-GB');
-
-            let text = "";
-            if (type === 'reminder') {
-                if (daysLeft <= 0) {
-                    text = `Dear ${c.name}, This is to inform you that your internet subscription has expired and the service has been temporarily suspended. Amount: KES ${c.price}. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
-                } else {
-                    text = `REMINDER: ${firstName}, your ${c.pkgName} subscription is due to overdue in ${daysLeft} days. Please pay KES ${c.price} by ${dateStr} to avoid service suspension. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
-                }
-            } else if (type === 'receipt') {
-                text = `Payment Confirmed!\nThank you ${firstName}.\nAmount: KES ${c.price}\nPackage: ${c.pkgName}\n\nYour DR.NET internet service has been renewed for 30 days, active until ${nextMonth.toLocaleDateString('en-GB')}.\n\nQuestions? Call 0701782354\nDR.NET TECHNOLOGY LABS`;            } else {
-                text = "";
-            }
-            
-            Els.singleBody.value = text;
         },
 
         viewHistory: async (id, name) => {
@@ -861,11 +537,6 @@
             Els.loader.classList.toggle('hidden', !show);
             Els.tableContainer.classList.toggle('hidden', show);
         },
-        updateBulkButton: () => {
-            const count = State.selectedIds.size;
-            Els.bulkCount.innerText = count;
-            Els.btnBulk.classList.toggle('hidden', count === 0);
-        },
         openDrawer: (id) => {
             Els.overlay.classList.remove('hidden');
             setTimeout(() => {
@@ -874,8 +545,6 @@
             }, 10);
         },
         closeAllDrawers: () => {
-            Els.smsDrawer.classList.remove('open');
-            Els.bulkDrawer.classList.remove('open');
             document.getElementById('historyDrawer').classList.remove('open');
             Els.overlay.classList.add('opacity-0');
             setTimeout(() => {

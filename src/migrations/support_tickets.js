@@ -6,18 +6,14 @@ async function createSupportTicketsTable() {
       id INT AUTO_INCREMENT PRIMARY KEY,
       ticket_number VARCHAR(50) NOT NULL UNIQUE,
       user_id INT NOT NULL,
-      subject VARCHAR(255) NOT NULL,
-      issue_type VARCHAR(100),
-      priority VARCHAR(50) DEFAULT 'medium',
-      description TEXT,
-      status VARCHAR(50) DEFAULT 'open',
-      assigned_to INT NULL, -- optional staff/admin assignment
+      issue_subject VARCHAR(100) NOT NULL,
+      description TEXT NULL,
+      status ENUM('open', 'pending', 'resolved', 'closed') DEFAULT 'open',
+      is_archived BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (assigned_to) REFERENCES staff(id) ON DELETE SET NULL
-    );
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,      
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB;
   `);
   console.log("Support Tickets table created");
 }

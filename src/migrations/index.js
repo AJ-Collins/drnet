@@ -53,8 +53,12 @@ const createStaffClientAssignmentsTable = require("./staff_client_assignments");
 const createStaffSchedulesTable = require("./staff_schedules");
 
 const createAnnouncementsTable = require("./announcements");
+
+// Support tickets
 const createSupportTicketsTable = require("./support_tickets");
 const createSupportTicketMessagesTable = require("./support_ticket_messages");
+const createTicketAssignmentsTable = require("./support_ticket_assignments");
+
 const createTeamMessagesTable = require("./team_messages");
 const createNotificationsTable = require("./notifications"); // added notifications table
 
@@ -84,8 +88,12 @@ async function runMigrations() {
 
   // Communication & notifications
   await createAnnouncementsTable();
+
+  // Support tickets
   await createSupportTicketsTable();
   await createSupportTicketMessagesTable();
+  await createTicketAssignmentsTable();
+
   await createTeamMessagesTable();
   await createNotificationsTable();
 

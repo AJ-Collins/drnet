@@ -1,164 +1,121 @@
 const db = require("../config/db");
 
-const SupportTicket = {
-  mapToFrontend: (row) => {
-    let userName = "";
+const SupportModel = {
+    // TICKET OPERATIONS
+    async findAll(includeArchived = false) {
+        const sql = `
+            SELECT t.*, u.first_name, u.second_name, u.phone as user_phone 
+            FROM support_tickets t 
+            JOIN users u ON t.user_id = u.id 
+            WHERE t.is_archived = ? 
+            ORDER BY t.created_at DESC`;
+        const [rows] = await db.query(sql, [includeArchived]);
+        return rows;
+    },
 
-    if (row.user_id) {
-      if (row.first_name || row.last_name) {
-        userName = `${row.first_name || ""} ${row.second_name || ""}`.trim();
-      } else {
-        userName = row.email || "Unknown User";
-      }
+    async findById(id) {
+        const [rows] = await db.query("SELECT * FROM support_tickets WHERE id = ?", [id]);
+        return rows[0];
+    },
+
+    async create(data) {
+        const { ticket_number, user_id, issue_subject, description } = data;
+        const [result] = await db.query(
+            "INSERT INTO support_tickets (ticket_number, user_id, issue_subject, description) VALUES (?, ?, ?, ?)",
+            [ticket_number, user_id, issue_subject, description]
+        );
+        return result.insertId;
+    },
+
+    async updateStatus(id, status) {
+        return await db.query("UPDATE support_tickets SET status = ? WHERE id = ?", [status, id]);
+    },
+
+    async archive(id) {
+        return await db.query("UPDATE support_tickets SET is_archived = true WHERE id = ?", [id]);
+    },
+
+    async delete(id) {
+        return await db.query("DELETE FROM support_tickets WHERE id = ?", [id]);
+    },
+
+    // MESSAGING OPERATIONS
+    async getMessagesByTicket(ticketId) {
+        const sql = `
+            SELECT tm.*, u.first_name as user_name, s.first_name as staff_name
+            FROM support_ticket_messages tm
+            LEFT JOIN users u ON tm.sender_user_id = u.id
+            LEFT JOIN staff s ON tm.sender_staff_id = s.id
+            WHERE tm.ticket_id = ?
+            ORDER BY tm.created_at ASC`;
+        const [rows] = await db.query(sql, [ticketId]);
+        return rows;
+    },
+
+    async saveMessage(data) {
+        const { ticket_id, sender_user_id, sender_staff_id, message } = data;
+        const [result] = await db.query(
+            "INSERT INTO support_ticket_messages (ticket_id, sender_user_id, sender_staff_id, message) VALUES (?, ?, ?, ?)",
+            [ticket_id, sender_user_id || null, sender_staff_id || null, message]
+        );
+        const [rows] = await db.query(`
+            SELECT tm.*, s.first_name as staff_name, u.first_name as user_name
+            FROM support_ticket_messages tm
+            LEFT JOIN staff s ON tm.sender_staff_id = s.id
+            LEFT JOIN users u ON tm.sender_user_id = u.id
+            WHERE tm.id = ?`, [result.insertId]);
+            
+        return rows[0];
+    },
+
+    // ASSIGNMENT OPERATIONS
+    async assignStaff(ticketId, staffId, note) {
+        const sql = `
+            INSERT INTO ticket_assignments (ticket_id, staff_id, assignment_note) 
+            VALUES (?, ?, ?) 
+            ON DUPLICATE KEY UPDATE assignment_note = ?, status = 'active'`;
+        await db.query(sql, [ticketId, staffId, note, note]);
+        
+        // Fetch staff details for the SMS service
+        const [staff] = await db.query("SELECT first_name, phone FROM staff WHERE id = ?", [staffId]);
+        return staff[0];
+    },
+
+    async getAssignments(ticketId) {
+        const sql = `
+            SELECT ta.*, s.first_name, s.second_name, s.position, s.phone 
+            FROM ticket_assignments ta
+            JOIN staff s ON ta.staff_id = s.id
+            WHERE ta.ticket_id = ? AND ta.status = 'active'`;
+        const [rows] = await db.query(sql, [ticketId]);
+        return rows;
+    },
+
+    async removeAssignment(ticketId, staffId) {
+        return await db.query(
+            "DELETE FROM ticket_assignments WHERE ticket_id = ? AND staff_id = ?",
+            [ticketId, staffId]
+        );
+    },
+
+    async getArchivedTickets() {
+      const [rows] = await db.query(`
+        SELECT st.*, u.first_name, u.second_name 
+        FROM support_tickets st
+        JOIN users u ON st.user_id = u.id
+        WHERE st.is_archived = TRUE 
+        ORDER BY st.updated_at DESC
+      `);
+      return rows;
+    },
+
+    async setArchiveStatus(id, shouldArchive) {
+      const [result] = await db.query(
+        "UPDATE support_tickets SET is_archived = ? WHERE id = ?",
+        [shouldArchive, id]
+      );
+      return result;
     }
-
-    return {
-      id: row.id,
-      ticket_number: row.ticket_number,
-      fullName: row.user_id ? `${row.subject} - ${userName}` : row.subject,
-      phone: row.phone || "N/A",
-      issue_type: row.issue_type,
-      priority: row.priority,
-      status: row.status,
-      subject: row.subject,
-      description: row.description || "",
-      assigned_to: row.assigned_to,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-    };
-  },
-
-  // Create new ticket
-  create: async (data) => {
-    const {
-      ticket_number,
-      user_id,
-      subject,
-      issue_type,
-      priority,
-      description,
-      status,
-      assigned_to,
-    } = data;
-
-    const [result] = await db.query(
-      `INSERT INTO support_tickets 
-    (ticket_number, user_id, subject, issue_type, priority, description, status, assigned_to)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        ticket_number,
-        user_id,
-        subject,
-        issue_type,
-        priority,
-        description,
-        status,
-        assigned_to,
-      ]
-    );
-
-    // RETURN DIRECTLY — DO NOT USE findById()
-    return SupportTicket.mapToFrontend({
-      id: result.insertId,
-      ticket_number,
-      user_id,
-      subject,
-      issue_type,
-      priority,
-      description,
-      status,
-      assigned_to,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-  },
-
-  // Get ALL tickets
-  findAll: async () => {
-    const [rows] = await db.query(`
-    SELECT st.*, u.first_name, u.second_name, u.email, u.phone
-    FROM support_tickets st
-    LEFT JOIN users u ON st.user_id = u.id
-    ORDER BY st.created_at DESC
-  `);
-
-    return rows.map(SupportTicket.mapToFrontend);
-  },
-
-  // Get tickets by USER
-  findAllByUser: async (userId = null) => {
-    if (!userId) return SupportTicket.findAll();
-
-    const [rows] = await db.query(
-      `
-    SELECT st.*, u.first_name, u.second_name, u.email, u.phone
-    FROM support_tickets st
-    LEFT JOIN users u ON st.user_id = u.id
-    WHERE st.user_id = ?
-    ORDER BY st.created_at DESC
-  `,
-      [userId]
-    );
-
-    return rows.map(SupportTicket.mapToFrontend);
-  },
-
-  // Get tickets assigned to STAFF
-  findAllByStaff: async (staffId = null) => {
-    if (!staffId) return [];
-
-    const [rows] = await db.query(
-      `
-    SELECT st.*, u.first_name, u.second_name, u.email, u.phone
-    FROM support_tickets st
-    LEFT JOIN users u ON st.user_id = u.id
-    WHERE st.assigned_to = ?
-    ORDER BY st.created_at DESC
-    `,
-      [staffId]
-    );
-
-    return rows.map(SupportTicket.mapToFrontend);
-  },
-
-  // Get one ticket by ID
-  findById: async (id) => {
-    const [rows] = await db.query(
-      `SELECT * FROM support_tickets WHERE id = ?`,
-      [id]
-    );
-
-    if (!rows.length) return null;
-    return SupportTicket.mapToFrontend(rows[0]);
-  },
-
-  // Generic update
-  update: async (id, data) => {
-    const fields = Object.keys(data)
-      .map((k) => `${k} = ?`)
-      .join(", ");
-
-    const values = [...Object.values(data), id];
-
-    await db.query(`UPDATE support_tickets SET ${fields} WHERE id = ?`, values);
-
-    return SupportTicket.findById(id);
-  },
-
-  // Update only status
-  updateStatus: async (id, status) => {
-    await db.query(`UPDATE support_tickets SET status = ? WHERE id = ?`, [
-      status,
-      id,
-    ]);
-    return SupportTicket.findById(id);
-  },
-
-  // Delete ticket
-  delete: async (id) => {
-    await db.query(`DELETE FROM support_tickets WHERE id = ?`, [id]);
-    return true;
-  },
 };
 
-module.exports = SupportTicket;
+module.exports = SupportModel;

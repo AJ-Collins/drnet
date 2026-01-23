@@ -4,7 +4,8 @@ const path = require("path");
 const cors = require("cors");
 const session = require("express-session");
 const fs = require("fs");
-const ejs = require("ejs");
+const http = require("http");
+const { Server } = require("socket.io");
 const app = express();
 const runMigrations = require("./src/migrations/index");
 const authRoutes = require("./src/routes/authRoutes");
@@ -18,7 +19,11 @@ const bookings = require("./src/routes/bookings");
 const payment = require("./src/routes/payment");
 const staffAssignment = require("./src/routes/staff");
 const schedules = require("./src/routes/schedules");
+
+// Support tickets
 const SupportTickets = require("./src/routes/supportTickets");
+
+
 const attendance = require("./src/routes/attendance");
 const packages = require("./src/routes/packages");
 const sitePackages = require("./src/routes/sitePackages");
@@ -419,17 +424,13 @@ app.get("/supervisor", requireSupervisorAuth, (req, res) => {
 //Customer care Routes
 const customerCarePages = [
   "dashboard",
-  "manage-users",
   "support-tickets",
-  "reports",
   "profile",
   "communication-team",
-  "my-customers",
   "work-schedule",
   "notifications",
-  "daily_reports",
-  "active-users",
-  "expired-users"
+  "task-assignment",
+  "subscriptions"
 ];
 
 app.get("/customer-care/:page", requireCustomerCareAuth, (req, res) => {
@@ -585,21 +586,52 @@ async function startServer() {
     console.log("Migrations complete.");
 
     const PORT = process.env.PORT || 5000;
-    const server = app.listen(PORT, () => {
+
+    const httpServer = http.createServer(app);
+
+    const io = new Server(httpServer, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+      },
+    });
+
+    app.set('socketio', io);
+
+    io.on("connection", (socket) => {
+      console.log("Socket connected:", socket.id);
+
+      socket.on("joinTicket", (ticketId) => {
+        socket.rooms.forEach(room => {
+            if(room !== socket.id) socket.leave(room);
+        });
+        
+        socket.join(`ticket_${ticketId}`);
+        console.log(`User ${socket.id} joined ticket room: ticket_${ticketId}`);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Socket disconnected:", socket.id);
+      });
+    });
+
+    httpServer.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
     });
 
     process.on("SIGINT", () => {
       console.log("\nShutting down...");
-      server.close(() => {
+      httpServer.close(() => {
         console.log("Server closed");
         process.exit(0);
       });
     });
+
   } catch (err) {
     console.error("Failed to start server:", err);
     process.exit(1);
   }
 }
+
 
 startServer();

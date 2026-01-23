@@ -1,414 +1,184 @@
 const express = require("express");
 const router = express.Router();
-const Guest = require("../models/Guest");
-const SupportTicket = require("../models/SupportTicket");
-const SupportTicketMessage = require("../models/SupportTicketMessage");
+const SupportModel = require("../models/SupportTicket");
+const User = require("../models/User");
 const Staff = require("../models/Staff");
-const db = require("../config/db");
-const notificationService = require("../services/notificationService");
+const smsService = require("../services/smsService");
+
 const apiSessionAuth = require("../middleware/apiSessionAuth");
+const { json } = require("sequelize");
 
 router.use(apiSessionAuth);
 
-router.get("/my/tickets", async (req, res) => {
-  try {
-    if (!req.session || !req.session.user) {
-      return res.status(401).json({
-        error: "Unauthorized",
-        message: "Please log in to view tickets",
-      });
-    }
-    const ticket = await SupportTicket.findAllByUser(req.session.user.id);
-    res.json(Array.isArray(ticket) ? ticket : [ticket]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/my/tickets", async (req, res) => {
-  try {
-    if (!req.session || !req.session.user) {
-      return res.status(401).json({
-        error: "Unauthorized",
-        message: "Please log in to view tickets",
-      });
-    }
-    const user_id = req.session.user.id;
-    const { subject, issue_type, priority = "medium", description } = req.body;
-
-    const ticket_number = `TKT-${Date.now().toString().slice(-6)}`;
-
-    const ticket = await SupportTicket.create({
-      ticket_number,
-      user_id,
-      subject,
-      issue_type,
-      priority,
-      description,
-      status: "open",
-      assigned_to: null,
-    });
-
-    res.json(ticket); // ← full ticket with description
-  } catch (err) {
-    console.error("Ticket creation error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/my/tickets/:id/resolve", async (req, res) => {
-  try {
-    await SupportTicket.updateStatus(req.params.id, "resolved");
-    const updated = await SupportTicket.findById(req.params.id);
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get("/my/messages", async (req, res) => {
-  try {
-    const messages = await SupportTicketMessage.findAllByUser(
-      req.session.user.id
-    );
-    res.json(messages);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/my/messages", async (req, res) => {
-  try {
-    if (!req.session || !req.session.user) {
-      return res.status(401).json({
-        error: "Unauthorized",
-        message: "Please log in to view messages",
-      });
-    }
-    const { ticket_id, message } = req.body;
-    const u = req.session.user;
-
-    let sender_user_id = null;
-    let sender_staff_id = null;
-
-    if (u.userType === "staff") {
-      sender_staff_id = u.id;
-    } else {
-      sender_user_id = u.id;
-    }
-
-    const result = await SupportTicketMessage.create({
-      ticket_id,
-      sender_user_id,
-      sender_staff_id,
-      message,
-    });
-
-    const created = await SupportTicketMessage.findById(result.insertId);
-    res.json(created);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-//Admin support ticket routes
-// GET all tickets (admin)
+// Get all tickets
 router.get("/tickets", async (req, res) => {
+    try {
+        const archived = req.query.archived === 'true';
+        const tickets = await SupportModel.findAll(archived);
+        res.json(tickets);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Get archived list
+router.get("/tickets/archived", async (req, res) => {
   try {
-    const tickets = await SupportTicket.findAllByUser(null);
+    const tickets = await SupportModel.getArchivedTickets();
     res.json(tickets);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-//Staff get specific tickets assigned
-router.get("/assigned/tickets", async (req, res) => {
-  try {
-    const user = req.session.user;
-
-    if (!user || user.userType !== "staff") {
-      return res.status(403).json({ error: "Forbidden" });
-    }
-
-    const tickets = await SupportTicket.findAllByStaff(user.id);
-
-    res.json({ success: true, tickets });
-  } catch (err) {
-    console.error("Error fetching assigned tickets:", err);
-    res.status(500).json({ error: "Failed to fetch assigned tickets" });
-  }
+// Get single ticket
+router.get("/tickets/:id", async (req, res) => {
+    try {
+        const ticket = await SupportModel.findById(req.params.id);
+        if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+        res.json(ticket);
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// CREATE ticket
+// Create a new ticket
 router.post("/tickets", async (req, res) => {
-  try {
-    const { fullName, phone, issue_type, priority, status, ticket_number, assigned_to } =
-      req.body;
+    try {
+        const { send_sms, user_id, issue_subject, description } = req.body;
+        const ticketNumber = 'TK-' + Date.now().toString().slice(-6);
 
-    let user = await Guest.findByPhone(phone);
-
-    if (!user) {
-      const newUserId = await Guest.create({ fullName, phone });
-      user = { id: newUserId };
-    }    
-
-    const ticket = await SupportTicket.create({
-      ticket_number,
-      user_id: user.id,
-      subject: `${issue_type} - ${fullName}` || 'No Subject',
-      issue_type,
-      priority,
-      description: "",
-      status: status || "Pending",
-      assigned_to: assigned_to || null,
-    });
-
-    if (assigned_to) {
-      const assignStaff = await Staff.findById(assigned_to);
-      const staffRoleId = assignStaff ? assignStaff.role_id : null;
-
-      if (staffRoleId) {
-        await notificationService.createForRole({
-          type: 'support_ticket_assignment',
-          reference_id: ticket.id,
-          title: `New Assignment`,
-          message: `You have a new assignment: ${ticket.ticket_number}`,
-          role_id: staffRoleId
+        const ticketId = await SupportModel.create({ 
+            user_id, 
+            issue_subject, 
+            description, 
+            ticket_number: ticketNumber 
         });
-      }
+
+        if (send_sms) {
+            const client = await User.findById(user_id);
+            if (client && client.phone) {
+                const smsBody = `Hi ${client.first_name}, a support ticket #${ticketNumber} has been created for: ${issue_subject}. We will resolve it soon.`;
+                await smsService.sendSMS(client.phone, smsBody);
+            }
+        }
+
+        res.status(201).json({ success: true, ticketId });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+
+router.post("/tickets/assign", async (req, res) => {
+    try {
+        const { ticket_id, staff_id, note, send_sms } = req.body;
+
+        const staff = await SupportModel.assignStaff(
+            ticket_id, 
+            staff_id, 
+            note
+        );
+
+        if (send_sms) {
+            const staff = await Staff.findById(staff_id);
+            if (staff && staff.phone) {
+                const smsBody = `Hi ${staff.first_name}, you've been assigned to support Ticket #${ticket_id}. Task: ${note}`;
+                await smsService.sendSMS(staff.phone, smsBody);
+            }
+        }
+
+        res.json({ success: true, staff });
+    } catch (err) { 
+        console.error("Assignment Error:", err);
+        res.status(500).json({ error: err.message }); 
     }
-
-    res.json(ticket);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 });
 
-// UPDATE ticket
-router.put("/tickets/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { fullName, phone, issue_type, priority, status } = req.body;
-
-    await SupportTicket.update(id, {
-      subject: `${issue_type} - ${fullName}`,
-      issue_type,
-      priority,
-      status,
-    });
-
-    const updated = await SupportTicket.findById(id);
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// Fetch assignments
+router.get("/tickets/:id/assignments", async (req, res) => {
+    try {
+        const assignments = await SupportModel.getAssignments(req.params.id);
+        res.json(assignments);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// UPDATE status only
+// Post a message (Real-time trigger should happen here)
+router.post("/messages", async (req, res) => {
+    try {
+        // middleware ensures req.session.user exists
+        const staffId = req.session.user.id; 
+
+        const messageData = {
+            ticket_id: req.body.ticket_id,
+            message: req.body.message,
+            sender_staff_id: staffId
+        };
+
+        const fullMessage = await SupportModel.saveMessage(messageData);
+        
+        const io = req.app.get('socketio');
+        if (io) {
+            // Send ONLY to users in this ticket's room
+            io.to(`ticket_${req.body.ticket_id}`).emit('newMessage', fullMessage);
+        }
+        
+        res.json({ success: true, message: fullMessage });
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
+});
+
+// Fetch messages for a ticket
+router.get("/tickets/:id/messages", async (req, res) => {
+    try {
+        const messages = await SupportModel.getMessagesByTicket(req.params.id);
+        res.json(messages);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 router.patch("/tickets/:id/status", async (req, res) => {
-  try {
     const { id } = req.params;
     const { status } = req.body;
-
-    await SupportTicket.updateStatus(id, status);
-
-    const updated = await SupportTicket.findById(id);
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    
+    try {
+        // Use the model method you already defined
+        await SupportModel.updateStatus(id, status);
+        res.json({ success: true, message: `Ticket marked as ${status}` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// DELETE ticket
+// PATCH route for archiving
+router.patch("/tickets/:id/archive", async (req, res) => {
+    try {
+        await SupportModel.archive(req.params.id);
+        res.json({ success: true, message: "Ticket archived" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Revoke Assignment
+router.delete("/tickets/:id/assign/:staff_id", async (req, res) => {
+    try {
+        await SupportModel.removeAssignment(req.params.id, req.params.staff_id);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Delete ticket
 router.delete("/tickets/:id", async (req, res) => {
   try {
-    await SupportTicket.delete(req.params.id);
-    await SupportTicketMessage.deleteByTicket(req.params.id);
+    await SupportModel.delete(req.params.id);
     res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+})
+
+// Unarchive (Restore) a ticket
+router.patch("/tickets/:id/restore", async (req, res) => {
+  try {
+    await SupportModel.setArchiveStatus(req.params.id, false);
+    res.json({ success: true, message: "Ticket restored to active list" });
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-});
-
-// MESSAGES
-
-// GET all messages (admin)
-router.get("/messages", async (req, res) => {
-  try {
-    let messages;
-    if (req.query.ticket_id) {
-      // return messages for a specific ticket
-      messages = await SupportTicketMessage.findAllByTicket(
-        req.query.ticket_id
-      );
-    } else {
-      // return all messages
-      messages = await SupportTicketMessage.findAll(); // new helper
-    }
-
-    res.json({
-      success: true,
-      count: messages.length,
-      messages,
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-router.get("/messages/ticket/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const messages = await SupportTicketMessage.findAllByTicket(id);
-
-    if (!messages.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No messages found for this ticket",
-      });
-    }
-
-    res.json({
-      success: true,
-      count: messages.length,
-      messages,
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-router.get("/ticket/:ticketId", async (req, res) => {
-  try {
-    const { ticketId } = req.params;
-
-    const messages = await SupportTicketMessage.findAllByTicket(ticketId);
-
-    if (!messages.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No messages found for this ticket",
-      });
-    }
-
-    res.json({
-      success: true,
-      count: messages.length,
-      messages,
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// CREATE message
-router.post("/messages", async (req, res) => {
-  try {
-    const staffId = req.session.user?.id;
-    if (!staffId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const messageData = {
-      ticket_id: req.body.ticket_id,
-      sender_staff_id: staffId,
-      sender_user_id: req.body.sender_user_id || null,
-      message: req.body.message,
-    };
-
-    const result = await SupportTicketMessage.create(messageData);
-    const msg = await SupportTicketMessage.findById(result.insertId);
-
-    res.json(msg);
-  } catch (err) {
-    console.error("Error creating message:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// DELETE all messages for a ticket
-router.delete("/messages/ticket/:ticket_id", async (req, res) => {
-  try {
-    await SupportTicketMessage.deleteByTicket(req.params.ticket_id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-//Get Staff
-router.get("/tickets/staff", async (req, res) => {
-  try {
-    const allStaff = await Staff.findAll();
-    res.json(allStaff);
-  } catch (err) {
-    console.error("Error fetching staff:", err);
-    res.status(500).json({ error: "Failed to fetch staff" });
-  }
-});
-
-// Assign / Reassign / Unassign ticket
-router.post("/tickets/:id/assign", async (req, res) => {
-  const { id } = req.params;
-  const { assigned_to } = req.body;
-
-  try {
-    const assignedToValue =
-      assigned_to === "" || assigned_to === null || assigned_to === undefined
-        ? null
-        : parseInt(assigned_to, 10);
-
-    await db.query(`UPDATE support_tickets SET assigned_to = ? WHERE id = ?`, [
-      assignedToValue,
-      id,
-    ]);
-
-    if (assignedToValue !== null) {
-      await db.query(
-        `UPDATE support_tickets SET status = 'in_progress' WHERE id = ? AND status = 'open'`,
-        [id]
-      );
-    } else {
-      await db.query(
-        `UPDATE support_tickets SET status = 'open' WHERE id = ? AND status = 'in_progress' AND assigned_to IS NULL`,
-        [id]
-      );
-    }
-
-    const ticket = await SupportTicket.findById(id);
-
-    // Notification
-    if (assignedToValue !== null) {
-      const assignedStaff = await Staff.findById(assignedToValue);
-      const roleId = assignedStaff ? assignedStaff.role_id : null;
-
-      if (roleId) {
-        const message =
-          ticket.assigned_to === assignedToValue
-            ? `You have a new assignment: ${ticket.ticket_number}`
-            : `Assignment ${ticket.ticket_number} has been reassigned to you`;
-
-        await notificationService.createForRole({
-          type: "ticket_assignment",
-          reference_id: ticket.id,
-          title:
-            ticket.assigned_to === assignedToValue
-              ? "New Assignment"
-              : "Assignment Reassigned",
-          message,
-          role_id: roleId,
-        });
-      }
-    }
-
-    res.json(ticket);
-  } catch (err) {
-    console.error("Assign error:", err);
-    res.status(500).json({
-      error: "Failed to assign ticket",
-      details: err.message,
-    });
   }
 });
 

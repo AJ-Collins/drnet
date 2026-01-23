@@ -1,431 +1,323 @@
 <style>
-  .skeleton {
-    background: #e5e7eb;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
-</style>
+        .chat-scroll::-webkit-scrollbar { width: 5px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .bubble-in { border-radius: 0 15px 15px 15px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bubble-out { border-radius: 15px 0 15px 15px; background: #dcf8c6; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .chat-bg { background-color: #e5ddd5; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.05"><text x="10" y="50" font-size="80" fill="%23999">💬</text></svg>'); }
+    </style>
+<div class="bg-gray-100 h-screen overflow-hidden flex flex-col">
 
-<div class="flex items-center justify-between mb-8">
-  <div>
-    <h3 class="text-3xl font-bold text-teal-800">Team Communication</h3>
-    <p class="text-teal-600 mt-1">
-      Real-time chat, announcements, and collaboration
-    </p>
-  </div>
+    <header class="bg-teal-700 text-white p-4 flex justify-between items-center shadow-md z-30">
+        <h1 class="text-lg md:text-xl font-bold tracking-tight">TEAM COMMUNICATION</h1>
+        <div class="flex gap-2">
+            <button onclick="toggleAnnouncementModal()" class="bg-teal-600 hover:bg-teal-800 px-3 py-2 rounded text-xs md:text-sm font-semibold transition">
+                <i class="fas fa-bullhorn mr-1"></i> <span class="hidden md:inline">New Announcement</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative">
+        <!-- Sidebar: Team Members & Announcements -->
+        <aside id="sidebar" class="w-full md:w-1/3 lg:w-1/4 border-r bg-white flex flex-col z-20 transition-all duration-300">
+            <div class="p-4 border-b bg-teal-50">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-teal-700 uppercase flex items-center gap-2">
+                        <i class="fas fa-users"></i> Team Members
+                    </span>
+                    <span id="onlineCount" class="text-[10px] font-bold text-teal-600">0 online</span>
+                </div>
+            </div>
+            
+            <!-- Team Members List -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-2" id="teamMembers">
+                <div class="p-3 bg-gray-100 rounded animate-pulse h-16"></div>
+                <div class="p-3 bg-gray-100 rounded animate-pulse h-16"></div>
+            </div>
+
+            <!-- Announcements Section -->
+            <div class="border-t bg-gray-50 p-4 max-h-64 overflow-y-auto">
+                <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
+                    <i class="fas fa-bullhorn text-teal-600"></i> Announcements
+                </h3>
+                <div id="announcementsList" class="space-y-2">
+                    <p class="text-xs text-gray-400 italic">No announcements</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main id="mainDisplay" class="hidden md:flex flex-1 flex-col bg-white absolute inset-0 z-10 md:relative md:z-0">
+            <div class="p-3 md:p-4 border-b flex justify-between items-center bg-white shadow-sm">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeChatMobile()" class="md:hidden p-2 -ml-2 text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </button>
+                    <div>
+                        <h2 class="text-sm md:text-lg font-bold text-teal-800 flex items-center gap-2">
+                            <i class="fas fa-comments"></i> #team-chat
+                        </h2>
+                        <p class="text-[10px] md:text-xs text-teal-600">Real-time team communication</p>
+                    </div>
+                </div>
+                <button onclick="refreshChat()" class="text-teal-600 hover:text-teal-800 p-2">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="flex-1 flex flex-col chat-bg">
+                <div id="chatMessages" class="flex-1 overflow-y-auto p-4 chat-scroll flex flex-col gap-3">
+                    <div class="text-center text-gray-400 py-10">
+                        <i class="fas fa-comment-slash text-5xl mb-3"></i>
+                        <p class="text-sm">No messages yet. Start the conversation!</p>
+                    </div>
+                </div>
+
+                <!-- Message Input -->
+                <div class="p-3 bg-white border-t flex gap-2">
+                    <textarea 
+                        id="messageInput" 
+                        rows="1" 
+                        placeholder="Type a message..." 
+                        class="flex-1 p-2 bg-gray-100 border-none rounded-full px-4 text-sm outline-none resize-none"
+                        oninput="autoResize(this)"
+                        onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }"></textarea>
+                    <button onclick="sendMessage()" class="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-full">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- Chat Panel -->
-  <section
-    class="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-teal-100 overflow-hidden flex flex-col h-[80vh]"
-  >
-    <div
-      class="p-5 bg-gradient-to-r from-teal-600 to-teal-700 text-white flex items-center justify-between"
-    >
-      <div class="flex items-center gap-4">
-        <i class="fas fa-comments text-3xl"></i>
-        <div>
-          <h2 class="text-xl font-bold">#team-chat</h2>
-          <div id="onlineCount" class="text-sm opacity-90">
-            Loading members...
-          </div>
+<!-- Announcement Modal -->
+<div id="announcementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+        <div class="p-6 border-b bg-teal-50">
+            <h2 class="text-xl font-bold text-teal-800 flex items-center gap-2">
+                <i class="fas fa-bullhorn"></i> New Announcement
+            </h2>
         </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <button
-          onclick="refreshChat()"
-          class="p-2 hover:bg-white/20 rounded-lg transition"
-        >
-          <i class="fas fa-sync-alt"></i>
-        </button>
-      </div>
+        <form onsubmit="saveAnnouncement(event)" class="p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Title</label>
+                <input type="text" id="annTitle" required placeholder="Announcement title..." 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Message</label>
+                <textarea id="annBody" required rows="4" placeholder="Announcement details..." 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none resize-none"></textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 bg-teal-600 text-white py-2.5 rounded-lg font-bold hover:bg-teal-700 transition">
+                    Post Announcement
+                </button>
+                <button type="button" onclick="toggleAnnouncementModal()" class="px-6 py-2.5 text-gray-600 font-semibold hover:text-gray-900">
+                    Cancel
+                </button>
+            </div>
+        </form>
     </div>
-
-    <!-- Messages -->
-    <div
-      id="chatMessages"
-      class="flex-1 overflow-y-auto p-6 space-y-5 bg-gray-50"
-    >
-      <div class="text-center text-gray-500 py-20">
-        <i class="fas fa-comment-slash text-8xl text-gray-200 mb-4"></i>
-        <p class="text-xl font-semibold">No messages yet</p>
-        <p class="text-sm">Start the conversation!</p>
-      </div>
-    </div>
-
-    <!-- Input -->
-    <div class="p-5 border-t-2 border-teal-100 bg-white">
-      <form onsubmit="sendMessage(event)" class="flex items-end gap-3">
-        <textarea
-          id="messageInput"
-          rows="1"
-          placeholder="Type a message..."
-          class="flex-1 px-5 py-3 border-2 border-teal-200 rounded-2xl resize-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all text-base"
-          oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px'"
-        ></textarea>
-        <button
-          type="submit"
-          class="bg-teal-600 hover:bg-teal-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all"
-        >
-          <i class="fas fa-paper-plane text-xl"></i>
-        </button>
-      </form>
-    </div>
-  </section>
-
-  <!-- Right Sidebar -->
-  <aside class="space-y-6">
-    <!-- Team Members -->
-    <div class="bg-white rounded-2xl shadow-xl border border-teal-100 p-5">
-      <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <i class="fas fa-users text-teal-600"></i> Team Members
-      </h3>
-      <div id="teamMembers" class="space-y-3 max-h-80 overflow-y-auto">
-        <div class="skeleton h-16 rounded-xl"></div>
-        <div class="skeleton h-16 rounded-xl"></div>
-      </div>
-    </div>
-
-    <!-- Announcements -->
-    <div class="bg-white rounded-2xl shadow-xl border border-teal-100 p-5">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <i class="fas fa-bullhorn text-teal-600"></i> Announcements
-        </h3>
-      </div>
-      <div id="announcementsList" class="space-y-3 max-h-96 overflow-y-auto">
-        <div class="skeleton h-24 rounded-xl"></div>
-      </div>
-    </div>
-  </aside>
 </div>
 
 <script>
-  const API_BASE = "/api";
-  let messages = [];
-  let teamMembers = [];
-  let announcements = [];
-  let currentUser = null;
+    const API_BASE = "/api";
+    let messages = [];
+    let teamMembers = [];
+    let announcements = [];
+    let currentUser = null;
 
-  const $ = (id) => document.getElementById(id);
-
-  // Load everything
-  const loadData = async () => {
-    try {
-      const [msgRes, memberRes, annRes, userRes] = await Promise.all([
-        fetch(`${API_BASE}/team/messages`),
-        fetch(`${API_BASE}/team/members`),
-        fetch(`${API_BASE}/team/announcements`),
-        fetch(`${API_BASE}/auth/me`),
-      ]);
-
-      const msgData = msgRes.ok ? await msgRes.json() : {};
-      const annData = annRes.ok ? await annRes.json() : {};
-
-      messages = Array.isArray(msgData.messages) ? msgData.messages : [];
-      teamMembers = memberRes.ok ? await memberRes.json() : [];
-      announcements = Array.isArray(annData.announcements)
-        ? annData.announcements
-        : [];
-      currentUser = userRes.ok ? await userRes.json() : null;
-
-      renderMessages();
-      renderMembers();
-      renderAnnouncements();
-    } catch (err) {
-      alert("Failed to load team data");
-    }
-  };
-
-  // Render Messages
-  const renderMessages = () => {
-    const container = $("chatMessages");
-    if (!messages.length) {
-      container.innerHTML = `
-        <div class="text-center py-20 text-gray-500">
-          <i class="fas fa-comments text-9xl text-gray-200 mb-6"></i>
-          <p class="text-2xl font-bold">No messages yet</p>
-          <p class="text-lg">Be the first to say something!</p>
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = messages
-      .map((m) => {
-        const isMe = currentUser && m.sender_id === currentUser.id;
-        const sender = m.sender_name || "Unknown";
-        const role = m.sender_role || "Staff";
-
-        return `
-        <div class="flex items-start gap-4 ${isMe ? "flex-row-reverse" : ""}">
-          <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-lg
-            ${
-              isMe
-                ? "bg-blue-600"
-                : role === "Admin"
-                ? "bg-purple-600"
-                : "bg-teal-600"
-            }">
-            ${sender.charAt(0).toUpperCase()}
-          </div>
-
-          <div class="flex-1 max-w-xl">
-            <div class="mb-2 text-xs text-gray-500 flex items-center gap-2 ${
-              isMe ? "justify-end" : ""
-            }">
-              <span class="font-bold ${
-                isMe
-                  ? "text-blue-700"
-                  : role === "Admin"
-                  ? "text-purple-700"
-                  : "text-teal-700"
-              }">
-                ${isMe ? "You" : sender}
-                ${
-                  role === "Admin"
-                    ? '<span class="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">Admin</span>'
-                    : ""
-                }
-              </span>
-              <span>${new Date(m.created_at).toLocaleString()}</span>
-            </div>
-
-            <!-- MESSAGE BUBBLE -->
-            <div class="p-5 
-              ${
-                isMe
-                  ? "rounded-2xl rounded-tr-none bg-blue-50 border-2 border-blue-200"
-                  : "rounded-2xl rounded-tl-none bg-gray-100 border-2 border-gray-300"
-              }">
-              <p class="text-gray-900 leading-relaxed">${escapeHtml(
-                m.message
-              )}</p>
-            </div>
-          </div>
-        </div>`;
-      })
-      .join("");
-
-    container.scrollTop = container.scrollHeight;
-  };
-
-  // Render Team Members
-  const renderMembers = () => {
-    const container = $("teamMembers");
-    const onlineCount = teamMembers.filter((m) => m.online).length;
-    $("onlineCount").textContent = `${onlineCount} member${
-      onlineCount !== 1 ? "s" : ""
-    } online`;
-
-    container.innerHTML = teamMembers
-      .map(
-        (m) => `
-      <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition">
-        <div class="flex items-center gap-3">
-          <div class="relative">
-            <div class="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-lg">
-              ${m.name.charAt(0).toUpperCase()}
-            </div>
-            ${
-              m.online
-                ? '<div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>'
-                : ""
-            }
-          </div>
-          <div>
-            <div class="font-semibold text-gray-900">${escapeHtml(m.name)}</div>
-            <div class="text-xs text-gray-500">${m.role || "Staff"}</div>
-          </div>
-        </div>
-        <div class="text-sm ${m.online ? "text-green-600" : "text-gray-400"}">
-          ${m.online ? "Online" : "Offline"}
-        </div>
-      </div>
-    `
-      )
-      .join("");
-  };
-
-  function truncateText(text, limit = 120) {
-    if (text.length <= limit)
-      return { truncated: text, full: text, isTruncated: false };
-
-    return {
-      truncated: text.substring(0, limit) + "...",
-      full: text,
-      isTruncated: true,
+    window.onload = () => {
+        loadData();
+        setInterval(loadData, 10000); // Auto-refresh every 10s
     };
-  }
 
-  function toggleAnnouncement(id) {
-    const el = document.getElementById(`announcement-msg-${id}`);
-    const btn = document.getElementById(`announcement-btn-${id}`);
+    async function loadData() {
+        try {
+            const [msgRes, memberRes, annRes, userRes] = await Promise.all([
+                fetch(`${API_BASE}/team/messages`),
+                fetch(`${API_BASE}/team/members`),
+                fetch(`${API_BASE}/team/announcements`),
+                fetch(`${API_BASE}/auth/me`)
+            ]);
 
-    const isExpanded = el.dataset.expanded === "true";
+            const msgData = msgRes.ok ? await msgRes.json() : {};
+            const annData = annRes.ok ? await annRes.json() : {};
 
-    if (isExpanded) {
-      el.textContent = el.dataset.truncated;
-      el.dataset.expanded = "false";
-      btn.textContent = "Read more";
-    } else {
-      el.textContent = el.dataset.full;
-      el.dataset.expanded = "true";
-      btn.textContent = "Show less";
-    }
-  }
+            messages = Array.isArray(msgData.messages) ? msgData.messages : [];
+            teamMembers = memberRes.ok ? await memberRes.json() : [];
+            announcements = Array.isArray(annData.announcements) ? annData.announcements : [];
+            currentUser = userRes.ok ? await userRes.json() : null;
 
-  // Render Announcements
-  const renderAnnouncements = () => {
-    const container = $("announcementsList");
-
-    if (!announcements.length) {
-      container.innerHTML = `<p class="text-center text-gray-500 py-8">No announcements</p>`;
-      return;
-    }
-
-    container.innerHTML = announcements
-      .map((a) => {
-        const trunc = truncateText(a.message, 120);
-
-        return `
-      <div class="p-5 bg-teal-50 border-2 border-teal-200 rounded-xl relative group">
-        <div class="pr-10">
-          <h4 class="font-bold text-teal-800 text-lg">${escapeHtml(
-            a.title
-          )}</h4>
-
-          <p class="text-gray-700 mt-2">
-            <span 
-              id="announcement-msg-${a.id}"
-              data-full="${escapeHtml(trunc.full)}"
-              data-truncated="${escapeHtml(trunc.truncated)}"
-              data-expanded="false"
-            >
-              ${escapeHtml(trunc.isTruncated ? trunc.truncated : trunc.full)}
-            </span>
-
-            ${
-              trunc.isTruncated
-                ? `<button 
-                    id="announcement-btn-${a.id}" 
-                    onclick="toggleAnnouncement(${a.id})" 
-                    class="text-teal-700 ml-2 underline text-sm"
-                  >
-                    Read more
-                  </button>`
-                : ""
-            }
-          </p>
-
-          <p class="text-xs text-gray-500 mt-3">
-            Posted ${new Date(a.created_at).toLocaleDateString()}
-          </p>
-        </div>
-
-        ${
-          currentUser?.role === "Admin"
-            ? `
-          <button onclick="deleteAnnouncement(${a.id})" 
-            class="absolute top-3 right-3 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">
-            <i class="fas fa-trash"></i>
-          </button>`
-            : ""
+            renderMessages();
+            renderMembers();
+            renderAnnouncements();
+        } catch (err) {
+            console.error("Failed to load data:", err);
         }
-      </div>
-    `;
-      })
-      .join("");
-  };
-
-  // Send Message
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    const input = $("messageInput");
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    try {
-      await fetch(`${API_BASE}/team/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg }),
-      });
-      input.value = "";
-      loadData();
-    } catch (err) {
-      alert("Failed to send message");
     }
-  };
 
-  const closeAnnouncementModal = () => {
-    $("announcementModal").classList.add("hidden");
-  };
+    function renderMessages() {
+        const container = document.getElementById('chatMessages');
+        if (!messages.length) {
+            container.innerHTML = `
+                <div class="text-center text-gray-400 py-10">
+                    <i class="fas fa-comment-slash text-5xl mb-3"></i>
+                    <p class="text-sm">No messages yet. Start the conversation!</p>
+                </div>`;
+            return;
+        }
 
-  const saveAnnouncement = async (e) => {
-    e.preventDefault();
-    const title = $("annTitle").value.trim();
-    const body = $("annBody").value.trim();
-    const editId = $("annEditId").value;
+        container.innerHTML = messages.map(m => {
+            const isMe = currentUser && m.sender_id === currentUser.id;
+            const sender = m.sender_name || "Unknown";
+            const role = m.sender_role || "Staff";
 
-    if (!title || !body) return;
+            return `
+                <div class="${isMe ? 'self-end' : 'self-start'} max-w-[80%]">
+                    <span class="text-[10px] text-gray-600 ${isMe ? 'mr-2 text-right block' : 'ml-2'}">
+                        ${isMe ? 'You' : escapeHtml(sender)}
+                        ${role === 'Admin' ? '<span class="ml-1 px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[9px] font-bold">ADMIN</span>' : ''}
+                    </span>
+                    <div class="${isMe ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
+                        ${escapeHtml(m.message)}
+                        <span class="block text-[9px] text-gray-400 text-right mt-1">
+                            ${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
 
-    try {
-      const url = editId
-        ? `${API_BASE}/team/announcements/${editId}`
-        : `${API_BASE}/team/announcements`;
-      const method = editId ? "PUT" : "POST";
-
-      await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, body }),
-      });
-
-      closeAnnouncementModal();
-      loadData();
-    } catch (err) {
-      alert("Failed to save announcement");
+        container.scrollTop = container.scrollHeight;
     }
-  };
 
-  const deleteAnnouncement = async (id) => {
-    if (!confirm("Delete this announcement?")) return;
-    try {
-      await fetch(`${API_BASE}/team/announcements/${id}`, { method: "DELETE" });
-      loadData();
-    } catch (err) {
-      alert("Failed to delete");
+    function renderMembers() {
+        const container = document.getElementById('teamMembers');
+        const onlineCount = teamMembers.filter(m => m.online).length;
+        document.getElementById('onlineCount').textContent = `${onlineCount} online`;
+
+        container.innerHTML = teamMembers.map(m => `
+            <div class="p-3 border-b hover:bg-teal-50 cursor-pointer transition rounded flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-10 h-10 rounded-full ${m.role === 'Admin' ? 'bg-purple-600' : 'bg-teal-600'} text-white flex items-center justify-center font-bold">
+                        ${m.name.charAt(0).toUpperCase()}
+                    </div>
+                    ${m.online ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>' : ''}
+                </div>
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-800 text-sm">${escapeHtml(m.name)}</div>
+                    <div class="text-xs ${m.online ? 'text-green-600' : 'text-gray-400'}">
+                        ${m.online ? 'Online' : 'Offline'} • ${m.role || 'Staff'}
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
-  };
 
-  // Refresh
-  const refreshChat = () => loadData();
+    function renderAnnouncements() {
+        const container = document.getElementById('announcementsList');
+        if (!announcements.length) {
+            container.innerHTML = `<p class="text-xs text-gray-400 italic">No announcements</p>`;
+            return;
+        }
 
-  // Escape HTML
-  function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
+        container.innerHTML = announcements.map(a => `
+            <div class="p-3 bg-teal-50 border-l-4 border-teal-600 rounded text-xs group relative">
+                <h4 class="font-bold text-teal-800">${escapeHtml(a.title)}</h4>
+                <p class="text-gray-700 mt-1 text-[11px]">${escapeHtml(a.message.substring(0, 80))}${a.message.length > 80 ? '...' : ''}</p>
+                <p class="text-[9px] text-gray-500 mt-2">${new Date(a.created_at).toLocaleDateString()}</p>
+                ${currentUser?.role === 'Admin' ? `
+                    <button onclick="deleteAnnouncement(${a.id})" 
+                        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                ` : ''}
+            </div>
+        `).join('');
+    }
 
-  // Auto-resize textarea
-  document
-    .getElementById("messageInput")
-    ?.addEventListener("input", function () {
-      this.style.height = "auto";
-      this.style.height = this.scrollHeight + "px";
-    });
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const msg = input.value.trim();
+        if (!msg) return;
 
-  // Init
-  window.onload = loadData;
-  setInterval(loadData, 10000); // Auto-refresh every 10s
+        try {
+            await fetch(`${API_BASE}/team/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            });
+            input.value = '';
+            input.style.height = 'auto';
+            loadData();
+        } catch (err) {
+            alert('Failed to send message');
+        }
+    }
+
+    function toggleAnnouncementModal() {
+        const modal = document.getElementById('announcementModal');
+        modal.classList.toggle('hidden');
+        if (!modal.classList.contains('hidden')) {
+            document.getElementById('annTitle').value = '';
+            document.getElementById('annBody').value = '';
+        }
+    }
+
+    async function saveAnnouncement(e) {
+        e.preventDefault();
+        const title = document.getElementById('annTitle').value.trim();
+        const body = document.getElementById('annBody').value.trim();
+
+        if (!title || !body) return;
+
+        try {
+            await fetch(`${API_BASE}/team/announcements`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, body })
+            });
+            toggleAnnouncementModal();
+            loadData();
+        } catch (err) {
+            alert('Failed to save announcement');
+        }
+    }
+
+    async function deleteAnnouncement(id) {
+        if (!confirm('Delete this announcement?')) return;
+        try {
+            await fetch(`${API_BASE}/team/announcements/${id}`, { method: 'DELETE' });
+            loadData();
+        } catch (err) {
+            alert('Failed to delete');
+        }
+    }
+
+    function refreshChat() {
+        loadData();
+    }
+
+    function closeChatMobile() {
+        const main = document.getElementById('mainDisplay');
+        const sidebar = document.getElementById('sidebar');
+        main.classList.add('hidden');
+        sidebar.classList.remove('hidden');
+        sidebar.classList.add('w-full');
+    }
+
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 </script>

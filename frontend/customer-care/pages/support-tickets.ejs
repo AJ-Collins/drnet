@@ -1,1066 +1,808 @@
 <style>
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  .animate-spin-slow {
-    animation: spin 2s linear infinite;
-  }
-  .skeleton {
-    background: #e5e7eb;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
-  .hidden {
-    display: none !important;
-  }
+        .chat-scroll::-webkit-scrollbar { width: 5px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .bubble-in { border-radius: 0 15px 15px 15px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bubble-out { border-radius: 15px 0 15px 15px; background: #dcf8c6; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .chat-bg { background-color: #e5ddd5; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.05"><text x="10" y="50" font-size="80" fill="%23999">💬</text></svg>'); }
+        .line-clamp-1 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-  #ticketsList .group:hover .border-gray-200 {
-    border-color: #14b8a6 !important;
-  }
-  select:focus {
-    outline: none !important;
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
-  }
-</style>
-<div id="skeleton" class="p-8 space-y-6">
-  <div class="flex justify-between">
-    <div class="h-8 w-64 bg-gray-300 rounded skeleton"></div>
-    <div class="h-10 w-32 bg-gray-300 rounded-lg skeleton"></div>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="h-24 bg-gray-300 rounded-xl skeleton"></div>
-    <div class="h-24 bg-gray-300 rounded-xl skeleton"></div>
-    <div class="h-24 bg-gray-300 rounded-xl skeleton"></div>
-    <div class="h-24 bg-gray-300 rounded-xl skeleton"></div>
-  </div>
-  <div class="bg-white p-6 rounded-xl shadow">
-    <div class="h-6 w-48 bg-gray-300 rounded skeleton mb-4"></div>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-      <div class="h-12 bg-gray-300 rounded-lg skeleton"></div>
-      <div class="h-12 bg-gray-300 rounded-lg skeleton"></div>
-      <div class="h-12 bg-gray-300 rounded-lg skeleton"></div>
-      <div class="h-12 bg-gray-300 rounded-lg skeleton"></div>
-    </div>
-  </div>
-</div>
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-<!-- Main Content -->
-<div id="content" class="hidden p-8 space-y-6">
-  <!-- Header -->
-  <div class="flex justify-between items-center">
-    <div>
-      <h1 class="text-3xl font-bold text-teal-800">Support Tickets</h1>
-      <p class="text-teal-600">Manage all customer support requests</p>
-    </div>
-    <button
-      id="newTicketBtn"
-      class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg"
-    >
-      <i class="fas fa-plus"></i> New Ticket
-    </button>
-  </div>
+        .animate-fade-in { 
+            animation: fadeIn 0.3s ease-out forwards; 
+        }
 
-  <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="bg-white p-5 rounded-xl shadow border border-teal-100">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-teal-600 text-sm font-bold">Total</p>
-          <p id="totalTickets" class="text-2xl font-bold text-gray-800">0</p>
-        </div>
-        <i class="fas fa-ticket-alt text-2xl text-teal-600"></i>
-      </div>
-    </div>
-    <div class="bg-white p-5 rounded-xl shadow border border-teal-100">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-yellow-600 text-sm font-bold">Open</p>
-          <p id="openTickets" class="text-2xl font-bold text-gray-800">0</p>
-        </div>
-        <i class="fas fa-inbox text-2xl text-yellow-600"></i>
-      </div>
-    </div>
-    <div class="bg-white p-5 rounded-xl shadow border border-teal-100">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-blue-600 text-sm font-bold">In Progress</p>
-          <p id="inProgressTickets" class="text-2xl font-bold text-gray-800">
-            0
-          </p>
-        </div>
-        <i class="fas fa-spinner text-2xl text-blue-600"></i>
-      </div>
-    </div>
-    <div class="bg-white p-5 rounded-xl shadow border border-teal-100">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-green-600 text-sm font-bold">Resolved</p>
-          <p id="resolvedTickets" class="text-2xl font-bold text-gray-800">0</p>
-        </div>
-        <i class="fas fa-check-circle text-2xl text-green-600"></i>
-      </div>
-    </div>
-  </div>
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
-  <!-- Filters -->
-  <div class="bg-white p-6 rounded-xl shadow border border-teal-100">
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Search</label
-        >
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="Name, ticket ID..."
-          class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Priority</label
-        >
-        <select
-          id="priorityFilter"
-          class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-        >
-          <option value="">All</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="critical">Critical</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Issue Type</label
-        >
-        <select
-          id="issueTypeFilter"
-          class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-        >
-          <option value="">All</option>
-          <option value="Network Issue">Network Issue</option>
-          <option value="Hardware Problem">Hardware Problem</option>
-          <option value="Software Bug">Software Bug</option>
-          <option value="Installation Request">Installation Request</option>
-          <option value="Maintenance">Maintenance</option>
-          <option value="Repair">Repair</option>
-          <option value="Inspection">Inspection</option>
-          <option value="Asset Recovery">Asset Recovery</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Status</label
-        >
-        <select
-          id="statusFilter"
-          class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-        >
-          <option value="">All</option>
-          <option value="open">Open</option>
-          <option value="in_progress">In Progress</option>
-          <option value="resolved">Resolved</option>
-          <option value="closed">Closed</option>
-        </select>
-      </div>
-      <div>
-        <button
-          id="refreshBtn"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 w-full"
-        >
-          <i class="fas fa-sync"></i> Refresh
-        </button>
-      </div>
-    </div>
-  </div>
+        .spinner {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
 
-  <!-- Tickets List -->
-  <div id="ticketsList" class="space-y-3">
-    <p class="text-center text-gray-500 py-8">Loading tickets...</p>
-  </div>
-</div>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-<!-- Create/Edit Modal -->
-<div
-  id="ticketModal"
-  class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50"
->
-  <div
-    class="bg-white w-full max-w-2xl rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto"
-  >
-    <div
-      class="bg-teal-600 text-white p-5 flex justify-between items-center rounded-t-xl"
-    >
-      <h3 id="modalTitle" class="text-xl font-bold">Create Ticket</h3>
-      <button id="closeModalBtn" class="text-white hover:text-gray-200">
-        <i class="fas fa-times text-xl"></i>
-      </button>
-    </div>
-    <form id="ticketForm" class="p-6 space-y-4">
-      <input type="hidden" id="editId" />
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-semibold mb-1">Full Name *</label>
-          <input
-            required
-            id="fullName"
-            type="text"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Phone</label>
-          <input
-            id="phone"
-            type="text"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Issue Type *</label>
-          <select
-            required
-            id="issue_type"
-            class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="Network Issue">Network Issue</option>
-            <option value="Hardware Problem">Hardware Problem</option>
-            <option value="Software Bug">Software Bug</option>
-            <option value="Installation Request">Installation Request</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Repair">Repair</option>
-            <option value="Inspection">Inspection</option>
-            <option value="Asset Recovery">Asset Recovery</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Priority *</label>
-          <select
-            required
-            id="priority"
-            class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="low">Low</option>
-            <option value="medium" selected>Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Status</label>
-          <select
-            id="status"
-            class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Assign Staff</label>
-          <select
-            id="assigned_to"
-            class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="">Unassigned</option>
-            <option value="1">John (Admin)</option>
-            <option value="2">Sarah (Tech)</option>
-            <option value="3">Mike (Support)</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold mb-1">Initial Message</label>
-        <textarea
-          id="initialMessage"
-          rows="3"
-          class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-        ></textarea>
-      </div>
-      <div class="flex justify-end gap-3 pt-4 border-t">
-        <button
-          type="submit"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-semibold"
-        >
-          <i class="fas fa-save"></i> Save
-        </button>
-        <button
-          type="button"
-          id="cancelModalBtn"
-          class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg font-semibold"
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Chat Modal -->
-<div
-  id="chatModal"
-  class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50"
->
-  <div
-    class="bg-white w-full max-w-4xl rounded-xl shadow-2xl max-h-[90vh] flex flex-col"
-  >
-    <div
-      class="bg-teal-600 text-white p-5 flex justify-between items-center rounded-t-xl"
-    >
-      <h3 class="text-xl font-bold">
-        Chat - <span id="chatTicketNumber"></span>
-      </h3>
-      <button id="closeChatBtn" class="text-white hover:text-gray-200">
-        <i class="fas fa-times text-xl"></i>
-      </button>
-    </div>
-    <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
-    <div class="p-4 border-t bg-gray-50">
-      <div class="flex gap-2">
-        <textarea
-          id="adminMessage"
-          rows="2"
-          placeholder="Type your reply..."
-          class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
-        ></textarea>
-        <button
-          id="sendMessageBtn"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-semibold"
-        >
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  const API_BASE = "/api";
-
-  // State
-  let allTickets = [];
-  let allMessages = [];
-  let currentTicketId = null;
-  let allStaff = [];
-
-  // Utility: Get element safely
-  function getEl(id) {
-    const el = document.getElementById(id);
-    return el;
-  }
-
-  // Utility: Escape HTML
-  function escapeHtml(text) {
-    if (!text) return "";
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Utility: Format status
-  function formatStatus(s) {
-    const map = {
-      open: "Open",
-      in_progress: "In Progress",
-      resolved: "Resolved",
-      closed: "Closed",
-    };
-    return map[s] || s;
-  }
-
-  // Initialize when DOM is ready
-  document.addEventListener("DOMContentLoaded", () => {
-    // Attach event listeners
-    const form = getEl("ticketForm");
-    if (form) form.addEventListener("submit", handleSaveTicket);
-
-    const newTicketBtn = getEl("newTicketBtn");
-    if (newTicketBtn) newTicketBtn.addEventListener("click", openCreateModal);
-
-    const closeModalBtn = getEl("closeModalBtn");
-    if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
-
-    const cancelModalBtn = getEl("cancelModalBtn");
-    if (cancelModalBtn) cancelModalBtn.addEventListener("click", closeModal);
-
-    const refreshBtn = getEl("refreshBtn");
-    if (refreshBtn) refreshBtn.addEventListener("click", loadTickets);
-
-    const closeChatBtn = getEl("closeChatBtn");
-    if (closeChatBtn) closeChatBtn.addEventListener("click", closeChat);
-
-    const sendMessageBtn = getEl("sendMessageBtn");
-    if (sendMessageBtn) sendMessageBtn.addEventListener("click", sendMessage);
-
-    // Attach filter listeners
-    attachFilters();
-
-    // Load initial data
-    loadTickets();
-  });
-
-  // Attach filter event listeners
-  function attachFilters() {
-    const filterIds = [
-      "searchInput",
-      "priorityFilter",
-      "issueTypeFilter",
-      "statusFilter",
-    ];
-    filterIds.forEach((id) => {
-      const el = getEl(id);
-      if (el) {
-        el.addEventListener("input", renderTickets);
-      }
-    });
-  }
-
-  // Load tickets and messages from API
-  async function loadTickets() {
-    const skeleton = getEl("skeleton");
-    const content = getEl("content");
-
-    if (skeleton) skeleton.classList.remove("hidden");
-    if (content) content.classList.add("hidden");
-
-    try {
-      // 1. Load tickets
-      const ticketsRes = await fetch(`${API_BASE}/tickets`);
-      if (!ticketsRes.ok) throw new Error("Failed to fetch tickets");
-      const ticketsData = await ticketsRes.json();
-
-      // 2. Load messages
-      const messagesRes = await fetch(`${API_BASE}/messages`);
-      if (!messagesRes.ok) throw new Error("Failed to fetch messages");
-      const messagesData = await messagesRes.json();
-
-      // 3. LOAD STAFF FIRST — BEFORE RENDERING
-      const staffRes = await fetch(`${API_BASE}/tickets/staff`);
-      allStaff = staffRes.ok ? await staffRes.json() : [];
-
-      // Now assign data
-      allTickets = Array.isArray(ticketsData) ? ticketsData : [];
-      allMessages = Array.isArray(messagesData?.messages)
-        ? messagesData.messages
-        : messagesData || [];
-
-      // Update stats & render
-      updateStats();
-      renderTickets(); // Now allStaff is ready!
-
-      // Also populate the modal dropdown
-      loadStaffIntoDropdown();
-    } catch (err) {
-      const ticketsList = getEl("ticketsList");
-      if (ticketsList) {
-        ticketsList.innerHTML = `
-          <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-3"></i>
-            <p class="text-red-700 font-semibold text-lg">Error Loading Data</p>
-            <p class="text-red-600 text-sm mt-2">${escapeHtml(err.message)}</p>
-            <button onclick="loadTickets()" class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-              Retry
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<div class="bg-gray-100 h-screen overflow-hidden flex flex-col">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+    <header class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md z-30">
+        <h1 class="text-lg md:text-xl font-bold tracking-tight">SUPPORT MANAGEMENT</h1>
+        <div class="flex gap-2">
+            <button onclick="loadCreateForm()" class="bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-xs md:text-sm font-semibold transition">
+                + <span class="hidden md:inline">New Ticket</span>
             </button>
-          </div>`;
-      }
-    } finally {
-      if (skeleton) skeleton.classList.add("hidden");
-      if (content) content.classList.remove("hidden");
-    }
-  }
+        </div>
+    </header>
 
-  // Update statistics cards
-  function updateStats() {
-    const total = allTickets.length;
-    const open = allTickets.filter((t) => t.status === "open").length;
-    const inProgress = allTickets.filter(
-      (t) => t.status === "in_progress"
-    ).length;
-    const resolved = allTickets.filter((t) => t.status === "resolved").length;
-
-    const totalEl = getEl("totalTickets");
-    const openEl = getEl("openTickets");
-    const inProgressEl = getEl("inProgressTickets");
-    const resolvedEl = getEl("resolvedTickets");
-
-    if (totalEl) totalEl.textContent = total;
-    if (openEl) openEl.textContent = open;
-    if (inProgressEl) inProgressEl.textContent = inProgress;
-    if (resolvedEl) resolvedEl.textContent = resolved;
-  }
-
-  // Render tickets list with filters
-  function renderTickets() {
-    const list = getEl("ticketsList");
-    if (!list) return;
-
-    const search = (getEl("searchInput")?.value || "").toLowerCase();
-    const priority = getEl("priorityFilter")?.value || "";
-    const issueType = getEl("issueTypeFilter")?.value || "";
-    const status = getEl("statusFilter")?.value || "";
-
-    let filtered = allTickets.filter((t) => {
-      const matchesSearch =
-        (t.fullName || "").toLowerCase().includes(search) ||
-        (t.ticket_number || "").toLowerCase().includes(search) ||
-        (t.subject || "").toLowerCase().includes(search) ||
-        (t.description || "").toLowerCase().includes(search);
-      const matchesPriority = !priority || t.priority === priority;
-      const matchesIssue = !issueType || t.issue_type === issueType;
-      const matchesStatus = !status || t.status === status;
-      return matchesSearch && matchesPriority && matchesIssue && matchesStatus;
-    });
-
-    if (!filtered.length) {
-      list.innerHTML = `
-      <div class="text-center py-16">
-        <i class="fas fa-inbox text-8xl text-gray-200 mb-6"></i>
-        <p class="text-xl font-semibold text-gray-500">No tickets found</p>
-        <p class="text-gray-400 mt-2">Try adjusting your filters</p>
-      </div>`;
-      return;
-    }
-
-    list.innerHTML = filtered
-      .map((t) => {
-        const ticketMessages = allMessages.filter((m) => m.ticket_id == t.id);
-        const totalMessages = ticketMessages.length;
-        const staffMessages = ticketMessages.filter(
-          (m) => m.sender_staff_id != null
-        );
-        const hasStaffReplied = staffMessages.length > 0;
-        const lastActivity =
-          ticketMessages[ticketMessages.length - 1]?.created_at || t.created_at;
-
-        const assignedStaff = allStaff.find((s) => s.id == t.assigned_to);
-        const assignedName = assignedStaff
-          ? escapeHtml(assignedStaff.name)
-          : null;
-
-        // Priority & Status Badges
-        const priorityBadge =
-          {
-            critical: "bg-red-100 text-red-800 border-red-300",
-            high: "bg-orange-100 text-orange-800 border-orange-300",
-            medium: "bg-yellow-100 text-yellow-800 border-yellow-300",
-            low: "bg-blue-100 text-blue-800 border-blue-300",
-          }[t.priority] || "bg-gray-100 text-gray-800";
-
-        const statusBadge =
-          {
-            open: "bg-yellow-100 text-yellow-800",
-            in_progress: "bg-blue-100 text-blue-800",
-            resolved: "bg-green-100 text-green-800",
-            closed: "bg-gray-200 text-gray-700",
-          }[t.status] || "bg-gray-100 text-gray-700";
-
-        const staffActivity = t.assigned_to
-          ? hasStaffReplied
-            ? `<span class="text-green-600 font-bold text-xs"><i class="fas fa-check-circle"></i> Staff replied</span>`
-            : `<span class="text-red-600 font-bold text-xs"><i class="fas fa-clock"></i> Awaiting reply</span>`
-          : `<span class="text-gray-500 italic text-xs">Not assigned</span>`;
-
-        // Truncate description for preview
-        const shortDesc =
-          t.description?.length > 120
-            ? escapeHtml(t.description.slice(0, 120)) + "..."
-            : escapeHtml(t.description || "No description provided");
-
-        return `
-        <div class="bg-white rounded-2xl shadow-lg border-2 border-gray-200 hover:border-teal-500 hover:shadow-2xl transition-all duration-300 group">
-          <div class="p-6">
-
-            <!-- Header -->
-            <div class="flex justify-between items-start mb-5">
-              <div>
-                <h3 class="text-xl font-bold text-gray-900">${escapeHtml(
-                  t.fullName
-                )}</h3>
-                <div class="flex items-center gap-3 mt-2">
-                  <p class="text-teal-600 font-mono text-lg font-bold">#${escapeHtml(
-                    t.ticket_number
-                  )}</p>
-                  <span class="px-4 py-1.5 rounded-full text-xs font-bold border ${priorityBadge}">
-                    ${t.priority.toUpperCase()}
-                  </span>
-                  <span class="px-4 py-1.5 rounded-full text-xs font-bold ${statusBadge}">
-                    ${formatStatus(t.status)}
-                  </span>
+    <div class="flex flex-1 overflow-hidden relative">
+        <aside id="sidebar" class="w-full md:w-1/3 lg:w-1/4 border-r bg-white flex flex-col z-20 transition-all duration-300">
+            <div class="p-4 border-b bg-gray-50">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Tickets</span>
+                    <button onclick="viewArchivedTickets()" class="text-[10px] font-bold text-blue-600 hover:underline">VIEW ARCHIVES</button>
                 </div>
-              </div>
+                <input type="text" id="ticketSearch" onkeyup="filterTickets()" placeholder="Search tickets..." class="w-full p-2 border rounded text-sm outline-none focus:ring-2 focus:ring-blue-500">
             </div>
+            <div class="flex-1 overflow-y-auto" id="ticketList"></div>
+        </aside>
 
-            <!-- Customer Description -->
-            <div class="bg-gray-50 rounded-xl p-5 mb-6 border border-gray-200">
-              <p class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <i class="fas fa-quote-left text-teal-600"></i>
-                Customer Message
-              </p>
-              <div class="text-gray-800 text-sm leading-relaxed">
-                <span class="description-preview">${shortDesc}</span>
-                ${
-                  t.description?.length > 120
-                    ? `
-                  <button onclick="this.previousElementSibling.innerHTML = '${escapeHtml(
-                    t.description
-                  )}'; this.remove();" 
-                    class="text-teal-600 hover:text-teal-700 font-medium text-xs ml-2">
-                    Show more
-                  </button>
-                `
-                    : ""
+        <main id="mainDisplay" class="hidden md:flex flex-1 flex-col bg-white absolute inset-0 z-10 md:relative md:z-0">
+            <div class="flex items-center justify-center h-full text-gray-400 flex-col p-6 text-center">
+                <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4v-3a2 2 0 00-2-2H5z"></path></svg>
+                <p>Select a ticket to view conversation</p>
+            </div>
+        </main>
+    </div>
+</div>
+    <script>
+        async function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                console.log("This browser does not support desktop notification");
+                return;
+            }
+
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
                 }
-              </div>
-            </div>
-
-            <!-- Staff Assignment -->
-            <div class="bg-gradient-to-r from-teal-50 to-blue-50 rounded-xl p-5 mb-6 border border-teal-200">
-              <div class="flex justify-between items-center mb-3">
-                <p class="font-semibold text-gray-800">Assigned Staff</p>
-                ${staffActivity}
-              </div>
-              
-              <select onchange="assignTicket(${t.id}, this.value)"
-                class="w-full px-5 py-3.5 border-2 rounded-xl text-base font-medium transition-all
-                  ${
-                    t.assigned_to
-                      ? "border-teal-500 bg-white text-teal-900"
-                      : "border-gray-300 bg-white text-gray-600"
-                  }
-                  focus:ring-4 focus:ring-teal-200 focus:border-teal-600">
-                <option value="">Unassigned</option>
-                ${allStaff
-                  .map(
-                    (s) => `
-                  <option value="${s.id}" ${
-                      t.assigned_to == s.id ? "selected" : ""
-                    }>
-                    ${escapeHtml(s.name)} (${s.role || "Staff"})
-                  </option>
-                `
-                  )
-                  .join("")}
-              </select>
-
-              ${
-                t.assigned_to
-                  ? `
-                <p class="mt-3 text-sm">
-                  <span class="font-medium text-gray-700">Currently assigned to:</span>
-                  <span class="ml-2 font-bold text-teal-700">${assignedName}</span>
-                </p>
-              `
-                  : ""
-              }
-            </div>
-
-            <!-- Footer -->
-            <div class="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-gray-200">
-              <div class="flex items-center gap-6 text-sm text-gray-600">
-                <span class="flex items-center gap-2">
-                  <i class="fas fa-comments text-teal-600"></i>
-                  <strong>${totalMessages}</strong> message${
-          totalMessages !== 1 ? "s" : ""
+            }
         }
-                  ${
-                    staffMessages.length > 0
-                      ? ` (${staffMessages.length} from staff)`
-                      : ""
-                  }
-                </span>
-                <span class="text-gray-500">
-                  ${new Date(lastActivity).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </div>
 
-              <div class="flex gap-3">
-                <button onclick="openChat(${t.id})"
-                  class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
-                  <i class="fas fa-comments"></i> Open Chat
-                </button>
-                <button onclick="deleteTicket(${t.id})"
-                  class="p-3 text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                  title="Delete Ticket">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>`;
-      })
-      .join("");
-  }
+        const socket = io(); 
+        let activeTicketId = null;
+        let allTickets = [];        
 
-  async function assignTicket(ticketId, staffId) {
-    if (staffId === "") staffId = null;
+        // 1. INITIAL LOAD
+        window.onload = () => {
+            loadTickets();
+            requestNotificationPermission();
+        }
 
-    try {
-      const res = await fetch(`${API_BASE}/tickets/${ticketId}/assign`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assigned_to: staffId }),
-      });
+        async function loadTickets() {
+            try {
+                const res = await fetch('/api/tickets');
+                allTickets = await res.json();
+                renderTicketList(allTickets);
+            } catch (err) { console.error("Error loading tickets", err); }
+        }
 
-      if (!res.ok) throw new Error("Failed to assign");
+        function renderTicketList(tickets) {
+            const list = document.getElementById('ticketList');
+            list.innerHTML = tickets.map(t => {
+                const maxLength = 50;
+                const subjectTruncated = t.issue_subject.length > maxLength;
+                const descTruncated = t.description && t.description.length > maxLength;
+                
+                return `
+                    <div class="p-4 border-b hover:bg-blue-50 cursor-pointer transition border-l-4 ${activeTicketId == t.id ? 'border-l-blue-500 bg-blue-50' : 'border-l-transparent'}" onclick="viewTicket(${t.id})">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="font-bold text-slate-700 text-sm">#${t.ticket_number}</span>
+                            <span class="text-[10px] ${t.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'} px-2 py-0.5 rounded-full font-bold uppercase">${t.status}</span>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <h4 id="subject-${t.id}" class="text-sm font-medium text-gray-800 ${subjectTruncated ? 'line-clamp-1' : ''}">
+                                ${t.issue_subject}
+                            </h4>
+                            ${subjectTruncated ? `
+                                <button onclick="event.stopPropagation(); toggleText('subject-${t.id}', 'subject-btn-${t.id}')" 
+                                    id="subject-btn-${t.id}"
+                                    class="text-[10px] text-blue-600 hover:underline font-semibold mt-1">
+                                    Show more
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        ${t.description ? `
+                            <div class="mb-2">
+                                <p id="desc-${t.id}" class="text-xs text-gray-500 ${descTruncated ? 'line-clamp-2' : ''}">
+                                    ${t.description}
+                                </p>
+                                ${descTruncated ? `
+                                    <button onclick="event.stopPropagation(); toggleText('desc-${t.id}', 'desc-btn-${t.id}')" 
+                                        id="desc-btn-${t.id}"
+                                        class="text-[10px] text-blue-600 hover:underline font-semibold mt-1">
+                                        Show more
+                                    </button>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                        
+                        <p class="text-xs text-gray-500 mt-1">Client: ${t.first_name} ${t.second_name}</p>
+                    </div>
+                `;
+            }).join('');
+        }
 
-      const updatedTicket = await res.json();
+        function toggleText(elementId, buttonId) {
+            const element = document.getElementById(elementId);
+            const button = document.getElementById(buttonId);
+            
+            if (element.classList.contains('line-clamp-1') || element.classList.contains('line-clamp-2')) {
+                element.classList.remove('line-clamp-1', 'line-clamp-2');
+                button.textContent = 'Show less';
+            } else {
+                if (elementId.startsWith('subject-')) {
+                    element.classList.add('line-clamp-1');
+                } else {
+                    element.classList.add('line-clamp-2');
+                }
+                button.textContent = 'Show more';
+            }
+        }
 
-      // Update local data
-      const index = allTickets.findIndex((t) => t.id === updatedTicket.id);
-      if (index !== -1) {
-        allTickets[index] = updatedTicket;
-      } else {
-        allTickets.push(updatedTicket);
-      }
+        // VIEW TICKET & LOAD CHAT
+        async function viewTicket(id) {
+            activeTicketId = id;
+            socket.emit('joinTicket', id);
+            
+            // MOBILE TOGGLE: Show main, hide sidebar
+            const main = document.getElementById('mainDisplay');
+            const sidebar = document.getElementById('sidebar');
+            main.classList.remove('hidden');
+            main.classList.add('flex');
+            sidebar.classList.add('hidden', 'md:flex'); 
 
-      renderTickets();
-      updateStats();
-    } catch (err) {
-      alert("Assign failed: " + err.message);
-    }
-  }
+            renderTicketList(allTickets);
 
-  // Load staff into assign dropdown
-  async function loadStaffIntoDropdown() {
-    const select = getEl("assigned_to");
-    if (!select) return;
+            const [ticketRes, msgRes, staffRes, assignedRes] = await Promise.all([
+                fetch(`/api/tickets/${id}`),
+                fetch(`/api/tickets/${id}/messages`),
+                fetch(`/api/staff`),
+                fetch(`/api/tickets/${id}/assignments`)
+            ]);
 
-    try {
-      const res = await fetch(`${API_BASE}/tickets/staff`);
-      if (!res.ok) throw new Error("Failed to load staff");
+            const ticket = await ticketRes.json();
+            const messages = await msgRes.json();
+            const allStaff = await staffRes.json();
+            const assignedStaff = await assignedRes.json();
 
-      const staff = await res.json();
+            main.innerHTML = `
+                <div class="p-3 md:p-4 border-b flex justify-between items-center bg-white shadow-sm z-10">
+                    <div class="flex items-center gap-3">
+                        <button onclick="closeTicketMobile()" class="md:hidden p-2 -ml-2 text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </button>
+                        <div>
+                            <h2 class="text-sm md:text-lg font-bold text-slate-800 truncate max-w-[150px] md:max-w-none">#${ticket.ticket_number}</h2>
+                            <p class="text-[10px] md:text-xs text-gray-500">${ticket.status.toUpperCase()}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-1 md:gap-2">
+                        <button onclick="updateTicketStatus(${id}, 'resolved')" class="text-[10px] bg-green-100 p-2 rounded font-bold text-green-700">Resolve</button>
+                        <button onclick="archiveTicket(${id})" class="text-xs bg-amber-100 hover:bg-amber-200 p-2 rounded font-semibold text-amber-700">Archive</button>
+                        <button onclick="deleteTicket(${id})" class="text-[10px] bg-red-100 p-2 rounded font-bold text-red-700">Delete</button>
+                    </div>
+                </div>
 
-      select.innerHTML = '<option value="">Unassigned</option>';
+                <div class="flex flex-1 overflow-hidden flex-col lg:flex-row">
+                    <div class="flex-1 flex flex-col border-r chat-bg order-1 lg:order-none">
+                        <div id="chatContainer" class="flex-1 overflow-y-auto p-4 chat-scroll flex flex-col gap-3">
+                            ${messages.map(m => renderMessage(m)).join('')}
+                        </div>
+                        <div class="p-3 bg-white border-t flex gap-2">
+                            <input type="text" id="msgInput" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Type..." class="flex-1 p-2 bg-gray-100 border-none rounded-full px-4 text-sm outline-none">
+                            <button onclick="sendChatMessage()" class="bg-green-500 text-white p-2 rounded-full">
+                                <i class="fas fa-paper-plane text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
 
-      staff.forEach((s) => {
-        const opt = document.createElement("option");
-        opt.value = s.id;
-        opt.textContent = `${s.name} (${s.role || "Staff"})`;
-        select.appendChild(opt);
-      });
-    } catch (err) {
-      console.error("Failed to load staff:", err);
-      select.innerHTML += '<option value="">Error loading staff</option>';
-    }
-  }
+                    <div class="hidden lg:block w-80 bg-slate-50 border-l overflow-y-auto p-4 flex flex-col gap-6">
+                        <div class="space-y-4 pb-2">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Assign Staff</h3>
+                            <div class="space-y-2">
+                                <select id="staffSelect" class="w-full p-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">-- Select Staff --</option>
+                                    ${allStaff.map(s => `<option value="${s.id}">${s.first_name} ${s.second_name}</option>`).join('')}
+                                </select>
+                                <textarea id="assignNote" 
+                                    rows="3" 
+                                    placeholder="Describe the task for this staff member..." 
+                                    class="w-full p-2 text-sm border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 resize-y min-h-[80px]"></textarea>                                
+                                <div class="flex items-center gap-2 p-2 bg-blue-50 rounded-lg border border-blue-100">
+                                    <input type="checkbox" id="sendStaffSmsCheckbox" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                    <label for="sendStaffSmsCheckbox" class="text-xs text-slate-700 cursor-pointer select-none">Send SMS notification to assigned staff</label>
+                                </div>
+                                
+                                <button onclick="handleAssignment(${id})" class="w-full bg-teal-400 text-white py-2 rounded-lg text-sm font-bold hover:bg-teal-700 transition">
+                                    Assign
+                                </button>
+                            </div>
+                        </div>
+                        <hr class="border-slate-200 pb-1">
 
-  // Open create modal
-  function openCreateModal() {
-    const modal = getEl("ticketModal");
-    const modalTitle = getEl("modalTitle");
-    const form = getEl("ticketForm");
-    const editId = getEl("editId");
+                        <div class="space-y-4">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Currently Assigned</h3>
+                            <div id="assignedList" class="flex flex-col gap-2">
+                                ${assignedStaff.length === 0 
+                                    ? '<p class="text-xs text-gray-400 italic">No staff assigned yet.</p>' 
+                                    : assignedStaff.map(s => `
+                                    <div class="bg-white p-3 border border-slate-200 group">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-700">${s.first_name} ${s.second_name || ''}</p>
+                                                <p class="text-[10px] text-gray-500">${s.position || 'Staff'}</p>
+                                            </div>
+                                            <button onclick="revokeAssignment(${id}, ${s.staff_id})" class="text-[14px] text-gray-400 hover:text-red-500 transition">
+                                                revoke
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            scrollChat();
+        }
 
-    if (modalTitle) modalTitle.textContent = "Create New Ticket";
-    if (form) form.reset();
-    if (editId) editId.value = "";
-    if (modal) {
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
-    }
-    loadStaffIntoDropdown();
-  }
+        async function loadCreateForm() {
+            activeTicketId = null;
+            renderTicketList(allTickets); 
 
-  // Handle save ticket (create or update)
-  async function handleSaveTicket(e) {
-    e.preventDefault();
+            const main = document.getElementById('mainDisplay');
+            const sidebar = document.getElementById('sidebar');
+            main.classList.remove('hidden');
+            main.classList.add('flex');
 
-    const editId = getEl("editId");
-    const fullName = getEl("fullName");
-    const phone = getEl("phone");
-    const issueType = getEl("issue_type");
-    const priority = getEl("priority");
-    const status = getEl("status");
-    const assignedTo = getEl("assigned_to");
-    const initialMessage = getEl("initialMessage");
+            main.innerHTML = `<div class="flex-1 flex items-center justify-center text-gray-400 italic">Fetching client list...</div>`;
 
-    const id = editId?.value;
-    const payload = {
-      fullName: fullName?.value.trim() || "",
-      phone: phone?.value.trim() || "",
-      issue_type: issueType?.value || "",
-      priority: priority?.value || "",
-      status: status?.value || "",
-      assigned_to: assignedTo?.value || null,
-    };
+            try {
+                const res = await fetch('/api/manage/clients');
+                const clients = await res.json();
 
-    if (!payload.fullName) {
-      alert("Full Name is required");
-      return;
-    }
+                main.innerHTML = `
+                    <div class="flex-1 bg-white flex flex-col items-center p-6 md:p-12 overflow-y-auto">
+                        <div class="w-full max-w-lg">
+                            <div class="flex justify-between items-center border-b pb-4 mb-8">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-900">New Ticket</h2>
+                                    <p class="text-gray-500 text-sm">Assign a client and describe the issue.</p>
+                                </div>
+                                <button onclick="closeCreateForm()" class="text-gray-400 hover:text-gray-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                </button>
+                            </div>
 
-    try {
-      if (id) {
-        // Update existing ticket
-        const response = await fetch(`${API_BASE}/tickets/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Search & Select Client</label>
+                                    <input type="text" id="clientSearchInput" onkeyup="filterClientDropdown()" placeholder="Type client name or ID..." 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-t-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                    
+                                    <select id="newUserId" size="2" class="w-full px-2 py-1 border-x border-b border-gray-300 rounded-b-lg bg-white outline-none cursor-pointer overflow-y-auto">
+                                        ${clients.map(c => `
+                                            <option class="p-2 border-b border-gray-50 last:border-none hover:bg-blue-50" value="${c.id}">
+                                                ${c.first_name} ${c.second_name} (${c.phone || c.email})
+                                            </option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Subject</label>
+                                    <input type="text" id="newSubject" placeholder="Summary of the issue" 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+                                    <textarea id="newDescription" rows="4" placeholder="Full details..." 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                                </div>
+
+                                <div class="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
+                                    <input type="checkbox" id="sendClientSmsCheckbox" checked class="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500 cursor-pointer">
+                                    <label for="sendClientSmsCheckbox" class="text-xs text-slate-700 cursor-pointer select-none">Send SMS notification to client about support ticket</label>
+                                </div>
+
+                                <div class="flex items-center gap-4 pt-2">
+                                    <button onclick="saveNewTicket()" 
+                                        class="flex-1 bg-slate-800 text-white py-2.5 rounded-lg font-bold hover:bg-slate-900 transition-colors">
+                                        Create Ticket
+                                    </button>
+                                    <button onclick="closeCreateForm()" 
+                                        class="px-6 py-2.5 text-gray-600 font-semibold hover:text-gray-900">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Client fetch error:", err);
+                main.innerHTML = `<div class="p-10 text-red-500 text-center">Failed to load clients. <br> <button onclick="loadCreateForm()" class="underline">Try Again</button></div>`;
+            }
+        }
+
+        function renderMessage(m) {
+            const isStaff = m.sender_staff_id !== null;
+            return `
+                <div class="${isStaff ? 'self-end' : 'self-start'} max-w-[80%]">
+                    <span class="text-[10px] text-gray-600 ${isStaff ? 'mr-2 text-right block' : 'ml-2'}">${isStaff ? (m.staff_name || 'Admin') : (m.user_name || 'Client')}</span>
+                    <div class="${isStaff ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
+                        ${m.message}
+                        <span class="block text-[9px] text-gray-400 text-right mt-1">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('msgInput');
+            if (!input.value.trim()) return;
+
+            const msgText = input.value;
+            input.value = '';
+            input.disabled = true;
+
+            try {
+                const res = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ticket_id: activeTicketId,
+                        message: msgText
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.status === 401) {
+                    showToast(data.message || "Unauthorized", 'error');
+                    window.location.href = data.redirectUrl;
+                    return;
+                }
+
+                if (!res.ok) {
+                    showToast("Failed to send message", 'error');
+                    input.value = msgText;
+                }
+            } catch (err) {
+                console.error("Send message error:", err);
+                showToast("Error sending message", 'error');
+                input.value = msgText;
+            } finally {
+                input.disabled = false;
+                input.focus();
+            }
+        }
+
+        // Socket listener for new messages
+        socket.on('newMessage', (msg) => {
+            if (msg.ticket_id === activeTicketId) {
+                const container = document.getElementById('chatContainer');
+                container.insertAdjacentHTML('beforeend', renderMessage(msg));
+                scrollChat();
+            }
+            
+            const isFromMe = msg.sender_staff_id !== null; 
+
+            if (Notification.permission === "granted" && !isFromMe) {
+                if (document.hidden || msg.ticket_id != activeTicketId) {
+                    const title = `New Message: Ticket #${msg.ticket_number || msg.ticket_id}`;
+                    const options = {
+                        body: `${msg.staff_name || msg.user_name || 'Client'}: ${msg.message}`,
+                        icon: '/static/images/logo_image.jpg', 
+                        tag: `ticket-${msg.ticket_id}`,
+                        renotify: true
+                    };
+
+                    const notification = new Notification(title, options);
+
+                    notification.onclick = function() {
+                        window.focus();
+                        viewTicket(msg.ticket_id);
+                        notification.close();
+                    };
+                }
+            }
         });
 
-        if (!response.ok) throw new Error("Failed to update ticket");
-      } else {
-        // Create new ticket
-        const ticket_number = `TKT-${Date.now().toString().slice(-6)}`;
-        const response = await fetch(`${API_BASE}/tickets`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, ticket_number }),
-        });
+        // 4. ASSIGNMENT & CRUD LOGIC
+        async function handleAssignment(ticketId) {
+            const staffId = document.getElementById('staffSelect').value;
+            const note = document.getElementById('assignNote').value;
+            const sendSms = document.getElementById('sendStaffSmsCheckbox').checked;
+            const btn = event.target;
 
-        if (!response.ok) throw new Error("Failed to create ticket");
+            if (!staffId) return alert("Please select a staff member first.");
 
-        const ticket = await response.json();
-        const msg = initialMessage?.value.trim();
+            setButtonLoading(btn, true);
 
-        // Add initial message if provided
-        if (msg && ticket.id) {
-          await fetch(`${API_BASE}/messages`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ticket_id: ticket.id,
-              sender_staff_id: 1,
-              message: msg,
-            }),
-          });
+            try {
+                const res = await fetch('/api/tickets/assign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        ticket_id: ticketId, 
+                        staff_id: staffId, 
+                        note: note,
+                        send_sms: sendSms
+                    })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    showToast("Staff assigned successfully!", 'success');
+                    viewTicket(ticketId);
+                } else {
+                    showToast(result.error || "Assignment failed", 'error');
+                    alert("Assignment failed: " + (result.error || "Unknown error"));
+                }
+            } catch (err) {
+                showToast("Failed to assign staff. Please try again.", 'error');
+                console.error("Assignment error:", err);
+            } finally {
+                setButtonLoading(btn, false);
+            }
         }
-      }
 
-      closeModal();
-      await loadTickets();
-    } catch (err) {
-      alert("Save failed: " + err.message);
-    }
-  }
+        async function saveNewTicket() {
+            const subject = document.getElementById('newSubject').value;
+            const userId = document.getElementById('newUserId').value;
+            const description = document.getElementById('newDescription').value;
+             const sendSms = document.getElementById('sendClientSmsCheckbox').checked;
+             const btn = event.target;
 
-  // Delete ticket
-  async function deleteTicket(id) {
-    if (
-      !confirm(
-        "Are you sure you want to delete this ticket and all associated messages?"
-      )
-    ) {
-      return;
-    }
+            if (!subject || !userId) return alert("Please fill in Subject and User ID");
 
-    try {
-      // Delete messages first
-      await fetch(`${API_BASE}/messages/ticket/${id}`, {
-        method: "DELETE",
-      });
+            setButtonLoading(btn, true);
 
-      // Then delete the ticket
-      const response = await fetch(`${API_BASE}/tickets/${id}`, {
-        method: "DELETE",
-      });
+            try {
+                const response = await fetch('/api/tickets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        issue_subject: subject,
+                        description: description,
+                        send_sms: sendSms
+                    })
+                });
 
-      if (!response.ok) throw new Error("Failed to delete ticket");
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Ticket created successfully!", 'success');
+                    await loadTickets(); // Reload sidebar
+                    viewTicket(result.ticketId); // Open the new ticket
+                } else {
+                    showToast(result.error || "Failed to create ticket", 'error');
+                }
+            } catch (err) {
+                console.error("Failed to save ticket:", err);
+                showToast("Error creating ticket. Please try again.", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
 
-      await loadTickets();
-    } catch (err) {
-      alert("Delete failed: " + err.message);
-    }
-  }
+        async function deleteTicket(id) {
+            if (!confirm("Delete this ticket permanently?")) return;
+            
+            const btn = event.target;
+            setButtonLoading(btn, true);
 
-  // Close modal
-  function closeModal() {
-    const modal = getEl("ticketModal");
-    if (modal) {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-    }
-  }
+            try {
+                const res = await fetch(`/api/tickets/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                
+                if (result.success || res.ok) {
+                    showToast("Ticket deleted successfully!", 'success');
+                    await loadTickets();
+                    closeTicketMobile();
+                } else {
+                    showToast("Failed to delete ticket", 'error');
+                }
+            } catch (err) {
+                console.error("Delete error:", err);
+                showToast("Error deleting ticket", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
 
-  // Open chat modal
-  async function openChat(id) {
-    currentTicketId = id;
-    const t = allTickets.find((x) => x.id === id);
-    if (!t) return;
+        async function updateTicketStatus(id, newStatus) {
+            const btn = event.target;
+            setButtonLoading(btn, true);
 
-    const modal = getEl("chatModal");
-    const ticketNumber = getEl("chatTicketNumber");
+            try {
+                const response = await fetch(`/api/tickets/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Ticket marked as ${newStatus}!`, 'success');
+                    await loadTickets(); 
+                    viewTicket(id);
+                } else {
+                    showToast("Failed to update status", 'error');
+                }
+            } catch (err) {
+                console.error("Failed to update status:", err);
+                showToast("Error updating ticket status", 'error');
+            } finally {
+                 setButtonLoading(btn, false);
+            }
+        }
 
-    if (ticketNumber) ticketNumber.textContent = `#${t.ticket_number}`;
-    if (modal) {
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
-    }
+        async function archiveTicket(id) {
+            if (!confirm("Are you sure you want to archive this ticket? It will be hidden from the main list.")) return;
 
-    await loadMessages(id);
-  }
+            const btn = event.target;
+            setButtonLoading(btn, true);
+    
+            try {
+                const response = await fetch(`/api/tickets/${id}/archive`, {
+                    method: 'PATCH'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Ticket archived successfully!", 'success');
+                    await loadTickets();
+                    document.getElementById('mainDisplay').innerHTML = `
+                        <div class="flex items-center justify-center h-full text-gray-400 flex-col">
+                            <p>Ticket Archived Successfully</p>
+                        </div>`;
+                } else {
+                    showToast("Failed to archive ticket", 'error');
+                }
+            } catch (err) {
+                console.error("Archive failed:", err);
+                showToast("Error archiving ticket", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
 
-  // Load messages for a ticket
-  async function loadMessages(ticketId) {
-    const container = getEl("chatMessages");
-    if (!container) return;
+        async function revokeAssignment(ticketId, staffId) {
+            if (!confirm("Are you sure you want to remove this staff member from this ticket?")) return;
 
-    try {
-      const response = await fetch(`${API_BASE}/messages/ticket/${ticketId}`);
+            const btn = event.target;
+            setButtonLoading(btn, true);
 
-      let msgs = [];
 
-      if (response.ok) {
-        const data = await response.json();
-        msgs = Array.isArray(data) ? data : data.messages || [];
-      } else if (response.status === 404) {
-        // 404 = No messages yet → perfectly normal!
-        msgs = [];
-      } else {
-        throw new Error("Failed to load messages");
-      }
+            try {
+                const res = await fetch(`/api/tickets/${ticketId}/assign/${staffId}`, {
+                    method: 'DELETE'
+                });
 
-      renderChat(msgs);
-    } catch (err) {
-      console.error("Message load error:", err);
-      container.innerHTML = `
-      <div class="text-center py-16 text-gray-500">
-        <i class="fas fa-wifi-slash text-6xl mb-4 text-gray-300"></i>
-        <p class="text-lg font-medium">Connection issue</p>
-        <p class="text-sm mt-2">We couldn't load messages. Please try again.</p>
-        <button onclick="loadMessages(${ticketId})" class="mt-4 px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
-          Retry
-        </button>
-      </div>`;
-    }
-  }
+                const result = await res.json();
+                if (result.success) {
+                    showToast("Staff assignment revoked!", 'success');
+                    viewTicket(ticketId); // Refresh UI
+                } else {
+                    showToast("Failed to revoke assignment", 'error');
+                }
+            } catch (err) {
+                console.error("Revoke failed:", err);
+                showToast("Error revoking assignment", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
 
-  // Render chat messages
-  function renderChat(msgs) {
-    const container = getEl("chatMessages");
-    if (!container) return;
+        // HELPERS
+        function scrollChat() {
+            const container = document.getElementById('chatContainer');
+            if(container) container.scrollTop = container.scrollHeight;
+        }
 
-    if (!msgs || msgs.length === 0) {
-      container.innerHTML = `
-      <div class="text-center py-20 text-gray-500">
-        <div class="mb-6">
-          <i class="fas fa-comments text-9xl text-gray-200"></i>
-        </div>
-        <p class="text-2xl font-bold text-gray-600 mb-2">No messages yet</p>
-        <p class="text-lg text-gray-500">Start the conversation by typing below</p>
-        <div class="mt-8 flex justify-center">
-          <div class="bg-teal-100 border-2 border-dashed border-teal-300 rounded-xl w-24 h-24 flex items-center justify-center">
-            <i class="fas fa-paper-plane text-teal-600 text-4xl"></i>
-          </div>
-        </div>
-      </div>`;
-      return;
-    }
+        function filterTickets() {
+            const query = document.getElementById('ticketSearch').value.toLowerCase();
+            const filtered = allTickets.filter(t => t.ticket_number.toLowerCase().includes(query) || t.issue_subject.toLowerCase().includes(query));
+            renderTicketList(filtered);
+        }
 
-    container.innerHTML = msgs
-      .map((m) => {
-        const isStaff = !!m.sender_staff_id;
-        const bgColor = isStaff ? "bg-blue-50" : "bg-gray-50";
-        const alignClass = isStaff ? "flex-row-reverse" : "";
-        const avatarColor = isStaff
-          ? "bg-blue-100 text-blue-700"
-          : "bg-teal-100 text-teal-700";
+        function closeTicketMobile() {
+            activeTicketId = null;
+            const main = document.getElementById('mainDisplay');
+            const sidebar = document.getElementById('sidebar');
+            
+            main.classList.add('hidden');
+            sidebar.classList.remove('hidden');
+            sidebar.classList.add('w-full');
+        }
 
-        return `
-        <div class="flex items-start gap-3 ${alignClass}">
-          <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center text-sm font-bold">
-            ${isStaff ? "A" : "U"}
-          </div>
-          <div class="max-w-md">
-            <div class="${bgColor} p-3 rounded-lg shadow-sm">
-              <p class="text-xs font-semibold text-gray-600 mb-1">
-                ${isStaff ? "Support Team" : "Customer"}
-              </p>
-              <p class="text-gray-900">${escapeHtml(m.message)}</p>
-              <p class="text-xs text-gray-500 mt-2">
-                ${new Date(m.created_at).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>`;
-      })
-      .join("");
+        async function viewArchivedTickets() {
+            activeTicketId = null;
+            const main = document.getElementById('mainDisplay');
+            const sidebar = document.getElementById('sidebar');
 
-    container.scrollTop = container.scrollHeight;
-  }
+            main.classList.remove('hidden');
+            main.classList.add('flex');
+            sidebar.classList.add('hidden', 'md:flex');
 
-  // Send message
-  async function sendMessage() {
-    const input = getEl("adminMessage");
-    if (!input) return;
+            main.innerHTML = `<div class="p-10 text-center text-gray-400 italic">Loading archives...</div>`;
 
-    const msg = input.value.trim();
-    if (!msg || !currentTicketId) return;
+            try {
+                const res = await fetch('/api/tickets/archived');
+                const data = await res.json();
+                const archived = Array.isArray(data) ? data : [];
 
-    try {
-      const response = await fetch(`${API_BASE}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticket_id: currentTicketId,
-          sender_staff_id: 1,
-          message: msg,
-        }),
-      });
+                if (!Array.isArray(data) && data.error) {
+                    console.error("Server returned error:", data.error);
+                }
 
-      if (!response.ok) throw new Error("Failed to send message");
+                main.innerHTML = `
+                    <div class="p-4 md:p-8 flex flex-col h-full bg-white overflow-hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex items-center gap-3">
+                                <button onclick="closeTicketMobile()" class="md:hidden p-2 text-gray-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                </button>
+                                <h2 class="text-2xl font-bold text-slate-800">Archive Vault</h2>
+                            </div>
+                            <button onclick="location.reload()" class="text-sm bg-slate-100 px-4 py-2 rounded-lg font-bold hover:bg-slate-200">Back to Active</button>
+                        </div>
 
-      input.value = "";
-      await loadMessages(currentTicketId);
-      await loadTickets(); // Refresh to update message count
-      renderTickets();
-    } catch (err) {
-      alert("Failed to send message: " + err.message);
-    }
-  }
+                        <div class="flex-1 overflow-y-auto border rounded-xl">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 sticky top-0 border-b">
+                                    <tr>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase">Ticket</th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase">Client</th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase">Subject</th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${archived.length === 0 
+                                        ? '<tr><td colspan="4" class="p-10 text-center text-gray-400">No archived tickets found.</td></tr>' 
+                                        : archived.map(t => `
+                                            <tr class="border-b hover:bg-slate-50 transition">
+                                                <td class="p-4 text-sm font-bold text-blue-600">#${t.ticket_number}</td>
+                                                <td class="p-4 text-sm text-gray-600">${t.first_name} ${t.second_name}</td>
+                                                <td class="p-4 text-sm text-gray-800 truncate max-w-[200px]">${t.issue_subject}</td>
+                                                <td class="p-4 text-right">
+                                                    <button onclick="restoreTicket(${t.id})" class="bg-green-100 text-green-700 px-3 py-1 rounded-md text-xs font-bold hover:bg-green-200 transition">
+                                                        RESTORE
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Archive fetch error:", err);
+                main.innerHTML = `<div class="p-10 text-center text-red-500 font-bold">Failed to load archives. Check server console.</div>`;
+            }
+        }
 
-  async function fetchMessages() {
-    try {
-      const res = await fetch(`${API_BASE}/messages`);
-      if (!res.ok) throw new Error("Failed to fetch messages");
-      const data = await res.json();
-      allMessages = Array.isArray(data) ? data : data.messages || [];
-    } catch (err) {
-      console.error("Error fetching messages:", err);
-    }
-  }
+        async function restoreTicket(id) {
+            if (!confirm("Move this ticket back to the active list?")) return;
 
-  // Close chat modal
-  function closeChat() {
-    const modal = getEl("chatModal");
-    if (modal) {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-    }
-    currentTicketId = null;
-  }
+            const btn = event.target;
+            setButtonLoading(btn, true);
 
-  // Make functions globally available
-  window.loadTickets = loadTickets;
-  window.openCreateModal = openCreateModal;
-  window.deleteTicket = deleteTicket;
-  window.openChat = openChat;
-  window.sendMessage = sendMessage;
-  window.closeModal = closeModal;
-  window.closeChat = closeChat;
-</script>
+            try {
+                const response = await fetch(`/api/tickets/${id}/restore`, { method: 'PATCH' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Ticket restored successfully!", 'success');
+                    alert("Ticket restored successfully!");
+                    viewArchivedTickets(); // Refresh archive list
+                    loadTickets(); // Refresh the sidebar list
+                } else {
+                    showToast("Failed to restore ticket", 'error');
+                }
+            } catch (err) {
+                console.error("Restore failed:", err);
+                showToast("Error restoring ticket", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        function filterClientDropdown() {
+            const input = document.getElementById('clientSearchInput');
+            const filter = input.value.toLowerCase();
+            const select = document.getElementById('newUserId');
+            const options = select.options;
+
+            for (let i = 0; i < options.length; i++) {
+                const text = options[i].text.toLowerCase();
+                options[i].style.display = text.includes(filter) ? "" : "none";
+            }
+        }
+
+        function closeCreateForm() {
+            const main = document.getElementById('mainDisplay');
+            main.innerHTML = `
+                <div class="flex items-center justify-center h-full text-gray-400 flex-col p-6 text-center">
+                    <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4v-3a2 2 0 00-2-2H5z"></path></svg>
+                    <p>Select a ticket to view conversation</p>
+                </div>
+            `;
+            
+            if (window.innerWidth < 768) {
+                closeTicketMobile(); 
+            }
+        }
+
+        function showToast(msg, type = 'error') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-emerald-600';
+            const title = type === 'error' ? 'Error' : 'Success';
+            toast.className = `${bgColor} text-white p-4 rounded-2xl shadow-2xl min-w-[280px] animate-fade-in flex flex-col`;
+            toast.innerHTML = `
+                <span class="text-[10px] font-black uppercase tracking-widest opacity-70">${title}</span>
+                <span class="text-sm font-bold">${msg}</span>
+            `;
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        function setButtonLoading(button, isLoading, originalText = '') {
+            if (isLoading) {
+                button.dataset.originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = `<span class="spinner"></span>`;
+            } else {
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalText || originalText;
+            }
+        }
+    </script>

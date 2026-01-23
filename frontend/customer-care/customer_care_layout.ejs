@@ -19,6 +19,8 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -73,11 +75,10 @@
           <!-- Navigation -->
           <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <% const pages = [ {slug:'dashboard', name:'Dashboard'},
-            { slug:'active-users', name:'Active Users' },
-            { slug:'expired-users', name:'Expired Users' },
-            { slug:'my-customers', name:'My Assignments' },
-            { slug:'work-schedule', name:'Work Schedule' },
             {slug:'support-tickets', name:'Support Tickets'},
+            { slug:'subscriptions', name:'Subscriptions' },
+            { slug:'task-assignment', name:'Task Assignments' },
+            { slug:'work-schedule', name:'Work Schedule' },            
             {slug:'communication-team', name:'Team Communication'},
             {slug:'profile', name:'Profile'}
             ]; %> <% pages.forEach(p => { %>
@@ -88,8 +89,6 @@
               <i
                 class="fas <%= 
                   p.slug === 'dashboard' ? 'fa-chart-pie' :
-                  p.slug === 'active-users' ? 'fa-user-check' :
-                  p.slug === 'expired-users' ? 'fa-user-times' :
                   p.slug.includes('work-schedule') ? 'fa-tasks' :
                   p.slug.includes('work-schedule') ? 'fa-calendar-alt' :
                   p.slug.includes('service') ? 'fa-tools' :

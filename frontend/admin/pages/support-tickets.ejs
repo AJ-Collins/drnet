@@ -1,346 +1,808 @@
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        .chat-scroll::-webkit-scrollbar { width: 5px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .bubble-in { border-radius: 0 15px 15px 15px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bubble-out { border-radius: 15px 0 15px 15px; background: #dcf8c6; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .chat-bg { background-color: #e5ddd5; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.05"><text x="10" y="50" font-size="80" fill="%23999">💬</text></svg>'); }
+        .line-clamp-1 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-    /* Layout Containers */
-    .main-container { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .side-panel { 
-        position: fixed; top: 0; right: -100%; width: 100%; max-width: 500px; height: 100vh; 
-        background: white; z-index: 50; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex; flex-direction: column;
-    }
-    .side-panel.active { right: 0; }
-    .overlay { 
-        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); 
-        backdrop-filter: blur(4px); z-index: 40; display: none; 
-    }
-    .overlay.active { display: block; }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-    /* UI Components */
-    .glass-panel { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-    .input-field { background: #f1f5f9; border: 1px solid #e2e8f0; transition: all 0.2s; }
-    .input-field:focus { background: white; border-color: #0d9488; ring: 3px rgba(13, 148, 136, 0.1); }
-    
-    .ticket-card { border: 1px solid #e2e8f0; transition: all 0.3s; }
-    .ticket-card:hover { border-color: #0d9488; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .animate-fade-in { 
+            animation: fadeIn 0.3s ease-out forwards; 
+        }
 
-    .badge { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 10px; border-radius: 6px; }
-    .badge-critical { background: #fef2f2; color: #b91c1c; }
-    .badge-high { background: #fff7ed; color: #c2410c; }
-    .badge-medium { background: #fefce8; color: #a16207; }
-    .badge-low { background: #f0f9ff; color: #0369a1; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
-    /* Chat Bubbles */
-    .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; }
-    .chat-left { background: #f1f5f9; color: #1e293b; border-bottom-left-radius: 4px; }
-    .chat-right { background: #0d9488; color: white; border-bottom-right-radius: 4px; }
-    
-    .label-caps { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
-    
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-</style>
+        .spinner {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
 
-<div class="overlay" id="uiOverlay" onclick="closeAllPanels()"></div>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-<div class="main-container max-w-full mx-auto py-4">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Help Desk</h1>
-            <p class="text-slate-500 font-bold text-xs uppercase tracking-widest">Single-view Support Management</p>
-        </div>
-        <div class="flex gap-3">
-            <button onclick="loadTickets()" class="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all">
-                <i class="fas fa-sync-alt"></i>
-            </button>
-            <button onclick="openCreatePanel()" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-teal-600 shadow-xl transition-all flex items-center gap-2">
-                <i class="fas fa-plus"></i> Create Ticket
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<div class="bg-gray-100 h-screen overflow-hidden flex flex-col">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+    <header class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md z-30">
+        <h1 class="text-lg md:text-xl font-bold tracking-tight">SUPPORT MANAGEMENT</h1>
+        <div class="flex gap-2">
+            <button onclick="loadCreateForm()" class="bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-xs md:text-sm font-semibold transition">
+                + <span class="hidden md:inline">New Ticket</span>
             </button>
         </div>
-    </div>
+    </header>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="glass-panel p-5 rounded-[2rem] flex items-center gap-4 border-b-4 border-slate-200">
-            <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500"><i class="fas fa-list"></i></div>
-            <div><p class="label-caps">Total</p><h4 id="totalTickets" class="text-xl font-black">0</h4></div>
-        </div>
-        <div class="glass-panel p-5 rounded-[2rem] flex items-center gap-4 border-b-4 border-yellow-400">
-            <div class="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-600"><i class="fas fa-door-open"></i></div>
-            <div><p class="label-caps text-yellow-600">Open</p><h4 id="openTickets" class="text-xl font-black">0</h4></div>
-        </div>
-        <div class="glass-panel p-5 rounded-[2rem] flex items-center gap-4 border-b-4 border-blue-500">
-            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600"><i class="fas fa-spinner"></i></div>
-            <div><p class="label-caps text-blue-600">Active</p><h4 id="inProgressTickets" class="text-xl font-black">0</h4></div>
-        </div>
-        <div class="glass-panel p-5 rounded-[2rem] flex items-center gap-4 border-b-4 border-teal-500">
-            <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600"><i class="fas fa-check"></i></div>
-            <div><p class="label-caps text-teal-600">Fixed</p><h4 id="resolvedTickets" class="text-xl font-black">0</h4></div>
-        </div>
-    </div>
-
-    <div class="glass-panel rounded-3xl p-4 mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="relative"><i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="searchInput" oninput="renderTickets()" placeholder="Search..." class="w-full pl-11 pr-4 py-3 rounded-2xl input-field text-sm font-bold outline-none">
-        </div>
-        <select id="priorityFilter" onchange="renderTickets()" class="py-3 px-4 rounded-2xl input-field text-sm font-bold outline-none">
-            <option value="">All Priorities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
-        </select>
-        <select id="issueTypeFilter" onchange="renderTickets()" class="py-3 px-4 rounded-2xl input-field text-sm font-bold outline-none">
-            <option value="">All Issues</option><option value="Network Issue">Network Issue</option><option value="Hardware Problem">Hardware Problem</option>
-        </select>
-        <select id="statusFilter" onchange="renderTickets()" class="py-3 px-4 rounded-2xl input-field text-sm font-bold outline-none">
-            <option value="">All Statuses</option><option value="open">Open</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option>
-        </select>
-    </div>
-
-    <div id="ticketsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        </div>
-</div>
-
-<div id="formPanel" class="side-panel">
-    <div class="p-8 border-b flex justify-between items-center bg-slate-50">
-        <div>
-            <h3 id="panelTitle" class="text-xl font-black text-slate-900">New Ticket</h3>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Details & Assignment</p>
-        </div>
-        <button onclick="closeAllPanels()" class="w-10 h-10 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all"><i class="fas fa-times"></i></button>
-    </div>
-    <form id="ticketForm" class="p-8 flex-1 overflow-y-auto space-y-6" onsubmit="handleSaveTicket(event)">
-        <input type="hidden" id="editId">
-        <div class="space-y-4">
-            <div><label class="label-caps block mb-2">Customer Name</label>
-                <input required id="fullName" type="text" class="w-full px-4 py-3 rounded-2xl input-field text-sm font-bold outline-none"></div>
-            <div><label class="label-caps block mb-2">Contact Number</label>
-                <input id="phone" type="text" class="w-full px-4 py-3 rounded-2xl input-field text-sm font-bold outline-none"></div>
-            <div class="grid grid-cols-2 gap-4">
-                <div><label class="label-caps block mb-2">Type</label>
-                    <select required id="issue_type" class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
-                        <option value="Network Issue">Network</option><option value="Hardware Problem">Hardware</option><option value="Maintenance">Maintenance</option>
-                    </select></div>
-                <div><label class="label-caps block mb-2">Priority</label>
-                    <select required id="priority" class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
-                        <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="critical">Critical</option>
-                    </select></div>
+    <div class="flex flex-1 overflow-hidden relative">
+        <aside id="sidebar" class="w-full md:w-1/3 lg:w-1/4 border-r bg-white flex flex-col z-20 transition-all duration-300">
+            <div class="p-4 border-b bg-gray-50">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Tickets</span>
+                    <button onclick="viewArchivedTickets()" class="text-[10px] font-bold text-blue-600 hover:underline">VIEW ARCHIVES</button>
+                </div>
+                <input type="text" id="ticketSearch" onkeyup="filterTickets()" placeholder="Search tickets..." class="w-full p-2 border rounded text-sm outline-none focus:ring-2 focus:ring-blue-500">
             </div>
-            <div><label class="label-caps block mb-2">Assign Agent</label>
-                <select id="assigned_to" class="w-full px-4 py-3 rounded-2xl input-field text-sm font-bold outline-none"></select></div>
-            <div><label class="label-caps block mb-2">Issue Description</label>
-                <textarea id="initialMessage" rows="5" class="w-full px-4 py-3 rounded-2xl input-field text-sm font-bold outline-none"></textarea></div>
-        </div>
-        <div class="pt-6">
-            <button type="submit" class="w-full bg-teal-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-teal-200 hover:bg-slate-900 transition-all">
-                Save Ticket
-            </button>
-        </div>
-    </form>
-</div>
+            <div class="flex-1 overflow-y-auto" id="ticketList"></div>
+        </aside>
 
-<div id="chatPanel" class="side-panel !max-w-[600px]">
-    <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-teal-500 flex items-center justify-center text-white shadow-lg"><i class="fas fa-comments"></i></div>
-            <div><h3 id="chatTicketNumber" class="text-lg font-black">#TKT-000</h3><p class="text-[9px] font-bold text-teal-400 uppercase tracking-widest">Real-time Support</p></div>
-        </div>
-        <button onclick="closeAllPanels()" class="w-10 h-10 rounded-full hover:bg-white/10 transition-all"><i class="fas fa-times"></i></button>
-    </div>
-    <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50"></div>
-    <div class="p-6 bg-white border-t">
-        <div class="flex gap-2 bg-slate-100 p-2 rounded-2xl">
-            <textarea id="adminMessage" rows="1" placeholder="Type a reply..." class="flex-1 bg-transparent border-none focus:ring-0 p-3 text-sm font-bold resize-none"></textarea>
-            <button onclick="sendMessage()" class="w-12 h-12 bg-slate-900 text-white rounded-xl hover:bg-teal-600 transition-all"><i class="fas fa-paper-plane"></i></button>
-        </div>
+        <main id="mainDisplay" class="hidden md:flex flex-1 flex-col bg-white absolute inset-0 z-10 md:relative md:z-0">
+            <div class="flex items-center justify-center h-full text-gray-400 flex-col p-6 text-center">
+                <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4v-3a2 2 0 00-2-2H5z"></path></svg>
+                <p>Select a ticket to view conversation</p>
+            </div>
+        </main>
     </div>
 </div>
+    <script>
+        async function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                console.log("This browser does not support desktop notification");
+                return;
+            }
 
-<script>
-    // --- State Management ---
-    let allTickets = [];
-    let allMessages = [];
-    let allStaff = [];
-    let currentTicketId = null;
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
+                }
+            }
+        }
 
-    const API_BASE = "/api";
-    const getEl = (id) => document.getElementById(id);
-    const escapeHtml = (text) => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) : '';
-    const formatStatus = (s) => s.replace('_', ' ').toUpperCase();
+        const socket = io(); 
+        let activeTicketId = null;
+        let allTickets = [];        
 
-    // --- Core Functions ---
-    async function loadTickets() {
-        try {
-            const [tRes, mRes, sRes] = await Promise.all([
-                fetch(`${API_BASE}/tickets`), fetch(`${API_BASE}/messages`), fetch(`${API_BASE}/tickets/staff`)
-            ]);
-            allTickets = await tRes.json();
-            const mData = await mRes.json();
-            allMessages = mData.messages || mData;
-            allStaff = await sRes.json();
+        // 1. INITIAL LOAD
+        window.onload = () => {
+            loadTickets();
+            requestNotificationPermission();
+        }
 
-            updateStats();
-            renderTickets();
-            populateStaffDropdowns();
-        } catch (err) { console.error("Load failed", err); }
-    }
+        async function loadTickets() {
+            try {
+                const res = await fetch('/api/tickets');
+                allTickets = await res.json();
+                renderTicketList(allTickets);
+            } catch (err) { console.error("Error loading tickets", err); }
+        }
 
-    function updateStats() {
-        getEl("totalTickets").textContent = allTickets.length;
-        getEl("openTickets").textContent = allTickets.filter(t => t.status === 'open').length;
-        getEl("inProgressTickets").textContent = allTickets.filter(t => t.status === 'in_progress').length;
-        getEl("resolvedTickets").textContent = allTickets.filter(t => t.status === 'resolved').length;
-    }
-
-    function renderTickets() {
-        const list = getEl("ticketsList");
-        const q = getEl("searchInput").value.toLowerCase();
-        const pFilter = getEl("priorityFilter").value;
-        const sFilter = getEl("statusFilter").value;
-
-        const filtered = allTickets.filter(t => 
-            (t.fullName.toLowerCase().includes(q) || t.ticket_number.includes(q)) &&
-            (!pFilter || t.priority === pFilter) &&
-            (!sFilter || t.status === sFilter)
-        );
-
-        list.innerHTML = filtered.map(t => {
-            const mCount = allMessages.filter(m => m.ticket_id == t.id).length;
-            return `
-            <div class="glass-panel rounded-[2rem] p-6 ticket-card flex flex-col">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="badge badge-${t.priority}">${t.priority}</span>
-                    <span class="text-[10px] font-black text-slate-400">#${t.ticket_number}</span>
-                </div>
-                <h4 class="text-lg font-black text-slate-900 mb-1">${escapeHtml(t.fullName)}</h4>
-                <div class="flex items-center gap-2 mb-4 text-[10px] font-bold text-slate-500">
-                    <span class="px-2 py-0.5 rounded bg-slate-100">${formatStatus(t.status)}</span>
-                    <span>•</span>
-                    <span>${t.issue_type}</span>
-                </div>
-                <p class="text-sm text-slate-500 font-medium mb-6 line-clamp-2">${escapeHtml(t.description)}</p>
+        function renderTicketList(tickets) {
+            const list = document.getElementById('ticketList');
+            list.innerHTML = tickets.map(t => {
+                const maxLength = 50;
+                const subjectTruncated = t.issue_subject.length > maxLength;
+                const descTruncated = t.description && t.description.length > maxLength;
                 
-                <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <button onclick="openChatPanel(${t.id})" class="text-xs font-black text-teal-600 hover:text-slate-900 transition-all flex items-center gap-2">
-                        <i class="fas fa-comment-dots"></i> ${mCount} MESSAGES
-                    </button>
-                    <div class="flex gap-2">
-                        <button onclick="openEditPanel(${t.id})" class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:text-teal-600 transition-all"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteTicket(${t.id})" class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:text-rose-500 transition-all"><i class="fas fa-trash-alt"></i></button>
+                return `
+                    <div class="p-4 border-b hover:bg-blue-50 cursor-pointer transition border-l-4 ${activeTicketId == t.id ? 'border-l-blue-500 bg-blue-50' : 'border-l-transparent'}" onclick="viewTicket(${t.id})">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="font-bold text-slate-700 text-sm">#${t.ticket_number}</span>
+                            <span class="text-[10px] ${t.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'} px-2 py-0.5 rounded-full font-bold uppercase">${t.status}</span>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <h4 id="subject-${t.id}" class="text-sm font-medium text-gray-800 ${subjectTruncated ? 'line-clamp-1' : ''}">
+                                ${t.issue_subject}
+                            </h4>
+                            ${subjectTruncated ? `
+                                <button onclick="event.stopPropagation(); toggleText('subject-${t.id}', 'subject-btn-${t.id}')" 
+                                    id="subject-btn-${t.id}"
+                                    class="text-[10px] text-blue-600 hover:underline font-semibold mt-1">
+                                    Show more
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        ${t.description ? `
+                            <div class="mb-2">
+                                <p id="desc-${t.id}" class="text-xs text-gray-500 ${descTruncated ? 'line-clamp-2' : ''}">
+                                    ${t.description}
+                                </p>
+                                ${descTruncated ? `
+                                    <button onclick="event.stopPropagation(); toggleText('desc-${t.id}', 'desc-btn-${t.id}')" 
+                                        id="desc-btn-${t.id}"
+                                        class="text-[10px] text-blue-600 hover:underline font-semibold mt-1">
+                                        Show more
+                                    </button>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                        
+                        <p class="text-xs text-gray-500 mt-1">Client: ${t.first_name} ${t.second_name}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleText(elementId, buttonId) {
+            const element = document.getElementById(elementId);
+            const button = document.getElementById(buttonId);
+            
+            if (element.classList.contains('line-clamp-1') || element.classList.contains('line-clamp-2')) {
+                element.classList.remove('line-clamp-1', 'line-clamp-2');
+                button.textContent = 'Show less';
+            } else {
+                if (elementId.startsWith('subject-')) {
+                    element.classList.add('line-clamp-1');
+                } else {
+                    element.classList.add('line-clamp-2');
+                }
+                button.textContent = 'Show more';
+            }
+        }
+
+        // VIEW TICKET & LOAD CHAT
+        async function viewTicket(id) {
+            activeTicketId = id;
+            socket.emit('joinTicket', id);
+            
+            // MOBILE TOGGLE: Show main, hide sidebar
+            const main = document.getElementById('mainDisplay');
+            const sidebar = document.getElementById('sidebar');
+            main.classList.remove('hidden');
+            main.classList.add('flex');
+            sidebar.classList.add('hidden', 'md:flex'); 
+
+            renderTicketList(allTickets);
+
+            const [ticketRes, msgRes, staffRes, assignedRes] = await Promise.all([
+                fetch(`/api/tickets/${id}`),
+                fetch(`/api/tickets/${id}/messages`),
+                fetch(`/api/staff`),
+                fetch(`/api/tickets/${id}/assignments`)
+            ]);
+
+            const ticket = await ticketRes.json();
+            const messages = await msgRes.json();
+            const allStaff = await staffRes.json();
+            const assignedStaff = await assignedRes.json();
+
+            main.innerHTML = `
+                <div class="p-3 md:p-4 border-b flex justify-between items-center bg-white shadow-sm z-10">
+                    <div class="flex items-center gap-3">
+                        <button onclick="closeTicketMobile()" class="md:hidden p-2 -ml-2 text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </button>
+                        <div>
+                            <h2 class="text-sm md:text-lg font-bold text-slate-800 truncate max-w-[150px] md:max-w-none">#${ticket.ticket_number}</h2>
+                            <p class="text-[10px] md:text-xs text-gray-500">${ticket.status.toUpperCase()}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-1 md:gap-2">
+                        <button onclick="updateTicketStatus(${id}, 'resolved')" class="text-[10px] bg-green-100 p-2 rounded font-bold text-green-700">Resolve</button>
+                        <button onclick="archiveTicket(${id})" class="text-xs bg-amber-100 hover:bg-amber-200 p-2 rounded font-semibold text-amber-700">Archive</button>
+                        <button onclick="deleteTicket(${id})" class="text-[10px] bg-red-100 p-2 rounded font-bold text-red-700">Delete</button>
                     </div>
                 </div>
-            </div>`;
-        }).join("");
-    }
 
-    // --- Panel Controls ---
-    function openCreatePanel() {
-        getEl("panelTitle").textContent = "New Ticket";
-        getEl("ticketForm").reset();
-        getEl("editId").value = "";
-        togglePanel("formPanel", true);
-    }
+                <div class="flex flex-1 overflow-hidden flex-col lg:flex-row">
+                    <div class="flex-1 flex flex-col border-r chat-bg order-1 lg:order-none">
+                        <div id="chatContainer" class="flex-1 overflow-y-auto p-4 chat-scroll flex flex-col gap-3">
+                            ${messages.map(m => renderMessage(m)).join('')}
+                        </div>
+                        <div class="p-3 bg-white border-t flex gap-2">
+                            <input type="text" id="msgInput" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Type..." class="flex-1 p-2 bg-gray-100 border-none rounded-full px-4 text-sm outline-none">
+                            <button onclick="sendChatMessage()" class="bg-green-500 text-white p-2 rounded-full">
+                                <i class="fas fa-paper-plane text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
 
-    function openEditPanel(id) {
-        const t = allTickets.find(x => x.id === id);
-        if (!t) return;
-        getEl("panelTitle").textContent = "Edit Ticket";
-        getEl("editId").value = t.id;
-        getEl("fullName").value = t.fullName;
-        getEl("phone").value = t.phone || '';
-        getEl("issue_type").value = t.issue_type;
-        getEl("priority").value = t.priority;
-        getEl("assigned_to").value = t.assigned_to || '';
-        getEl("initialMessage").value = t.description;
-        togglePanel("formPanel", true);
-    }
+                    <div class="hidden lg:block w-80 bg-slate-50 border-l overflow-y-auto p-4 flex flex-col gap-6">
+                        <div class="space-y-4 pb-2">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Assign Staff</h3>
+                            <div class="space-y-2">
+                                <select id="staffSelect" class="w-full p-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">-- Select Staff --</option>
+                                    ${allStaff.map(s => `<option value="${s.id}">${s.first_name} ${s.second_name}</option>`).join('')}
+                                </select>
+                                <textarea id="assignNote" 
+                                    rows="3" 
+                                    placeholder="Describe the task for this staff member..." 
+                                    class="w-full p-2 text-sm border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 resize-y min-h-[80px]"></textarea>                                
+                                <div class="flex items-center gap-2 p-2 bg-blue-50 rounded-lg border border-blue-100">
+                                    <input type="checkbox" id="sendStaffSmsCheckbox" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                    <label for="sendStaffSmsCheckbox" class="text-xs text-slate-700 cursor-pointer select-none">Send SMS notification to assigned staff</label>
+                                </div>
+                                
+                                <button onclick="handleAssignment(${id})" class="w-full bg-teal-400 text-white py-2 rounded-lg text-sm font-bold hover:bg-teal-700 transition">
+                                    Assign
+                                </button>
+                            </div>
+                        </div>
+                        <hr class="border-slate-200 pb-1">
 
-    async function openChatPanel(id) {
-        currentTicketId = id;
-        const t = allTickets.find(x => x.id === id);
-        getEl("chatTicketNumber").textContent = `#${t.ticket_number}`;
-        togglePanel("chatPanel", true);
-        await loadMessages(id);
-    }
-
-    function togglePanel(id, show) {
-        getEl(id).classList.toggle("active", show);
-        getEl("uiOverlay").classList.toggle("active", show);
-    }
-
-    function closeAllPanels() {
-        document.querySelectorAll('.side-panel').forEach(p => p.classList.remove("active"));
-        getEl("uiOverlay").classList.remove("active");
-        currentTicketId = null;
-    }
-
-    // --- CRUD Actions ---
-    async function handleSaveTicket(e) {
-        e.preventDefault();
-        const id = getEl("editId").value;
-        const payload = {
-            fullName: getEl("fullName").value,
-            phone: getEl("phone").value,
-            issue_type: getEl("issue_type").value,
-            priority: getEl("priority").value,
-            assigned_to: getEl("assigned_to").value || null,
-            description: getEl("initialMessage").value,
-            status: id ? undefined : 'open'
-        };
-
-        try {
-            const url = id ? `${API_BASE}/tickets/${id}` : `${API_BASE}/tickets`;
-            const method = id ? 'PUT' : 'POST';
-            if (!id) payload.ticket_number = `TKT-${Date.now().toString().slice(-6)}`;
-
-            const res = await fetch(url, {
-                method, headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) { closeAllPanels(); loadTickets(); }
-        } catch (err) { alert("Save failed"); }
-    }
-
-    async function sendMessage() {
-        const msg = getEl("adminMessage").value.trim();
-        if (!msg || !currentTicketId) return;
-
-        try {
-            await fetch(`${API_BASE}/messages`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ ticket_id: currentTicketId, sender_staff_id: 1, message: msg })
-            });
-            getEl("adminMessage").value = '';
-            loadMessages(currentTicketId);
-        } catch (err) { alert("Send failed"); }
-    }
-
-    async function loadMessages(tid) {
-        const res = await fetch(`${API_BASE}/messages/ticket/${tid}`);
-        const data = await res.json();
-        const msgs = data.messages || data;
-        const container = getEl("chatMessages");
-        
-        container.innerHTML = msgs.map(m => `
-            <div class="flex ${m.sender_staff_id ? 'justify-end' : 'justify-start'}">
-                <div class="chat-bubble ${m.sender_staff_id ? 'chat-right shadow-lg' : 'chat-left'}">
-                    <p class="font-bold text-[9px] uppercase mb-1 opacity-70">${m.sender_staff_id ? 'Staff' : 'Customer'}</p>
-                    <p class="font-medium">${escapeHtml(m.message)}</p>
+                        <div class="space-y-4">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Currently Assigned</h3>
+                            <div id="assignedList" class="flex flex-col gap-2">
+                                ${assignedStaff.length === 0 
+                                    ? '<p class="text-xs text-gray-400 italic">No staff assigned yet.</p>' 
+                                    : assignedStaff.map(s => `
+                                    <div class="bg-white p-3 border border-slate-200 group">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-700">${s.first_name} ${s.second_name || ''}</p>
+                                                <p class="text-[10px] text-gray-500">${s.position || 'Staff'}</p>
+                                            </div>
+                                            <button onclick="revokeAssignment(${id}, ${s.staff_id})" class="text-[14px] text-gray-400 hover:text-red-500 transition">
+                                                revoke
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>`).join("");
-        container.scrollTop = container.scrollHeight;
-    }
+            `;
+            scrollChat();
+        }
 
-    function populateStaffDropdowns() {
-        const html = '<option value="">Unassigned</option>' + allStaff.map(s => `<option value="${s.id}">${s.first_name} ${s.second_name}</option>`).join("");
-        getEl("assigned_to").innerHTML = html;
-    }
+        async function loadCreateForm() {
+            activeTicketId = null;
+            renderTicketList(allTickets); 
 
-    async function deleteTicket(id) {
-        if (!confirm("Delete this ticket?")) return;
-        await fetch(`${API_BASE}/tickets/${id}`, { method: 'DELETE' });
-        loadTickets();
-    }
+            const main = document.getElementById('mainDisplay');
+            const sidebar = document.getElementById('sidebar');
+            main.classList.remove('hidden');
+            main.classList.add('flex');
 
-    // Init
-    document.addEventListener("DOMContentLoaded", loadTickets);
-</script>
+            main.innerHTML = `<div class="flex-1 flex items-center justify-center text-gray-400 italic">Fetching client list...</div>`;
+
+            try {
+                const res = await fetch('/api/manage/clients');
+                const clients = await res.json();
+
+                main.innerHTML = `
+                    <div class="flex-1 bg-white flex flex-col items-center p-6 md:p-12 overflow-y-auto">
+                        <div class="w-full max-w-lg">
+                            <div class="flex justify-between items-center border-b pb-4 mb-8">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-900">New Ticket</h2>
+                                    <p class="text-gray-500 text-sm">Assign a client and describe the issue.</p>
+                                </div>
+                                <button onclick="closeCreateForm()" class="text-gray-400 hover:text-gray-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                </button>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Search & Select Client</label>
+                                    <input type="text" id="clientSearchInput" onkeyup="filterClientDropdown()" placeholder="Type client name or ID..." 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-t-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                    
+                                    <select id="newUserId" size="2" class="w-full px-2 py-1 border-x border-b border-gray-300 rounded-b-lg bg-white outline-none cursor-pointer overflow-y-auto">
+                                        ${clients.map(c => `
+                                            <option class="p-2 border-b border-gray-50 last:border-none hover:bg-blue-50" value="${c.id}">
+                                                ${c.first_name} ${c.second_name} (${c.phone || c.email})
+                                            </option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Subject</label>
+                                    <input type="text" id="newSubject" placeholder="Summary of the issue" 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+                                    <textarea id="newDescription" rows="4" placeholder="Full details..." 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                                </div>
+
+                                <div class="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-100">
+                                    <input type="checkbox" id="sendClientSmsCheckbox" checked class="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500 cursor-pointer">
+                                    <label for="sendClientSmsCheckbox" class="text-xs text-slate-700 cursor-pointer select-none">Send SMS notification to client about support ticket</label>
+                                </div>
+
+                                <div class="flex items-center gap-4 pt-2">
+                                    <button onclick="saveNewTicket()" 
+                                        class="flex-1 bg-slate-800 text-white py-2.5 rounded-lg font-bold hover:bg-slate-900 transition-colors">
+                                        Create Ticket
+                                    </button>
+                                    <button onclick="closeCreateForm()" 
+                                        class="px-6 py-2.5 text-gray-600 font-semibold hover:text-gray-900">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Client fetch error:", err);
+                main.innerHTML = `<div class="p-10 text-red-500 text-center">Failed to load clients. <br> <button onclick="loadCreateForm()" class="underline">Try Again</button></div>`;
+            }
+        }
+
+        function renderMessage(m) {
+            const isStaff = m.sender_staff_id !== null;
+            return `
+                <div class="${isStaff ? 'self-end' : 'self-start'} max-w-[80%]">
+                    <span class="text-[10px] text-gray-600 ${isStaff ? 'mr-2 text-right block' : 'ml-2'}">${isStaff ? (m.staff_name || 'Admin') : (m.user_name || 'Client')}</span>
+                    <div class="${isStaff ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
+                        ${m.message}
+                        <span class="block text-[9px] text-gray-400 text-right mt-1">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('msgInput');
+            if (!input.value.trim()) return;
+
+            const msgText = input.value;
+            input.value = '';
+            input.disabled = true;
+
+            try {
+                const res = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ticket_id: activeTicketId,
+                        message: msgText
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.status === 401) {
+                    showToast(data.message || "Unauthorized", 'error');
+                    window.location.href = data.redirectUrl;
+                    return;
+                }
+
+                if (!res.ok) {
+                    showToast("Failed to send message", 'error');
+                    input.value = msgText;
+                }
+            } catch (err) {
+                console.error("Send message error:", err);
+                showToast("Error sending message", 'error');
+                input.value = msgText;
+            } finally {
+                input.disabled = false;
+                input.focus();
+            }
+        }
+
+        // Socket listener for new messages
+        socket.on('newMessage', (msg) => {
+            if (msg.ticket_id === activeTicketId) {
+                const container = document.getElementById('chatContainer');
+                container.insertAdjacentHTML('beforeend', renderMessage(msg));
+                scrollChat();
+            }
+            
+            const isFromMe = msg.sender_staff_id !== null; 
+
+            if (Notification.permission === "granted" && !isFromMe) {
+                if (document.hidden || msg.ticket_id != activeTicketId) {
+                    const title = `New Message: Ticket #${msg.ticket_number || msg.ticket_id}`;
+                    const options = {
+                        body: `${msg.staff_name || msg.user_name || 'Client'}: ${msg.message}`,
+                        icon: '/static/images/logo_image.jpg', 
+                        tag: `ticket-${msg.ticket_id}`,
+                        renotify: true
+                    };
+
+                    const notification = new Notification(title, options);
+
+                    notification.onclick = function() {
+                        window.focus();
+                        viewTicket(msg.ticket_id);
+                        notification.close();
+                    };
+                }
+            }
+        });
+
+        // 4. ASSIGNMENT & CRUD LOGIC
+        async function handleAssignment(ticketId) {
+            const staffId = document.getElementById('staffSelect').value;
+            const note = document.getElementById('assignNote').value;
+            const sendSms = document.getElementById('sendStaffSmsCheckbox').checked;
+            const btn = event.target;
+
+            if (!staffId) return alert("Please select a staff member first.");
+
+            setButtonLoading(btn, true);
+
+            try {
+                const res = await fetch('/api/tickets/assign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        ticket_id: ticketId, 
+                        staff_id: staffId, 
+                        note: note,
+                        send_sms: sendSms
+                    })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    showToast("Staff assigned successfully!", 'success');
+                    viewTicket(ticketId);
+                } else {
+                    showToast(result.error || "Assignment failed", 'error');
+                    alert("Assignment failed: " + (result.error || "Unknown error"));
+                }
+            } catch (err) {
+                showToast("Failed to assign staff. Please try again.", 'error');
+                console.error("Assignment error:", err);
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function saveNewTicket() {
+            const subject = document.getElementById('newSubject').value;
+            const userId = document.getElementById('newUserId').value;
+            const description = document.getElementById('newDescription').value;
+             const sendSms = document.getElementById('sendClientSmsCheckbox').checked;
+             const btn = event.target;
+
+            if (!subject || !userId) return alert("Please fill in Subject and User ID");
+
+            setButtonLoading(btn, true);
+
+            try {
+                const response = await fetch('/api/tickets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        issue_subject: subject,
+                        description: description,
+                        send_sms: sendSms
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Ticket created successfully!", 'success');
+                    await loadTickets(); // Reload sidebar
+                    viewTicket(result.ticketId); // Open the new ticket
+                } else {
+                    showToast(result.error || "Failed to create ticket", 'error');
+                }
+            } catch (err) {
+                console.error("Failed to save ticket:", err);
+                showToast("Error creating ticket. Please try again.", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function deleteTicket(id) {
+            if (!confirm("Delete this ticket permanently?")) return;
+            
+            const btn = event.target;
+            setButtonLoading(btn, true);
+
+            try {
+                const res = await fetch(`/api/tickets/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                
+                if (result.success || res.ok) {
+                    showToast("Ticket deleted successfully!", 'success');
+                    await loadTickets();
+                    closeTicketMobile();
+                } else {
+                    showToast("Failed to delete ticket", 'error');
+                }
+            } catch (err) {
+                console.error("Delete error:", err);
+                showToast("Error deleting ticket", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function updateTicketStatus(id, newStatus) {
+            const btn = event.target;
+            setButtonLoading(btn, true);
+
+            try {
+                const response = await fetch(`/api/tickets/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Ticket marked as ${newStatus}!`, 'success');
+                    await loadTickets(); 
+                    viewTicket(id);
+                } else {
+                    showToast("Failed to update status", 'error');
+                }
+            } catch (err) {
+                console.error("Failed to update status:", err);
+                showToast("Error updating ticket status", 'error');
+            } finally {
+                 setButtonLoading(btn, false);
+            }
+        }
+
+        async function archiveTicket(id) {
+            if (!confirm("Are you sure you want to archive this ticket? It will be hidden from the main list.")) return;
+
+            const btn = event.target;
+            setButtonLoading(btn, true);
+    
+            try {
+                const response = await fetch(`/api/tickets/${id}/archive`, {
+                    method: 'PATCH'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Ticket archived successfully!", 'success');
+                    await loadTickets();
+                    document.getElementById('mainDisplay').innerHTML = `
+                        <div class="flex items-center justify-center h-full text-gray-400 flex-col">
+                            <p>Ticket Archived Successfully</p>
+                        </div>`;
+                } else {
+                    showToast("Failed to archive ticket", 'error');
+                }
+            } catch (err) {
+                console.error("Archive failed:", err);
+                showToast("Error archiving ticket", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function revokeAssignment(ticketId, staffId) {
+            if (!confirm("Are you sure you want to remove this staff member from this ticket?")) return;
+
+            const btn = event.target;
+            setButtonLoading(btn, true);
+
+
+            try {
+                const res = await fetch(`/api/tickets/${ticketId}/assign/${staffId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    showToast("Staff assignment revoked!", 'success');
+                    viewTicket(ticketId); // Refresh UI
+                } else {
+                    showToast("Failed to revoke assignment", 'error');
+                }
+            } catch (err) {
+                console.error("Revoke failed:", err);
+                showToast("Error revoking assignment", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        // HELPERS
+        function scrollChat() {
+            const container = document.getElementById('chatContainer');
+            if(container) container.scrollTop = container.scrollHeight;
+        }
+
+        function filterTickets() {
+            const query = document.getElementById('ticketSearch').value.toLowerCase();
+            const filtered = allTickets.filter(t => t.ticket_number.toLowerCase().includes(query) || t.issue_subject.toLowerCase().includes(query));
+            renderTicketList(filtered);
+        }
+
+        function closeTicketMobile() {
+            activeTicketId = null;
+            const main = document.getElementById('mainDisplay');
+            const sidebar = document.getElementById('sidebar');
+            
+            main.classList.add('hidden');
+            sidebar.classList.remove('hidden');
+            sidebar.classList.add('w-full');
+        }
+
+        async function viewArchivedTickets() {
+            activeTicketId = null;
+            const main = document.getElementById('mainDisplay');
+            const sidebar = document.getElementById('sidebar');
+
+            main.classList.remove('hidden');
+            main.classList.add('flex');
+            sidebar.classList.add('hidden', 'md:flex');
+
+            main.innerHTML = `<div class="p-10 text-center text-gray-400 italic">Loading archives...</div>`;
+
+            try {
+                const res = await fetch('/api/tickets/archived');
+                const data = await res.json();
+                const archived = Array.isArray(data) ? data : [];
+
+                if (!Array.isArray(data) && data.error) {
+                    console.error("Server returned error:", data.error);
+                }
+
+                main.innerHTML = `
+                    <div class="p-4 md:p-8 flex flex-col h-full bg-white overflow-hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex items-center gap-3">
+                                <button onclick="closeTicketMobile()" class="md:hidden p-2 text-gray-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                </button>
+                                <h2 class="text-2xl font-bold text-slate-800">Archive Vault</h2>
+                            </div>
+                            <button onclick="location.reload()" class="text-sm bg-slate-100 px-4 py-2 rounded-lg font-bold hover:bg-slate-200">Back to Active</button>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto border rounded-xl">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 sticky top-0 border-b">
+                                    <tr>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase">Ticket</th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase">Client</th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase">Subject</th>
+                                        <th class="p-4 text-xs font-bold text-gray-500 uppercase text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${archived.length === 0 
+                                        ? '<tr><td colspan="4" class="p-10 text-center text-gray-400">No archived tickets found.</td></tr>' 
+                                        : archived.map(t => `
+                                            <tr class="border-b hover:bg-slate-50 transition">
+                                                <td class="p-4 text-sm font-bold text-blue-600">#${t.ticket_number}</td>
+                                                <td class="p-4 text-sm text-gray-600">${t.first_name} ${t.second_name}</td>
+                                                <td class="p-4 text-sm text-gray-800 truncate max-w-[200px]">${t.issue_subject}</td>
+                                                <td class="p-4 text-right">
+                                                    <button onclick="restoreTicket(${t.id})" class="bg-green-100 text-green-700 px-3 py-1 rounded-md text-xs font-bold hover:bg-green-200 transition">
+                                                        RESTORE
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Archive fetch error:", err);
+                main.innerHTML = `<div class="p-10 text-center text-red-500 font-bold">Failed to load archives. Check server console.</div>`;
+            }
+        }
+
+        async function restoreTicket(id) {
+            if (!confirm("Move this ticket back to the active list?")) return;
+
+            const btn = event.target;
+            setButtonLoading(btn, true);
+
+            try {
+                const response = await fetch(`/api/tickets/${id}/restore`, { method: 'PATCH' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Ticket restored successfully!", 'success');
+                    alert("Ticket restored successfully!");
+                    viewArchivedTickets(); // Refresh archive list
+                    loadTickets(); // Refresh the sidebar list
+                } else {
+                    showToast("Failed to restore ticket", 'error');
+                }
+            } catch (err) {
+                console.error("Restore failed:", err);
+                showToast("Error restoring ticket", 'error');
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        function filterClientDropdown() {
+            const input = document.getElementById('clientSearchInput');
+            const filter = input.value.toLowerCase();
+            const select = document.getElementById('newUserId');
+            const options = select.options;
+
+            for (let i = 0; i < options.length; i++) {
+                const text = options[i].text.toLowerCase();
+                options[i].style.display = text.includes(filter) ? "" : "none";
+            }
+        }
+
+        function closeCreateForm() {
+            const main = document.getElementById('mainDisplay');
+            main.innerHTML = `
+                <div class="flex items-center justify-center h-full text-gray-400 flex-col p-6 text-center">
+                    <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4v-3a2 2 0 00-2-2H5z"></path></svg>
+                    <p>Select a ticket to view conversation</p>
+                </div>
+            `;
+            
+            if (window.innerWidth < 768) {
+                closeTicketMobile(); 
+            }
+        }
+
+        function showToast(msg, type = 'error') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-emerald-600';
+            const title = type === 'error' ? 'Error' : 'Success';
+            toast.className = `${bgColor} text-white p-4 rounded-2xl shadow-2xl min-w-[280px] animate-fade-in flex flex-col`;
+            toast.innerHTML = `
+                <span class="text-[10px] font-black uppercase tracking-widest opacity-70">${title}</span>
+                <span class="text-sm font-bold">${msg}</span>
+            `;
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        function setButtonLoading(button, isLoading, originalText = '') {
+            if (isLoading) {
+                button.dataset.originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = `<span class="spinner"></span>`;
+            } else {
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalText || originalText;
+            }
+        }
+    </script>
