@@ -449,6 +449,12 @@
         
         // Pending installs
         document.getElementById('pendingBookings').innerText = fmt(data.financial.pending_bookings);
+        document.getElementById('pendingTickets').innerText = fmt(data.financial.pending_tickets);
+        document.getElementById('inventoryValue').innerText = fmt(data.financial.inventory_value);
+        document.getElementById('inventorySalesValue').innerText = fmt(data.financial.inventory_sales_value);
+        document.getElementById('inStockCount').innerText = fmt(data.financial.in_stock_count);
+        document.getElementById('outOfStockCount').innerText = fmt(data.financial.out_stock_count);
+
         
         
         // Render charts

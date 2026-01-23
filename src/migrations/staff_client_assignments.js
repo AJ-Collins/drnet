@@ -1,28 +1,19 @@
 const db = require("../config/db");
 
-async function createAssignmentsTable() {
+async function createTicketAssignmentsTable() {
   await db.query(`
     CREATE TABLE IF NOT EXISTS assignments (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      clientName VARCHAR(100) NOT NULL,
-      clientContact VARCHAR(50),
-      serviceType VARCHAR(50) NOT NULL,
-      priority VARCHAR(20) DEFAULT 'low',
-      scheduledDate DATETIME NOT NULL,
-      estimatedDuration DECIMAL(5,2),
-      technicianId INT,
-      supervisorId INT,
-      description TEXT,
-      requiredEquipment TEXT,
-      status VARCHAR(20) DEFAULT 'assigned',
-      address VARCHAR(255) NULL,
-      completedAt DATETIME,
-      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (technicianId) REFERENCES staff(id) ON DELETE SET NULL,
-      FOREIGN KEY (supervisorId) REFERENCES staff(id) ON DELETE SET NULL
-    );
+      assignment_ticket_id INT NOT NULL,
+      staff_id INT NOT NULL,
+      assignment_note TEXT NULL,     
+      assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      status ENUM('pending', 'seen', 'completed') DEFAULT 'pending',
+      FOREIGN KEY (staff_id) REFERENCES staff(id) ON DELETE CASCADE,
+      UNIQUE KEY unique_staff_per_assignment (assignment_ticket_id, staff_id)
+    ) ENGINE=InnoDB;
   `);
-  console.log("Assignments table created");
+  console.log("Multi-staff task Assignments table created");
 }
 
-module.exports = createAssignmentsTable;
+module.exports = createTicketAssignmentsTable;

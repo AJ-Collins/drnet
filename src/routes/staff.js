@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const StaffClientAssignment = require("../models/StaffClientAssignment");
+const StaffClientAssignment = require("../models/StaffAssignments");
 const db = require("../config/db");
 const dayjs = require("dayjs");
 const apiSessionAuth = require("../middleware/apiSessionAuth");

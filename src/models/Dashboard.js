@@ -112,10 +112,34 @@ const Dashboard = {
       const [pendingTickets] = await db.query(`
         SELECT COUNT(*) as count
         FROM support_tickets 
-        WHERE status IN ('open', 'in_progress')
+        WHERE status = 'pending'
       `);
 
-      // 8. Recent revenue data for chart (last 12 months)
+      const [inventoryValue] = await db.query(`
+        SELECT SUM(unit_price) as total_value 
+        FROM items 
+        WHERE status = 'in-stock'
+      `);
+
+      const [inventorySalesValue] = await db.query(`
+        SELECT SUM(total_amount) as total_sales 
+        FROM sales 
+        WHERE payment_status = 'paid'
+      `);
+
+      const [inStockCount] = await db.query(`
+        SELECT COUNT(*) as count 
+        FROM items 
+        WHERE status = 'in-stock'
+      `);
+
+      const [outStockCount] = await db.query(`
+        SELECT COUNT(*) as count 
+        FROM items 
+        WHERE status = 'out-stock'
+      `);
+
+
       const [revenueData] = await db.query(`
         SELECT 
           DATE_FORMAT(payment_date, '%Y-%m') as month,
@@ -206,6 +230,10 @@ const Dashboard = {
           new_clients_month: newClientsMonth[0]?.count || 0,
           pending_bookings: pendingBookings[0]?.count || 0,
           pending_tickets: pendingTickets[0]?.count || 0,
+          inventory_value: inventoryValue[0]?.total_value || 0,
+          inventory_sales_value: inventorySalesValue[0]?.total_sales || 0,
+          in_stock_count: inStockCount[0]?.count || 0,
+          out_stock_count: outStockCount[0]?.count || 0,
           staff_on_duty: staffOnDuty[0]?.count || 0
         },
         charts: {

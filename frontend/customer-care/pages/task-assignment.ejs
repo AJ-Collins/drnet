@@ -1,0 +1,615 @@
+<div class="bg-gray-100 h-screen overflow-hidden flex flex-col">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+    
+    <header class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md z-30">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
+                <i class="fas fa-tasks text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-bold tracking-tight">MY ASSIGNMENTS</h1>
+                <p class="text-xs text-gray-300">Support Tickets & Task Management</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <div id="connectionStatus" class="hidden md:flex items-center gap-2 text-xs bg-emerald-600 px-3 py-1.5 rounded-full">
+                <i class="fas fa-circle animate-pulse text-[8px]"></i> Connected
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative">
+        <!-- Left Sidebar - Assignment Queue -->
+        <aside id="sidebar" class="w-full md:w-1/3 lg:w-1/4 border-r bg-white flex flex-col z-20 transition-all duration-300">
+            <div class="p-4 border-b bg-gray-50">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-gray-500 uppercase">My Queue</span>
+                    <span id="taskCount" class="bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">0</span>
+                </div>
+                <input type="text" id="assignmentSearch" onkeyup="filterAssignments()" placeholder="Search assignments..." class="w-full p-2 border rounded text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex-1 overflow-y-auto" id="assignmentList">
+                <!-- Loading Skeleton -->
+                <div class="animate-pulse space-y-3 p-4">
+                    <div class="h-24 bg-slate-100 rounded-xl"></div>
+                    <div class="h-24 bg-slate-100 rounded-xl"></div>
+                    <div class="h-24 bg-slate-100 rounded-xl"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div id="mainDisplay" class="hidden md:flex flex-1 flex-col bg-white absolute inset-0 z-10 md:relative md:z-0">
+            <!-- Assignment Details & Chat -->
+            <div class="flex-1 flex flex-col h-full">
+                <!-- Assignment Header -->
+                <div id="assignmentHeader" class="p-4 border-b bg-white shadow-sm">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">
+                                <i class="fas fa-thumbtack text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-slate-800 text-lg">Select Assignment</h2>
+                                <p class="text-xs text-slate-500">Choose an item from the queue to begin</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message/Chat Container -->
+                <div class="flex-1 flex flex-col overflow-hidden chat-bg">
+                    <div id="messageContainer" class="flex-1 overflow-y-auto p-4 chat-scroll flex flex-col gap-3">
+                        <div class="flex flex-col items-center justify-center h-full text-gray-400 flex-col p-6 text-center">
+                            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-inbox text-2xl"></i>
+                            </div>
+                            <p class="text-sm font-semibold mb-1">No Active Assignment</p>
+                            <p class="text-xs text-gray-500">Select a ticket or task from the queue</p>
+                        </div>
+                    </div>
+
+                    <!-- Action Footer (Only for tickets) -->
+                    <div id="footerAction" class="hidden p-3 bg-white border-t flex gap-2">
+                        <input type="text" id="messageInput" 
+                            onkeypress="if(event.key==='Enter') sendMessage()" 
+                            placeholder="Type your response..." 
+                            class="flex-1 p-2 bg-gray-100 border-none rounded-full px-4 text-sm outline-none">
+                        <button onclick="sendMessage()" class="bg-blue-600 text-white p-2 rounded-full">
+                            <i class="fas fa-paper-plane text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    let currentTicketId = null;
+    let activeAssignment = null;
+    let staffId = null;
+    let userProfile = null;
+    let allAssignments = [];
+
+    // Initialize
+    window.onload = async () => {
+        try {
+            await fetchUserProfile();
+            if (staffId) {
+                loadAssignments();
+                setupSocketListeners();
+            }
+        } catch (error) {
+            console.error("Initialization error:", error);
+            showToast("Failed to initialize. Please refresh.", 'error');
+        }
+    };
+
+    // Fetch user profile
+    async function fetchUserProfile() {
+        try {
+            const res = await fetch('/api/profile');
+            if (!res.ok) throw new Error('Failed to fetch profile');
+            
+            const data = await res.json();
+            userProfile = data.profile;
+            
+            if (userProfile && userProfile.id) {
+                staffId = userProfile.id;
+            } else {
+                throw new Error('Staff ID not found');
+            }
+        } catch (error) {
+            console.error("Profile fetch error:", error);
+            throw error;
+        }
+    }
+
+    // Load assignments
+    async function loadAssignments() {
+        if (!staffId) {
+            showToast("Please wait while we load your profile...", 'info');
+            return;
+        }
+
+        const refreshBtn = event?.target || document.querySelector('button[onclick="loadAssignments()"]');
+        const originalText = refreshBtn?.innerHTML;
+        
+        if (refreshBtn) {
+            refreshBtn.innerHTML = `<span class="spinner"></span>`;
+            refreshBtn.disabled = true;
+        }
+        
+        try {
+            const res = await fetch(`/api/my-assignments/${staffId}`);
+            if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
+            
+            allAssignments = await res.json();
+            document.getElementById('taskCount').innerText = allAssignments.length;
+            renderAssignmentList(allAssignments);
+            
+        } catch (err) {
+            console.error("Failed to load assignments:", err);
+            showToast("Failed to load assignments", 'error');
+            
+            const list = document.getElementById('assignmentList');
+            list.innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <p class="text-sm font-semibold">Unable to load assignments</p>
+                    <button onclick="loadAssignments()" class="text-xs text-blue-600 hover:underline font-bold mt-2">
+                        Retry
+                    </button>
+                </div>
+            `;
+        } finally {
+            if (refreshBtn) {
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.disabled = false;
+            }
+        }
+    }
+
+    function renderAssignmentList(assignments) {
+        const list = document.getElementById('assignmentList');
+        
+        if (!assignments || assignments.length === 0) {
+            list.innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-xl"></i>
+                    </div>
+                    <p class="text-sm font-semibold">No assignments found</p>
+                    <p class="text-xs mt-1">All caught up! No pending tasks.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        list.innerHTML = assignments.map(assignment => {
+            const isTicket = assignment.type === 'ticket';
+            const isActive = activeAssignment && 
+                            activeAssignment.type === assignment.type && 
+                            activeAssignment.id === assignment.id;
+            
+            let statusColor = 'bg-gray-100 text-gray-600';
+            let statusIcon = 'fa-clock';
+            
+            if (assignment.status === 'completed') {
+                statusColor = 'bg-green-100 text-green-700';
+                statusIcon = 'fa-check-circle';
+            } else if (assignment.status === 'in_progress') {
+                statusColor = 'bg-blue-100 text-blue-700';
+                statusIcon = 'fa-spinner';
+            } else if (assignment.status === 'pending') {
+                statusColor = 'bg-amber-100 text-amber-700';
+                statusIcon = 'fa-hourglass-half';
+            }
+            
+            const typeBadgeColor = isTicket ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700';
+            const typeIcon = isTicket ? 'fa-ticket-alt' : 'fa-tasks';
+            
+            return `
+                <div class="p-4 border-b hover:bg-blue-50 cursor-pointer transition border-l-4 ${isActive ? 'border-l-blue-500 bg-blue-50' : 'border-l-transparent'}" 
+                     onclick="openAssignment('${assignment.type}', ${assignment.id}, ${assignment.ticket_id || 'null'})">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[10px] font-bold ${typeBadgeColor} px-2 py-0.5 rounded-full uppercase">
+                            <i class="fas ${typeIcon} mr-1"></i> ${isTicket ? 'Ticket' : 'Task'}
+                        </span>
+                        <span class="text-[10px] font-bold ${statusColor} px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                            <i class="fas ${statusIcon} text-[8px]"></i> ${assignment.status.replace('_', ' ')}
+                        </span>
+                    </div>
+                    
+                    <h4 class="text-sm font-semibold text-gray-800 line-clamp-2 mb-2">
+                        ${assignment.issue_subject || assignment.note || 'No description'}
+                    </h4>
+                    
+                    ${assignment.ticket_number ? `
+                        <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                            <i class="fas fa-hashtag"></i>
+                            <span class="font-mono font-bold">#${assignment.ticket_number}</span>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="flex justify-between items-center mt-2">
+                        <p class="text-xs text-gray-500">
+                            <i class="fas fa-calendar mr-1"></i>
+                            ${formatDate(assignment.assigned_at)}
+                        </p>
+                        <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Open assignment
+    async function openAssignment(type, assignmentId, ticketId) {
+        if (!staffId) {
+            showToast("Please wait while we load your profile...", 'info');
+            return;
+        }
+
+        // Mobile toggle
+        const main = document.getElementById('mainDisplay');
+        const sidebar = document.getElementById('sidebar');
+        main.classList.remove('hidden');
+        main.classList.add('flex');
+        sidebar.classList.add('hidden', 'md:flex');
+
+        // Update active state
+        renderAssignmentList(allAssignments);
+        
+        const selectedCard = document.querySelector(`[onclick*="${assignmentId}"]`);
+        if (selectedCard) {
+            selectedCard.classList.add('border-l-blue-500', 'bg-blue-50');
+        }
+        
+        activeAssignment = { type, id: assignmentId, ticketId };
+        const header = document.getElementById('assignmentHeader');
+        const footer = document.getElementById('footerAction');
+        const container = document.getElementById('messageContainer');
+        
+        if (type === 'ticket' && ticketId) {
+            currentTicketId = ticketId;
+            footer.classList.remove('hidden');
+            socket.emit('joinTicket', ticketId);
+            
+            try {
+                const [ticketRes, messagesRes] = await Promise.all([
+                    fetch(`/api/tickets/${ticketId}`),
+                    fetch(`/api/tickets/${ticketId}/messages`)
+                ]);
+                
+                const ticket = await ticketRes.json();
+                const messages = await messagesRes.json();
+                
+                header.innerHTML = `
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                                <i class="fas fa-headset text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-gray-800 text-lg">Ticket #${ticket.ticket_number}</h2>
+                                <p class="text-xs text-green-600 font-semibold flex items-center gap-1">
+                                    <i class="fas fa-circle text-[6px] animate-pulse"></i> Live Support Channel
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-2 md:mt-0">
+                            <button onclick="updateAssignmentStatus('${type}', ${assignmentId}, 'completed')" 
+                                    class="text-xs bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                                <i class="fas fa-check-circle"></i> Resolve
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                renderMessages(messages);
+                
+            } catch (err) {
+                console.error("Failed to load ticket:", err);
+                container.innerHTML = `
+                    <div class="text-center py-12 text-red-500">
+                        <i class="fas fa-exclamation-circle text-3xl mb-3"></i>
+                        <p class="text-sm font-semibold">Failed to load ticket</p>
+                        <p class="text-xs mt-1">${err.message}</p>
+                    </div>
+                `;
+            }
+        } else {
+            currentTicketId = null;
+            footer.classList.add('hidden');
+            
+            header.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+                            <i class="fas fa-clipboard-check text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-gray-800 text-lg">Internal Task</h2>
+                            <p class="text-xs text-gray-500">General assignment</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-2 md:mt-0">
+                        <button onclick="updateAssignmentStatus('${type}', ${assignmentId}, 'completed')" 
+                                class="text-xs bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                            <i class="fas fa-check-circle"></i> Complete
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = `
+                <div class="p-6 bg-white rounded-xl border border-gray-200 max-w-md mx-auto mt-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-info-circle text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-purple-600 uppercase mb-1">Assignment Details</p>
+                            <p class="text-gray-700 font-semibold text-sm">Task requires manual completion</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-600 text-sm">This is an internal task assignment. Please refer to the specific instructions provided in the assignment notes.</p>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <button onclick="updateAssignmentStatus('${type}', ${assignmentId}, 'completed')" 
+                                class="text-xs bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded font-semibold">
+                            <i class="fas fa-check-circle mr-2"></i> Mark as Completed
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Message rendering
+    function renderMessages(messages) {
+        const container = document.getElementById('messageContainer');
+        
+        if (!messages || messages.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-comments text-xl"></i>
+                    </div>
+                    <p class="text-sm font-semibold">No messages yet</p>
+                    <p class="text-xs mt-1">Start the conversation</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = messages.map(msg => {
+            const isMe = msg.sender_staff_id == staffId;
+            return `
+                <div class="${isMe ? 'self-end' : 'self-start'} max-w-[80%]">
+                    <span class="text-[10px] text-gray-600 ${isMe ? 'mr-2 text-right block' : 'ml-2'}">
+                        ${isMe ? 'You' : (msg.staff_name || msg.user_name || 'Client')}
+                    </span>
+                    <div class="${isMe ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
+                        ${msg.message}
+                        <span class="block text-[9px] text-gray-400 text-right mt-1">
+                            ${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        
+        if (!message || !currentTicketId || !staffId) {
+            showToast("Please enter a message", 'info');
+            return;
+        }
+        
+        const btn = event?.target;
+        const originalText = btn?.innerHTML;
+        
+        if (btn) {
+            btn.innerHTML = `<span class="spinner"></span>`;
+            btn.disabled = true;
+        }
+        
+        try {
+            const res = await fetch(`/api/tickets/${currentTicketId}/message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ staffId, message })
+            });
+            
+            if (res.ok) {
+                input.value = '';
+                input.focus();
+            } else {
+                const error = await res.json();
+                showToast(error.error || "Failed to send message", 'error');
+            }
+        } catch (err) {
+            console.error("Send message error:", err);
+            showToast("Failed to send message", 'error');
+        } finally {
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    }
+
+    // Update assignment status
+    async function updateAssignmentStatus(type, id, newStatus) {
+        if (!staffId) {
+            showToast("Please wait while we load your profile...", 'info');
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to mark this as ${newStatus}?`)) return;
+        
+        const btn = event?.target;
+        const originalText = btn?.innerHTML;
+        
+        if (btn) {
+            btn.innerHTML = `<span class="spinner"></span>`;
+            btn.disabled = true;
+        }
+        
+        try {
+            const res = await fetch(`/api/assignment/${type}/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            if (res.ok) {
+                showToast(`Assignment marked as ${newStatus}!`, 'success');
+                await loadAssignments();
+                
+                const container = document.getElementById('messageContainer');
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-green-600">
+                        <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-check-circle text-2xl"></i>
+                        </div>
+                        <p class="text-sm font-semibold">Status Updated!</p>
+                        <p class="text-xs text-gray-500 mt-1">The assignment has been marked as ${newStatus}</p>
+                    </div>
+                `;
+                
+                if (type === 'ticket' && newStatus === 'completed') {
+                    document.getElementById('footerAction').classList.add('hidden');
+                }
+                
+            } else {
+                const error = await res.json();
+                showToast(error.error || "Failed to update status", 'error');
+            }
+        } catch (err) {
+            console.error("Update status error:", err);
+            showToast("Failed to update status", 'error');
+        } finally {
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    }
+
+    // Socket setup
+    function setupSocketListeners() {
+        socket.on('connect', () => {
+            const statusEl = document.getElementById('connectionStatus');
+            if (statusEl) {
+                statusEl.innerHTML = '<i class="fas fa-circle animate-pulse text-[8px]"></i> Connected';
+                statusEl.className = 'hidden md:flex items-center gap-2 text-xs bg-emerald-600 px-3 py-1.5 rounded-full';
+            }
+            
+            if (currentTicketId) {
+                socket.emit('joinTicket', currentTicketId);
+            }
+        });
+        
+        socket.on('disconnect', () => {
+            const statusEl = document.getElementById('connectionStatus');
+            if (statusEl) {
+                statusEl.innerHTML = '<i class="fas fa-circle text-[8px]"></i> Disconnected';
+                statusEl.className = 'hidden md:flex items-center gap-2 text-xs bg-red-600 px-3 py-1.5 rounded-full';
+            }
+        });
+        
+        socket.on('newMessage', (data) => {
+            if (data.ticketId == currentTicketId) {
+                const container = document.getElementById('messageContainer');
+                const isMe = data.senderStaffId == staffId;
+                
+                const messageHtml = `
+                    <div class="${isMe ? 'self-end' : 'self-start'} max-w-[80%] animate-fade-in">
+                        <span class="text-[10px] text-gray-600 ${isMe ? 'mr-2 text-right block' : 'ml-2'}">
+                            ${isMe ? 'You' : (data.staff_name || data.user_name || 'Client')}
+                        </span>
+                        <div class="${isMe ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
+                            ${data.message}
+                            <span class="block text-[9px] text-gray-400 text-right mt-1">
+                                ${new Date(data.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                
+                if (container.innerHTML.includes('No messages')) {
+                    container.innerHTML = messageHtml;
+                } else {
+                    container.insertAdjacentHTML('beforeend', messageHtml);
+                }
+                
+                container.scrollTop = container.scrollHeight;
+            }
+        });
+    }
+
+    // Helper functions
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        
+        return date.toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'short', 
+            year: 'numeric' 
+        });
+    }
+
+    function filterAssignments() {
+        const query = document.getElementById('assignmentSearch').value.toLowerCase();
+        const filtered = allAssignments.filter(a => 
+            (a.issue_subject && a.issue_subject.toLowerCase().includes(query)) ||
+            (a.ticket_number && a.ticket_number.toString().includes(query)) ||
+            (a.note && a.note.toLowerCase().includes(query))
+        );
+        renderAssignmentList(filtered);
+    }
+
+    function showToast(msg, type = 'error') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-emerald-600';
+        const title = type === 'error' ? 'Error' : 'Success';
+        toast.className = `${bgColor} text-white p-4 rounded-xl shadow-lg min-w-[280px] animate-fade-in flex flex-col`;
+        toast.innerHTML = `
+            <span class="text-[10px] font-bold uppercase tracking-wider opacity-70">${title}</span>
+            <span class="text-sm font-semibold">${msg}</span>
+        `;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+
+    // Auto-refresh every 60 seconds
+    setInterval(() => {
+        if (document.visibilityState === 'visible' && staffId) {
+            loadAssignments();
+        }
+    }, 60000);
+</script>

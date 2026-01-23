@@ -45,6 +45,9 @@ const admindashboard = require("./src/routes/dashboard");
 //Subscriptions
 const subscriptionRoutes = require("./src/routes/subscriptionRoutes");
 
+// Assignments
+const staffAssignments = require("./src/routes/staffAssignments");
+
 //Hr assistant
 const hrexpenses = require("./src/routes/hrexpenses");
 const hrtasks = require("./src/routes/hrtasks");
@@ -283,6 +286,9 @@ app.use('/api/manage/staff',staffRoutes);
 //Subsriptions
 app.use("/api/subscriptions", subscriptionRoutes);
 
+// Assignments
+app.use("/api", staffAssignments);
+
 //Hr
 app.use("/api/hr", hrexpenses);
 app.use("/api/hr", hrtasks);
@@ -427,7 +433,6 @@ const customerCarePages = [
   "support-tickets",
   "profile",
   "communication-team",
-  "work-schedule",
   "notifications",
   "task-assignment",
   "subscriptions"

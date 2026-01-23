@@ -38,6 +38,31 @@
         background-color: #f1f5f9;
         overflow: hidden;
     }
+    
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    .spinner {
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        width: 14px;
+        height: 14px;
+        animation: spin 0.6s linear infinite;
+        display: inline-block;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .animate-fade-in { 
+        animation: fadeIn 0.3s ease-out forwards; 
+    }
+    @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(5px); } 
+        to { opacity: 1; transform: translateY(0); } 
+    }
 </style>
 
 <div class="max-w-full mx-auto space-y-6">
@@ -50,94 +75,244 @@
             <div class="text-right hidden md:block">
                 <p id="lastUpdated" class="text-[10px] font-bold text-gray-400">Syncing...</p>
             </div>
-            <button onclick="refreshDashboardData()" class="text-xs font-bold bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors text-slate-600">
+            <button onclick="refreshDashboardData()" 
+                class="text-xs font-bold bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors text-slate-600 flex items-center">
+                
                 <i class="fas fa-sync-alt mr-1" id="refreshIcon"></i> Refresh
             </button>
         </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="glass-panel p-5 rounded-2xl border-l-4 border-indigo-500 animate-fade-up" style="animation-delay: 0.1s;">
-            <div class="flex justify-between items-center mb-4">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                    <i class="fas fa-ticket-alt"></i>
-                </div>
-                <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Tickets</p>
-            </div>
-            <h2 id="totalTickets" class="text-2xl font-black text-slate-900">0</h2>
-            <div class="flex justify-between mt-2">
-                <div>
-                    <p class="text-[9px] font-black text-emerald-500 uppercase">Resolved</p>
-                    <p id="resolvedTickets" class="text-sm font-bold text-slate-700">0</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-[9px] font-black text-rose-500 uppercase">Open</p>
-                    <p id="openTickets" class="text-sm font-bold text-slate-700">0</p>
-                </div>
-            </div>
-        </div>
+        <!-- Ticket Volume Card -->
+        <div class="glass-panel p-6 rounded-3xl border-none relative overflow-hidden animate-fade-up shadow-sm group" style="animation-delay: 0.1s;">
+          <div class="absolute -top-6 -right-6 w-24 h-24 bg-indigo-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+          
+          <div class="relative z-10">
+              <div class="flex justify-between items-start mb-6">
+                  <div>
+                      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Support Queue</p>
+                      <h3 class="text-lg font-black text-slate-800">Tickets</h3>
+                  </div>
+                  <div class="flex flex-col items-end">
+                      <span id="totalTickets" class="text-2xl font-black text-indigo-600 leading-none">0</span>
+                      <span class="text-[9px] font-bold text-slate-400 uppercase">Total Active</span>
+                  </div>
+              </div>
 
-        <div class="glass-panel p-5 rounded-2xl border-l-4 border-teal-500 animate-fade-up" style="animation-delay: 0.2s;">
+              <div class="flex items-center gap-6">
+                  <div class="relative w-16 h-16 flex items-center justify-center bg-indigo-50 rounded-2xl">
+                      <i class="fas fa-ticket-alt text-xl text-indigo-600"></i>
+                  </div>
+
+                  <div class="flex-1 grid grid-cols-1 gap-3">
+                      <div class="flex justify-between items-center border-b border-slate-50 pb-1">
+                          <div class="flex items-center gap-2">
+                              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              <span class="text-[10px] font-bold text-slate-500 uppercase">Resolved Today</span>
+                          </div>
+                          <span id="resolvedTickets" class="text-xs font-black text-emerald-600">0</span>
+                      </div>
+                      <div class="flex justify-between items-center border-b border-slate-50 pb-1">
+                          <div class="flex items-center gap-2">
+                              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                              <span class="text-[10px] font-bold text-slate-500 uppercase">Awaiting Action</span>
+                          </div>
+                          <span id="openTickets" class="text-xs font-black text-rose-500">0</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                          <div class="flex items-center gap-2">
+                              <span class="w-1.5 h-1.5 rounded-full bg-indigo-300"></span>
+                              <span class="text-[10px] font-bold text-slate-500 uppercase">Success Rate</span>
+                          </div>
+                          <span id="resolutionRate" class="text-xs font-black text-slate-800">0%</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+        <!-- Client Stats Card -->
+        <div class="glass-panel stat-card p-5 rounded-2xl border-l-4 border-teal-500 animate-fade-up bg-white shadow-sm" style="animation-delay: 0.2s;">
             <div class="flex justify-between items-center mb-4">
                 <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
-                    <i class="fas fa-user-check"></i>
+                    <i class="fas fa-users text-lg"></i>
                 </div>
-                <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Active Subs</p>
+                <div class="text-right">
+                    <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Total Clients</p>
+                    <h2 id="totalClients" class="text-lg font-black text-slate-900 leading-none">0</h2>
+                </div>
             </div>
-            <h2 id="activeSubs" class="text-2xl font-black text-slate-900">0</h2>
-            <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-50">
-                <p class="text-[9px] font-bold text-slate-400">Total: <span id="totalSubs" class="text-slate-700 font-black">0</span></p>
-                <p class="text-[9px] font-bold text-slate-400 text-right">Overdue: <span id="overdueSubs" class="text-amber-600 font-black">0</span></p>
+
+            <div class="grid grid-cols-2 gap-y-3 gap-x-4">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active</p>
+                    </div>
+                    <p id="activeClients" class="text-sm font-bold text-slate-800 mt-0.5">0</p>
+                </div>
+
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Overdue</p>
+                    </div>
+                    <p id="overdueClients" class="text-sm font-bold text-amber-600 mt-0.5">0</p>
+                </div>
+
+                <div class="flex flex-col pt-2 border-t border-slate-50">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inactive</p>
+                    </div>
+                    <p id="inactiveClients" class="text-sm font-bold text-slate-500 mt-0.5">0</p>
+                </div>
+
+                <div class="flex flex-col pt-2 border-t border-slate-50">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expired</p>
+                    </div>
+                    <p id="expiredClients" class="text-sm font-bold text-rose-600 mt-0.5">0</p>
+                </div>
             </div>
         </div>
 
-        <div class="glass-panel p-5 rounded-2xl border-l-4 border-amber-500 animate-fade-up" style="animation-delay: 0.3s;">
-            <div class="flex justify-between items-center mb-4">
-                <p class="text-[12px] font-black text-slate-400 uppercase">Task Completion</p>
-                <span id="taskPercent" class="text-[10px] font-black text-amber-600">0%</span>
-            </div>
-            <div class="metric-progress mb-4">
-                <div id="taskProgressBar" class="bg-amber-500 h-full transition-all duration-1000" style="width: 0%"></div>
-            </div>
-            <div class="grid grid-cols-3 gap-1 text-center">
-                <div>
-                    <p class="text-[8px] font-black text-slate-400 uppercase">Total</p>
-                    <p id="totalTasks" class="text-xs font-bold">0</p>
-                </div>
-                <div>
-                    <p class="text-[8px] font-black text-emerald-500 uppercase">Done</p>
-                    <p id="completedTasks" class="text-xs font-bold">0</p>
-                </div>
-                <div>
-                    <p class="text-[8px] font-black text-rose-500 uppercase">Wait</p>
-                    <p id="pendingTasks" class="text-xs font-bold">0</p>
-                </div>
-            </div>
-        </div>
+        <!-- Task Analysis Card -->
+        <div class="glass-panel p-6 rounded-3xl border-none relative overflow-hidden animate-fade-up shadow-sm group" style="animation-delay: 0.3s;">
+          <div class="absolute -top-6 -right-6 w-24 h-24 bg-amber-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+          
+          <div class="relative z-10">
+              <div class="flex justify-between items-start mb-6">
+                  <div>
+                      <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest mb-1">Productivity</p>
+                      <h3 class="text-lg font-black text-slate-800">Task Analysis</h3>
+                  </div>
+                  <div class="flex flex-col items-end">
+                      <span id="taskPercent" class="text-2xl font-black text-amber-500 leading-none">0%</span>
+                      <span class="text-[9px] font-bold text-slate-400 uppercase">Efficiency</span>
+                  </div>
+              </div>
 
-        <div class="glass-panel p-5 rounded-2xl border-l-4 border-rose-500 animate-fade-up" style="animation-delay: 0.4s;">
-            <div class="flex justify-between items-center mb-4">
-                <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
-                    <i class="fas fa-calendar-check"></i>
+              <div class="flex items-center gap-6">
+                  <div class="relative w-16 h-16 flex items-center justify-center">
+                      <svg class="w-full h-full transform -rotate-90">
+                          <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="5" fill="transparent" class="text-slate-100" />
+                          <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="5" fill="transparent" 
+                              id="taskProgressCircle"
+                              stroke-dasharray="175.9" 
+                              stroke-dashoffset="175.9"
+                              class="text-amber-500 transition-all duration-1000 ease-out" 
+                              stroke-linecap="round" />
+                      </svg>
+                      <i class="fas fa-bolt absolute text-amber-400 text-xs"></i>
+                  </div>
+
+                  <div class="flex-1 grid grid-cols-1 gap-3">
+                      <div class="flex justify-between items-center border-b border-slate-50 pb-1">
+                          <div class="flex items-center gap-2">
+                              <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                              <span class="text-[10px] font-bold text-slate-500 uppercase">Assigned</span>
+                          </div>
+                          <span id="totalTasks" class="text-xs font-black text-slate-800">0</span>
+                      </div>
+                      <div class="flex justify-between items-center border-b border-slate-50 pb-1">
+                          <div class="flex items-center gap-2">
+                              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                              <span class="text-[10px] font-bold text-slate-500 uppercase">Completed</span>
+                          </div>
+                          <span id="completedTasks" class="text-xs font-black text-emerald-600">0</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                          <div class="flex items-center gap-2">
+                              <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                              <span class="text-[10px] font-bold text-slate-500 uppercase">Pending</span>
+                          </div>
+                          <span id="pendingTasks" class="text-xs font-black text-rose-500">0</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Performance Card -->
+      <div class="glass-panel p-6 rounded-3xl border-none relative overflow-hidden animate-fade-up shadow-sm group" style="animation-delay: 0.4s;">
+        <div class="absolute -top-6 -right-6 w-24 h-24 bg-rose-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+        
+        <div class="relative z-10">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-slate-800">Performance</h3>
                 </div>
-                <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Attendance</p>
+                <div class="flex flex-col items-end">
+                    <span id="efficiencyScore" class="text-2xl font-black text-rose-500 leading-none">0%</span>
+                    <span id="performanceStatus" class="text-[9px] font-bold text-emerald-500 uppercase tracking-tighter">Excellent</span>
+                </div>
             </div>
-            <p class="text-[9px] font-black text-slate-400 uppercase">Monthly Rating</p>
-            <h2 id="efficiencyScore" class="text-2xl font-black text-slate-900">0%</h2>
-            <p class="text-[10px] font-bold text-slate-400 mt-1">Status: <span id="performanceStatus" class="text-emerald-500">Calculating...</span></p>
+
+            <div class="flex items-center gap-6">
+                <div class="relative w-16 h-16 flex items-center justify-center bg-rose-50 rounded-full border-4 border-white shadow-inner">
+                  <i class="fas fa-medal text-xl text-rose-500"></i>
+                  
+                  <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 64 64">
+                      <circle cx="32" cy="32" r="28" 
+                          stroke="currentColor" 
+                          stroke-width="3" 
+                          fill="transparent" 
+                          class="text-rose-100" />
+                      
+                      <circle cx="32" cy="32" r="28" 
+                          stroke="currentColor" 
+                          stroke-width="3" 
+                          fill="transparent" 
+                          id="perfRing"
+                          stroke-dasharray="175.9" 
+                          stroke-dashoffset="175.9"
+                          class="text-rose-500 transition-all duration-1000" 
+                          stroke-linecap="round" />
+                  </svg>
+              </div>
+
+                <div class="flex-1 grid grid-cols-1 gap-3">
+                    <div class="flex justify-between items-center border-b border-slate-50 pb-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">On Time</span>
+                        </div>
+                        <span id="daysPresent" class="text-xs font-black text-slate-800">0/0</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-50 pb-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">Late Marks</span>
+                        </div>
+                        <span id="daysLate" class="text-xs font-black text-amber-600">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">Absent</span>
+                        </div>
+                        <span id="daysAbsent" class="text-xs font-black text-rose-500">0</span>
+                    </div>
+                </div>
+            </div>
         </div>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Weekly Efficiency Chart -->
         <div class="glass-panel p-6 rounded-lg lg:col-span-2 animate-fade-up" style="animation-delay: 0.5s;">
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h3 class="text-lg font-black text-slate-800">Weekly Efficiency</h3>
                     <p class="text-xs font-bold text-slate-400">Task completion & attendance correlation</p>
                 </div>
-                <select id="chartPeriod" class="text-[10px] font-black bg-slate-50 border-none rounded-lg focus:ring-0">
-                    <option>Last 7 Days</option>
-                    <option>Last 30 Days</option>
+                <select id="chartPeriod" class="text-[10px] font-black bg-slate-50 border-none rounded-lg focus:ring-0" onchange="loadChartData()">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
                 </select>
             </div>
             <div class="chart-container">
@@ -145,22 +320,39 @@
             </div>
         </div>
 
+        <!-- Upcoming Tasks -->
         <div class="glass-panel p-6 rounded-lg animate-fade-up" style="animation-delay: 0.6s;">
-            <h3 class="text-lg font-black text-slate-800 mb-1">Tasks</h3>
+            <h3 class="text-lg font-black text-slate-800 mb-1">Upcoming Tasks</h3>
             <p class="text-xs font-bold text-slate-400 mb-6">Your upcoming assignments</p>
             
-            <div id="scheduleList" class="space-y-4">
+            <div id="scheduleList" class="space-y-4 max-h-[300px] overflow-y-auto custom-scroll">
                 <div class="flex items-center justify-center py-10 text-slate-400 italic text-xs">
-                    Loading your schedule...
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Loading your schedule...
                 </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <button onclick="viewAllTasks()" class="text-xs text-teal-600 hover:text-teal-700 font-bold">
+                    View All Tasks <i class="fas fa-arrow-right ml-1"></i>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     let performanceChart = null;
+    let dashboardData = {
+        tickets: { total: 0, resolved: 0, open: 0, resolutionRate: 0 },
+        clients: { total: 0, active: 0, overdue: 0, expired: 0, inactive: 0 },
+        tasks: { total: 0, completed: 0, pending: 0, efficiency: 0 },
+        performance: { efficiency: 0, status: 'Loading...', attendance: { present: 0, late: 0, absent: 0, total: 0 } }
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
         initChart();
@@ -169,30 +361,288 @@
 
     async function refreshDashboardData() {
         const refreshIcon = document.getElementById('refreshIcon');
-        refreshIcon.classList.add('fa-spin');
+        refreshIcon.style.animation = 'spin 0.6s linear infinite';
         
         try {
-            // Future Backend Endpoints
-            const [statsRes, scheduleRes, performanceRes] = await Promise.all([
-                fetch('/api/care/stats'),
-                fetch('/api/care/schedule'),
-                fetch('/api/care/performance')
+            // Load all dashboard data in parallel
+            const [ticketsData, clientsData, tasksData, performanceData, scheduleData] = await Promise.allSettled([
+                fetchTicketsData(),
+                fetchClientsData(),
+                fetchTasksData(),
+                fetchPerformanceData(),
+                fetchScheduleData()
             ]);
 
-            const stats = await statsRes.json();
-            const schedule = await scheduleRes.json();
-            const performance = await performanceRes.json();
+            // Process tickets data
+            if (ticketsData.status === 'fulfilled') {
+                dashboardData.tickets = {
+                    total: ticketsData.value.total || 0,
+                    resolved: ticketsData.value.resolved || 0,
+                    open: ticketsData.value.open || 0,
+                    resolutionRate: ticketsData.value.resolutionRate || 0
+                };
+            }
 
-            updateUI(stats.data);
-            renderSchedule(schedule.data);
-            updateChart(performance.data);
+            // Process clients data
+            if (clientsData.status === 'fulfilled') {
+                dashboardData.clients = {
+                    total: clientsData.value.total || 0,
+                    active: clientsData.value.active || 0,
+                    overdue: clientsData.value.overdue || 0,
+                    expired: clientsData.value.expired || 0,
+                    inactive: clientsData.value.inactive || 0
+                };
+            }
+
+            // Process tasks data
+            if (tasksData.status === 'fulfilled') {
+                dashboardData.tasks = {
+                    total: tasksData.value.total || 0,
+                    completed: tasksData.value.completed || 0,
+                    pending: tasksData.value.pending || 0,
+                    efficiency: tasksData.value.efficiency || 0
+                };
+            }
+
+            // Process performance data
+            if (performanceData.status === 'fulfilled') {
+                dashboardData.performance = {
+                    efficiency: performanceData.value.efficiency || 0,
+                    status: performanceData.value.status || 'Loading',
+                    attendance: performanceData.value.attendance || { present: 0, late: 0, absent: 0, total: 0 }
+                };
+            }
+
+            // Process schedule data
+            if (scheduleData.status === 'fulfilled') {
+                renderSchedule(scheduleData.value);
+            }
+
+            // Update UI with all data
+            updateDashboardUI();
+            loadChartData();
 
         } catch (error) {
-            console.warn("Using mock data until backend endpoints are created.");
-            useMockData();
+            console.error("Dashboard refresh error:", error);
+            showToast("Failed to load dashboard data", 'error');
         } finally {
-            refreshIcon.classList.remove('fa-spin');
+            refreshIcon.style.animation = 'none';
             updateTimestamp();
+        }
+    }
+
+    // API Functions
+    async function fetchTicketsData() {
+        try {
+            const response = await fetch('/api/care/dashboard/tickets');
+            if (!response.ok) throw new Error('Failed to fetch tickets data');
+            return await response.json();
+        } catch (error) {
+            console.warn("Using mock tickets data");
+            return {
+                total: 48,
+                resolved: 42,
+                open: 6,
+                resolutionRate: 87.5
+            };
+        }
+    }
+
+    async function fetchClientsData() {
+        try {
+            const response = await fetch('/api/care/dashboard/clients');
+            if (!response.ok) throw new Error('Failed to fetch clients data');
+            const data = await response.json();
+            return {
+                total: data.total || 0,
+                active: data.active || 0,
+                overdue: data.overdue || 0,
+                expired: data.expired || 0,
+                inactive: data.inactive || 0
+            };
+        } catch (error) {
+            console.warn("Using mock clients data");
+            return {
+                total: 1250,
+                active: 1120,
+                overdue: 45,
+                expired: 85,
+                inactive: 0
+            };
+        }
+    }
+
+    async function fetchTasksData() {
+        try {
+            const response = await fetch('/api/care/dashboard/tasks');
+            if (!response.ok) throw new Error('Failed to fetch tasks data');
+            const data = await response.json();
+            const total = data.total || 0;
+            const completed = data.completed || 0;
+            return {
+                total: total,
+                completed: completed,
+                pending: total - completed,
+                efficiency: total > 0 ? Math.round((completed / total) * 100) : 0
+            };
+        } catch (error) {
+            console.warn("Using mock tasks data");
+            return {
+                total: 20,
+                completed: 17,
+                pending: 3,
+                efficiency: 85
+            };
+        }
+    }
+
+    async function fetchPerformanceData() {
+        try {
+            const response = await fetch('/api/care/dashboard/performance');
+            if (!response.ok) throw new Error('Failed to fetch performance data');
+            return await response.json();
+        } catch (error) {
+            console.warn("Using mock performance data");
+            return {
+                efficiency: 92,
+                status: 'Top Performer',
+                attendance: {
+                    present: 22,
+                    late: 2,
+                    absent: 1,
+                    total: 25
+                }
+            };
+        }
+    }
+
+    async function fetchScheduleData() {
+        try {
+            const response = await fetch('/api/care/dashboard/schedule');
+            if (!response.ok) throw new Error('Failed to fetch schedule data');
+            return await response.json();
+        } catch (error) {
+            console.warn("Using mock schedule data");
+            const today = new Date();
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            return Array.from({ length: 3 }, (_, i) => {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                return {
+                    day: days[date.getDay()],
+                    date: date.getDate(),
+                    shift: i === 0 ? 'Morning' : i === 1 ? 'Afternoon' : 'Night',
+                    time: i === 0 ? '08:00 - 16:00' : i === 1 ? '14:00 - 22:00' : '22:00 - 06:00',
+                    status: i === 0 ? 'Upcoming' : i === 1 ? 'Scheduled' : 'Future'
+                };
+            });
+        }
+    }
+
+    async function loadChartData() {
+        const period = document.getElementById('chartPeriod').value;
+        try {
+            const response = await fetch(`/api/care/dashboard/chart?period=${period}`);
+            if (!response.ok) throw new Error('Failed to fetch chart data');
+            const data = await response.json();
+            updateChart(data);
+        } catch (error) {
+            console.warn("Using mock chart data");
+            const mockData = period === '7' 
+                ? [88, 95, 82, 90, 94, 85, 78]
+                : Array.from({ length: 30 }, () => Math.floor(Math.random() * 30) + 70);
+            updateChart(mockData);
+        }
+    }
+
+    // UI Update Functions
+    function updateDashboardUI() {
+        // Update tickets card
+        document.getElementById('totalTickets').innerText = dashboardData.tickets.total;
+        document.getElementById('resolvedTickets').innerText = dashboardData.tickets.resolved;
+        document.getElementById('openTickets').innerText = dashboardData.tickets.open;
+        document.getElementById('resolutionRate').innerText = dashboardData.tickets.resolutionRate + '%';
+
+        // Update clients card
+        document.getElementById('totalClients').innerText = dashboardData.clients.total.toLocaleString();
+        document.getElementById('activeClients').innerText = dashboardData.clients.active.toLocaleString();
+        document.getElementById('overdueClients').innerText = dashboardData.clients.overdue;
+        document.getElementById('expiredClients').innerText = dashboardData.clients.expired;
+        document.getElementById('inactiveClients').innerText = dashboardData.clients.inactive || 0;
+
+        // Update tasks card
+        document.getElementById('totalTasks').innerText = dashboardData.tasks.total;
+        document.getElementById('completedTasks').innerText = dashboardData.tasks.completed;
+        document.getElementById('pendingTasks').innerText = dashboardData.tasks.pending;
+        document.getElementById('taskPercent').innerText = dashboardData.tasks.efficiency + '%';
+        
+        // Update task progress circle
+        const circle = document.getElementById('taskProgressCircle');
+        const offset = 175.9 - (dashboardData.tasks.efficiency / 100 * 175.9);
+        circle.style.strokeDashoffset = offset;
+
+        // Update performance card
+        document.getElementById('efficiencyScore').innerText = dashboardData.performance.efficiency + '%';
+        document.getElementById('performanceStatus').innerText = dashboardData.performance.status;
+        document.getElementById('daysPresent').innerText = `${dashboardData.performance.attendance.present}/${dashboardData.performance.attendance.total}`;
+        document.getElementById('daysLate').innerText = dashboardData.performance.attendance.late;
+        document.getElementById('daysAbsent').innerText = dashboardData.performance.attendance.absent;
+        
+        // Update performance ring
+        const perfRing = document.getElementById('perfRing');
+        const perfOffset = 188.4 - (dashboardData.performance.efficiency / 100 * 188.4);
+        perfRing.style.strokeDashoffset = perfOffset;
+    }
+
+    function renderSchedule(items) {
+        const container = document.getElementById('scheduleList');
+        if (!items || items.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-slate-400">
+                    <i class="fas fa-calendar-plus text-2xl mb-2"></i>
+                    <p class="text-xs font-bold">No upcoming tasks</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = items.map(item => `
+            <div class="flex items-center gap-4 p-3 bg-slate-50/50 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-sm">
+                <div class="text-center min-w-[45px] py-1 bg-white rounded-lg border border-slate-100 shadow-sm">
+                    <p class="text-[8px] font-black text-slate-400 uppercase">${item.day}</p>
+                    <p class="text-sm font-black text-slate-800">${item.date}</p>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-black text-slate-800">${item.shift} Shift</p>
+                    <p class="text-[10px] font-bold text-slate-400">${item.time}</p>
+                </div>
+                <span class="status-badge ${getStatusClass(item.status)}">
+                    ${item.status}
+                </span>
+            </div>
+        `).join('');
+    }
+
+    function getStatusClass(status) {
+        switch(status.toLowerCase()) {
+            case 'present':
+            case 'completed':
+            case 'upcoming':
+                return 'bg-emerald-100 text-emerald-700';
+            case 'scheduled':
+            case 'in progress':
+                return 'bg-blue-100 text-blue-700';
+            case 'future':
+                return 'bg-slate-100 text-slate-500';
+            case 'late':
+                return 'bg-amber-100 text-amber-700';
+            case 'absent':
+            case 'pending':
+                return 'bg-rose-100 text-rose-700';
+            default:
+                return 'bg-slate-100 text-slate-500';
         }
     }
 
@@ -205,10 +655,10 @@
         performanceChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                labels: [],
                 datasets: [{
                     label: 'Efficiency %',
-                    data: [0, 0, 0, 0, 0, 0, 0],
+                    data: [],
                     borderColor: '#6366f1',
                     borderWidth: 4,
                     tension: 0.4,
@@ -216,85 +666,88 @@
                     backgroundColor: gradient,
                     pointBackgroundColor: '#fff',
                     pointBorderColor: '#6366f1',
-                    pointBorderWidth: 2
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#475569',
+                        borderWidth: 1
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100, 
+                        grid: { color: '#f1f5f9' },
+                        ticks: { color: '#64748b', font: { size: 11 } }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: '#64748b', font: { size: 11 } }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 }
             }
         });
     }
 
-    function useMockData() {
-        // Mocking the update for visual preview
-        updateUI({
-            tickets: { total: 48, resolved: 42, open: 6 },
-            subs: { active: 1120, total: 1250, overdue: 45, expired: 85 },
-            tasks: { total: 20, completed: 17, pending: 3 },
-            performance: { efficiency: 92, status: 'Top Performer' }
-        });
-
-        renderSchedule([
-            { day: 'Mon', date: '20', shift: 'Morning', time: '08:00 - 16:00', status: 'Present' },
-            { day: 'Tue', date: '21', shift: 'Morning', time: '08:00 - 16:00', status: 'Present' },
-            { day: 'Wed', date: '22', shift: 'Afternoon', time: '14:00 - 22:00', status: 'Upcoming' }
-        ]);
-
-        updateChart([88, 95, 82, 90, 94, 0, 0]);
-    }
-
-    function updateUI(data) {
-        document.getElementById('totalTickets').innerText = data.tickets.total;
-        document.getElementById('resolvedTickets').innerText = data.tickets.resolved;
-        document.getElementById('openTickets').innerText = data.tickets.open;
-
-        document.getElementById('activeSubs').innerText = data.subs.active.toLocaleString();
-        document.getElementById('totalSubs').innerText = data.subs.total.toLocaleString();
-        document.getElementById('overdueSubs').innerText = data.subs.overdue;
-
-        const taskPercent = Math.round((data.tasks.completed / data.tasks.total) * 100);
-        document.getElementById('totalTasks').innerText = data.tasks.total;
-        document.getElementById('completedTasks').innerText = data.tasks.completed;
-        document.getElementById('pendingTasks').innerText = data.tasks.pending;
-        document.getElementById('taskPercent').innerText = taskPercent + '%';
-        document.getElementById('taskProgressBar').style.width = taskPercent + '%';
-
-        document.getElementById('efficiencyScore').innerText = data.performance.efficiency + '%';
-        document.getElementById('performanceStatus').innerText = data.performance.status;
-    }
-
-    function renderSchedule(items) {
-        const container = document.getElementById('scheduleList');
-        container.innerHTML = items.map(item => `
-            <div class="flex items-center gap-4 p-3 bg-slate-50/50 rounded-2xl border border-slate-100 transition-hover hover:bg-white hover:shadow-sm">
-                <div class="text-center min-w-[45px] py-1 bg-white rounded-lg border border-slate-100 shadow-sm">
-                    <p class="text-[8px] font-black text-slate-400 uppercase">${item.day}</p>
-                    <p class="text-sm font-black text-slate-800">${item.date}</p>
-                </div>
-                <div class="flex-1">
-                    <p class="text-xs font-black text-slate-800">${item.shift} Shift</p>
-                    <p class="text-[10px] font-bold text-slate-400">${item.time}</p>
-                </div>
-                <span class="status-badge ${item.status === 'Present' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
-                    ${item.status}
-                </span>
-            </div>
-        `).join('');
-    }
-
     function updateChart(dataPoints) {
+        const period = parseInt(document.getElementById('chartPeriod').value);
+        let labels = [];
+        
+        if (period === 7) {
+            labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        } else {
+            labels = Array.from({ length: period }, (_, i) => `Day ${i + 1}`);
+        }
+        
+        performanceChart.data.labels = labels;
         performanceChart.data.datasets[0].data = dataPoints;
         performanceChart.update();
     }
 
     function updateTimestamp() {
         const now = new Date();
-        document.getElementById('lastUpdated').innerText = `Updated at ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const dateStr = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        document.getElementById('lastUpdated').innerHTML = `Updated: <span class="text-slate-600">${dateStr} ${timeStr}</span>`;
     }
+
+    function viewAllTasks() {
+        // Redirect to tasks/schedule page
+        window.location.href = '/care/schedule';
+    }
+
+    function showToast(msg, type = 'error') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-emerald-600';
+        const title = type === 'error' ? 'Error' : 'Success';
+        toast.className = `${bgColor} text-white p-4 rounded-2xl shadow-2xl min-w-[280px] animate-fade-in flex flex-col`;
+        toast.innerHTML = `
+            <span class="text-[10px] font-black uppercase tracking-widest opacity-70">${title}</span>
+            <span class="text-sm font-bold">${msg}</span>
+        `;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+
+    // Auto-refresh every 2 minutes
+    setInterval(refreshDashboardData, 120000);
 </script>

@@ -4,9 +4,7 @@ const SupportModel = require("../models/SupportTicket");
 const User = require("../models/User");
 const Staff = require("../models/Staff");
 const smsService = require("../services/smsService");
-
 const apiSessionAuth = require("../middleware/apiSessionAuth");
-const { json } = require("sequelize");
 
 router.use(apiSessionAuth);
 
