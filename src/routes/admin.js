@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Staff = require("../models/Staff");
 const Booking = require("../models/Booking");
-const StaffClientAssignment = require("../models/StaffAssignments");
 const User = require("../models/User");
 const SupportTicket = require("../models/SupportTicket");
 const Payment = require("../models/Payment");
@@ -702,62 +701,6 @@ router.delete("/bookings/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to delete booking" });
-  }
-});
-
-
-// Staff Client Assignments Routes
-router.get("/assignments", async (req, res) => {
-  try {
-    const data = await StaffClientAssignment.findAll();
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch assignments" });
-  }
-});
-
-// GET by id
-router.get("/assignments/:id", async (req, res) => {
-  try {
-    const data = await StaffClientAssignment.findById(req.params.id);
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch assignment" });
-  }
-});
-
-// POST create
-router.post("/assignments", async (req, res) => {
-  try {
-    const result = await StaffClientAssignment.create(req.body);
-    res.json({ id: result.insertId });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create assignment" });
-  }
-});
-
-// PUT update
-router.put("/assignments/:id", async (req, res) => {
-  try {
-    await StaffClientAssignment.update(req.params.id, req.body);
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to update assignment" });
-  }
-});
-
-// DELETE
-router.delete("/assignments/:id", async (req, res) => {
-  try {
-    await StaffClientAssignment.delete(req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to delete assignment" });
   }
 });
 

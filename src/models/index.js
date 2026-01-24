@@ -27,6 +27,10 @@ const StaffTask = require("./StaffTask");
 const SupportTicket = require("./SupportTicket");
 const TeamMessage = require("./TeamMessage");
 const User = require("./User");
+
+// Staff Assignments
+const Assignments = require("./Assignments");
+
 // HR
 const HRTask = require("./HRTask");
 const HRCommunication = require("./HRCommunication");
@@ -74,4 +78,5 @@ module.exports = {
   HRProjectMilestone,
   HRResourceNeed,
   HRProjectExpense,
+  Assignments,
 };

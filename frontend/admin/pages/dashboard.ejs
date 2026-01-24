@@ -1,5 +1,4 @@
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     :root { font-family: 'Plus Jakarta Sans', sans-serif; }
     
     body { background-color: #f8fafc; }
@@ -79,7 +78,7 @@
                 </div>
                 <span id="revenueTrend" class="text-[10px] font-black px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">+0%</span>
             </div>
-            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Monthly Revenue</p>
+            <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Monthly Revenue</p>
             <h2 id="monthlyRevenue" class="text-2xl font-black text-slate-900 mt-1">KES 0</h2>
             <p class="text-[10px] font-bold text-slate-400 mt-2">
                 Trend: <span id="revenueTrendText" class="text-emerald-600">Calculating...</span>
@@ -93,7 +92,7 @@
                     <i class="fas fa-users text-lg"></i>
                 </div>
                 <div class="text-right">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Clients</p>
+                    <p class="text-[13px] font-black text-slate-400 uppercase tracking-widest">Total Clients</p>
                     <h2 id="totalClients" class="text-lg font-black text-slate-900 leading-none">0</h2>
                 </div>
             </div>
@@ -102,7 +101,7 @@
                 <div class="flex flex-col">
                     <div class="flex items-center gap-1.5">
                         <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active</p>
+                        <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Active</p>
                     </div>
                     <p id="activeClients" class="text-sm font-bold text-slate-800 mt-0.5">0</p>
                 </div>
@@ -110,7 +109,7 @@
                 <div class="flex flex-col">
                     <div class="flex items-center gap-1.5">
                         <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Overdue</p>
+                        <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Overdue</p>
                     </div>
                     <p id="overdueClients" class="text-sm font-bold text-amber-600 mt-0.5">0</p>
                 </div>
@@ -118,7 +117,7 @@
                 <div class="flex flex-col pt-2 border-t border-slate-50">
                     <div class="flex items-center gap-1.5">
                         <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Inactive</p>
+                        <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Inactive</p>
                     </div>
                     <p id="inactiveClients" class="text-sm font-bold text-slate-500 mt-0.5">0</p>
                 </div>
@@ -126,7 +125,7 @@
                 <div class="flex flex-col pt-2 border-t border-slate-50">
                     <div class="flex items-center gap-1.5">
                         <div class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Expired</p>
+                        <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Expired</p>
                     </div>
                     <p id="expiredClients" class="text-sm font-bold text-rose-600 mt-0.5">0</p>
                 </div>
@@ -140,29 +139,29 @@
                     <i class="fas fa-truck text-lg"></i>
                 </div>
                 <div class="text-right">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Bookings</p>
+                    <p class="text-[13px] font-black text-slate-400 uppercase tracking-widest">Total Bookings</p>
                     <h2 id="totalBookings" class="text-lg font-black text-slate-900 leading-none">0</h2>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-y-3 gap-x-4">
                 <div class="flex flex-col">
-                    <p class="text-[9px] font-black text-amber-600 uppercase tracking-widest">Pending Bookings</p>
+                    <p class="text-[12px] font-black text-amber-600 uppercase tracking-widest">Pending Bookings</p>
                     <h2 id="pendingBookings" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
                 </div>
 
                 <div class="flex flex-col">
-                    <p class="text-[9px] font-black text-rose-500 uppercase tracking-widest">Pending Tickets</p>
+                    <p class="text-[12px] font-black text-rose-500 uppercase tracking-widest">Pending Tickets</p>
                     <h2 id="pendingTickets" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
                 </div>
 
                 <div class="flex flex-col pt-2 border-t border-slate-50">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Received Reports</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Received Reports</p>
                     <h2 id="receivedReports" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
                 </div>
 
                 <div class="flex flex-col pt-2 border-t border-slate-50">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pending Assignments</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pending Assignments</p>
                     <h2 id="pendingTasks" class="text-sm font-bold text-emerald-600 mt-0.5">0</h2>
                 </div>
             </div>
@@ -181,24 +180,24 @@
 
             <div class="grid grid-cols-2 gap-y-4 gap-x-2">
                 <div>
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Inventory Value</p>
+                    <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Inventory Value</p>
                     <h2 id="inventoryValue" class="text-base font-black text-slate-900 leading-tight">KES 0</h2>
                 </div>
 
                 <div>
-                    <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Sales Value</p>
+                    <p class="text-[12px] font-black text-emerald-500 uppercase tracking-widest">Sales Value</p>
                     <h2 id="inventorySalesValue" class="text-base font-black text-slate-900 leading-tight">KES 0</h2>
                 </div>
 
                 <div class="pt-2 border-t border-slate-50">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">In Stock</p>
+                    <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">In Stock</p>
                     <p class="text-xs font-bold text-slate-700 mt-0.5">
                         <span id="inStockCount">0</span> <span class="text-[10px] font-medium text-slate-400">Items</span>
                     </p>
                 </div>
 
                 <div class="pt-2 border-t border-slate-50">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Out of Stock</p>
+                    <p class="text-[12px] font-black text-slate-400 uppercase tracking-widest">Out of Stock</p>
                     <p class="text-xs font-bold text-rose-600 mt-0.5">
                         <span id="outOfStockCount">0</span> <span class="text-[10px] font-medium text-slate-400">Items</span>
                     </p>
@@ -449,6 +448,7 @@
         
         // Pending installs
         document.getElementById('pendingBookings').innerText = fmt(data.financial.pending_bookings);
+        document.getElementById('totalBookings').innerText = fmt(data.financial.total_bookings);
         document.getElementById('pendingTickets').innerText = fmt(data.financial.pending_tickets);
         document.getElementById('inventoryValue').innerText = fmt(data.financial.inventory_value);
         document.getElementById('inventorySalesValue').innerText = fmt(data.financial.inventory_sales_value);

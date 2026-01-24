@@ -23,6 +23,9 @@ const schedules = require("./src/routes/schedules");
 // Support tickets
 const SupportTickets = require("./src/routes/supportTickets");
 
+// Assignment tasks
+const taskAssignments = require("./src/routes/assignments");
+
 
 const attendance = require("./src/routes/attendance");
 const packages = require("./src/routes/packages");
@@ -285,6 +288,9 @@ app.use('/api/manage/clients',clientRoutes);
 app.use('/api/manage/staff',staffRoutes);
 //Subsriptions
 app.use("/api/subscriptions", subscriptionRoutes);
+
+// Task Assignments
+app.use("/api", taskAssignments);
 
 // Assignments
 app.use("/api", staffAssignments);

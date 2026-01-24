@@ -731,7 +731,6 @@
                 const result = await response.json();
                 if (result.success) {
                     showToast("Ticket restored successfully!", 'success');
-                    alert("Ticket restored successfully!");
                     viewArchivedTickets(); // Refresh archive list
                     loadTickets(); // Refresh the sidebar list
                 } else {

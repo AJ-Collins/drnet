@@ -30,27 +30,27 @@ router.get("/my/assignments", async (req, res) => {
 });
 
 // PATCH: Mark as complete
-router.patch("/assignments/:id/complete", async (req, res) => {
-  try {
-    const userId = req.session.user.id;
+// router.patch("/assignments/:id/complete", async (req, res) => {
+//   try {
+//     const userId = req.session.user.id;
 
-    const assignment = await StaffClientAssignment.findById(req.params.id);
+//     const assignment = await StaffClientAssignment.findById(req.params.id);
 
-    if (!assignment || assignment.technicianId !== userId) {
-      return res.status(404).json({ error: "Not found or unauthorized" });
-    }
+//     if (!assignment || assignment.technicianId !== userId) {
+//       return res.status(404).json({ error: "Not found or unauthorized" });
+//     }
 
-    await StaffClientAssignment.update(req.params.id, {
-      status: "completed",
-      completedAt: new Date(),
-    });
+//     await StaffClientAssignment.update(req.params.id, {
+//       status: "completed",
+//       completedAt: new Date(),
+//     });
 
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to update" });
-  }
-});
+//     res.json({ success: true });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Failed to update" });
+//   }
+// });
 
 // EXPORT CSV
 router.get("/assignments/export", async (req, res) => {

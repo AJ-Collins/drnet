@@ -103,6 +103,11 @@ const Dashboard = {
           AND is_active = TRUE
       `, [monthStart, monthEnd]);
 
+      const [totalBookings] = await db.query(`
+        SELECT COUNT(*) as count
+        FROM bookings        
+      `);
+
       const [pendingBookings] = await db.query(`
         SELECT COUNT(*) as count
         FROM bookings 
@@ -228,6 +233,7 @@ const Dashboard = {
           expired_users: expiredClients,
           new_clients_week: newClientsWeek[0]?.count || 0,
           new_clients_month: newClientsMonth[0]?.count || 0,
+          total_bookings: totalBookings[0]?.count || 0,
           pending_bookings: pendingBookings[0]?.count || 0,
           pending_tickets: pendingTickets[0]?.count || 0,
           inventory_value: inventoryValue[0]?.total_value || 0,

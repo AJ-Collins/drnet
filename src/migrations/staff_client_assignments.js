@@ -4,8 +4,9 @@ async function createTicketAssignmentsTable() {
   await db.query(`
     CREATE TABLE IF NOT EXISTS assignments (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      assignment_ticket_id INT NOT NULL,
+      assignment_ticket_id VARCHAR(50) NOT NULL UNIQUE,
       staff_id INT NOT NULL,
+      subject TEXT NOT NULL,
       assignment_note TEXT NULL,     
       assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       status ENUM('pending', 'seen', 'completed') DEFAULT 'pending',
