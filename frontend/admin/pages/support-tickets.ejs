@@ -96,12 +96,28 @@
 
         const socket = io(); 
         let activeTicketId = null;
-        let allTickets = [];        
+        let allTickets = []; 
+        let currentUserId = null;       
 
         // 1. INITIAL LOAD
         window.onload = () => {
             loadTickets();
             requestNotificationPermission();
+            loadCurrentUserProfile();
+        }
+
+        async function loadCurrentUserProfile() {
+            try {
+                const res = await fetch('/api/profile');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.profile && data.profile.id) {
+                        currentUserId = data.profile.id;
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading user profile:", err);
+            }
         }
 
         async function loadTickets() {
@@ -362,13 +378,20 @@
         }
 
         function renderMessage(m) {
-            const isStaff = m.sender_staff_id !== null;
+            // Simple check: if sender_staff_id matches current user ID
+            const isMe = m.sender_staff_id === currentUserId;
+            const senderName = isMe ? 'You' : (m.staff_name || m.user_name || 'Unknown');
+            
             return `
-                <div class="${isStaff ? 'self-end' : 'self-start'} max-w-[80%]">
-                    <span class="text-[10px] text-gray-600 ${isStaff ? 'mr-2 text-right block' : 'ml-2'}">${isStaff ? (m.staff_name || 'Admin') : (m.user_name || 'Client')}</span>
-                    <div class="${isStaff ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
+                <div class="${isMe ? 'self-end' : 'self-start'} max-w-[80%]">
+                    <span class="text-[10px] text-gray-600 ${isMe ? 'mr-2 text-right block' : 'ml-2'}">
+                        ${senderName}
+                    </span>
+                    <div class="${isMe ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
                         ${m.message}
-                        <span class="block text-[9px] text-gray-400 text-right mt-1">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        <span class="block text-[9px] ${isMe ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">
+                            ${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
                     </div>
                 </div>
             `;
@@ -376,7 +399,10 @@
 
         async function sendChatMessage() {
             const input = document.getElementById('msgInput');
-            if (!input.value.trim()) return;
+            if (!input.value.trim()) {
+                showToast("Please enter a message", 'info');
+                return;
+            }
 
             const msgText = input.value;
             input.value = '';
@@ -388,6 +414,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ticket_id: activeTicketId,
+                        staff_id: currentUserId, // ADD THIS LINE
                         message: msgText
                     })
                 });
@@ -418,29 +445,44 @@
         socket.on('newMessage', (msg) => {
             if (msg.ticket_id === activeTicketId) {
                 const container = document.getElementById('chatContainer');
-                container.insertAdjacentHTML('beforeend', renderMessage(msg));
+                const isMe = msg.sender_staff_id === currentUserId;
+                const senderName = isMe ? 'You' : (msg.staff_name || msg.user_name || 'Unknown');
+                
+                const messageHtml = `
+                    <div class="${isMe ? 'self-end' : 'self-start'} max-w-[80%] animate-fade-in">
+                        <span class="text-[10px] text-gray-600 ${isMe ? 'mr-2 text-right block' : 'ml-2'}">
+                            ${senderName}
+                        </span>
+                        <div class="${isMe ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
+                            ${msg.message}
+                            <span class="block text-[9px] ${isMe ? 'text-blue-200' : 'text-gray-400'} text-right mt-1">
+                                ${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', messageHtml);
                 scrollChat();
-            }
-            
-            const isFromMe = msg.sender_staff_id !== null; 
+                
+                // Send notification if it's not from current user
+                if (Notification.permission === "granted" && !isMe) {
+                    if (document.hidden || msg.ticket_id != activeTicketId) {
+                        const title = `New Message: Ticket #${msg.ticket_number || msg.ticket_id}`;
+                        const options = {
+                            body: `${senderName}: ${msg.message}`,
+                            icon: '/static/images/logo_image.jpg', 
+                            tag: `ticket-${msg.ticket_id}`,
+                            renotify: true
+                        };
 
-            if (Notification.permission === "granted" && !isFromMe) {
-                if (document.hidden || msg.ticket_id != activeTicketId) {
-                    const title = `New Message: Ticket #${msg.ticket_number || msg.ticket_id}`;
-                    const options = {
-                        body: `${msg.staff_name || msg.user_name || 'Client'}: ${msg.message}`,
-                        icon: '/static/images/logo_image.jpg', 
-                        tag: `ticket-${msg.ticket_id}`,
-                        renotify: true
-                    };
-
-                    const notification = new Notification(title, options);
-
-                    notification.onclick = function() {
-                        window.focus();
-                        viewTicket(msg.ticket_id);
-                        notification.close();
-                    };
+                        const notification = new Notification(title, options);
+                        notification.onclick = function() {
+                            window.focus();
+                            viewTicket(msg.ticket_id);
+                            notification.close();
+                        };
+                    }
                 }
             }
         });

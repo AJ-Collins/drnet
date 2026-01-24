@@ -322,7 +322,7 @@
 
         <!-- Upcoming Tasks -->
         <div class="glass-panel p-6 rounded-lg animate-fade-up" style="animation-delay: 0.6s;">
-            <h3 class="text-lg font-black text-slate-800 mb-1">Upcoming Tasks</h3>
+            <h3 class="text-lg font-black text-slate-800 mb-1">Assigned Tasks</h3>
             <p class="text-xs font-bold text-slate-400 mb-6">Your upcoming assignments</p>
             
             <div id="scheduleList" class="space-y-4 max-h-[300px] overflow-y-auto custom-scroll">
@@ -331,11 +331,11 @@
                 </div>
             </div>
             
-            <div class="mt-4 text-center">
+            <!-- <div class="mt-4 text-center">
                 <button onclick="viewAllTasks()" class="text-xs text-teal-600 hover:text-teal-700 font-bold">
                     View All Tasks <i class="fas fa-arrow-right ml-1"></i>
                 </button>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>
@@ -439,12 +439,6 @@
             return await response.json();
         } catch (error) {
             console.warn("Using mock tickets data");
-            return {
-                total: 48,
-                resolved: 42,
-                open: 6,
-                resolutionRate: 87.5
-            };
         }
     }
 
@@ -462,13 +456,6 @@
             };
         } catch (error) {
             console.warn("Using mock clients data");
-            return {
-                total: 1250,
-                active: 1120,
-                overdue: 45,
-                expired: 85,
-                inactive: 0
-            };
         }
     }
 
@@ -487,12 +474,6 @@
             };
         } catch (error) {
             console.warn("Using mock tasks data");
-            return {
-                total: 20,
-                completed: 17,
-                pending: 3,
-                efficiency: 85
-            };
         }
     }
 
@@ -503,16 +484,6 @@
             return await response.json();
         } catch (error) {
             console.warn("Using mock performance data");
-            return {
-                efficiency: 92,
-                status: 'Top Performer',
-                attendance: {
-                    present: 22,
-                    late: 2,
-                    absent: 1,
-                    total: 25
-                }
-            };
         }
     }
 
@@ -523,21 +494,6 @@
             return await response.json();
         } catch (error) {
             console.warn("Using mock schedule data");
-            const today = new Date();
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            
-            return Array.from({ length: 3 }, (_, i) => {
-                const date = new Date();
-                date.setDate(today.getDate() + i);
-                return {
-                    day: days[date.getDay()],
-                    date: date.getDate(),
-                    shift: i === 0 ? 'Morning' : i === 1 ? 'Afternoon' : 'Night',
-                    time: i === 0 ? '08:00 - 16:00' : i === 1 ? '14:00 - 22:00' : '22:00 - 06:00',
-                    status: i === 0 ? 'Upcoming' : i === 1 ? 'Scheduled' : 'Future'
-                };
-            });
         }
     }
 
@@ -550,10 +506,6 @@
             updateChart(data);
         } catch (error) {
             console.warn("Using mock chart data");
-            const mockData = period === '7' 
-                ? [88, 95, 82, 90, 94, 85, 78]
-                : Array.from({ length: 30 }, () => Math.floor(Math.random() * 30) + 70);
-            updateChart(mockData);
         }
     }
 
@@ -615,7 +567,7 @@
                     <p class="text-sm font-black text-slate-800">${item.date}</p>
                 </div>
                 <div class="flex-1">
-                    <p class="text-xs font-black text-slate-800">${item.shift} Shift</p>
+                    <p class="text-xs font-black text-slate-800">${item.title} Shift</p>
                     <p class="text-[10px] font-bold text-slate-400">${item.time}</p>
                 </div>
                 <span class="status-badge ${getStatusClass(item.status)}">

@@ -117,8 +117,15 @@ const Dashboard = {
       const [pendingTickets] = await db.query(`
         SELECT COUNT(*) as count
         FROM support_tickets 
-        WHERE status = 'pending'
-      `);
+        WHERE status IN ('open', 'pending')
+        AND is_archived = FALSE
+    `);
+
+    const [pendingTasks] = await db.query(`
+        SELECT COUNT(*) as count
+        FROM assignments
+        WHERE status IN ('pending', 'seen')
+    `);
 
       const [inventoryValue] = await db.query(`
         SELECT SUM(unit_price) as total_value 
@@ -236,6 +243,7 @@ const Dashboard = {
           total_bookings: totalBookings[0]?.count || 0,
           pending_bookings: pendingBookings[0]?.count || 0,
           pending_tickets: pendingTickets[0]?.count || 0,
+          pending_tasks: pendingTasks[0]?.count || 0,
           inventory_value: inventoryValue[0]?.total_value || 0,
           inventory_sales_value: inventorySalesValue[0]?.total_sales || 0,
           in_stock_count: inStockCount[0]?.count || 0,

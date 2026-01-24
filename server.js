@@ -26,6 +26,9 @@ const SupportTickets = require("./src/routes/supportTickets");
 // Assignment tasks
 const taskAssignments = require("./src/routes/assignments");
 
+// Care dahsboard
+const careDashboard = require("./src/routes/careDashboard");
+
 
 const attendance = require("./src/routes/attendance");
 const packages = require("./src/routes/packages");
@@ -294,6 +297,9 @@ app.use("/api", taskAssignments);
 
 // Assignments
 app.use("/api", staffAssignments);
+
+// Care dashboard
+app.use('/api/care', careDashboard);
 
 //Hr
 app.use("/api/hr", hrexpenses);

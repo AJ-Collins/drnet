@@ -77,7 +77,7 @@
             <% const pages = [ {slug:'dashboard', name:'Dashboard'},
             {slug:'support-tickets', name:'Support Tickets'},
             { slug:'subscriptions', name:'Subscriptions' },
-            { slug:'task-assignment', name:'Task Assignments' },           
+            { slug:'task-assignment', name:'Assigned Task' },           
             {slug:'communication-team', name:'Team Communication'},
             {slug:'profile', name:'Profile'}
             ]; %> <% pages.forEach(p => { %>
@@ -89,8 +89,8 @@
                 class="fas <%= 
                   p.slug === 'dashboard' ? 'fa-chart-pie' :
                   p.slug.includes('work-schedule') ? 'fa-tasks' :
-                  p.slug.includes('work-schedule') ? 'fa-calendar-alt' :
-                  p.slug.includes('service') ? 'fa-tools' :
+                  p.slug.includes('subscriptions') ? 'fas fa-wifi':
+                  p.slug.includes('task-assignment') ? 'fa-clipboard-list' :
                   p.slug.includes('ticket') ? 'fa-ticket-alt' :
                   p.slug.includes('communication') ? 'fa-comments' :
                   'fa-cog' 
