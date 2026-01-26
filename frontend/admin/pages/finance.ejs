@@ -1516,7 +1516,14 @@
   }
 
   function buildStaffCard(staffId) {
-    const staff = staffCache.find((s) => s.id == staffId);
+    const staff = staffCache.find((s) => String(s.id) === String(staffId));
+
+    if (!staff) {
+        return `<div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p class="text-red-600">Staff data not found</p>
+                </div>`;
+    }
+
     const salary = salaryCache[staffId] || {
       basic_salary: 0,
       net_salary: 0,
@@ -1564,9 +1571,11 @@
         }
       </button>`;
 
+    const fullName = `${staff.first_name || ''} ${staff.second_name || ''}`.trim();
+
     return `
       <div class="p-4 bg-teal-50 border border-teal-200 rounded-lg" data-staff="${staffId}">
-        <p class="font-bold text-teal-800">${staff.name}</p>
+        <p class="font-bold text-teal-800">${fullName}</p>
         <p class="text-sm text-gray-600">${staff.position} • ${
       staff.department
     }</p>
@@ -1677,19 +1686,7 @@
 
       const responses = await Promise.all(promises);
 
-      const newPayslips = responses.map((r) => ({
-        id: r.id,
-        staffId: r.staff_id,
-        staffName:
-          staffCache.find((s) => s.id == r.staff_id)?.name || "Unknown",
-        period: r.period,
-        netPay: r.net_salary,
-        status: "Generated",
-        preview: r.preview || "",
-      }));
-
-      generatedPayslips = [...generatedPayslips, ...newPayslips];
-      renderPayslipsTable();
+      await loadGeneratedPayslips();
 
       Swal.fire({
         icon: "success",
@@ -1698,6 +1695,7 @@
         timer: 3500,
       });
 
+      // Reset form
       selectedStaffIds = [];
       staffTempData = {}; 
       document.getElementById("payslipStaffSelect").selectedIndex = -1;
@@ -1718,29 +1716,57 @@
     }
 
     tbody.innerHTML = generatedPayslips
-      .map(
-        (p) => `
-      <tr class="hover:bg-gray-50 transition">
-        <td class="px-6 py-4 text-sm font-medium">#${p.id}</td>
-        <td class="px-6 py-4 text-sm">${p.staffName}</td>
-        <td class="px-6 py-4 text-sm">${p.period}</td>
-        <td class="px-6 py-4 text-sm font-semibold">${formatKES(p.netPay)}</td>
-        <td class="px-6 py-4 text-sm">
-          <span class="px-2 py-1 text-xs rounded-full ${
-            p.status === "Sent"
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
-          }">
-            ${p.status}
-          </span>
-        </td>
-        <td class="px-6 py-4 text-sm space-x-2">          
-          <button onclick="deletePayslip(${
-            p.id
-          })" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`
-      )
+      .map((p) => {
+        const staff = staffCache.find((s) => String(s.id) === String(p.staffId));
+        const staffName = staff 
+          ? `${staff.first_name} ${staff.second_name}`.trim() 
+          : (p.staffName || p.staff_name || 'Unknown');
+        
+        const allowancesTotal = Array.isArray(p.allowances) 
+          ? p.allowances.reduce((sum, amt) => sum + Number(amt || 0), 0)
+          : 0;
+        
+        const deductionsTotal = Array.isArray(p.deductions)
+          ? p.deductions.reduce((sum, amt) => sum + Number(amt || 0), 0)
+          : 0;
+        
+        let summary = '';
+        if (allowancesTotal > 0 || deductionsTotal > 0) {
+          const parts = [];
+          if (allowancesTotal > 0) {
+            parts.push(`<span class="text-green-600">+${formatKES(allowancesTotal).replace('KES ', '')}</span>`);
+          }
+          if (deductionsTotal > 0) {
+            parts.push(`<span class="text-red-600">-${formatKES(deductionsTotal).replace('KES ', '')}</span>`);
+          }
+          summary = `<div class="text-xs text-gray-500 mt-1">${parts.join(' | ')}</div>`;
+        }
+        
+        return `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 text-sm font-medium">#${p.id}</td>
+            <td class="px-6 py-4 text-sm">${staffName}</td>
+            <td class="px-6 py-4 text-sm">${p.period}</td>
+            <td class="px-6 py-4 text-sm">
+              <div class="font-semibold">${formatKES(p.netPay || p.net_salary)}</div>
+              ${summary}
+            </td>
+            <td class="px-6 py-4 text-sm">
+              <span class="px-2 py-1 text-xs rounded-full ${
+                p.status === "Sent" || p.sent
+                  ? "bg-green-100 text-green-800"
+                  : "bg-yellow-100 text-yellow-800"
+              }">
+                ${p.status || (p.sent ? 'Sent' : 'Generated')}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm space-x-2">          
+              <button onclick="deletePayslip(${
+                p.id
+              })" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>`;
+      })
       .join("");
   }
 
@@ -1774,17 +1800,19 @@
     }
   }
 
-  /* ── 8. LOAD PREVIOUSLY GENERATED PAYSLIPS ─────────────────────── */
   async function loadGeneratedPayslips() {
     try {
       const data = await api("/payslips");
       generatedPayslips = data.map((p) => ({
         id: p.id,
         staffId: p.staff_id,
-        staffName: p.staff_name || "Unknown",
+        staffName: p.staff_name || `${p.first_name} ${p.second_name}`.trim(),
         period: p.period,
         netPay: p.net_salary,
+        allowances: p.allowances || [],
+        deductions: p.deductions || [],
         status: p.sent ? "Sent" : "Generated",
+        sent: p.sent
       }));
       renderPayslipsTable();
     } catch (e) {
