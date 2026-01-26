@@ -27,10 +27,21 @@ const Staff = {
         const warning = await Staff.checkExisting(data);
         if (warning) throw new Error(warning);
 
+        const salary = data.basic_salary;
+        delete data.basic_salary;
+
         if (data.password) data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
         const cols = Object.keys(data).join(", ");
         const placeholders = Object.keys(data).map(() => "?").join(", ");
         const [result] = await db.query(`INSERT INTO staff (${cols}) VALUES (${placeholders})`, Object.values(data));
+
+        if (salary !== undefined && salary !== null && salary !== '') {
+            await db.query(
+                "INSERT INTO staff_salaries (staff_id, basic_salary, effective_from) VALUES (?, ?, NOW())",
+                [result.insertId, salary]
+            );
+        }
+
         return result;
     },
 
@@ -38,9 +49,11 @@ const Staff = {
         const [rows] = await db.query(`
             SELECT s.id, s.first_name, s.second_name, s.email, s.phone, 
                    s.employee_id, s.position, s.department, s.is_active, 
-                   s.hire_date, image, r.name as role_name 
+                   s.hire_date, image, r.name as role_name ,
+                   ss.basic_salary
             FROM staff s 
-            LEFT JOIN roles r ON s.role_id = r.id 
+            LEFT JOIN roles r ON s.role_id = r.id
+            LEFT JOIN staff_salaries ss ON s.id = ss.staff_id AND ss.effective_to IS NULL
             WHERE r.name != 'admin' OR r.name IS NULL
             ORDER BY s.created_at DESC
         `);
@@ -51,9 +64,11 @@ const Staff = {
         const [rows] = await db.query(`
             SELECT s.id, s.first_name, s.second_name, s.email, s.phone, 
                    s.employee_id, s.position, s.department, s.role_id, image,
-                   r.name as role_name 
+                   r.name as role_name ,
+                   ss.basic_salary
             FROM staff s 
-            LEFT JOIN roles r ON s.role_id = r.id 
+            LEFT JOIN roles r ON s.role_id = r.id
+            LEFT JOIN staff_salaries ss ON s.id = ss.staff_id AND ss.effective_to IS NULL
             WHERE s.id = ?
         `, [id]);
         return rows[0];
@@ -72,7 +87,7 @@ const Staff = {
             delete data.password; 
         }
         
-        let salary = data.basic_salary;
+        const salary = data.basic_salary;
         delete data.basic_salary;
 
         const fields = Object.keys(data).map(k => `${k}=?`).join(", ");
@@ -80,9 +95,23 @@ const Staff = {
         
         const [result] = await db.query(`UPDATE staff SET ${fields} WHERE id=?`, values);
 
-        if (salary !== undefined) {
-            await db.query("DELETE FROM staff_salaries WHERE staff_id = ?", [id]);
-            await db.query("INSERT INTO staff_salaries (staff_id, basic_salary, effective_from) VALUES (?, ?, NOW())", [id, salary]);
+        if (salary !== undefined && salary !== null && salary !== '') {
+            const [existingSalary] = await db.query(
+                "SELECT id FROM staff_salaries WHERE staff_id = ? AND effective_to IS NULL",
+                [id]
+            );
+            
+            if (existingSalary.length > 0) {
+                await db.query(
+                    "UPDATE staff_salaries SET basic_salary = ? WHERE staff_id = ? AND effective_to IS NULL",
+                    [salary, id]
+                );
+            } else {
+                await db.query(
+                    "INSERT INTO staff_salaries (staff_id, basic_salary, effective_from) VALUES (?, ?, NOW())",
+                    [id, salary]
+                );
+            }
         }
         
         return result;
