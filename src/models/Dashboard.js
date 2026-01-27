@@ -368,17 +368,24 @@ const Dashboard = {
     const sevenDaysAgo = toSqlDatetime(dayjs().subtract(7, 'day').toDate());
 
     try {
-      const [lowStock] = await db.query(`SELECT COUNT(*) as count FROM items WHERE quantity < 10 AND quantity > 0`);
-      const [outOfStock] = await db.query(`SELECT COUNT(*) as count FROM items WHERE quantity = 0`);
+      // Remove the quantity-based queries since items table uses status field
+      const [lowStock] = await db.query(`SELECT COUNT(*) as count FROM items WHERE status = 'low-stock'`);
+      const [outOfStock] = await db.query(`SELECT COUNT(*) as count FROM items WHERE status = 'out-stock'`);
+      
+      // Updated query - remove quantity multiplication since quantity column doesn't exist
       const [totalValue] = await db.query(`
-        SELECT COUNT(*) as total_items, COALESCE(SUM(quantity * unit_price), 0) as total_value FROM items
+        SELECT COUNT(*) as total_items, COALESCE(SUM(unit_price), 0) as total_value 
+        FROM items
       `);
       
       const [recentItems] = await db.query(`SELECT COUNT(*) as count FROM items WHERE created_at >= ?`, [sevenDaysAgo]);
 
       const [itemsByCategory] = await db.query(`
-        SELECT category, COUNT(*) as item_count, SUM(quantity) as total_quantity
-        FROM items GROUP BY category ORDER BY item_count DESC LIMIT 5
+        SELECT category, COUNT(*) as item_count
+        FROM items 
+        GROUP BY category 
+        ORDER BY item_count DESC 
+        LIMIT 5
       `);
 
       return {
