@@ -145,20 +145,24 @@ const Dashboard = {
         WHERE status = 'out-stock'
       `);
 
-
       const [revenueData] = await db.query(`
-        SELECT 
-          DATE_FORMAT(payment_date, '%Y-%m') as month,
-          DATE_FORMAT(payment_date, '%b %Y') as month_name,
-          COALESCE(SUM(amount), 0) as revenue
-        FROM payments 
+        SELECT
+        DATE_FORMAT(d, '%d %b') AS day_label,
+        DAY(d) AS day_num,
+        revenue
+        FROM (
+        SELECT
+        DATE(payment_date) AS d,
+        SUM(amount) AS revenue
+        FROM payments
         WHERE status = 'paid'
-          AND payment_date >= DATE_SUB(?, INTERVAL 12 MONTH)
-        GROUP BY 1, 2
-        ORDER BY 1 ASC
-      `, [todayStart]);
+        AND MONTH(payment_date) = ?
+        AND YEAR(payment_date) = ?
+        GROUP BY DATE(payment_date)
+        ) t
+        ORDER BY d ASC
+      `, [currentMonth, currentYear]);
 
-      // 9. Package popularity
       const [packagePopularity] = await db.query(`
         SELECT 
           p.name as package_name,
@@ -251,6 +255,27 @@ const Dashboard = {
         revenueTrend = 100;
       }
 
+      // UPDATED: Calculate projection based on current month's performance
+      const daysInMonth = dayjs().daysInMonth();
+      const currentDay = now.getDate();
+      const currentMonthRevenue = currentRev;
+      
+      let projectedRevenue = 0;
+      let projectionGrowth = 0;
+      
+      if (currentDay > 0 && currentMonthRevenue > 0) {
+        // Daily average approach
+        const dailyAverage = currentMonthRevenue / currentDay;
+        projectedRevenue = dailyAverage * daysInMonth;
+        
+        // Calculate growth percentage from current to projected
+        projectionGrowth = ((projectedRevenue - currentMonthRevenue) / currentMonthRevenue) * 100;
+      } else if (prevRev > 0) {
+        // Fallback: Use previous month as baseline
+        projectedRevenue = prevRev * 1.1; // 10% growth assumption
+        projectionGrowth = 10;
+      }
+
       return {
         financial: {
           monthly_revenue: currentRev,
@@ -272,7 +297,11 @@ const Dashboard = {
           inventory_value: inventoryValue[0]?.total_value || 0,
           in_stock_count: inStockCount[0]?.count || 0,
           out_stock_count: outStockCount[0]?.count || 0,
-          staff_on_duty: staffOnDuty[0]?.count || 0
+          staff_on_duty: staffOnDuty[0]?.count || 0,
+          projected_revenue: projectedRevenue,
+          projection_growth: projectionGrowth.toFixed(1),
+          days_in_month: daysInMonth,
+          current_day: currentDay
         },
         charts: {
           monthlyRevenue: revenueData,
