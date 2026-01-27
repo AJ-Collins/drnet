@@ -33,15 +33,6 @@ const Dashboard = {
     const nowTimestamp = toSqlDatetime(new Date());
 
     try {
-      // 1. Monthly Revenue from payments
-      const [monthlyRevenue] = await db.query(`
-        SELECT COALESCE(SUM(amount), 0) as revenue
-        FROM payments 
-        WHERE status = 'paid' 
-          AND MONTH(payment_date) = ? 
-          AND YEAR(payment_date) = ?
-      `, [currentMonth, currentYear]);
-
       // 2. Previous month revenue for comparison
       const [prevMonthRevenue] = await db.query(`
         SELECT COALESCE(SUM(amount), 0) as revenue
@@ -147,21 +138,42 @@ const Dashboard = {
 
       const [revenueData] = await db.query(`
         SELECT
-        DATE_FORMAT(d, '%d %b') AS day_label,
-        DAY(d) AS day_num,
-        revenue
+          DATE_FORMAT(all_dates.d, '%d %b') AS day_label,
+          DAY(all_dates.d) AS day_num,
+          COALESCE(payment_revenue, 0) as payment_revenue,
+          COALESCE(sales_revenue, 0) as sales_revenue,
+          COALESCE(payment_revenue, 0) + COALESCE(sales_revenue, 0) as total_revenue
         FROM (
-        SELECT
-        DATE(payment_date) AS d,
-        SUM(amount) AS revenue
-        FROM payments
-        WHERE status = 'paid'
-        AND MONTH(payment_date) = ?
-        AND YEAR(payment_date) = ?
-        GROUP BY DATE(payment_date)
-        ) t
-        ORDER BY d ASC
-      `, [currentMonth, currentYear]);
+          SELECT DISTINCT DATE(payment_date) AS d
+          FROM payments
+          WHERE status = 'paid'
+            AND MONTH(payment_date) = ?
+            AND YEAR(payment_date) = ?
+          UNION
+          SELECT DISTINCT DATE(sold_date) AS d
+          FROM sales
+          WHERE payment_status IN ('paid', 'partial')
+            AND MONTH(sold_date) = ?
+            AND YEAR(sold_date) = ?
+        ) all_dates
+        LEFT JOIN (
+          SELECT DATE(payment_date) AS d, SUM(amount) AS payment_revenue
+          FROM payments
+          WHERE status = 'paid'
+            AND MONTH(payment_date) = ?
+            AND YEAR(payment_date) = ?
+          GROUP BY DATE(payment_date)
+        ) payments_data ON all_dates.d = payments_data.d
+        LEFT JOIN (
+          SELECT DATE(sold_date) AS d, SUM(total_amount) AS sales_revenue
+          FROM sales
+          WHERE payment_status IN ('paid', 'partial')
+            AND MONTH(sold_date) = ?
+            AND YEAR(sold_date) = ?
+          GROUP BY DATE(sold_date)
+        ) sales_data ON all_dates.d = sales_data.d
+        ORDER BY all_dates.d ASC
+      `, [currentMonth, currentYear, currentMonth, currentYear, currentMonth, currentYear, currentMonth, currentYear]);
 
       const [packagePopularity] = await db.query(`
         SELECT 

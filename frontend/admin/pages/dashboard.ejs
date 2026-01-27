@@ -88,7 +88,7 @@
                     <h2 id="monthlyRevenue" class="text-lg font-black text-slate-900 leading-none">KES 0</h2>
                     <p class="text-[8px] font-bold text-slate-400 uppercase">Actual</p>
                 </div>
-                <div class="border-l border-slate-100 pl-3 space-y-0.5">
+                <div class="border-l border-slate-200 pl-3 space-y-0.5">
                     <p class="text-[10px] font-black text-rose-500 uppercase tracking-tighter">Expenditure Value</p>
                     <h2 id="monthlyExpenditure" class="text-lg font-black text-slate-900 leading-none">KES 0</h2>
                     <p class="text-[8px] font-bold text-slate-400 uppercase">Operational</p>
@@ -119,21 +119,23 @@
 
         <!-- Active Subscribers -->
         <div class="glass-panel stat-card p-5 rounded-2xl border-l-4 border-teal-500 animate-fade-up bg-white shadow-sm flex flex-col justify-between" style="animation-delay: 0.2s;">
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
-                    <i class="fas fa-sync-alt text-lg"></i>
+            <div class="flex items-start justify-between mb-4 w-full">
+                <div class="text-left">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Clients</p>
+                    <h2 id="totalClients" class="text-xl font-black text-slate-900 leading-none mt-1">0</h2>
                 </div>
+                
                 <div class="text-right">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subscriptions Value</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subscription Value</p>
                     <h2 id="monthlySubRevenue" class="text-xl font-black text-slate-900 leading-none mt-1">KES 0</h2>
                     <p class="text-[9px] font-bold text-emerald-600 uppercase mt-1">Monthly Recurring</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2 mb-4">
-                <div class="h-px bg-slate-100 flex-1"></div>
-                <span class="text-[9px] font-black text-slate-400 uppercase">Subscriptions</span>
-                <div class="h-px bg-slate-100 flex-1"></div>
+                <div class="h-px bg-slate-200 flex-1"></div>
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Status Breakdown</span>
+                <div class="h-px bg-slate-200 flex-1"></div>
             </div>
 
             <div class="grid grid-cols-2 gap-y-3 gap-x-4">
@@ -251,7 +253,7 @@
         <div class="glass-panel p-6 rounded-2xl lg:col-span-2 animate-fade-up" style="animation-delay: 0.5s;">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h3 class="text-lg font-black text-slate-800">Income Trend (Monthly) </h3>
+                    <h3 class="text-lg font-black text-slate-800">Daily Income (Monthly View)</h3>
                 </div>
                 <button onclick="exportRevenueData()" class="text-xs font-bold bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors text-slate-600">
                     <i class="fas fa-download mr-1"></i> Export Data
@@ -265,7 +267,7 @@
          <div class="glass-panel p-6 rounded-2xl animate-fade-up flex flex-col h-full" style="animation-delay: 0.9s;">
             <div class="flex justify-between items-center mb-4">
                 <div>
-                    <h3 class="text-lg font-black text-slate-800 tracking-tight">Dispatch Inbox</h3>
+                    <h3 class="text-lg font-black text-slate-800 tracking-tight">HR Inbox Replies</h3>
                     <p class="text-xs font-bold text-slate-400">Executive sync & reminder status</p>                    
                 </div>
                 <% const inboxSlug = "operational-inbox"; %>
