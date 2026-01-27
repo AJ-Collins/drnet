@@ -464,58 +464,50 @@
       }
 
       async function loadUserMenu() {
-    const avatarCircle = document.querySelector('#userMenuBtn .w-9.h-9');
-    const nameSpan     = document.querySelector('#userMenuBtn .font-medium');
+        const avatarCircle = document.querySelector('#userMenuBtn .w-9.h-9');
+        const nameSpan     = document.querySelector('#userMenuBtn .font-medium');
 
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'GET',
-        credentials: 'include',               // keep session cookies
-        headers: { 'Cache-Control': 'no-cache' }
-      });
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'GET',
+                credentials: 'include',
+                headers: { 'Cache-Control': 'no-cache' }
+            });
 
-      if (!res.ok) throw new Error('Failed to fetch profile');
+            if (!res.ok) throw new Error('Failed to fetch profile');
 
-      const data = await res.json();
-      const profile = data.profile;           // <-- your API shape
+            const data = await res.json();
+            const profile = data.profile;
+            const firstName = profile.first_name || '';
+            const lastName = profile.second_name || '';
+            const fullName = `${firstName} ${lastName}`.trim() || 'User';
+            
+            nameSpan.textContent = fullName;
 
-      // ---- 1. Avatar -------------------------------------------------
-      if (profile.image) {
-        // create an <img> inside the circle
-        const img = document.createElement('img');
-        img.src = profile.image;
-        img.alt = 'Profile';
-        img.className = 'w-full h-full rounded-full object-cover';
+            if (profile.image) {
+                avatarCircle.innerHTML = `
+                    <img src="${profile.image}" 
+                        alt="Profile" 
+                        class="w-full h-full rounded-full object-cover"
+                        onerror="this.parentElement.innerHTML='<span class=\'text-xs font-bold\'>${firstName[0]}${lastName[0]}</span>'">
+                `;
+                avatarCircle.classList.remove('bg-teal-100', 'bg-slate-100');
+            } else {
+                const initials = ((firstName[0] || '') + (lastName[0] || '')).toUpperCase() || 'U';
+                avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-xs">${initials}</span>`;
+                avatarCircle.classList.add('bg-teal-50', 'flex', 'items-center', 'justify-center');
+            }
+            const roleSmall = document.querySelector('#userMenuBtn .text-slate-500');
+            if (roleSmall) {
+                roleSmall.textContent = profile.role_name || profile.department || 'Staff';
+            }
 
-        // replace the placeholder <div> with the image
-        avatarCircle.innerHTML = '';
-        avatarCircle.appendChild(img);
-      } else {
-        // keep the initials fallback
-        const initials = (profile.name || 'U')
-          .split(' ')
-          .map(n => n[0])
-          .join('')
-          .toUpperCase()
-          .substring(0, 2);
-        avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm">${initials}</span>`;
-      }
-
-      // ---- 2. Name ---------------------------------------------------
-      nameSpan.textContent = profile.name || 'User';
-
-      // optional: tiny success toast
-      // showNotification('Profile loaded', 'success');
-
-    } catch (err) {
-      console.error('loadUserMenu error:', err);
-      showNotification('Could not load user info', 'error');
-
-      // keep the static placeholder when everything fails
-      avatarCircle.innerHTML = `<span class="text-teal-800 font-bold text-sm"></span>`;
-      nameSpan.textContent = '';
+        } catch (err) {
+            console.error('loadUserMenu error:', err);
+            if (nameSpan) nameSpan.textContent = 'Guest';
+            if (avatarCircle) avatarCircle.innerHTML = `<i class="fas fa-user text-slate-400"></i>`;
+        }
     }
-  }
 
   document.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.getElementById('notificationDropdown');

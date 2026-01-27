@@ -80,7 +80,7 @@
 
     @media (min-width: 768px) {
         .stats-grid {
-            grid-template-columns: repeat(2, min-content);
+            grid-template-columns: repeat(3, min-content);
             justify-content: flex-end;
         }
     }
@@ -130,7 +130,7 @@
             <p class="text-slate-500 font-medium">Manage connectivity and track financial records.</p>
         </div>
         <div id="statsRow" class="stats-grid">
-            </div>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -364,6 +364,17 @@
                         <p class="text-[12px] font-black text-slate-400 uppercase tracking-wider">Subscription Revenue</p>
                         <p class="text-base font-black text-slate-800">
                             <span class="text-[12px] mr-0.5">KES</span>${Number(data.totalRevenue).toLocaleString()}
+                        </p>
+                    </div>
+                </div>
+                <div class="stat-card bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+                        <i class="fas fa-wallet text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[12px] font-black text-slate-400 uppercase tracking-wider">Monthly Revenue</p>
+                        <p class="text-base font-black text-slate-800">
+                            <span class="text-[12px] mr-0.5">KES</span>${Number(data.monthlyRevenue).toLocaleString()}
                         </p>
                     </div>
                 </div>

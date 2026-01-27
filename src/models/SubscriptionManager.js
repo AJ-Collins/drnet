@@ -195,9 +195,18 @@ const SubscriptionManager = {
                 WHERE us.expiry_date > ?
             `, [nowTimestamp]);
 
+            const [monthlyRevenueRows] = await db.query(`
+                SELECT COALESCE(SUM(p.price), 0) as total
+                FROM user_subscriptions us
+                JOIN packages p ON us.package_id = p.id
+                WHERE YEAR(us.start_date) = YEAR(?)
+                AND MONTH(us.start_date) = MONTH(?)
+            `, [nowTimestamp, nowTimestamp]);
+
             return {
                 activeCount: activeRows[0].count,
-                totalRevenue: activeRevenueRows[0].total
+                totalRevenue: activeRevenueRows[0].total,
+                monthlyRevenue: monthlyRevenueRows[0].total
             };
         } catch (error) {
             console.error("Metric retrieval error:", error);

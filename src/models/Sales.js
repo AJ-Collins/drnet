@@ -1,4 +1,15 @@
 const db = require("../config/db");
+const dayjs = require("dayjs");
+
+/**
+ * Helper to convert JS Date objects to MySQL DATETIME strings
+ * Format: YYYY-MM-DD HH:mm:ss
+ */
+const toSqlDatetime = (date) => {
+    const pad = (n) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+        `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
 
 class Sale {
     // Fetch all sales ordered by date

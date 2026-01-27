@@ -133,12 +133,6 @@ const Dashboard = {
         WHERE status = 'in-stock'
       `);
 
-      const [inventorySalesValue] = await db.query(`
-        SELECT SUM(total_amount) as total_sales 
-        FROM sales 
-        WHERE payment_status = 'paid'
-      `);
-
       const [inStockCount] = await db.query(`
         SELECT COUNT(*) as count 
         FROM items 
@@ -219,8 +213,36 @@ const Dashboard = {
         LIMIT 5
       `, [todayStart, threeDaysOut]);
 
+      const [monthlyExpenditure] = await db.query(`
+        SELECT 
+          COALESCE(SUM(amount), 0) as monthlyTotal
+        FROM hrexpenses
+        WHERE MONTH(expense_date) = ?
+        AND YEAR(expense_date) = ?
+      `, [currentMonth, currentYear]);
+
+      const [monthlySubscriptionRevenue] = await db.query(`
+        SELECT COALESCE(SUM(p.price), 0) as subscriptionTotal
+        FROM user_subscriptions us
+        JOIN packages p ON us.package_id = p.id
+        WHERE YEAR(us.start_date) = YEAR(?)
+        AND MONTH(us.start_date) = MONTH(?)
+      `, [nowTimestamp, nowTimestamp]);
+
+      const [monthlySalesRevenue] = await db.query(`
+        SELECT 
+          COALESCE(SUM(total_amount), 0) as monthlyTotal
+        FROM sales
+        WHERE MONTH(sold_date) = ?
+        AND YEAR(sold_date) = ?
+        AND payment_status IN ('paid', 'partial')
+      `, [currentMonth, currentYear]);
+
       // Calculate revenue trend percentage
-      const currentRev = monthlyRevenue[0]?.revenue || 0;
+      const subscriptionRev = monthlySubscriptionRevenue[0]?.subscriptionTotal || 0;
+      const salesRev = monthlySalesRevenue[0]?.monthlyTotal || 0;
+      const currentRev = Number(subscriptionRev) + Number(salesRev);
+
       const prevRev = prevMonthRevenue[0]?.revenue || 0;
       let revenueTrend = 0;
       if (prevRev > 0) {
@@ -232,6 +254,9 @@ const Dashboard = {
       return {
         financial: {
           monthly_revenue: currentRev,
+          monthly_subscription_revenue: subscriptionRev,
+          monthly_sales_revenue: salesRev,
+          monthly_expenditure: monthlyExpenditure[0]?.monthlyTotal || 0,
           revenue_trend: revenueTrend.toFixed(1),
           total_users: totalUsers,
           active_subscriptions: activeSubscriptions[0]?.count || 0,
@@ -245,7 +270,6 @@ const Dashboard = {
           pending_tickets: pendingTickets[0]?.count || 0,
           pending_tasks: pendingTasks[0]?.count || 0,
           inventory_value: inventoryValue[0]?.total_value || 0,
-          inventory_sales_value: inventorySalesValue[0]?.total_sales || 0,
           in_stock_count: inStockCount[0]?.count || 0,
           out_stock_count: outStockCount[0]?.count || 0,
           staff_on_duty: staffOnDuty[0]?.count || 0
