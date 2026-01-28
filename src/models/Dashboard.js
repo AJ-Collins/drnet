@@ -254,6 +254,11 @@ const Dashboard = {
         AND payment_status IN ('paid', 'partial')
       `, [currentMonth, currentYear]);
 
+      const [totalStaffSalaries] = await db.query(`
+          SELECT COALESCE(SUM(basic_salary), 0) as total 
+          FROM staff_salaries
+      `);
+
       // Calculate revenue trend percentage
       const subscriptionRev = monthlySubscriptionRevenue[0]?.subscriptionTotal || 0;
       const salesRev = monthlySalesRevenue[0]?.monthlyTotal || 0;
@@ -307,6 +312,7 @@ const Dashboard = {
           pending_tickets: pendingTickets[0]?.count || 0,
           pending_tasks: pendingTasks[0]?.count || 0,
           inventory_value: inventoryValue[0]?.total_value || 0,
+          staff_salaries_payable: totalStaffSalaries[0]?.total || 0,
           in_stock_count: inStockCount[0]?.count || 0,
           out_stock_count: outStockCount[0]?.count || 0,
           staff_on_duty: staffOnDuty[0]?.count || 0,

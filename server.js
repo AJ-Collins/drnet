@@ -69,6 +69,7 @@ const smslogs = require("./src/routes/smslogsRoutes");
 const clientRoutes = require('./src/routes/clientRoutes');
 //Staff
 const staffRoutes = require('./src/routes/staffRoutes');
+const staffSalary = require('./src/routes/staffSalary');
 
 // Session Configuration
 app.use(
@@ -289,6 +290,7 @@ app.use("/api/dashboard", admindashboard);
 app.use('/api/manage/clients',clientRoutes);
 //Staff
 app.use('/api/manage/staff',staffRoutes);
+app.use('/api/finance', staffSalary);
 //Subsriptions
 app.use("/api/subscriptions", subscriptionRoutes);
 
@@ -521,10 +523,10 @@ app.get("/hr-assistant", requireHrAssistantAuth, (req, res) => {
 const staffPages = [
   "dashboard",
   "profile",
+  "task-assignment",
+  "earnings",
+  "onboard",
   "communication-team",
-  "my-customers",
-  "support-tickets",
-  "work-schedule",
   "notifications",
 ];
 

@@ -72,22 +72,29 @@
 
           <!-- Navigation -->
           <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <% const pages = [ { slug:'dashboard', name:'Dashboard' }, {
-            slug:'my-customers', name:'My Assignments' }, {
-            slug:'communication-team', name:'Team Communication' }, {
-            slug:'work-schedule', name:'Work Schedule' }, {
-            slug:'support-tickets', name:'Support Tickets' }, { slug:'profile',
-            name:'Profile' } ]; %> <% pages.forEach(p => { %>
-            <a
-              href="/staff/<%= p.slug %>"
-              class="nav-link flex items-center px-4 py-3 rounded-lg w-full <%= currentPage===p.slug ? 'bg-teal-900/50 text-white font-medium' : 'text-teal-100 font-medium' %> transition-all duration-200 hover:bg-teal-900/50 hover:text-white hover:translate-x-1"
-            >
-              <i
-                class="fas <%= p.slug==='dashboard' ? 'fa-chart-pie' : p.slug.includes('attendance') ? 'fa-user-check' : p.slug.includes('users') ? 'fa-users' : p.slug.includes('service') ? 'fa-tools' : p.slug.includes('ticket') ? 'fa-ticket-alt' : p.slug.includes('finance') ? 'fa-dollar-sign' : p.slug.includes('renewals') ? 'fa-sync-alt' : p.slug.includes('booking') ? 'fa-globe' : p.slug.includes('communication') ? 'fa-comments' : p.slug.includes('equipments') ? 'fa-tools' : 'fa-cog' %> w-6 text-lg"
-              ></i>
+            <% 
+              const pages = [
+                { slug: 'dashboard', name: 'Dashboard', icon: 'fa-chart-pie' },
+                { slug: 'task-assignment', name: 'Assigned Tasks', icon: 'fa-tasks' },
+                { slug: 'onboard', name: 'Onboard', icon: 'fa-hand-holding-usd' },
+                { slug: 'earnings', name: 'Earnings', icon: 'fa-wallet' },
+                { slug: 'communication-team', name: 'Team Connect', icon: 'fa-comments' },
+                { slug: 'profile', name: 'Profile', icon: 'fa-user' }
+              ];
+            %>
 
-              <span><%= p.name %></span>
-            </a>
+            <% pages.forEach(p => { %>
+              <a
+                href="/staff/<%= p.slug %>"
+                class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg w-full
+                <%= currentPage === p.slug 
+                  ? 'bg-teal-900/50 text-white font-medium' 
+                  : 'text-teal-100 font-medium' %>
+                transition-all duration-200 hover:bg-teal-900/50 hover:text-white hover:translate-x-1"
+              >
+                <i class="fas <%= p.icon %> w-6 text-lg"></i>
+                <span><%= p.name %></span>
+              </a>
             <% }); %>
           </nav>
         </div>

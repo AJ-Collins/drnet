@@ -177,33 +177,42 @@
         <div class="glass-panel stat-card p-5 rounded-2xl border-l-4 border-amber-500 animate-fade-up bg-white shadow-sm" style="animation-delay: 0.3s;">
             <div class="flex justify-between items-center mb-4">
                 <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-                    <i class="fas fa-tools text-lg"></i>
+                    <i class="fas fa-briefcase text-lg"></i>
                 </div>
                 <div class="text-right">
-                    <p class="text-[13px] font-black text-slate-400 uppercase tracking-widest">Total Bookings</p>
-                    <h2 id="totalBookings" class="text-lg font-black text-slate-900 leading-none">0</h2>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operations</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-y-3 gap-x-4">
-                <div class="flex flex-col">
-                    <p class="text-[12px] font-black text-amber-600 uppercase tracking-widest">Pending Bookings</p>
-                    <h2 id="pendingBookings" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Pending Bookings -->
+                <div class="flex flex-col bg-amber-50/30 p-2.5 rounded-lg">
+                    <p class="text-[11px] font-black text-amber-600 uppercase tracking-tighter mb-1">Bookings</p>
+                    <h2 id="totalBookings" class="text-lg font-black text-slate-900 leading-none">0</h2>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
+                        <span id="pendingBookings" class="text-amber-600 font-black">0</span> Pending
+                    </p>
                 </div>
 
-                <div class="flex flex-col">
-                    <p class="text-[12px] font-black text-rose-500 uppercase tracking-widest">Pending Tickets</p>
-                    <h2 id="pendingTickets" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
+                <!-- Pending Tickets -->
+                <div class="flex flex-col bg-rose-50/30 p-2.5 rounded-lg">
+                    <p class="text-[11px] font-black text-rose-500 uppercase tracking-tighter mb-1">Tickets</p>
+                    <h2 id="pendingTickets" class="text-lg font-black text-slate-900 leading-none">0</h2>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Support Queue</p>
                 </div>
 
-                <div class="flex flex-col pt-2 border-t border-slate-50">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Received Reports</p>
-                    <h2 id="receivedReports" class="text-sm font-bold text-slate-800 mt-0.5">0</h2>
+                <!-- Pending Assignments -->
+                <div class="flex flex-col bg-emerald-50/30 p-2.5 rounded-lg">
+                    <p class="text-[11px] font-black text-emerald-600 uppercase tracking-tighter mb-1">Tasks</p>
+                    <h2 id="pendingTasks" class="text-lg font-black text-slate-900 leading-none">0</h2>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Active Assignments</p>
                 </div>
 
-                <div class="flex flex-col pt-2 border-t border-slate-50">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pending Assignments</p>
-                    <h2 id="pendingTasks" class="text-sm font-bold text-emerald-600 mt-0.5">0</h2>
+                <!-- Staff Salaries -->
+                <div class="flex flex-col bg-purple-50/30 p-2.5 rounded-lg">
+                    <p class="text-[11px] font-black text-purple-600 uppercase tracking-tighter mb-1">Staff Payroll</p>
+                    <h2 id="staffSalariesPayable" class="text-base font-black text-slate-900 leading-none">KES 0</h2>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Salaries Due</p>
                 </div>
             </div>
         </div>
@@ -586,21 +595,28 @@
             const el = document.getElementById(id);
             if (el) el.innerText = fmt(value);
         };
-        
+
+        const safeCurrencyUpdate = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = fmtCurrency(value);
+        };
+            
         safeUpdate('activeClients', data.financial?.active_subscriptions);
         safeUpdate('totalClients', data.financial?.total_users);
         safeUpdate('overdueClients', data.financial?.overdue_users);
-        safeUpdate('monthlySubRevenue', data.financial?.monthly_subscription_revenue);
         safeUpdate('inactiveClients', data.financial?.inactive_users);
         safeUpdate('expiredClients', data.financial?.expired_users);
         safeUpdate('pendingBookings', data.financial?.pending_bookings);
         safeUpdate('totalBookings', data.financial?.total_bookings);
         safeUpdate('pendingTickets', data.financial?.pending_tickets);
-        safeUpdate('inventoryValue', data.financial?.inventory_value);
-        safeUpdate('inventorySalesValue', data.financial?.monthly_sales_revenue);
+        safeUpdate('pendingTasks', data.financial?.pending_tasks);
         safeUpdate('inStockCount', data.financial?.in_stock_count);
         safeUpdate('outOfStockCount', data.financial?.out_stock_count);
-        safeUpdate('pendingTasks', data.financial?.pending_tasks);
+        
+        safeCurrencyUpdate('monthlySubRevenue', data.financial?.monthly_subscription_revenue);
+        safeCurrencyUpdate('inventoryValue', data.financial?.inventory_value);
+        safeCurrencyUpdate('inventorySalesValue', data.financial?.monthly_sales_revenue);
+        safeCurrencyUpdate('staffSalariesPayable', data.financial?.staff_salaries_payable);
         
         if (data.charts?.monthlyRevenue) {
             renderRevenueChart(data.charts.monthlyRevenue);
@@ -856,7 +872,7 @@
     function showLoadingState() {
         // Add loading indicator
         const elements = [
-            'monthlyRevenue', 'activeClients', 'monthlyExpenditure', 'totalClients', 'overdueClients', 'inactiveClients', 'monthlySubRevenue', 'expiredClients', 'inventoryValue', 'inventorySalesValue', 'inventorySalesValue', 'inStockCount', 'outOfStockCount', 'pendingBookings', 'totalBookings', 'pendingTickets', 'receivedReports', 'pendingTasks'
+            'monthlyRevenue', 'activeClients', 'monthlyExpenditure', 'totalClients', 'overdueClients', 'inactiveClients', 'monthlySubRevenue', 'expiredClients', 'inventoryValue', 'inventorySalesValue', 'inventorySalesValue', 'inStockCount', 'outOfStockCount', 'pendingBookings', 'totalBookings', 'pendingTickets', 'receivedReports', 'pendingTasks', 'staffSalariesPayable'
         ];
         
         elements.forEach(id => {
