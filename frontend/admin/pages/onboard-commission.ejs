@@ -1,0 +1,1273 @@
+<style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+        }
+
+        .animate-fade-in { 
+            animation: fadeIn 0.3s ease-out forwards; 
+            opacity: 0;
+        }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        .animate-fade-up {
+            animation: fadeUp 0.4s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spinner {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tab-button.active {
+            border-bottom: 3px solid #1e293b;
+            color: #1e293b;
+            font-weight: 800;
+        }
+
+        .stat-card {
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field { 
+            background: #f1f5f9; 
+            border: 1px solid #cbd5e1; 
+            transition: all 0.2s; 
+        }
+        
+        .input-field:focus { 
+            background: white; 
+            border-color: #0d9488; 
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1); 
+        }
+
+        .client-row {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .client-row:hover {
+            background: #f8fafc !important;
+        }
+
+        .client-row.selected {
+            background: #e0f2fe !important;
+            border-left: 4px solid #0ea5e9;
+        }
+    </style>
+    
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+
+    <!-- Header -->
+    <div class="bg-white border-b border-slate-200">
+        <div class="px-8 py-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                
+                <div class="min-w-[300px]">
+                    <h1 class="text-2xl font-black text-slate-800 tracking-tight">Onboarding Management</h1>
+                    <p class="text-[12px] text-slate-500 font-medium">Manage onboardings and payouts</p>
+                </div>
+
+                <div class="flex flex-1 items-center justify-end gap-4">
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg px-5 py-3 flex items-center gap-6 min-w-[210px] min-h-[100px]">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total</p>
+                            <h2 id="totalClients" class="text-xl font-black text-slate-900 leading-none">0</h2>
+                        </div>
+                        <div class="border-l border-slate-200 pl-6">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Growth</p>
+                            <div class="flex items-baseline gap-1">
+                                <h2 id="monthlyClients" class="text-lg font-black text-slate-900 leading-none">0</h2>
+                                <span class="text-[9px] font-extrabold text-emerald-600">Monthly</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg px-5 py-3 flex items-center gap-6 min-w-[240px] min-h-[100px]">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Commissions</p>
+                            <h2 id="totalCommissions" class="text-xl font-black text-slate-900 leading-none">KES 0</h2>
+                        </div>
+                        <div class="border-l border-slate-200 pl-6">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Unpaid</p>
+                            <h2 id="pendingCommissions" class="text-lg font-black text-amber-600 leading-none">KES 0</h2>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg px-5 py-3 flex flex-col justify-center min-w-[240px]">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-tight">Paid Out</span>
+                                <span id="paidCommissions" class="text-sm font-black text-slate-800">KES 0</span>
+                            </div>
+                            <div class="h-6 w-px bg-slate-200 mx-2"></div>
+                            <div class="flex flex-col text-right">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-tight">Awaiting</span>
+                                <span id="unpaidCommissions" class="text-sm font-black text-slate-800">KES 0</span>
+                            </div>
+                        </div>
+                        <div class="h-px bg-slate-200 w-full mb-2"></div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Staff Count</p>
+                            </div>
+                            <p id="staffCount" class="text-sm font-black text-slate-900">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="px-8 border-t border-slate-200">
+            <div class="flex gap-6">
+                <button onclick="switchTab('clients', event)" class="tab-button active px-4 py-3 text-sm font-bold text-slate-500 border-b-3 border-transparent transition">
+                    <i class="fas fa-users mr-2"></i>Client Management
+                </button>
+                <button onclick="switchTab('commissions', event)" class="tab-button px-4 py-3 text-sm font-bold text-slate-500 border-b-3 border-transparent transition">
+                    <i class="fas fa-dollar-sign mr-2"></i>Commissions
+                </button>
+                <button onclick="switchTab('staff-earnings', event)" class="tab-button px-4 py-3 text-sm font-bold text-slate-500 border-b-3 border-transparent transition">
+                    <i class="fas fa-chart-bar mr-2"></i>Staff Earnings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="h-screen flex flex-col overflow-hidden">
+        
+        <!-- CLIENTS TAB -->
+        <div id="clientsTab" class="tab-content flex-1 flex flex-col lg:flex-row overflow-hidden">
+            
+            <!-- Clients Table Container -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <div class="bg-white border-b border-slate-200">
+                    <div class="p-4 bg-slate-50 flex justify-between items-center">
+                        <h2 class="text-lg font-black text-slate-800">All Client Onboardings</h2>
+                        <input 
+                            type="text" 
+                            id="searchClients" 
+                            onkeyup="filterClients()" 
+                            placeholder="Search by name, phone, email..." 
+                            class="px-4 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                        >
+                    </div>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto bg-white">
+                    <table class="w-full">
+                        <thead class="bg-slate-800 text-slate-200 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Client Details</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Contact</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Location</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Package</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Onboarded By</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsTableBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                                    <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+                                    <p class="text-sm font-semibold">Loading clients...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE PANEL - CLIENT FORM -->
+            <aside id="clientFormContainer" class="hidden w-full lg:w-1/3 bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden">
+                <div class="p-4 bg-slate-800 text-white flex justify-between items-center flex-shrink-0">
+                    <div>
+                        <h2 class="text-lg font-black tracking-tight">Register New Client</h2>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Create a new client account from onboarding information</p>
+                    </div>
+                    <button 
+                        onclick="closeClientForm()" 
+                        class="w-8 h-8 rounded-full hover:bg-slate-700 flex items-center justify-center transition"
+                    >
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6">
+                    <form id="createClientForm" onsubmit="handleCreateClient(event)" class="space-y-6">
+                        
+                        <!-- Personal Details -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-user text-teal-500"></i> Personal Information
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">First Name *</label>
+                                    <input 
+                                        type="text" 
+                                        id="newFirstName"
+                                        required 
+                                        placeholder="John" 
+                                        class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Last Name *</label>
+                                    <input 
+                                        type="text" 
+                                        id="newLastName"
+                                        required 
+                                        placeholder="Doe" 
+                                        class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Details -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-phone text-teal-500"></i> Contact Information
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Email *</label>
+                                    <input 
+                                        type="email" 
+                                        id="newEmail"
+                                        required 
+                                        placeholder="client@example.com" 
+                                        class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Phone Number *</label>
+                                    <input 
+                                        type="tel" 
+                                        id="newPhone"
+                                        required 
+                                        placeholder="0712345678" 
+                                        class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                    >
+                                </div>
+                                <!-- <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">ID Number / Passport</label>
+                                    <input 
+                                        type="text" 
+                                        id="newIdNumber"
+                                        placeholder="12345678" 
+                                        class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                    >
+                                </div> -->
+                            </div>
+                        </div>
+
+                        <!-- Location Details -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-map-marker-alt text-teal-500"></i> Location & Address
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Location *</label>
+                                    <input 
+                                        type="text" 
+                                        id="newLocation"
+                                        required 
+                                        placeholder="Nairobi, Westlands" 
+                                        class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Installation Address *</label>
+                                    <input 
+                                        type="text" 
+                                        id="newAddress"
+                                        required 
+                                        placeholder="ABC Plaza, 3rd Floor" 
+                                        class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-lock text-teal-500"></i> Account Security
+                            </h3>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Password *</label>
+                                <div class="relative">
+                                    <input 
+                                        type="password" 
+                                        id="newPassword"
+                                        required 
+                                        placeholder="Set secure password" 
+                                        class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none pr-12"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        onclick="toggleNewPassVisibility()" 
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        <i class="fas fa-eye" id="newPassIcon"></i>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-2">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Password must be at least 6 characters
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="flex flex-col gap-3 pt-4">
+                            <button 
+                                type="submit" 
+                                id="createClientBtn"
+                                class="w-full bg-slate-900 text-white py-4 rounded-lg font-bold hover:bg-slate-800 transition shadow-lg flex justify-center items-center gap-3"
+                            >
+                                <i class="fas fa-user-check text-lg"></i>
+                                <span>Create Client Account</span>
+                            </button>
+                            <button 
+                                type="button"
+                                onclick="closeClientForm()"
+                                class="mt-4 w-full flex justify-center items-center gap-2 text-sm font-semibold text-slate-500 hover:text-red-600 transition"
+                            >
+                                <i class="fas fa-times text-xs"></i>
+                                <span>Cancel</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- RIGHT SIDE PANEL - COMMISSION FORM -->
+            <aside id="commissionFormContainer" class="hidden w-full lg:w-1/3 bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden">
+                <div class="p-4 bg-emerald-700 text-white flex justify-between items-center flex-shrink-0">
+                    <div>
+                        <h2 class="text-lg font-black tracking-tight">Award Commission</h2>
+                        <p class="text-[10px] text-emerald-200 mt-0.5">Assign commission for client onboarding</p>
+                    </div>
+                    <button 
+                        onclick="closeCommissionForm()" 
+                        class="w-8 h-8 rounded-full hover:bg-emerald-600 flex items-center justify-center transition"
+                    >
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6">
+                    <!-- Client Info Display -->
+                    <div class="bg-white rounded-lg p-5 mb-6 border border-slate-200 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user text-indigo-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-black text-slate-800" id="commClientName">-</p>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    <i class="fas fa-envelope mr-1"></i>
+                                    <span id="commClientEmail">-</span>
+                                </p>
+                                <p class="text-xs text-slate-500 mt-0.5">
+                                    <i class="fas fa-user-tie mr-1"></i>
+                                    Onboarded By: <span class="font-bold" id="commStaffName">-</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="awardCommissionForm" onsubmit="handleAwardCommission(event)" class="space-y-6">
+                        <!-- Hidden client ID -->
+                        <input type="hidden" id="commissionClientId" value="">
+
+                        <!-- Amount Input -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-3 flex items-center gap-2">
+                                <i class="fas fa-coins text-emerald-600"></i> Commission Amount (KES)
+                            </label>
+                            <input 
+                                type="number" 
+                                id="commissionAmount"
+                                required 
+                                min="0"
+                                step="0.01"
+                                placeholder="5000.00" 
+                                class="w-full px-2 py-2 rounded-lg border-2 border-slate-300 text-lg font-black outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                            >
+                            <p class="text-xs text-slate-500 mt-3 bg-slate-100 p-3 rounded-lg">
+                                <i class="fas fa-info-circle mr-1 text-slate-400"></i>
+                                Enter the commission amount to award for this onboarding
+                            </p>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex flex-col gap-3 pt-4">
+                            <button 
+                                type="submit" 
+                                id="awardCommissionBtn"
+                                class="w-full bg-emerald-600 text-white py-4 rounded-lg font-bold hover:bg-emerald-700 transition shadow-lg flex justify-center items-center gap-3"
+                            >
+                                <i class="fas fa-check-circle text-lg"></i>
+                                <span>Award Commission</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                onclick="closeCommissionForm()"
+                                class="w-full flex justify-center items-center gap-2 text-sm font-semibold text-slate-500 hover:text-red-600 transition"
+                            >
+                                <i class="fas fa-times text-xs"></i>
+                                <span>Cancel</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+
+        </div>
+
+        <!-- COMMISSIONS TAB -->
+        <div id="commissionsTab" class="tab-content hidden flex-1 p-8 overflow-y-auto">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-black text-slate-800">Commission Ledger</h2>
+                        <p class="text-xs text-slate-500 mt-1">Track and manage all commission payouts</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <select id="commissionStatusFilter" onchange="filterCommissions()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-slate-500">
+                            <option value="all">All Statuses</option>
+                            <option value="unpaid">Unpaid</option>
+                            <option value="paid">Paid</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-slate-800 text-slate-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Commission ID</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Staff Member</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Client</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Awarded Date</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commissionsTableBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                                    <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+                                    <p class="text-sm font-semibold">Loading commissions...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- STAFF EARNINGS TAB -->
+        <div id="staffEarningsTab" class="tab-content hidden flex-1 p-8 overflow-y-auto">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-lg font-black text-slate-800">Staff Earnings Summary</h2>
+                    <p class="text-xs text-slate-500 mt-1">Overview of earnings per staff member</p>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-slate-800 text-slate-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Staff Member</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Pending Payout</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Total Paid</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Total Earned</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffEarningsTableBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center text-slate-400">
+                                    <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+                                    <p class="text-sm font-semibold">Loading staff earnings...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let allClients = [];
+        let allCommissions = [];
+        let allPackages = [];
+        let staffEarnings = [];
+        let selectedClientRow = null;
+        let selectedClientForCommission = null;
+        let selectedOnboardClientId = null;
+
+        const loadedTabs = {
+            clients: false,
+            commissions: false,
+            staff: false
+        };
+
+        // Initialize
+        window.onload = () => {
+            loadPackages();
+            switchTab('clients', null); 
+        };
+
+        // Tab Switching
+        async function switchTab(tab, evt) {
+            const clickedBtn = evt ? evt.target.closest('.tab-button') : document.querySelector(`[onclick*="switchTab('${tab}',"]`);
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            if(clickedBtn) clickedBtn.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            
+            if (tab === 'clients') {
+                document.getElementById('clientsTab').classList.remove('hidden');
+                if (!loadedTabs.clients) {
+                    await loadClients();
+                    loadedTabs.clients = true;
+                }
+            } 
+            else if (tab === 'commissions') {
+                document.getElementById('commissionsTab').classList.remove('hidden');
+                if (!loadedTabs.commissions) {
+                    await loadCommissions();
+                    loadedTabs.commissions = true;
+                }
+            } 
+            else if (tab === 'staff-earnings') {
+                document.getElementById('staffEarningsTab').classList.remove('hidden');
+                if (!loadedTabs.staff) {
+                    await loadStaffEarnings();
+                    loadedTabs.staff = true;
+                }
+            }
+        }
+
+        // Open Client Form
+        function openClientForm(client) {
+            selectedOnboardClientId = client.id;
+            closeCommissionForm();
+            
+            const formContainer = document.getElementById('clientFormContainer');
+            
+            document.getElementById('newFirstName').value = client.first_name || '';
+            document.getElementById('newLastName').value = client.second_name || '';
+            document.getElementById('newEmail').value = client.email || '';
+            document.getElementById('newPhone').value = client.phone || '';
+            // document.getElementById('newIdNumber').value = client.id_number || '';
+            document.getElementById('newLocation').value = client.location || '';
+            document.getElementById('newAddress').value = client.address || '';
+            document.getElementById('newPassword').value = '';
+            
+            formContainer.classList.remove('hidden');
+            formContainer.classList.add('flex');
+        }
+
+        // Close Client Form
+        function closeClientForm() {
+            const formContainer = document.getElementById('clientFormContainer');
+            formContainer.classList.add('hidden');
+            formContainer.classList.remove('flex');
+            
+            if (selectedClientRow) {
+                selectedClientRow.classList.remove('selected');
+                selectedClientRow = null;
+            }
+            
+            document.getElementById('createClientForm').reset();
+        }
+
+        // Open Commission Form
+        function openCommissionForm(client) {
+            // Close client form if open
+            closeClientForm();
+            
+            selectedClientForCommission = client;
+            
+            document.getElementById('commClientName').textContent = `${client.first_name} ${client.second_name}`;
+            document.getElementById('commClientEmail').textContent = client.email || 'No email';
+            document.getElementById('commStaffName').textContent = `${client.staff_first_name} ${client.staff_second_name}`;
+            document.getElementById('commissionClientId').value = client.id;
+            document.getElementById('commissionAmount').value = '';
+            
+            const formContainer = document.getElementById('commissionFormContainer');
+            formContainer.classList.remove('hidden');
+            formContainer.classList.add('flex');
+        }
+
+        // Close Commission Form
+        function closeCommissionForm() {
+            const formContainer = document.getElementById('commissionFormContainer');
+            formContainer.classList.add('hidden');
+            formContainer.classList.remove('flex');
+            
+            if (selectedClientRow) {
+                selectedClientRow.classList.remove('selected');
+                selectedClientRow = null;
+            }
+            
+            document.getElementById('awardCommissionForm').reset();
+            selectedClientForCommission = null;
+        }
+
+        // Handle Award Commission
+        async function handleAwardCommission(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('awardCommissionBtn');
+            const originalContent = btn.innerHTML;
+            
+            const onboard_id = document.getElementById('commissionClientId').value;
+            const amount = document.getElementById('commissionAmount').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Please enter a valid commission amount', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> <span>Awarding...</span>`;
+            
+            try {
+                const res = await fetch('/api/onboard/commissions/award', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ onboard_id, amount })
+                });
+                
+                const result = await res.json();
+                
+                if (res.ok) {
+                    showToast(`Commission of KES ${parseFloat(amount).toLocaleString()} awarded successfully!`, 'success');
+                    closeCommissionForm();
+                    
+                    if (loadedTabs.commissions) {
+                        loadCommissions();
+                    }
+                    if (loadedTabs.staff) {
+                        loadStaffEarnings();
+                    }
+                } else {
+                    showToast(result.message || 'Failed to award commission', 'error');
+                }
+            } catch (err) {
+                console.error('Award commission error:', err);
+                showToast('Error awarding commission. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        // Load Packages
+        async function loadPackages() {
+            try {
+                const res = await fetch('/api/packages');
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                allPackages = await res.json();
+            } catch (error) {
+                console.error('Error loading packages:', error);
+                showToast('Failed to load packages', 'error');
+            }
+        }
+
+        // Load Clients
+        async function loadClients() {
+            try {
+                const res = await fetch('/api/onboard/clients');
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                allClients = await res.json();
+                renderClients(allClients);
+                updateClientStats();
+            } catch (error) {
+                console.error('Error loading clients:', error);
+                showToast('Failed to load clients', 'error');
+            }
+        }
+
+        function updateClientStats() {
+            const total = allClients.length;
+            const now = new Date();
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const thisMonthClients = allClients.filter(c => new Date(c.created_at) >= firstDayOfMonth).length;
+            
+            const lastMonthTotal = total - thisMonthClients;
+            const growthPercentage = lastMonthTotal > 0 
+                ? ((thisMonthClients / lastMonthTotal) * 100).toFixed(1)
+                : (thisMonthClients > 0 ? 100 : 0);
+
+            document.getElementById('totalClients').innerText = total;
+            document.getElementById('monthlyClients').innerText = `${growthPercentage}%`;
+        }
+
+        function updateCommissionStats() {
+            const totalComm = allCommissions.reduce((sum, comm) => sum + parseFloat(comm.amount || 0), 0);
+            const paidComm = allCommissions.filter(c => c.status === 'paid').reduce((sum, comm) => sum + parseFloat(comm.amount || 0), 0);
+            const unpaidComm = totalComm - paidComm;
+
+            document.getElementById('totalCommissions').innerText = `KES ${totalComm.toLocaleString()}`;
+            document.getElementById('pendingCommissions').innerText = `KES ${unpaidComm.toLocaleString()}`;
+            document.getElementById('paidCommissions').innerText = `KES ${paidComm.toLocaleString()}`;
+            document.getElementById('unpaidCommissions').innerText = `KES ${unpaidComm.toLocaleString()}`;
+        }
+
+        // Render Clients Table
+        function renderClients(clients) {
+            const tbody = document.getElementById('clientsTableBody');
+            
+            if (clients.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                            <i class="fas fa-users text-3xl mb-2"></i>
+                            <p class="text-sm font-semibold">No clients found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = clients.map(client => {
+                const packageObj = allPackages.find(p => p.id === client.package_id);
+                const packageName = packageObj ? packageObj.name : 'Unknown Package';
+                const statusConfig = getStatusConfig(client.status);
+                
+                return `
+                    <tr class="client-row hover:bg-slate-50 transition" data-client-id="${client.id}">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-700">
+                                    ${getInitials(client.first_name, client.second_name)}
+                                </div>
+                                <div>
+                                    <div class="font-bold text-slate-800">${client.first_name} ${client.second_name}</div>
+                                    <div class="text-xs text-slate-500">${client.email || 'No email'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2 text-sm text-slate-600">
+                                <i class="fas fa-phone text-xs text-slate-400"></i>
+                                ${client.phone}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-slate-600 max-w-xs truncate" title="${client.location}">
+                                <i class="fas fa-map-marker-alt text-xs text-slate-400 mr-1"></i>
+                                ${client.location}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2 text-sm text-slate-600">
+                                <i class="fas fa-wifi text-xs text-slate-400"></i>
+                                ${packageName}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded text-xs font-bold">
+                                <i class="fas fa-user-tie mr-1"></i> ${client.staff_first_name} ${client.staff_second_name}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <select 
+                                onchange="updateClientStatus(${client.id}, this.value)" 
+                                onclick="event.stopPropagation()"
+                                class="px-3 py-1.5 rounded-lg text-xs font-bold border outline-none cursor-pointer ${statusConfig.css}"
+                            >
+                                <option value="pending" ${client.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="active" ${client.status === 'active' ? 'selected' : ''}>Active</option>
+                                <option value="rejected" ${client.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                <option value="inactive" ${client.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-medium text-slate-500">${formatDate(client.created_at)}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex gap-2">
+                                <button onclick="event.stopPropagation(); openClientForm(${JSON.stringify(client).replace(/"/g, '&quot;')})" 
+                                    class="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg text-xs font-bold hover:bg-teal-200 transition" 
+                                    title="Create User Account">
+                                    <i class="fas fa-user-plus mr-1"></i>Create User
+                                </button>
+                                <button onclick="event.stopPropagation(); openCommissionForm(${JSON.stringify(client).replace(/"/g, '&quot;')})" 
+                                    class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition" 
+                                    title="Award Commission">
+                                    <i class="fas fa-coins mr-1"></i>Commission
+                                </button>
+                                <button onclick="event.stopPropagation(); deleteClient(${client.id})" 
+                                    class="text-slate-400 hover:text-rose-600 transition" 
+                                    title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Add click handlers to rows
+            document.querySelectorAll('.client-row').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    if (e.target.closest('button') || e.target.closest('select')) {
+                        return;
+                    }
+                    
+                    const clientId = this.getAttribute('data-client-id');
+                    const client = allClients.find(c => c.id == clientId);
+                    
+                    if (client) {
+                        if (selectedClientRow) {
+                            selectedClientRow.classList.remove('selected');
+                        }
+                        
+                        selectedClientRow = this;
+                        this.classList.add('selected');
+                        openClientForm(client);
+                    }
+                });
+            });
+        }
+
+        // Filter Clients
+        function filterClients() {
+            const query = document.getElementById('searchClients').value.toLowerCase();
+            const filtered = allClients.filter(client => 
+                client.first_name.toLowerCase().includes(query) ||
+                client.second_name.toLowerCase().includes(query) ||
+                (client.email && client.email.toLowerCase().includes(query)) ||
+                client.phone.includes(query)
+            );
+            renderClients(filtered);
+        }
+
+        // Update Client Status
+        async function updateClientStatus(id, newStatus) {
+            try {
+                const res = await fetch(`/api/onboard/client/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                if (res.ok) {
+                    showToast(`Status updated to ${newStatus}`, 'success');
+                    loadClients();
+                    if (loadedTabs.commissions) {
+                        loadCommissions();
+                    }
+                } else {
+                    throw new Error('Failed to update status');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showToast('Failed to update status', 'error');
+            }
+        }
+
+        // Create New Client
+        async function handleCreateClient(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('createClientBtn');
+            const originalContent = btn.innerHTML;
+            
+            const formData = {
+                onboard_id: selectedOnboardClientId,
+                first_name: document.getElementById('newFirstName').value.trim(),
+                second_name: document.getElementById('newLastName').value.trim(),
+                email: document.getElementById('newEmail').value.trim(),
+                phone: document.getElementById('newPhone').value.trim(),
+                // id_number: document.getElementById('newIdNumber').value.trim(),
+                location: document.getElementById('newLocation').value.trim(),
+                address: document.getElementById('newAddress').value.trim(),
+                password: document.getElementById('newPassword').value
+            };
+
+            if (formData.password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> <span>Creating Account...</span>`;
+
+            try {
+                const res = await fetch('/api/manage/clients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    showToast(`Client ${formData.first_name} ${formData.second_name} created successfully!`, 'success');
+
+                    if (result.id) {
+                        await updateClientStatus(result.id, 'active');
+                    }
+
+                    closeClientForm();
+                    loadClients();
+                } else {
+                    showToast(result.message || result.error || 'Failed to create client', 'error');
+                }
+
+            } catch (err) {
+                console.error('Create client error:', err);
+                showToast('Error creating client. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        // Toggle New Password Visibility
+        function toggleNewPassVisibility() {
+            const pass = document.getElementById('newPassword');
+            const icon = document.getElementById('newPassIcon');
+            pass.type = pass.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
+
+        // Delete Client
+        async function deleteClient(id) {
+            if (!confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/onboard/client/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (res.ok) {
+                    showToast('Client deleted successfully', 'success');
+                    loadClients();
+                } else {
+                    throw new Error('Failed to delete client');
+                }
+            } catch (error) {
+                console.error('Error deleting client:', error);
+                showToast('Failed to delete client', 'error');
+            }
+        }
+
+        // Load Commissions
+        async function loadCommissions() {
+            try {
+                const res = await fetch('/api/onboard/commissions');
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                allCommissions = await res.json();
+                renderCommissions(allCommissions);
+                updateCommissionStats();
+            } catch (error) {
+                console.error('Error loading commissions:', error);
+                showToast('Failed to load commissions. Please check server logs.', 'error');
+                const tbody = document.getElementById('commissionsTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-red-400">
+                            <i class="fas fa-exclamation-triangle text-3xl mb-2"></i>
+                            <p class="text-sm font-semibold">Error loading commissions</p>
+                            <p class="text-xs mt-2">Please check the server connection</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Render Commissions
+        function renderCommissions(commissions) {
+            const tbody = document.getElementById('commissionsTableBody');
+            
+            if (commissions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            <i class="fas fa-coins text-3xl mb-2"></i>
+                            <p class="text-sm font-semibold">No commissions found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = commissions.map(comm => {
+                const statusClass = comm.status === 'paid' 
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                    : 'bg-amber-100 text-amber-700 border-amber-200';
+                
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4">
+                            <span class="font-mono text-sm font-bold text-slate-700">#${comm.id}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700">
+                                    ${getInitials(comm.staff_fname, comm.staff_sname)}
+                                </div>
+                                <span class="text-sm font-semibold text-slate-800">${comm.staff_fname} ${comm.staff_sname}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-slate-600">${comm.client_fname} ${comm.client_sname}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-bold text-emerald-600">KES ${parseFloat(comm.amount).toLocaleString()}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <select 
+                                onchange="updateCommissionStatus(${comm.id}, this.value)"
+                                class="px-3 py-1.5 rounded-lg text-xs font-bold border outline-none cursor-pointer ${statusClass}"
+                            >
+                                <option value="unpaid" ${comm.status === 'unpaid' ? 'selected' : ''}>Unpaid</option>
+                                <option value="paid" ${comm.status === 'paid' ? 'selected' : ''}>Paid</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-medium text-slate-500">${formatDate(comm.awarded_at)}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            ${comm.status === 'unpaid' ? `
+                                <button onclick="markAsPaid(${comm.id})" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition">
+                                    <i class="fas fa-check mr-1"></i>Mark Paid
+                                </button>
+                            ` : `
+                                <span class="text-xs text-slate-400"><i class="fas fa-check-circle mr-1"></i>Paid</span>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filter Commissions
+        function filterCommissions() {
+            const statusFilter = document.getElementById('commissionStatusFilter').value;
+            
+            let filtered = allCommissions;
+            if (statusFilter !== 'all') {
+                filtered = allCommissions.filter(comm => comm.status === statusFilter);
+            }
+            
+            renderCommissions(filtered);
+        }
+
+        // Update Commission Status
+        async function updateCommissionStatus(id, newStatus) {
+            try {
+                const res = await fetch(`/api/onboard/commissions/${id}/pay`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                if (res.ok) {
+                    showToast(`Commission marked as ${newStatus}`, 'success');
+                    loadCommissions();
+                    if (loadedTabs.staff) {
+                        loadStaffEarnings();
+                    }
+                } else {
+                    throw new Error('Failed to update commission');
+                }
+            } catch (error) {
+                console.error('Error updating commission:', error);
+                showToast('Failed to update commission', 'error');
+            }
+        }
+
+        // Mark Commission as Paid
+        async function markAsPaid(id) {
+            await updateCommissionStatus(id, 'paid');
+        }
+
+        // Load Staff Earnings
+        async function loadStaffEarnings() {
+            try {
+                const res = await fetch('/api/onboard/commissions/summary');
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                
+                const text = await res.text();
+                if (!text || text.trim() === '') {
+                    console.warn('Empty response from server');
+                    staffEarnings = [];
+                    renderStaffEarnings([]);
+                    
+                    const staffEl = document.getElementById('staffCount');
+                    if(staffEl) staffEl.innerText = '0';
+                    return;
+                }
+                
+                staffEarnings = JSON.parse(text);
+                renderStaffEarnings(staffEarnings);
+                
+                const staffEl = document.getElementById('staffCount');
+                if(staffEl) staffEl.innerText = staffEarnings.length;
+            } catch (error) {
+                console.error('Error loading staff earnings:', error);
+                showToast('Failed to load summary', 'error');
+                
+                const tbody = document.getElementById('staffEarningsTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-red-400">
+                            <i class="fas fa-exclamation-triangle text-3xl mb-2"></i>
+                            <p class="text-sm font-semibold">Error loading staff earnings</p>
+                            <p class="text-xs mt-2">${error.message}</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Render Staff Earnings
+        function renderStaffEarnings(earnings) {
+            const tbody = document.getElementById('staffEarningsTableBody');
+            
+            if (earnings.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-slate-400">
+                            <i class="fas fa-chart-bar text-3xl mb-2"></i>
+                            <p class="text-sm font-semibold">No earnings data available</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = earnings.map(staff => {
+                const totalEarned = parseFloat(staff.pending_payout || 0) + parseFloat(staff.total_paid || 0);
+                
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700">
+                                    ${getInitials(staff.first_name, staff.second_name)}
+                                </div>
+                                <span class="text-sm font-bold text-slate-800">${staff.first_name} ${staff.second_name}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-bold text-amber-600">KES ${parseFloat(staff.pending_payout || 0).toLocaleString()}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-bold text-emerald-600">KES ${parseFloat(staff.total_paid || 0).toLocaleString()}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-bold text-purple-600">KES ${totalEarned.toLocaleString()}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Utility Functions
+        function getInitials(firstName, lastName) {
+            const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+            const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+            return first + last || '?';
+        }
+
+        function getStatusConfig(status) {
+            switch (status) {
+                case 'active':
+                    return { css: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+                case 'rejected':
+                    return { css: 'bg-rose-50 text-rose-700 border-rose-200' };
+                case 'inactive':
+                    return { css: 'bg-slate-50 text-slate-600 border-slate-200' };
+                default:
+                    return { css: 'bg-amber-50 text-amber-700 border-amber-200' };
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-emerald-600';
+            const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+            const title = type === 'error' ? 'Error' : 'Success';
+            
+            toast.className = `${bgColor} text-white p-4 rounded-xl shadow-2xl min-w-[280px] animate-fade-in`;
+            toast.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <i class="fas ${icon} text-lg mt-0.5"></i>
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-wider block">${title}</span>
+                        <span class="text-sm font-semibold">${msg}</span>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+    </script>

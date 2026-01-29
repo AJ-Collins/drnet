@@ -29,6 +29,9 @@ const taskAssignments = require("./src/routes/assignments");
 // Care dahsboard
 const careDashboard = require("./src/routes/careDashboard");
 
+// Onboard clients
+const onboardClients = require("./src/routes/clientOnboard");
+
 
 const attendance = require("./src/routes/attendance");
 const packages = require("./src/routes/packages");
@@ -303,6 +306,9 @@ app.use("/api", staffAssignments);
 // Care dashboard
 app.use('/api/care', careDashboard);
 
+// Onboard clients
+app.use("/api/onboard", onboardClients);
+
 //Hr
 app.use("/api/hr", hrexpenses);
 app.use("/api/hr", hrtasks);
@@ -366,7 +372,8 @@ const adminPages = [
   "notifications",
   "reminders",
   "operational-inbox",
-  "sales"
+  "sales",
+  "onboard-commission"
 ];
 
 app.get("/admin/:page", requireAdminAuth, (req, res) => {

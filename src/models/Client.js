@@ -29,9 +29,10 @@ const Client = {
         const SALT_ROUNDS = 12;
         const plainPassword = data.password.toString(); 
         const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+        const { onboard_id, password, ...userFields } = data;
 
         const dataToSave = { 
-            ...data, 
+            ...userFields, 
             password: hashedPassword,
             is_active: true
         };
@@ -44,13 +45,22 @@ const Client = {
             Object.values(dataToSave)
         );
 
+        if (onboard_id) {
+            await db.query(
+                `UPDATE client_onboard
+                SET status = 'active', updated_at = NOW()
+                WHERE id = ?`,
+            [onboard_id]
+        );
+}
+
         return result;
     },
 
     findAll: async () => {
         const [rows] = await db.query(`
             SELECT id, first_name, second_name, email, phone, id_number, 
-                   address, image, is_active, created_at 
+                   address, location, image, is_active, created_at 
             FROM users ORDER BY created_at DESC
         `);
         return rows;
@@ -59,7 +69,7 @@ const Client = {
     findById: async (id) => {
         const [rows] = await db.query(`
             SELECT id, first_name, second_name, email, phone, id_number, 
-                   address, image, is_active, created_at 
+                   address, location, image, is_active, created_at 
             FROM users WHERE id = ?
         `, [id]);
         return rows[0];

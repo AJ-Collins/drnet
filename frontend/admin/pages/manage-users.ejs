@@ -1,37 +1,76 @@
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: #f8fafc; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
+        }
 
-    .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border: 1px solid #e2e8f0; }
-    .input-field { background: #f1f5f9; border: 1px solid #d5dce6; transition: all 0.2s; }
-    .input-field:focus { background: white; border-color: #0d9488; box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1); }
+        .input-field { 
+            background: #f1f5f9; 
+            border: 1px solid #cbd5e1; 
+            transition: all 0.2s; 
+        }
         
-    .tab-active { background: white; color: #0d9488; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .tab-inactive { color: #64748b; }
+        .input-field:focus { 
+            background: white; 
+            border-color: #0d9488; 
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1); 
+        }
         
-    #editorContainer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .editor-hidden { transform: translateX(100%); display: none; }
-    .editor-visible { transform: translateX(0); display: block; }
+        .tab-active { 
+            background: white; 
+            color: #0d9488; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+        }
         
-    .table-row:hover { background-color: #f8fafc; }
-    .password-mask { -webkit-text-security: disc; }
+        .tab-inactive { 
+            color: #64748b; 
+        }
+        
+        .table-row:hover { 
+            background-color: #f8fafc; 
+        }
 
-    .security-well { background: #fef2f2; border: 1px dashed #fecaca; }
-    .security-well-active { background: #f0fdf4; border: 1px dashed #bbf7d0; }
-    .label-caps { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+        .label-caps { 
+            font-size: 10px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: #64748b; 
+        }
 
-    .fa-spin {
-        animation: fa-spin 0.8s infinite linear;
-    }
+        .fa-spin {
+            animation: fa-spin 0.8s infinite linear;
+        }
 
-    @keyframes fa-spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(359deg); }
-    }
-</style>
-<div class="max-w-full mx-auto">
+        @keyframes fa-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(359deg); }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .security-well { 
+            background: #fef2f2; 
+            border: 1px solid #fecaca; 
+        }
+        
+        .security-well-active { 
+            background: #f0fdf4; 
+            border: 1px solid #bbf7d0; 
+        }
+    </style>
+<div class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Toast Container -->
     <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tight">User Management</h1>
@@ -39,485 +78,704 @@
         </div>
         
         <div class="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1 border border-slate-200">
-            <button onclick="switchContext('clients')" id="tab-clients" class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all tab-active">
-                <i class="fas fa-users mr-2"></i> Clients
+            <button onclick="switchContext('clients')" id="tab-clients" class="px-4 md:px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all tab-active">
+                <i class="fas fa-users mr-2"></i> <span class="hidden md:inline">Clients</span>
             </button>
-            <button onclick="switchContext('staff')" id="tab-staff" class="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all tab-inactive">
-                <i class="fas fa-user-tie mr-2"></i> Staff
+            <button onclick="switchContext('staff')" id="tab-staff" class="px-4 md:px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all tab-inactive">
+                <i class="fas fa-user-tie mr-2"></i> <span class="hidden md:inline">Staff</span>
             </button>
         </div>
     </div>
 
-    <div class="grid grid-cols-12 gap-8">
-        <div id="listContainer" class="col-span-12 transition-all duration-500">
-            <div class="glass-panel rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 bg-white">
-                <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between gap-4">
-                    <div class="relative flex-grow max-w-md">
-                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" onkeyup="filterData(this.value)" placeholder="Search directory..." class="w-full pl-11 pr-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+    <!-- Main Content -->
+    <div class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+        
+        <!-- Main List Container -->
+        <div id="listContainer" class="flex-1 bg-white flex flex-col">
+            <div class="p-4 border-b border-slate-200 bg-slate-50">
+                <div class="flex flex-col md:flex-row justify-between gap-4">
+                    <div class="flex gap-3 flex-grow max-w-2xl">
+                        <div class="relative flex-grow">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input 
+                                type="text" 
+                                onkeyup="filterData(this.value)" 
+                                placeholder="Search directory..." 
+                                class="w-full pl-11 pr-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                            >
+                        </div>
+                        <div id="location-filter-container" class="hidden">
+                            <select 
+                                id="location-filter" 
+                                onchange="filterByLocation(this.value)"
+                                class="px-4 py-3 rounded-lg input-field text-sm font-bold outline-none min-w-[200px]"
+                            >
+                                <option value="">All Locations</option>
+                            </select>
+                        </div>
                     </div>
-                    <button onclick="showEditor('add')" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-teal-600 transition-all shadow-lg">
-                        <i class="fas fa-plus mr-2"></i> New <span id="add-label">Client</span>
+                    <button 
+                        onclick="showEditor('add')" 
+                        class="bg-slate-900 text-white px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-teal-600 transition-all shadow-lg flex items-center justify-center gap-2"
+                    >
+                        <i class="fas fa-plus"></i> 
+                        <span>New <span id="add-label">Client</span></span>
                     </button>
                 </div>
+            </div>
 
-                <div class="overflow-x-auto overflow-y-auto min-h-[720px]">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="bg-slate-50/50">
-                                <th class="px-6 py-4 label-caps">Identity</th>
-                                <th class="px-6 py-4 label-caps" id="col-extra-label">ID / Address</th>
-                                <th class="px-6 py-4 label-caps">Contact Details</th>
-                                <th class="px-6 py-4 label-caps text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="directoryTable" class="divide-y divide-slate-50"></tbody>
-                    </table>
-                </div>
+            <div class="flex-1 overflow-y-auto">
+                <table class="w-full text-left">
+                    <thead class="sticky top-0 bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 label-caps">Identity</th>
+                            <th class="px-6 py-4 label-caps" id="col-location">Location</th>
+                            <th class="px-6 py-4 label-caps" id="col-extra-label">ID / Address</th>
+                            <th class="px-6 py-4 label-caps">Contact Details</th>
+                            <th class="px-6 py-4 label-caps text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="directoryTable" class="divide-y divide-slate-50"></tbody>
+                </table>
             </div>
         </div>
 
-        <div id="editorContainer" class="col-span-12 lg:col-span-4 hidden">
-            <div class="glass-panel rounded-3xl p-6 sticky top-8 shadow-2xl border-teal-100 shadow-teal-900/10 bg-white">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-xl font-black text-slate-900" id="editor-title">Profile Editor</h2>
-                    </div>                    
+        <!-- Editor Sidebar -->
+        <aside id="editorContainer" class="hidden w-full lg:w-2/5 bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden lg:sticky lg:top-0 lg:h-screen">
+            <div class="p-4 bg-slate-800 text-white flex justify-between items-center flex-shrink-0">
+                <div>
+                    <h2 class="text-lg font-black tracking-tight" id="editor-title">Profile Editor</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Manage account details</p>
                 </div>
+                <button 
+                    onclick="hideEditor()" 
+                    class="w-8 h-8 rounded-full hover:bg-slate-700 flex items-center justify-center transition"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
 
+            <div class="flex-1 overflow-y-auto p-6">
                 <form id="directoryForm" class="space-y-5">
                     <input type="hidden" id="entry-id">
                     
+                    <!-- Personal Details -->
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="label-caps block mb-1 ml-1">First Name</label>
-                                <input type="text" id="first_name" name="first_name" required class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                                <input 
+                                    type="text" 
+                                    id="first_name" 
+                                    name="first_name" 
+                                    required 
+                                    class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                >
                             </div>
                             <div>
                                 <label class="label-caps block mb-1 ml-1">Last Name</label>
-                                <input type="text" id="second_name" name="second_name" required class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                                <input 
+                                    type="text" 
+                                    id="second_name" 
+                                    name="second_name" 
+                                    required 
+                                    class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                >
                             </div>
                         </div>
 
                         <div>
                             <label class="label-caps block mb-1 ml-1">Email</label>
-                            <input type="email" id="email" name="email" required class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                required 
+                                class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                            >
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="label-caps block mb-1 ml-1">ID / Passport</label>
-                                <input type="text" id="id_number" name="id_number" class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                                <input 
+                                    type="text" 
+                                    id="id_number" 
+                                    name="id_number" 
+                                    class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                >
                             </div>
                             <div>
                                 <label class="label-caps block mb-1 ml-1">Phone</label>
-                                <input type="text" id="phone" name="phone" required class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                                <input 
+                                    type="text" 
+                                    id="phone" 
+                                    name="phone" 
+                                    required 
+                                    class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                >
                             </div>
-                        </div>  
+                        </div>
                     </div>
 
-                    <div id="staff-fields" class="hidden space-y-4 pt-4 border-t border-slate-100">
+                    <!-- Staff-Only Fields -->
+                    <div id="staff-fields" class="hidden space-y-4 pt-4 border-t border-slate-200">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="label-caps text-teal-600 block mb-1 ml-1">Position</label>
-                                <input type="text" id="position" name="position" class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                                <input 
+                                    type="text" 
+                                    id="position" 
+                                    name="position" 
+                                    class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                >
                             </div>
                             <div>
                                 <label class="label-caps text-teal-600 block mb-1 ml-1">Role</label>
-                                <select id="role_id" name="role_id" class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
-                                    </select>
+                                <select 
+                                    id="role_id" 
+                                    name="role_id" 
+                                    class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                >
+                                </select>
                             </div>
                         </div>
 
                         <div>
                             <label class="label-caps text-teal-600 block mb-1 ml-1">Basic Salary (KES)</label>
-                            <input type="number" id="basic_salary" name="basic_salary" step="0.01" min="0" 
+                            <input 
+                                type="number" 
+                                id="basic_salary" 
+                                name="basic_salary" 
+                                step="0.01" 
+                                min="0" 
                                 placeholder="e.g., 50000.00" 
-                                class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none">
+                                class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                            >
                         </div>
                     </div>
 
-                    <div id="client-fields" class="space-y-4 pt-4 border-t border-slate-100">                        
-                        <div>
-                            <label class="label-caps block mb-1 ml-1">Installation Address</label>
-                            <textarea id="address" name="address" rows="2" class="w-full px-4 py-3 rounded-xl input-field text-sm font-bold outline-none"></textarea>
+                    <!-- Client-Only Fields -->
+                    <div id="client-fields" class="space-y-4 pt-4 border-t border-slate-200">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label-caps block mb-1 ml-1">Installation Address</label>
+                                <input 
+                                    type="text" 
+                                    id="address" 
+                                    name="address" 
+                                    class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                >
+                            </div>
+                            <div>
+                                <label class="label-caps block mb-1 ml-1">Location</label>
+                                <input 
+                                    type="text" 
+                                    id="location" 
+                                    name="location" 
+                                    class="w-full px-4 py-3 rounded-lg input-field text-sm font-bold outline-none"
+                                >
+                            </div>
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-100">
+                    <!-- Password Section -->
+                    <div class="pt-4 border-t border-slate-200">
                         <div class="flex items-center justify-between mb-2">
                             <label class="label-caps text-indigo-600">Access Security</label>
                             <div id="edit-pass-toggle" class="hidden">
                                 <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" onchange="togglePasswordUpdate(this.checked)" class="w-4 h-4 accent-indigo-600">
+                                    <input 
+                                        type="checkbox" 
+                                        onchange="togglePasswordUpdate(this.checked)" 
+                                        class="w-4 h-4 accent-indigo-600"
+                                    >
                                     <span class="text-[9px] font-black uppercase text-indigo-400">Update Password</span>
                                 </label>
                             </div>
                         </div>
                         
-                        <div id="password-well" class="p-4 rounded-2xl security-well transition-all">
+                        <div id="password-well" class="p-4 rounded-lg security-well transition-all">
                             <div class="relative">
-                                <input type="password" id="password" name="password" placeholder="Set new password" 
-                                       class="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-bold outline-none pr-12">
-                                <button type="button" onclick="togglePassVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    placeholder="Set new password" 
+                                    class="w-full px-4 py-3 rounded-lg bg-white border border-slate-200 text-sm font-bold outline-none pr-12"
+                                >
+                                <button 
+                                    type="button" 
+                                    onclick="togglePassVisibility()" 
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
+                                >
                                     <i class="fas fa-eye" id="pass-icon"></i>
                                 </button>
                             </div>
-                            <p id="pass-msg" class="text-[9px] text-rose-400 mt-2 font-bold italic">Required for new registrations</p>
+                            <p id="pass-msg" class="text-[9px] text-rose-400 mt-2 font-bold italic">
+                                Required for new registrations
+                            </p>
                         </div>
                     </div>
 
+                    <!-- Submit Button -->
                     <div class="pt-2">
-                        <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-teal-600 transition-all active:scale-95">
+                        <button 
+                            type="submit" 
+                            class="w-full bg-slate-900 text-white py-4 rounded-lg font-black text-xs uppercase tracking-widest shadow-lg hover:bg-teal-600 transition-all active:scale-95"
+                        >
                             Save Account Details
                         </button>
                         
-                        <button type="button" onclick="hideEditor()" class="w-full mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors py-2">
+                        <button 
+                            type="button" 
+                            onclick="hideEditor()" 
+                            class="w-full mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors py-2"
+                        >
                             Cancel Entry
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
+        </aside>
     </div>
 </div>
+    <script>
+        let currentContext = 'clients';
+        let allData = [];
+        let filteredData = [];
+        let roles = [];
 
-<script>
-    let currentContext = 'clients';
-    let allData = [];
-    let filteredData = [];
-    let roles = [];
+        // INITIALIZE
+        window.onload = () => {
+            fetchData();
+        };
 
-    async function fetchData() {
-        setLoadingState(true);
-        if (roles.length === 0) await fetchRoles();
-        const url = currentContext === 'clients' ? '/api/manage/clients' : '/api/manage/staff';
-        try {
-            const res = await fetch(url);
-            await new Promise(resolve => setTimeout(resolve, 400));
-            allData = await res.json();
-            filteredData = allData;
-            renderTable();
-        } catch (e) {
-            showToast("ERROR", 'Could not load ' + currentContext);
-        }
-    }
-
-    async function fetchRoles() {
-        try {
-            const res = await fetch('/api/manage/staff/roles');
-            roles = await res.json();
-            const roleSelect = document.getElementById('role_id');
+        async function fetchData() {
+            setLoadingState(true);
+            if (roles.length === 0) await fetchRoles();
             
-            roleSelect.innerHTML = `
-                <option value="" disabled selected>Select System Role</option>
-                ${roles.map(role => `<option value="${role.id}">${role.name}</option>`).join('')}
-            `;
-        } catch (e) {
-            console.error("Failed to load roles:", e);
-        }
-    }
-
-    function switchContext(ctx) {
-        if(currentContext === ctx) return;
-        currentContext = ctx;
-        document.querySelectorAll('[id^="tab-"]').forEach(el => {
-            el.classList.remove('tab-active');
-            el.classList.add('tab-inactive');
-        });
-        document.getElementById(`tab-${ctx}`).classList.add('tab-active');
-        document.getElementById('add-label').innerText = ctx === 'clients' ? 'Client' : 'Staff';
-        document.getElementById('col-extra-label').innerText = ctx === 'clients' ? 'ID / Address' : 'Employee ID / Dept';
-        
-        document.getElementById('staff-fields').classList.toggle('hidden', ctx === 'clients');
-        document.getElementById('client-fields').classList.toggle('hidden', ctx === 'staff');
-        
-        hideEditor();
-        fetchData();
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('directoryTable');
-        
-        if (!filteredData || !Array.isArray(filteredData) || filteredData.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="px-6 py-20 text-center">
-                        <i class="fas fa-folder-open text-slate-200 text-5xl mb-4 block"></i>
-                        <p class="text-slate-400 font-bold tracking-tight">No record found</p>
-                    </td>
-                </tr>`;
-            return;
-        }
-
-        tbody.innerHTML = filteredData.map(item => {
-            const fName = item.first_name ?? 'User';
-            const sName = item.second_name ?? '';
-            const initials = (fName[0] || '?') + (sName[0] || '');
-            const position = item.position ?? (currentContext === 'staff' ? 'Employee' : 'Customer');
-            // Safe check for ID/Address columns
-            const idVal = currentContext === 'clients' 
-                ? (item.id_number ?? 'No ID') 
-                : (item.employee_id ?? '---');
-                
-            const subVal = currentContext === 'clients' 
-                ? (item.address ?? 'No Address Provided') 
-                : (item.department ?? 'General');
-
-            const salaryDisplay = currentContext === 'staff' && item.basic_salary 
-                ? `<div class="text-[10px] text-emerald-600 font-black mt-1">
-                    <i class="fas fa-money-bill-wave mr-1"></i>KES ${parseFloat(item.basic_salary).toLocaleString('en-KE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                </div>`
-                : '';
-
-            return `
-                <tr class="table-row group">
-                    <td class="px-6 py-4 text-nowrap">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 font-bold border border-slate-200 overflow-hidden shrink-0">
-                                ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : initials}
-                            </div>
-                            <div>
-                                <div class="text-sm font-black text-slate-800 uppercase">${fName} ${sName}</div>
-                                <div class="text-[10px] font-bold text-teal-600 uppercase tracking-tighter">${position}</div>
-                                ${salaryDisplay}
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="text-xs font-bold text-slate-600">${idVal}</div>
-                        <div class="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">${subVal}</div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="text-xs font-bold text-slate-600">
-                            <i class="fas fa-envelope mr-1.5 opacity-40"></i>${item.email ?? '---'}
-                        </div>
-                        <div class="text-xs font-bold text-slate-600">
-                            <i class="fas fa-phone mr-1.5 opacity-40"></i>${item.phone ?? '---'}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <div class="flex justify-end gap-2">
-                            <button onclick="showEditor('edit', ${item.id})" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center shadow-sm">
-                                <i class="fas fa-edit text-xs"></i>
-                            </button>
-                            <button onclick="deleteEntry(${item.id})" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shadow-sm">
-                                <i class="fas fa-trash text-xs"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    function showEditor(mode, id = null) {
-        document.getElementById('listContainer').classList.replace('col-span-12', 'lg:col-span-8');
-        document.getElementById('editorContainer').classList.remove('hidden');
-        document.getElementById('directoryForm').reset();
-        
-        const idInput = document.getElementById('entry-id');
-        const passInput = document.getElementById('password');
-        const passToggle = document.getElementById('edit-pass-toggle');
-        const passCheckbox = passToggle.querySelector('input[type="checkbox"]');
-        const msg = document.getElementById('pass-msg');
-
-        idInput.value = id || '';
-        
-        if(passCheckbox) passCheckbox.checked = false;
-        togglePasswordUpdate(false);
-
-        if(id) {
-            const data = allData.find(x => x.id === id);
+            const url = currentContext === 'clients' ? '/api/manage/clients' : '/api/manage/staff';
             
-            Object.keys(data).forEach(key => {
-                const el = document.getElementsByName(key)[0];
-                if(el) {
-                    el.value = data[key];
-                }
-            });
-
-            if (currentContext === 'staff') {
-                const idInput = document.getElementById('id_number');
-                idInput.value = data.employee_id?.trim() || '';
-            }
-
-            if(currentContext === 'staff') {                
-                const roleSelect = document.getElementById('role_id');
-                setTimeout(() => {
-                    if(data.role_id) {
-                        roleSelect.value = data.role_id;
-                    } else if (data.role_name) {
-                        const option = Array.from(roleSelect.options).find(opt => opt.text === data.role_name);
-                        if(option) roleSelect.value = option.value;
-                    }
-                }, 10); 
-            }
-            
-            passToggle.classList.remove('hidden');
-            passInput.disabled = true;
-            passInput.placeholder = "••••••••••••";
-            msg.innerText = "Password encryption active";
-            msg.className = "text-[9px] text-slate-400 mt-2 font-bold italic";
-        } else {
-            passToggle.classList.add('hidden');
-            passInput.disabled = false;
-            passInput.placeholder = "Set initial password";
-            msg.innerText = "Required for new registrations";
-            msg.className = "text-[9px] text-rose-400 mt-2 font-bold italic";
-        }
-    }
-
-    function hideEditor() {
-        document.getElementById('listContainer').classList.replace('lg:col-span-8', 'col-span-12');
-        document.getElementById('editorContainer').classList.add('hidden');
-    }
-
-    document.getElementById('directoryForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
-        const originalText = btn.innerHTML;
-        const id = document.getElementById('entry-id').value;
-        const formData = Object.fromEntries(new FormData(e.target));
-
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Processing...`;
-        
-        if(!formData.password) delete formData.password;
-
-        if (currentContext === 'clients') {
-            delete formData.position;
-            delete formData.role_id;
-            delete formData.department;
-            delete formData.employee_id;
-        } else {
-            delete formData.address;
-        }
-
-        const isUpdate = !!id;
-        const method = isUpdate ? 'PUT' : 'POST';
-        const url = isUpdate ? `/api/manage/${currentContext}/${id}` : `/api/manage/${currentContext}`;
-
-        try {
-            const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-
-            if(res.ok) {
-                const successMsg = isUpdate 
-                    ? 'Account details updated successfully' 
-                    : 'New account registered successfully';
-            
-                showToast("SUCCESS", successMsg);
-                hideEditor();
-                fetchData();
-            } else {
-                const errData = await res.json();
-                showToast("SUCCESS", errData.error || errData.message || 'Details already exist in database');
-            }
-        } catch (e) { showToast("ERROR", "Submission failed. Try again."); }
-        finally {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    }
-
-    async function deleteEntry(id) {
-        const { isConfirmed } = await Swal.fire({
-            title: 'Permanent Deletion?',
-            text: "This cannot be undone!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#be123c',
-            confirmButtonText: 'Yes, Delete'
-        });
-
-        if (isConfirmed) {
             try {
-                const res = await fetch(`/api/manage/${currentContext}/${id}`, { 
-                    method: 'DELETE' 
+                const res = await fetch(url);
+                await new Promise(resolve => setTimeout(resolve, 400));
+                allData = await res.json();
+                filteredData = allData;
+                renderTable();
+            } catch (e) {
+                showToast("ERROR", 'Could not load ' + currentContext);
+            }
+        }
+
+        async function fetchRoles() {
+            try {
+                const res = await fetch('/api/manage/staff/roles');
+                roles = await res.json();
+                
+                const roleSelect = document.getElementById('role_id');
+                roleSelect.innerHTML = `
+                    <option value="" disabled selected>Select System Role</option>
+                    ${roles.map(role => `<option value="${role.id}">${role.name}</option>`).join('')}
+                `;
+            } catch (e) {
+                console.error("Failed to load roles:", e);
+            }
+        }
+
+        function switchContext(ctx) {
+            if (currentContext === ctx) return;
+            
+            currentContext = ctx;
+            
+            // Update tabs
+            document.querySelectorAll('[id^="tab-"]').forEach(el => {
+                el.classList.remove('tab-active');
+                el.classList.add('tab-inactive');
+            });
+            document.getElementById(`tab-${ctx}`).classList.add('tab-active');
+            
+            // Update labels
+            document.getElementById('add-label').innerText = ctx === 'clients' ? 'Client' : 'Staff';
+            document.getElementById('col-extra-label').innerText = ctx === 'clients' ? 'ID / Address' : 'Employee ID / Dept';
+
+            const locationCol = document.getElementById('col-location');
+            if (ctx === 'clients') {
+                locationCol.classList.remove('hidden');
+            } else {
+                locationCol.classList.add('hidden');
+            }
+            
+            // Toggle fields
+            document.getElementById('staff-fields').classList.toggle('hidden', ctx === 'clients');
+            document.getElementById('client-fields').classList.toggle('hidden', ctx === 'staff');
+            
+            hideEditor();
+            fetchData();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('directoryTable');
+            
+            if (!filteredData || !Array.isArray(filteredData) || filteredData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-20 text-center">
+                            <i class="fas fa-folder-open text-slate-200 text-5xl mb-4 block"></i>
+                            <p class="text-slate-400 font-bold tracking-tight">No records found</p>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filteredData.map(item => {
+                const fName = item.first_name ?? 'User';
+                const sName = item.second_name ?? '';
+                const initials = (fName[0] || '?') + (sName[0] || '');
+                const position = item.position ?? (currentContext === 'staff' ? 'Employee' : 'Customer');
+                
+                const idVal = currentContext === 'clients' 
+                    ? (item.id_number ?? 'No ID') 
+                    : (item.employee_id ?? '---');
+                    
+                const subVal = currentContext === 'clients' 
+                    ? (item.address ?? 'No Address Provided') 
+                    : (item.department ?? 'General');
+
+                const salaryDisplay = currentContext === 'staff' && item.basic_salary 
+                    ? `<div class="text-[10px] text-emerald-600 font-black mt-1">
+                        <i class="fas fa-money-bill-wave mr-1"></i>KES ${parseFloat(item.basic_salary).toLocaleString('en-KE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </div>`
+                    : '';
+
+                const locationCell = currentContext === 'clients' 
+                    ? `<td class="px-6 py-5">
+                        <div class="text-xs font-bold text-slate-600">
+                            <i class="fas fa-map-marker-alt mr-1.5 opacity-40 text-green-600"></i>${item.location ?? 'Not Set'}
+                        </div>
+                    </td>`
+                    : '';
+
+                return `
+                    <tr class="table-row group">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 font-bold border border-slate-200 overflow-hidden shrink-0">
+                                    ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : initials}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-black text-slate-800 uppercase">${fName} ${sName}</div>
+                                    <div class="text-[10px] font-bold text-teal-600 uppercase tracking-tighter">${position}</div>
+                                    ${salaryDisplay}
+                                </div>
+                            </div>
+                        </td>
+                        ${locationCell}
+                        <td class="px-6 py-5">
+                            <div class="text-xs font-bold text-slate-600">${idVal}</div>
+                            <div class="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">${subVal}</div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="text-xs font-bold text-slate-600 mb-1">
+                                <i class="fas fa-envelope mr-1.5 opacity-40"></i>${item.email ?? '---'}
+                            </div>
+                            <div class="text-xs font-bold text-slate-600">
+                                <i class="fas fa-phone mr-1.5 opacity-40"></i>${item.phone ?? '---'}
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button 
+                                    onclick="showEditor('edit', ${item.id})" 
+                                    class="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-600 hover:text-white transition-all flex items-center justify-center shadow-sm"
+                                >
+                                    <i class="fas fa-edit text-sm"></i>
+                                </button>
+                                <button 
+                                    onclick="deleteEntry(${item.id})" 
+                                    class="w-9 h-9 rounded-lg bg-slate-100 text-slate-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
+                                >
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            populateLocationFilter();
+        }
+
+        function showEditor(mode, id = null) {
+            document.getElementById('editorContainer').classList.remove('hidden');
+            document.getElementById('editorContainer').classList.add('flex');
+            document.getElementById('directoryForm').reset();
+            
+            const idInput = document.getElementById('entry-id');
+            const passInput = document.getElementById('password');
+            const passToggle = document.getElementById('edit-pass-toggle');
+            const passCheckbox = passToggle.querySelector('input[type="checkbox"]');
+            const msg = document.getElementById('pass-msg');
+
+            idInput.value = id || '';
+            
+            if (passCheckbox) passCheckbox.checked = false;
+            togglePasswordUpdate(false);
+
+            if (id) {
+                const data = allData.find(x => x.id === id);
+                
+                Object.keys(data).forEach(key => {
+                    const el = document.getElementsByName(key)[0];
+                    if (el) el.value = data[key];
+                });
+
+                if (currentContext === 'staff') {
+                    const idInput = document.getElementById('id_number');
+                    idInput.value = data.employee_id?.trim() || '';
+                }
+
+                if (currentContext === 'staff') {
+                    const roleSelect = document.getElementById('role_id');
+                    setTimeout(() => {
+                        if (data.role_id) {
+                            roleSelect.value = data.role_id;
+                        } else if (data.role_name) {
+                            const option = Array.from(roleSelect.options).find(opt => opt.text === data.role_name);
+                            if (option) roleSelect.value = option.value;
+                        }
+                    }, 10);
+                }
+                
+                passToggle.classList.remove('hidden');
+                passInput.disabled = true;
+                passInput.placeholder = "••••••••••••";
+                msg.innerText = "Password encryption active";
+                msg.className = "text-[9px] text-slate-400 mt-2 font-bold italic";
+                
+                document.getElementById('editor-title').innerText = 'Edit Profile';
+            } else {
+                passToggle.classList.add('hidden');
+                passInput.disabled = false;
+                passInput.placeholder = "Set initial password";
+                msg.innerText = "Required for new registrations";
+                msg.className = "text-[9px] text-rose-400 mt-2 font-bold italic";
+                
+                document.getElementById('editor-title').innerText = 'New Registration';
+            }
+        }
+
+        function hideEditor() {
+            document.getElementById('editorContainer').classList.add('hidden');
+            document.getElementById('editorContainer').classList.remove('flex');
+        }
+
+        document.getElementById('directoryForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            const id = document.getElementById('entry-id').value;
+            const formData = Object.fromEntries(new FormData(e.target));
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Processing...`;
+            
+            if (!formData.password) delete formData.password;
+
+            if (currentContext === 'clients') {
+                delete formData.position;
+                delete formData.role_id;
+                delete formData.department;
+                delete formData.employee_id;
+                delete formData.basic_salary;
+            } else {
+                delete formData.address;
+                delete formData.location;
+            }
+
+            const isUpdate = !!id;
+            const method = isUpdate ? 'PUT' : 'POST';
+            const url = isUpdate ? `/api/manage/${currentContext}/${id}` : `/api/manage/${currentContext}`;
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
                 });
 
                 if (res.ok) {
-                    showToast("SUCCESS", `${currentContext} deleted successfully`);
-                    fetchData();
+                    const successMsg = isUpdate 
+                        ? 'Account details updated successfully' 
+                        : 'New account registered successfully';
+                
+                    showToast("SUCCESS", successMsg);
                     hideEditor();
+                    fetchData();
                 } else {
                     const errData = await res.json();
-                    showToast("ERROR", errData.message || "Could not complete deletion");
+                    showToast("ERROR", errData.error || errData.message || 'Details already exist in database');
                 }
             } catch (e) { 
-                showToast("ERROR", "Try again"); 
+                showToast("ERROR", "Submission failed. Try again."); 
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        };
+
+        async function deleteEntry(id) {
+            const { isConfirmed } = await Swal.fire({
+                title: 'Permanent Deletion?',
+                text: "This cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#be123c',
+                confirmButtonText: 'Yes, Delete'
+            });
+
+            if (isConfirmed) {
+                try {
+                    const res = await fetch(`/api/manage/${currentContext}/${id}`, { 
+                        method: 'DELETE' 
+                    });
+
+                    if (res.ok) {
+                        showToast("SUCCESS", `${currentContext} deleted successfully`);
+                        fetchData();
+                        hideEditor();
+                    } else {
+                        const errData = await res.json();
+                        showToast("ERROR", errData.message || "Could not complete deletion");
+                    }
+                } catch (e) { 
+                    showToast("ERROR", "Try again"); 
+                }
             }
         }
-    }
 
-    function togglePassVisibility() {
-        const pass = document.getElementById('password');
-        const icon = document.getElementById('pass-icon');
-        pass.type = pass.type === 'password' ? 'text' : 'password';
-        icon.classList.toggle('fa-eye');
-        icon.classList.toggle('fa-eye-slash');
-    }
-
-    function togglePasswordUpdate(checked) {
-        const well = document.getElementById('password-well');
-        const input = document.getElementById('password');
-        const msg = document.getElementById('pass-msg');
-
-        if(checked) {
-            well.classList.replace('security-well', 'security-well-active');
-            input.disabled = false;
-            input.placeholder = "Enter new secure password";
-            msg.innerText = "Password will be updated on save";
-            msg.classList.replace('text-rose-400', 'text-teal-500');
-        } else {
-            well.classList.replace('security-well-active', 'security-well');
-            input.disabled = true;
-            input.value = "";
-            input.placeholder = "••••••••••••";
-            msg.innerText = "Password encryption active (unchanged)";
-            msg.classList.replace('text-teal-500', 'text-slate-400');
+        function togglePassVisibility() {
+            const pass = document.getElementById('password');
+            const icon = document.getElementById('pass-icon');
+            pass.type = pass.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
         }
-    }
 
-    function filterData(val) {
-        const term = val.toLowerCase();
-        filteredData = allData.filter(i => 
-            i.first_name.toLowerCase().includes(term) || 
-            i.second_name.toLowerCase().includes(term) ||
-            i.email.toLowerCase().includes(term)
-        );
-        renderTable();
-    }
+        function togglePasswordUpdate(checked) {
+            const well = document.getElementById('password-well');
+            const input = document.getElementById('password');
+            const msg = document.getElementById('pass-msg');
 
-    function showToast(title, msg) {
-        const toast = document.createElement('div');
-        toast.className = "bg-slate-900 text-white p-4 rounded-xl shadow-xl min-w-[200px] animate-slide-in";
-        toast.innerHTML = `<h5 class="text-[10px] font-black uppercase text-teal-400 mb-1">${title}</h5><p class="text-xs font-medium">${msg}</p>`;
-        document.getElementById('toastContainer').appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
-    }
-
-    function setLoadingState(isLoading) {
-        const tbody = document.getElementById('directoryTable');
-        if (isLoading) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="px-6 py-24 text-center">
-                        <div class="inline-flex flex-col items-center">
-                            <i class="fas fa-circle-notch fa-spin text-4xl text-teal-500 mb-4"></i>
-                            <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400 animate-pulse">
-                                Loading ${currentContext}...
-                            </p>
-                        </div>
-                    </td>
-                </tr>`;
+            if (checked) {
+                well.classList.replace('security-well', 'security-well-active');
+                input.disabled = false;
+                input.placeholder = "Enter new secure password";
+                msg.innerText = "Password will be updated on save";
+                msg.classList.replace('text-rose-400', 'text-teal-500');
+            } else {
+                well.classList.replace('security-well-active', 'security-well');
+                input.disabled = true;
+                input.value = "";
+                input.placeholder = "••••••••••••";
+                msg.innerText = "Password encryption active (unchanged)";
+                msg.classList.replace('text-teal-500', 'text-slate-400');
+            }
         }
-    }
 
-    fetchData();
-</script>
+        function filterData(val) {
+            const term = val.toLowerCase();
+            const locationFilter = document.getElementById('location-filter');
+            const selectedLocation = locationFilter ? locationFilter.value : '';
+            
+            filteredData = allData.filter(i => {
+                const matchesSearch = 
+                    i.first_name.toLowerCase().includes(term) || 
+                    i.second_name.toLowerCase().includes(term) ||
+                    i.email.toLowerCase().includes(term);
+                
+                // Apply location filter only for clients
+                if (currentContext === 'clients' && selectedLocation) {
+                    return matchesSearch && i.location === selectedLocation;
+                }
+                
+                return matchesSearch;
+            });
+            renderTable();
+        }
+
+        function populateLocationFilter() {
+            const locationFilter = document.getElementById('location-filter');
+            
+            if (currentContext !== 'clients') {
+                document.getElementById('location-filter-container').classList.add('hidden');
+                return;
+            }
+            
+            document.getElementById('location-filter-container').classList.remove('hidden');
+            
+            // Get unique locations from allData
+            const locations = [...new Set(allData
+                .map(item => item.location)
+                .filter(loc => loc && loc.trim() !== '')
+            )].sort();
+            
+            // Rebuild dropdown options
+            locationFilter.innerHTML = `
+                <option value="">All Locations</option>
+                ${locations.map(loc => `<option value="${loc}">${loc}</option>`).join('')}
+            `;
+        }
+
+        function filterByLocation(location) {
+            const searchInput = document.querySelector('input[placeholder="Search directory..."]');
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            filteredData = allData.filter(item => {
+                // Apply search term filter
+                const matchesSearch = !searchTerm || 
+                    item.first_name.toLowerCase().includes(searchTerm) || 
+                    item.second_name.toLowerCase().includes(searchTerm) ||
+                    item.email.toLowerCase().includes(searchTerm);
+                
+                // Apply location filter (only for clients)
+                const matchesLocation = !location || item.location === location;
+                
+                return matchesSearch && matchesLocation;
+            });
+            
+            renderTable();
+        }
+
+        function showToast(title, msg) {
+            const toast = document.createElement('div');
+            const bgColor = title === 'ERROR' ? 'bg-rose-600' : 'bg-emerald-600';
+            
+            toast.className = `${bgColor} text-white p-4 rounded-xl shadow-xl min-w-[280px] animate-slide-in`;
+            toast.innerHTML = `
+                <h5 class="text-[10px] font-black uppercase opacity-70 mb-1">${title}</h5>
+                <p class="text-sm font-bold">${msg}</p>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function setLoadingState(isLoading) {
+            const tbody = document.getElementById('directoryTable');
+            if (isLoading) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-24 text-center">
+                            <div class="inline-flex flex-col items-center">
+                                <i class="fas fa-circle-notch fa-spin text-4xl text-teal-500 mb-4"></i>
+                                <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400 animate-pulse">
+                                    Loading ${currentContext}...
+                                </p>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
+        }
+    </script>

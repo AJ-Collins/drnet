@@ -27,6 +27,10 @@ const createSmsLogsTable = require("./create_sms_logs");
 // Sales
 const createSalesTable = require("./sales");
 
+// Client Onboard
+const createClientOnboardTable = require("./clients_onboard");
+const clientsOnboardCommissionTable = require("./clients_onboard_commi");
+
 
 //Seeders
 const seedRoles = require("../seeders/roles_seeder");
@@ -125,6 +129,10 @@ async function runMigrations() {
 
   // Sales
   await createSalesTable();
+
+  // Clients onboard
+  await createClientOnboardTable();
+  await clientsOnboardCommissionTable();
 
   console.log("All migrations completed. Running seeders...");
 
