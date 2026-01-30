@@ -32,6 +32,9 @@ const careDashboard = require("./src/routes/careDashboard");
 // Onboard clients
 const onboardClients = require("./src/routes/clientOnboard");
 
+// Staff dahsboard stats
+const staffDashboard = require("./src/routes/staffDashboard");
+
 
 const attendance = require("./src/routes/attendance");
 const packages = require("./src/routes/packages");
@@ -308,6 +311,9 @@ app.use('/api/care', careDashboard);
 
 // Onboard clients
 app.use("/api/onboard", onboardClients);
+
+// Staff dashboard stats
+app.use("/api/staff", staffDashboard);
 
 //Hr
 app.use("/api/hr", hrexpenses);

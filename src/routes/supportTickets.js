@@ -52,7 +52,7 @@ router.post("/tickets", async (req, res) => {
         if (send_sms) {
             const client = await User.findById(user_id);
             if (client && client.phone) {
-                const smsBody = `Hi ${client.first_name}, a support ticket #${ticketNumber} has been created for: ${issue_subject}. We will resolve it soon.`;
+                const smsBody = `Hi ${client.first_name}, we have received your report on "${issue_subject}". Our team is working on it and will resolve it soon. Thank you for your patience.`;
                 await smsService.sendSMS(client.phone, smsBody);
             }
         }

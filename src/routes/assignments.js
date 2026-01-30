@@ -103,13 +103,12 @@ router.post("/assignments", async (req, res) => {
         // Send SMS notification if requested
         if (send_notification && staff.phone) {
             try {
-                const smsMessage = `Hello ${staff.first_name}, you have been assigned a new task: "${subject}". Task ID: ${newAssignment.assignment_ticket_id}`;
+                const smsMessage = `Hello ${staff.first_name}, you have been assigned a new task: "${subject}". "${instructions}". Task ID: ${newAssignment.assignment_ticket_id}`;
                 
                 await smsService.sendSMS(staff.phone, smsMessage);
                 console.log(`SMS notification sent to ${staff.phone} for assignment ${newAssignment.assignment_ticket_id}`);
             } catch (smsError) {
                 console.error("Failed to send SMS notification:", smsError);
-                // Continue even if SMS fails - assignment was created successfully
             }
         }
 
@@ -190,7 +189,7 @@ router.put("/assignments/:assignmentId", async (req, res) => {
         if (send_notification && staff.phone) {
             try {
                 const assignment = await Assignment.getAssignmentById(assignmentId);
-                const smsMessage = `Hello ${staff.first_name}, your task has been updated: "${subject}". Please check your dashboard for details. Task ID: ${assignment.assignment_ticket_id}`;
+                const smsMessage = `Hello ${staff.first_name}, your task has been updated: "${subject}". "${instructions}". Please check your dashboard for details. Task ID: ${assignment.assignment_ticket_id}`;
                 
                 await smsService.sendSMS(staff.phone, smsMessage);
                 console.log(`SMS update notification sent to ${staff.phone} for assignment ${assignmentId}`);

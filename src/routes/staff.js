@@ -8,296 +8,296 @@ const apiSessionAuth = require("../middleware/apiSessionAuth");
 router.use(apiSessionAuth);
 
 // GET: My Assignments
-router.get("/my/assignments", async (req, res) => {
-  try {
-    console.log("Session user:", req.session.user);
-
-    if (!req.session.user || !req.session.user.id) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-
-    const userId = req.session.user.id;
-    console.log("Fetching assignments for user ID:", userId);
-
-    const assignments = await StaffClientAssignment.findMyAssignments(userId);
-    console.log("Found assignments:", assignments.length);
-
-    res.json(assignments);
-  } catch (err) {
-    console.error("Error fetching assignments:", err);
-    res.status(500).json({ error: "Failed to fetch assignments" });
-  }
-});
-
-
-
-// PATCH: Mark as complete
-// router.patch("/assignments/:id/complete", async (req, res) => {
+// router.get("/my/assignments", async (req, res) => {
 //   try {
-//     const userId = req.session.user.id;
+//     console.log("Session user:", req.session.user);
 
-//     const assignment = await StaffClientAssignment.findById(req.params.id);
-
-//     if (!assignment || assignment.technicianId !== userId) {
-//       return res.status(404).json({ error: "Not found or unauthorized" });
+//     if (!req.session.user || !req.session.user.id) {
+//       return res.status(401).json({ error: "Not authenticated" });
 //     }
 
-//     await StaffClientAssignment.update(req.params.id, {
-//       status: "completed",
-//       completedAt: new Date(),
-//     });
+//     const userId = req.session.user.id;
+//     console.log("Fetching assignments for user ID:", userId);
 
-//     res.json({ success: true });
+//     const assignments = await StaffClientAssignment.findMyAssignments(userId);
+//     console.log("Found assignments:", assignments.length);
+
+//     res.json(assignments);
 //   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to update" });
+//     console.error("Error fetching assignments:", err);
+//     res.status(500).json({ error: "Failed to fetch assignments" });
 //   }
 // });
 
-// EXPORT CSV
-router.get("/assignments/export", async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      `
-      SELECT 
-        clientName, clientContact, serviceType, priority, scheduledDate,
-        estimatedDuration, status, address, description, requiredEquipment
-      FROM assignments
-      WHERE technicianId = ? OR supervisorId = ?
-      ORDER BY scheduledDate
-    `,
-      [req.user.id, req.user.id]
-    );
 
-    if (rows.length === 0) {
-      return res.status(200).send("No assignment data to export.");
-    }
 
-    const headers = Object.keys(rows[0]).join(",");
-    const csv = [
-      headers,
-      ...rows.map((r) =>
-        Object.values(r)
-          .map((v) => `"${v ?? ""}"`)
-          .join(",")
-      ),
-    ].join("\n");
+// // PATCH: Mark as complete
+// // router.patch("/assignments/:id/complete", async (req, res) => {
+// //   try {
+// //     const userId = req.session.user.id;
 
-    res.header("Content-Type", "text/csv");
-    res.attachment(`assignments_${dayjs().format("YYYY-MM-DD")}.csv`);
-    res.send(csv);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Export failed");
-  }
-});
+// //     const assignment = await StaffClientAssignment.findById(req.params.id);
 
-router.get("/dashboard/data", async (req, res) => {
-  try {
-    const userId = req.session.user?.id;
-    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+// //     if (!assignment || assignment.technicianId !== userId) {
+// //       return res.status(404).json({ error: "Not found or unauthorized" });
+// //     }
 
-    // Today's Tasks (Assignments)
-    const [tasks] = await db.query(
-      `SELECT 
-        a.id,
-        a.clientName AS client,
-        a.address,
-        a.serviceType AS title,
-        DATE_FORMAT(a.scheduledDate, '%H:%i') AS time,
-        a.priority,
-        a.status
-      FROM assignments a
-      WHERE a.technicianId = ? 
-        AND DATE(a.scheduledDate) = CURDATE()
-      ORDER BY a.scheduledDate ASC`,
-      [userId]
-    );
+// //     await StaffClientAssignment.update(req.params.id, {
+// //       status: "completed",
+// //       completedAt: new Date(),
+// //     });
 
-    // Recent Payslips (last 3)
-    const [payslips] = await db.query(
-      `SELECT 
-        id,
-        DATE_FORMAT(pay_period, '%M %Y') AS month,
-        pay_period AS date,
-        net_pay
-      FROM staff_payslips 
-      WHERE staff_id = ?
-      ORDER BY pay_period DESC 
-      LIMIT 3`,
-      [userId]
-    );
+// //     res.json({ success: true });
+// //   } catch (err) {
+// //     console.error(err);
+// //     res.status(500).json({ error: "Failed to update" });
+// //   }
+// // });
 
-    // Stats
-    const open = tasks.filter(
-      (t) => !["completed", "cancelled"].includes(t.status)
-    ).length;
-    const completed = tasks.filter((t) => t.status === "completed").length;
-    const total = tasks.length;
-    const performanceScore =
-      total > 0 ? Math.round((completed / total) * 100) : 0;
+// // EXPORT CSV
+// router.get("/assignments/export", async (req, res) => {
+//   try {
+//     const [rows] = await db.query(
+//       `
+//       SELECT 
+//         clientName, clientContact, serviceType, priority, scheduledDate,
+//         estimatedDuration, status, address, description, requiredEquipment
+//       FROM assignments
+//       WHERE technicianId = ? OR supervisorId = ?
+//       ORDER BY scheduledDate
+//     `,
+//       [req.user.id, req.user.id]
+//     );
 
-    // Weekly Performance (simple mock — replace with real logic later)
-    const weeklyData = {
-      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      values: Array(7)
-        .fill()
-        .map(() => Math.floor(Math.random() * 35) + 65),
-    };
+//     if (rows.length === 0) {
+//       return res.status(200).send("No assignment data to export.");
+//     }
 
-    res.json({
-      tasks: tasks.map((t) => ({
-        id: t.id,
-        title: t.title,
-        client: t.client,
-        address: t.address || "Not specified",
-        time: t.time || "All Day",
-        status:
-          t.status === "completed"
-            ? "Completed"
-            : t.status === "in-progress"
-            ? "In Progress"
-            : "Pending",
-        statusColor:
-          t.priority === "high"
-            ? "red"
-            : t.priority === "medium"
-            ? "yellow"
-            : "green",
-      })),
-      payslips: payslips.map((p) => ({
-        id: p.id,
-        month: p.month,
-        date: p.date,
-      })),
-      stats: {
-        openTickets: open,
-        activeTasks: total,
-        completedTasks: completed,
-        performanceScore,
-      },
-      chart: weeklyData,
-    });
-  } catch (err) {
-    console.error("Dashboard data error:", err);
-    res.status(500).json({ error: "Failed to load dashboard" });
-  }
-});
+//     const headers = Object.keys(rows[0]).join(",");
+//     const csv = [
+//       headers,
+//       ...rows.map((r) =>
+//         Object.values(r)
+//           .map((v) => `"${v ?? ""}"`)
+//           .join(",")
+//       ),
+//     ].join("\n");
 
-router.get("/my/dashboard/assignments", async (req, res) => {
-  try {
-    const userId = req.session.user?.id;
-    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+//     res.header("Content-Type", "text/csv");
+//     res.attachment(`assignments_${dayjs().format("YYYY-MM-DD")}.csv`);
+//     res.send(csv);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send("Export failed");
+//   }
+// });
 
-    const [rows] = await db.query(
-      `SELECT 
-        a.id,
-        a.clientName AS client,
-        a.address,
-        a.serviceType AS title,
-        DATE_FORMAT(a.scheduledDate, '%H:%i') AS time,
-        a.status
-      FROM assignments a
-      WHERE a.technicianId = ?
-      ORDER BY a.scheduledDate ASC`,
-      [userId]
-    );
+// router.get("/dashboard/data", async (req, res) => {
+//   try {
+//     const userId = req.session.user?.id;
+//     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    const tasks = rows.map((t) => ({
-      id: t.id,
-      title: t.title,
-      client: t.client,
-      address: t.address || "Not specified",
-      time: t.time || "All Day",
+//     // Today's Tasks (Assignments)
+//     const [tasks] = await db.query(
+//       `SELECT 
+//         a.id,
+//         a.clientName AS client,
+//         a.address,
+//         a.serviceType AS title,
+//         DATE_FORMAT(a.scheduledDate, '%H:%i') AS time,
+//         a.priority,
+//         a.status
+//       FROM assignments a
+//       WHERE a.technicianId = ? 
+//         AND DATE(a.scheduledDate) = CURDATE()
+//       ORDER BY a.scheduledDate ASC`,
+//       [userId]
+//     );
 
-      // --- Status conversions ---
-      status: t.status === "completed" ? "Completed" : "Assigned",
+//     // Recent Payslips (last 3)
+//     const [payslips] = await db.query(
+//       `SELECT 
+//         id,
+//         DATE_FORMAT(pay_period, '%M %Y') AS month,
+//         pay_period AS date,
+//         net_pay
+//       FROM staff_payslips 
+//       WHERE staff_id = ?
+//       ORDER BY pay_period DESC 
+//       LIMIT 3`,
+//       [userId]
+//     );
 
-      // --- Status color mapping ---
-      // Green → Completed
-      // Yellow → Assigned
-      statusColor: t.status === "completed" ? "green" : "yellow",
-    }));
+//     // Stats
+//     const open = tasks.filter(
+//       (t) => !["completed", "cancelled"].includes(t.status)
+//     ).length;
+//     const completed = tasks.filter((t) => t.status === "completed").length;
+//     const total = tasks.length;
+//     const performanceScore =
+//       total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    res.json(tasks);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to load tasks" });
-  }
-});
+//     // Weekly Performance (simple mock — replace with real logic later)
+//     const weeklyData = {
+//       labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+//       values: Array(7)
+//         .fill()
+//         .map(() => Math.floor(Math.random() * 35) + 65),
+//     };
 
-router.get("/staff/dashboard/stats", async (req, res) => {
-  try {
-    const userId = req.session.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+//     res.json({
+//       tasks: tasks.map((t) => ({
+//         id: t.id,
+//         title: t.title,
+//         client: t.client,
+//         address: t.address || "Not specified",
+//         time: t.time || "All Day",
+//         status:
+//           t.status === "completed"
+//             ? "Completed"
+//             : t.status === "in-progress"
+//             ? "In Progress"
+//             : "Pending",
+//         statusColor:
+//           t.priority === "high"
+//             ? "red"
+//             : t.priority === "medium"
+//             ? "yellow"
+//             : "green",
+//       })),
+//       payslips: payslips.map((p) => ({
+//         id: p.id,
+//         month: p.month,
+//         date: p.date,
+//       })),
+//       stats: {
+//         openTickets: open,
+//         activeTasks: total,
+//         completedTasks: completed,
+//         performanceScore,
+//       },
+//       chart: weeklyData,
+//     });
+//   } catch (err) {
+//     console.error("Dashboard data error:", err);
+//     res.status(500).json({ error: "Failed to load dashboard" });
+//   }
+// });
 
-    // Open Tickets: Support tickets assigned to this staff member (from support_tickets table)
-    const [openTicketsResult] = await db.query(
-      `SELECT COUNT(*) as count FROM support_tickets 
-       WHERE assigned_to = ? 
-         AND status = 'open'`,
-      [userId]
-    );
+// router.get("/my/dashboard/assignments", async (req, res) => {
+//   try {
+//     const userId = req.session.user?.id;
+//     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    // Active Tasks: Assignments with status 'assigned' (from assignments table)
-    const [activeTasksResult] = await db.query(
-      `SELECT COUNT(*) as count FROM assignments 
-       WHERE technicianId = ? 
-         AND status = 'assigned'`,
-      [userId]
-    );
+//     const [rows] = await db.query(
+//       `SELECT 
+//         a.id,
+//         a.clientName AS client,
+//         a.address,
+//         a.serviceType AS title,
+//         DATE_FORMAT(a.scheduledDate, '%H:%i') AS time,
+//         a.status
+//       FROM assignments a
+//       WHERE a.technicianId = ?
+//       ORDER BY a.scheduledDate ASC`,
+//       [userId]
+//     );
 
-    // Completed Tasks: Assignments completed this month
-    const [completedTasksResult] = await db.query(
-      `SELECT COUNT(*) as count FROM assignments 
-       WHERE technicianId = ? 
-         AND status = 'completed'
-         AND MONTH(completedAt) = MONTH(CURDATE())`,
-      [userId]
-    );
+//     const tasks = rows.map((t) => ({
+//       id: t.id,
+//       title: t.title,
+//       client: t.client,
+//       address: t.address || "Not specified",
+//       time: t.time || "All Day",
 
-    // Total assigned tasks this month (for performance calculation)
-    const [totalAssignedResult] = await db.query(
-      `SELECT COUNT(*) as count FROM assignments 
-       WHERE technicianId = ? 
-         AND MONTH(completedAt) = MONTH(CURDATE())`,
-      [userId]
-    );
+//       // --- Status conversions ---
+//       status: t.status === "completed" ? "Completed" : "Assigned",
 
-    const openTickets = openTicketsResult[0].count;
-    const activeTasks = activeTasksResult[0].count;
-    const completedTasks = completedTasksResult[0].count;
-    const totalAssignedThisMonth = totalAssignedResult[0].count;
+//       // --- Status color mapping ---
+//       // Green → Completed
+//       // Yellow → Assigned
+//       statusColor: t.status === "completed" ? "green" : "yellow",
+//     }));
 
-    // Calculate performance score: (completed this month / total assigned this month) * 100
-    const performanceScore =
-      totalAssignedThisMonth > 0
-        ? Math.round((completedTasks / totalAssignedThisMonth) * 100)
-        : 0;
+//     res.json(tasks);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Failed to load tasks" });
+//   }
+// });
 
-    // Log for debugging
-    console.log("Staff Stats:", {
-      userId,
-      openTickets,
-      activeTasks,
-      completedTasks,
-      totalAssignedThisMonth,
-      performanceScore,
-    });
+// router.get("/staff/dashboard/stats", async (req, res) => {
+//   try {
+//     const userId = req.session.user?.id;
+//     if (!userId) {
+//       return res.status(401).json({ error: "Unauthorized" });
+//     }
 
-    res.json({
-      openTickets, // Support tickets assigned to staff with status 'open'
-      activeTasks, // Assignments with status 'assigned'
-      completedTasks, // This month's completed assignments
-      performanceScore, // (Completed / Total) * 100 for this month
-    });
-  } catch (err) {
-    console.error("Error fetching dashboard stats:", err);
-    res.status(500).json({ error: "Failed to load stats" });
-  }
-});
+//     // Open Tickets: Support tickets assigned to this staff member (from support_tickets table)
+//     const [openTicketsResult] = await db.query(
+//       `SELECT COUNT(*) as count FROM support_tickets 
+//        WHERE assigned_to = ? 
+//          AND status = 'open'`,
+//       [userId]
+//     );
+
+//     // Active Tasks: Assignments with status 'assigned' (from assignments table)
+//     const [activeTasksResult] = await db.query(
+//       `SELECT COUNT(*) as count FROM assignments 
+//        WHERE technicianId = ? 
+//          AND status = 'assigned'`,
+//       [userId]
+//     );
+
+//     // Completed Tasks: Assignments completed this month
+//     const [completedTasksResult] = await db.query(
+//       `SELECT COUNT(*) as count FROM assignments 
+//        WHERE technicianId = ? 
+//          AND status = 'completed'
+//          AND MONTH(completedAt) = MONTH(CURDATE())`,
+//       [userId]
+//     );
+
+//     // Total assigned tasks this month (for performance calculation)
+//     const [totalAssignedResult] = await db.query(
+//       `SELECT COUNT(*) as count FROM assignments 
+//        WHERE technicianId = ? 
+//          AND MONTH(completedAt) = MONTH(CURDATE())`,
+//       [userId]
+//     );
+
+//     const openTickets = openTicketsResult[0].count;
+//     const activeTasks = activeTasksResult[0].count;
+//     const completedTasks = completedTasksResult[0].count;
+//     const totalAssignedThisMonth = totalAssignedResult[0].count;
+
+//     // Calculate performance score: (completed this month / total assigned this month) * 100
+//     const performanceScore =
+//       totalAssignedThisMonth > 0
+//         ? Math.round((completedTasks / totalAssignedThisMonth) * 100)
+//         : 0;
+
+//     // Log for debugging
+//     console.log("Staff Stats:", {
+//       userId,
+//       openTickets,
+//       activeTasks,
+//       completedTasks,
+//       totalAssignedThisMonth,
+//       performanceScore,
+//     });
+
+//     res.json({
+//       openTickets, // Support tickets assigned to staff with status 'open'
+//       activeTasks, // Assignments with status 'assigned'
+//       completedTasks, // This month's completed assignments
+//       performanceScore, // (Completed / Total) * 100 for this month
+//     });
+//   } catch (err) {
+//     console.error("Error fetching dashboard stats:", err);
+//     res.status(500).json({ error: "Failed to load stats" });
+//   }
+// });
 
 router.get("/payslips/recent", async (req, res) => {
   try {

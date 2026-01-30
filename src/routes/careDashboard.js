@@ -5,7 +5,7 @@ const DashboardCare = require('../models/CareDashboard');
 // Middleware to get staff ID from session/request
 const getStaffId = (req) => {
     // Adjust based on your authentication system
-    return req.user?.id || req.staffId || 505; // Default to 505 for testing
+    return req.user?.id || req.staffId || 505; 
 };
 
 // 1. Get comprehensive dashboard data

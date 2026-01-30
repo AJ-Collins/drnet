@@ -11,7 +11,18 @@ const ClientsOnboard = {
 
   // Get only clients belonging to the logged-in staff
   getByStaff: async (staffId) => {
-    const [rows] = await db.query("SELECT * FROM client_onboard WHERE staff_id = ?", [staffId]);
+    const [rows] = await db.query(`
+      SELECT 
+        co.*, 
+        p.name AS package_name,
+        oc.amount AS commission_amount,
+        oc.status AS commission_status
+      FROM client_onboard co
+      LEFT JOIN packages p ON co.package_id = p.id
+      LEFT JOIN onboard_commissions oc ON co.id = oc.onboard_id
+      WHERE co.staff_id = ?
+      ORDER BY co.created_at DESC
+    `, [staffId]);
     return rows;
   },
 

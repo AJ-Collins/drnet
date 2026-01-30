@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const AssignmentModel = require("../models/StaffAssignments");
+const apiSessionAuth = require("../middleware/apiSessionAuth");
+
+router.use(apiSessionAuth);
 
 // Get all assignments for logged-in staff
 router.get("/my-assignments/:staffId", async (req, res) => {
