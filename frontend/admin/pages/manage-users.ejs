@@ -432,7 +432,9 @@
                 const fName = item.first_name ?? 'User';
                 const sName = item.second_name ?? '';
                 const initials = (fName[0] || '?') + (sName[0] || '');
-                const position = item.position ?? (currentContext === 'staff' ? 'Employee' : 'Customer');
+                const position = currentContext === 'staff' 
+                    ? (item.role_name ?? item.position ?? 'Employee') 
+                    : (item.position ?? 'Customer');
                 
                 const idVal = currentContext === 'clients' 
                     ? (item.id_number ?? 'No ID') 

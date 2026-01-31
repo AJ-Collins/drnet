@@ -91,6 +91,7 @@
             {slug: 'bookings', name:'Bookings'},
             {slug: 'planner', name:'Planner'},   
             { slug: 'reminders', name:'Reminders' },         
+            { slug: 'communication', name:'Communications' }, 
             {slug: 'communication-team', name:'Team Connect'},            
             {slug:'profile', name:'Profile'}
             ]; %> <% pages.forEach(p => { %>
@@ -105,7 +106,8 @@
                   p.slug === 'tasks' ? 'fa-list-check' :
                   p.slug === 'planner' ? 'fa-diagram-project' :
                   p.slug === 'bookings' ? 'fa-calendar-check' :
-                  p.slug === 'communication' ? 'fa-comments' :
+                  p.slug === 'communication' ? 'fa-sms' :
+                  p.slug === 'communication-team' ? 'fa-comments' :
                   p.slug.includes('reminders') ? 'fa-bell':
                   p.slug === 'profile' ? 'fa-user-circle' :
                   'fa-circle'

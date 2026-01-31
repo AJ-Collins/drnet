@@ -497,6 +497,7 @@ const hrAssistantPages = [
   "planner",
   "reminders",
   "profile",
+  "communication-team"
 ];
 
 app.get("/hr-assistant/:page", requireHrAssistantAuth, (req, res) => {

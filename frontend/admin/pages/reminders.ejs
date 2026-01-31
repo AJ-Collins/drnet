@@ -771,10 +771,11 @@
                 if (daysLeft <= 0) {
                     text = `Dear ${c.name}, This is to inform you that your internet subscription has expired and the service has been temporarily suspended. Amount: KES ${c.price}. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
                 } else {
-                    text = `REMINDER: ${firstName}, your ${c.pkgName} subscription is due to overdue in ${daysLeft} days. Please pay KES ${c.price} by ${dateStr} to avoid service suspension. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
+                    text = `Reminder:\nWe hope you’re enjoying your internet service. Your ${c.pkgName} subscription will be due in ${daysLeft} days. To continue enjoying fast and uninterrupted connectivity, please pay KES ${parseFloat(c.price).toLocaleString('en-KE', {minimumFractionDigits: 2})} by ${dateStr}.\n\nMaking payment is easy via M-PESA:\n\nGo to Buy Goods & Services\n\nEnter Till Number: 5626320\n\nComplete the payment\n\nIf you have any questions or need assistance, our support team is always here to help. Thank you for choosing DR.NET Technology – we appreciate having you as our valued customer!`;
                 }
             } else if (type === 'receipt') {
-                text = `Payment Confirmed!\nThank you ${firstName}.\nAmount: KES ${c.price}\nPackage: ${c.pkgName}\n\nYour DR.NET internet service has been renewed for 30 days, active until ${nextMonth.toLocaleDateString('en-GB')}.\n\nQuestions? Call 0701782354\nDR.NET TECHNOLOGY LABS`;            } else {
+                text = `Confirmation:\nThank you, ${firstName.toUpperCase()}!\n\nWe’ve received your KES ${parseFloat(c.price).toLocaleString('en-KE', {minimumFractionDigits: 2})} payment for the ${c.pkgName}.Your DR.NET Internet Service is now active for the next 30 days, valid until ${nextMonth.toLocaleDateString('en-GB')}.\nWe’re happy to serve you! \n\nQuestions? Call 0701782354\nDR.NET Technology Labs`;
+            } else {
                 text = "";
             }
             

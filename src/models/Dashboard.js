@@ -272,26 +272,29 @@ const Dashboard = {
         revenueTrend = 100;
       }
 
-      // UPDATED: Calculate projection based on current month's performance
-      const daysInMonth = dayjs().daysInMonth();
-      const currentDay = now.getDate();
-      const currentMonthRevenue = currentRev;
-      
-      let projectedRevenue = 0;
-      let projectionGrowth = 0;
-      
-      if (currentDay > 0 && currentMonthRevenue > 0) {
-        // Daily average approach
-        const dailyAverage = currentMonthRevenue / currentDay;
-        projectedRevenue = dailyAverage * daysInMonth;
-        
-        // Calculate growth percentage from current to projected
-        projectionGrowth = ((projectedRevenue - currentMonthRevenue) / currentMonthRevenue) * 100;
-      } else if (prevRev > 0) {
-        // Fallback: Use previous month as baseline
-        projectedRevenue = prevRev * 1.1; // 10% growth assumption
-        projectionGrowth = 10;
-      }
+      // Get projection from active subscriptions in current month
+      const [subscriptionProjection] = await db.query(`
+        SELECT 
+          COALESCE(SUM(p.price), 0) as projected_revenue
+        FROM user_subscriptions us
+        JOIN packages p ON us.package_id = p.id
+        WHERE us.start_date <= ?
+          AND us.expiry_date > ?
+          AND (
+            (YEAR(us.start_date) = ? AND MONTH(us.start_date) = ?)
+            OR (YEAR(us.expiry_date) = ? AND MONTH(us.expiry_date) = ?)
+            OR (us.start_date < ? AND us.expiry_date > ?)
+          )
+      `, [
+        monthEnd, 
+        monthStart,
+        currentYear, currentMonth,
+        currentYear, currentMonth,
+        monthStart, monthEnd
+      ]);
+
+      const projectedRevenue = subscriptionProjection[0]?.projected_revenue || 0;
+      const projectionGrowth = currentRev > 0 ? ((projectedRevenue - currentRev) / currentRev) * 100 : 0;
 
       return {
         financial: {
@@ -317,9 +320,7 @@ const Dashboard = {
           out_stock_count: outStockCount[0]?.count || 0,
           staff_on_duty: staffOnDuty[0]?.count || 0,
           projected_revenue: projectedRevenue,
-          projection_growth: projectionGrowth.toFixed(1),
-          days_in_month: daysInMonth,
-          current_day: currentDay
+          projection_growth: projectionGrowth.toFixed(1)
         },
         charts: {
           monthlyRevenue: revenueData,
