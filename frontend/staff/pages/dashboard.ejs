@@ -32,6 +32,12 @@
             animation: spin 0.6s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .privacy-blur {
+            filter: blur(8px);
+            pointer-events: none;
+            user-select: none;
+        }
     </style>
 <div class="max-w-full mx-auto space-y-6">
 
@@ -55,23 +61,25 @@
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Financials</p>
-                            <h3 class="text-lg font-black text-slate-800">Total Earnings</h3>
+                            <h3 class="text-lg font-black text-slate-800">Onboard Earnings</h3>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                            <i class="fas fa-wallet"></i>
-                        </div>
+                        <button onclick="togglePrivacy()" class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors">
+                            <i id="privacyIcon" class="fas fa-eye"></i>
+                        </button>
                     </div>
                     
-                    <h2 class="text-3xl font-black text-slate-900 mb-4" id="totalEarnings">KES 0.00</h2>
-                    
-                    <div class="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
-                        <div>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase">Net Salary</p>
-                            <p class="text-xs font-black text-slate-700" id="netSalary">KES 0.00</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase">Commissions</p>
-                            <p class="text-xs font-black text-emerald-600" id="commissionEarnings">KES 0.00</p>
+                    <div id="privacyContainer">
+                        <h2 class="text-3xl font-black text-slate-900 mb-4" id="totalEarnings">KES 0.00</h2>
+                        
+                        <div class="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase">Net Salary</p>
+                                <p class="text-xs font-black text-slate-700" id="netSalary">KES 0.00</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase">Commissions</p>
+                                <p class="text-xs font-black text-emerald-600" id="commissionEarnings">KES 0.00</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -149,33 +157,50 @@
             </div>
         </div>
 
-        <div class="glass-panel p-6 rounded-lg animate-fade-up" style="animation-delay: 0.4s;">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-lg font-black text-slate-800">Performance Metrics</h3>
-                    <p class="text-xs font-bold text-slate-400">Task completion, Client Acquisition & Attendance</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-up">
+            <div class="lg:col-span-2 glass-panel p-6 rounded-lg">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800">Performance Metrics</h3>
+                        <p class="text-xs font-bold text-slate-400">Assignments, Support Tickets & Onboards</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                            <span class="text-[10px] font-bold text-slate-500">Tasks</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span class="text-[10px] font-bold text-slate-500">Onboards</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex gap-4">
-                    <div class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
-                        <span class="text-[10px] font-bold text-slate-500">Tasks</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                        <span class="text-[10px] font-bold text-slate-500">Onboards</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 rounded-full bg-amber-500"></div>
-                        <span class="text-[10px] font-bold text-slate-500">Attendance</span>
-                    </div>
+                
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
                 </div>
             </div>
-            
-            <div class="chart-container">
-                <canvas id="performanceChart"></canvas>
+
+            <div class="glass-panel p-6 rounded-lg flex flex-col h-full">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-800">My Payslips</h3>
+                        <p class="text-xs font-bold text-slate-400">Payroll History</p>
+                    </div>
+                     <% const earningsSlug = "earnings"; %>
+                    <a href="/staff/<%= earningsSlug %>"  class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors">
+                        View All <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                </div>
+
+                <div id="payslipList" class="space-y-4 overflow-y-auto max-h-[350px] pr-1 custom-scrollbar">
+                    <div class="flex flex-col items-center justify-center py-10 text-slate-300">
+                        <div class="spinner-sm mb-2"></div>
+                        <p class="text-[9px] font-black uppercase tracking-widest">Fetching Files...</p>
+                    </div>
+                </div>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -184,16 +209,38 @@
         document.addEventListener('DOMContentLoaded', () => {
             initChart();
             fetchDashboardData();
+
+            if (localStorage.getItem('dashboardPrivacy') === 'true') {
+                togglePrivacy();
+            }
         });
+
+        function togglePrivacy() {
+            const container = document.getElementById('privacyContainer');
+            const icon = document.getElementById('privacyIcon');
+            
+            container.classList.toggle('privacy-blur');
+            
+            if (container.classList.contains('privacy-blur')) {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                localStorage.setItem('dashboardPrivacy', 'true');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                localStorage.setItem('dashboardPrivacy', 'false');
+            }
+        }
 
         async function fetchDashboardData() {
             try {
-                const response = await fetch('/api/staff/dashboard/stats');
+                const response = await fetch('/api/staff/dashboard/my/stats');
                 const data = await response.json();
 
                 if (data.success) {
                     updateStatsUI(data.stats);
                     updateChartUI(data.chart);
+                    updatePayslipsUI(data.payslips);
                     updateTimestamp();
                 } else {
                     console.error("API Error:", data.message);
@@ -313,8 +360,7 @@
         function updateChartUI(data) {
             if (!chartInstance) return;
 
-            // Extract arrays for chart
-            const labels = data.map(d => d.month_name);
+            const labels = data.map(d => d.day_label);
             const tasks = data.map(d => d.tasks_completed);
             const clients = data.map(d => d.clients_onboarded);
             const attendance = data.map(d => d.days_present);
@@ -323,6 +369,12 @@
             chartInstance.data.datasets[0].data = tasks;
             chartInstance.data.datasets[1].data = clients;
             chartInstance.data.datasets[2].data = attendance;
+
+            chartInstance.data.datasets.forEach(dataset => {
+                dataset.pointRadius = 4; 
+                dataset.pointHoverRadius = 6;
+            });
+
             chartInstance.update();
         }
 
@@ -331,5 +383,46 @@
             const str = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + 
                        now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             document.getElementById('lastUpdated').innerHTML = `Synced: <span class="text-slate-600">${str}</span>`;
+        }
+
+        function updatePayslipsUI(payslips) {
+            const listContainer = document.getElementById('payslipList');
+            
+            if (!payslips || payslips.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-slate-400">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-3">
+                            <i class="fas fa-file-invoice text-2xl text-slate-200"></i>
+                        </div>
+                        <p class="text-[10px] font-black uppercase tracking-tighter">No payslips available</p>
+                    </div>`;
+                return;
+            }
+
+            listContainer.innerHTML = payslips.map(slip => {
+                const payDate = new Date(slip.payment_date);
+                const day = payDate.getDate();
+                const month = payDate.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase();
+
+                return `
+                    <div class="group relative flex items-center gap-4 p-3 rounded-xl border border-transparent hover:border-slate-200 hover:bg-slate-50 transition-all">
+                        <div class="relative w-12 h-14 bg-white border border-slate-200 rounded-md shadow-sm flex flex-col items-center justify-center overflow-hidden shrink-0 group-hover:shadow-md transition-all">
+                            <div class="absolute top-0 inset-x-0 h-1 bg-emerald-500"></div>
+                            <span class="text-[8px] font-black text-emerald-600 leading-none mb-0.5">${month}</span>
+                            <span class="text-sm font-black text-slate-800 leading-none">${day}</span>
+                            <div class="absolute bottom-1 right-1">
+                                <i class="fas fa-check-circle text-[8px] text-emerald-500"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-black text-slate-800 truncate uppercase">${slip.pay_period}</p>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-[10px] font-bold text-emerald-600">KES ${parseFloat(slip.net_pay).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
     </script>

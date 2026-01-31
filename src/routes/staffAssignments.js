@@ -6,13 +6,9 @@ const apiSessionAuth = require("../middleware/apiSessionAuth");
 router.use(apiSessionAuth);
 
 // Get all assignments for logged-in staff
-router.get("/my-assignments/:staffId", async (req, res) => {
+router.get("/my-assignments", async (req, res) => {
   try {
-    const { staffId } = req.params;
-    
-    if (!staffId) {
-      return res.status(400).json({ error: "Staff ID is required" });
-    }
+    const staffId = req.session.user.id;
 
     const assignments = await AssignmentModel.getStaffAssignments(staffId);
     res.json(assignments);
@@ -25,11 +21,7 @@ router.get("/my-assignments/:staffId", async (req, res) => {
 // Get assignment counts
 router.get("/my-assignments/:staffId/counts", async (req, res) => {
   try {
-    const { staffId } = req.params;
-    
-    if (!staffId) {
-      return res.status(400).json({ error: "Staff ID is required" });
-    }
+    const staffId = req.session.user.id;
 
     const counts = await AssignmentModel.getAssignmentCounts(staffId);
     res.json(counts);
@@ -43,11 +35,7 @@ router.get("/my-assignments/:staffId/counts", async (req, res) => {
 router.get("/tickets/:ticketId", async (req, res) => {
   try {
     const { ticketId } = req.params;
-    const staffId = req.query.staffId || req.body.staffId;
-
-    if (!staffId) {
-      return res.status(400).json({ error: "Staff ID is required" });
-    }
+    const staffId = req.session.user.id;
 
     const ticket = await AssignmentModel.getTicketAssignment(ticketId, staffId);
     
@@ -78,11 +66,8 @@ router.get("/tickets/:ticketId/messages", async (req, res) => {
 router.post("/tickets/:ticketId/message", async (req, res) => {
   try {
     const { ticketId } = req.params;
-    const { staffId, message } = req.body;
-
-    if (!staffId || !message) {
-      return res.status(400).json({ error: "Staff ID and message are required" });
-    }
+    const { message } = req.body;
+    const staffId = req.session.user.id;
 
     const messageId = await AssignmentModel.sendTicketMessage(ticketId, staffId, message);
     
@@ -125,11 +110,8 @@ router.post("/tickets/:ticketId/message", async (req, res) => {
 router.patch("/assignment/:type/:id/status", async (req, res) => {
   try {
     const { type, id } = req.params;
-    const { status, staffId } = req.body;
-
-    if (!staffId) {
-      return res.status(400).json({ error: "Staff ID is required" });
-    }
+    const { status } = req.body;
+    const staffId = req.session.user.id;
 
     if (!['pending', 'seen', 'active', 'completed'].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
@@ -160,11 +142,7 @@ router.patch("/assignment/:type/:id/status", async (req, res) => {
 router.post("/assignment/:type/:id/seen", async (req, res) => {
   try {
     const { type, id } = req.params;
-    const { staffId } = req.body;
-
-    if (!staffId) {
-      return res.status(400).json({ error: "Staff ID is required" });
-    }
+    const staffId = req.session.user.id;
 
     await AssignmentModel.markAsSeen(type, id, staffId);
     res.json({ success: true });

@@ -70,14 +70,6 @@ const ClientsOnboard = {
   },
 
   // Onboard commissions management
-
-  // Award a commission
-  create: async (onboard_id, staff_id, amount) => {
-    const sql = `INSERT INTO onboard_commissions (onboard_id, staff_id, amount) VALUES (?, ?, ?)`;
-    const [result] = await db.execute(sql, [onboard_id, staff_id, amount]);
-    return result;
-  },
-
   // Get all commissions with Staff and Client names
   getAllWithDetails: async () => {
     const sql = `

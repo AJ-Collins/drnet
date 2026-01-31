@@ -185,11 +185,6 @@
 
     // Load assignments
     async function loadAssignments() {
-        if (!staffId) {
-            showToast("Please wait while we load your profile...", 'info');
-            return;
-        }
-
         const refreshBtn = event?.target || document.querySelector('button[onclick="loadAssignments()"]');
         const originalIcon = refreshBtn?.innerHTML;
         
@@ -199,7 +194,7 @@
         }
         
         try {
-            const res = await fetch(`/api/my-assignments/${staffId}`);
+            const res = await fetch(`/api/my-assignments`);
             if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
             
             allAssignments = await res.json();
@@ -310,11 +305,6 @@
 
     // Open assignment
     async function openAssignment(type, assignmentId, ticketId) {
-        if (!staffId) {
-            showToast("Please wait while we load your profile...", 'info');
-            return;
-        }
-        
         // Update active state
         activeAssignment = { type, id: assignmentId, ticketId };
         renderAssignmentList(allAssignments);
@@ -329,7 +319,6 @@
             await fetch(`/api/assignment/${type}/${seenId}/seen`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ staffId })
             });
         } catch (err) {
             console.error("Failed to mark as seen:", err);
@@ -342,7 +331,7 @@
             
             try {
                 const [ticketRes, messagesRes] = await Promise.all([
-                    fetch(`/api/tickets/${ticketId}?staffId=${staffId}`),
+                    fetch(`/api/tickets/${ticketId}`),
                     fetch(`/api/tickets/${ticketId}/messages`)
                 ]);
                 
@@ -551,7 +540,7 @@
             const res = await fetch(`/api/tickets/${currentTicketId}/message`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ staffId, message: msgToSend })
+                body: JSON.stringify({ message: msgToSend })
             });
             
             if (!res.ok) {
@@ -595,7 +584,7 @@
             const res = await fetch(`/api/assignment/${type}/${id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus, staffId })
+                body: JSON.stringify({ status: newStatus })
             });
             
             if (res.ok) {

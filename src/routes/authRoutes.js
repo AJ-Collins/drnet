@@ -56,7 +56,7 @@ const recordLoginAttempt = (identifier, success) => {
   });
 };
 
-console.log("✅ Enhanced authRoutes loaded");
+console.log("Enhanced authRoutes loaded");
 
 // Client Registration
 router.post("/register", async (req, res) => {
@@ -354,7 +354,7 @@ router.post("/login", async (req, res) => {
         // Record successful login
         recordLoginAttempt(cleanIdentifier, true);
 
-        console.log(`✅ User logged in: ${user.email || user.phone} (${role_name})`);
+        console.log(`User logged in: ${user.email || user.phone} (${role_name})`);
 
         return res.json({
           success: true,

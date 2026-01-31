@@ -6,19 +6,21 @@ const apiSessionAuth = require("../middleware/apiSessionAuth");
 router.use(apiSessionAuth);
 
 // API: Get Staff Dashboard Stats
-router.get("/dashboard/stats", async (req, res) => {
+router.get("/dashboard/my/stats", async (req, res) => {
   try {
     const staffId = req.session.user.id;
 
-    const [stats, performance] = await Promise.all([
+    const [stats, performance, payslips] = await Promise.all([
       StaffDashboardModel.getDashboardStats(staffId),
-      StaffDashboardModel.getPerformanceMetrics(staffId)
+      StaffDashboardModel.getPerformanceMetrics(staffId),
+      StaffDashboardModel.getPayslips(staffId)
     ]);
 
     res.json({
       success: true,
       stats: stats,
-      chart: performance
+      chart: performance,
+      payslips: payslips,
     });
 
   } catch (error) {
