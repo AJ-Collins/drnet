@@ -769,7 +769,7 @@
             let text = "";
             if (type === 'reminder') {
                 if (daysLeft <= 0) {
-                    text = `Dear ${c.name}, This is to inform you that your internet subscription has expired and the service has been temporarily suspended. Amount: KES ${c.price}. \n\nPay via M-PESA:\n* Buy Goods & Services\n* Till Number: 5626320\nDR.NET TECHNOLOGY`;
+                    text = `Hello ${c.name.toUpperCase()},\nWe hope you’re doing well! Your DR.NET Internet subscription has expired, and the service is currently paused.\nAmount Due: KES ${parseFloat(c.price).toLocaleString('en-KE', {minimumFractionDigits: 2})}\n\nPay easily via M-PESA:\n• Buy Goods & Services\n• Till Number: 5626320\n\nOnce payment is received, your internet will be reconnected automatically — No Delays.\nThank you for choosing DR.NET. We truly appreciate your continued support!\n\nDR.NET Technology Labs`;
                 } else {
                     text = `Reminder:\nWe hope you’re enjoying your internet service. Your ${c.pkgName} subscription will be due in ${daysLeft} days. To continue enjoying fast and uninterrupted connectivity, please pay KES ${parseFloat(c.price).toLocaleString('en-KE', {minimumFractionDigits: 2})} by ${dateStr}.\n\nMaking payment is easy via M-PESA:\n\nGo to Buy Goods & Services\n\nEnter Till Number: 5626320\n\nComplete the payment\n\nIf you have any questions or need assistance, our support team is always here to help. Thank you for choosing DR.NET Technology – we appreciate having you as our valued customer!`;
                 }
