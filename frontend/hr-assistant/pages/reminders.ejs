@@ -98,6 +98,10 @@
                 <option value="overdue">Overdue (Warning)</option>
                 <option value="expired">Expired (Disconnected)</option>
             </select>
+
+            <select id="locationFilter" class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
+                <option value="">All Locations</option>
+            </select>
             
             <button id="btnBulkAction" onclick="Actions.openBulkDrawer()" class="hidden px-6 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 font-bold text-xs flex items-center gap-2">
                 <i class="fas fa-paper-plane"></i>
@@ -124,6 +128,7 @@
                             <input type="checkbox" id="selectAll" class="custom-checkbox" onchange="Actions.toggleSelectAll()">
                         </th>
                         <th>Client Identity</th>
+                        <th>Location</th>
                         <th>Package Plan</th>
                         <th>Amount</th>
                         <th>Status</th>
@@ -321,6 +326,11 @@
             if(!res.ok) throw new Error("Failed to load data");
             const raw = await res.json();
 
+            const userMap = new Map();
+            raw.users.forEach(user => {
+                userMap.set(user.id, user);
+            });
+
             // Process subscriptions WITHOUT SMS counts initially
             State.allData = raw.subscriptions.map(sub => {
                 const now = new Date();
@@ -341,12 +351,16 @@
                     displayStatus = 'active';
                 }
 
+                const userData = userMap.get(sub.user_id);
+                const location = userData?.location || 'Not Set';
+
                 return {
                     id: sub.id,
                     name: `${sub.first_name} ${sub.second_name}`,
                     phone: sub.phone,
                     pkgName: sub.package_name,
                     price: sub.price,
+                    location: location, 
                     expiry: expiryDate,
                     warningDate: warningDate,
                     isWarningPeriod: isWarningPeriod,
@@ -355,10 +369,9 @@
                 };
             }).sort((a,b) => a.name.localeCompare(b.name));
             
-            API.checkBalance();            
+            API.checkBalance();
+            populateLocationFilter();            
             applyFilters();
-            
-            // Load SMS counts in background (non-blocking)
             loadSmsCountsAsync();
             
         } catch (error) {
@@ -410,19 +423,18 @@
     function applyFilters() {
         const term = Els.search.value.toLowerCase().trim();
         const filter = Els.filter.value;
-
+        const locationFilter = document.getElementById('locationFilter').value;
+        
         State.filteredData = State.allData.filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(term) || item.phone.includes(term);
             const matchesFilter = !filter || item.displayStatus === filter;
-            return matchesSearch && matchesFilter;
+            const matchesLocation = !locationFilter || locationFilter === '' || item.location === locationFilter;
+            
+            return matchesSearch && matchesFilter && matchesLocation;
         });
-
+        
         // Reset to page 1 when filtering
         State.currentPage = 1;
-        
-        // Don't clear selections on filter - let user keep their selections
-        // State.selectedIds.clear();  // REMOVED
-        
         UI.updateBulkButton();
         updatePagination();
         debouncedRender();
@@ -491,6 +503,12 @@
                         </div>
                     </div>
                 </td>
+                <td class="text-xs font-medium text-slate-600">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-map-marker-alt text-teal-500 opacity-60"></i>
+                        ${client.location}
+                    </div>
+                </td>
                 <td class="font-medium text-slate-600 text-xs">${client.pkgName}</td>
                 <td class="font-mono font-bold text-slate-700 text-xs">KES ${client.price}</td>
                 <td>
@@ -529,6 +547,51 @@
         Els.selectAll.checked = allCurrentPageSelected;
     }
 
+    function populateLocationFilter() {
+        const locationSelect = document.getElementById('locationFilter');
+        
+        const locationCounts = {};
+        State.allData.forEach(item => {
+            const loc = item.location;
+            if (loc && loc.trim() !== '' && loc !== 'Not Set') {
+                locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+            }
+        });
+        
+        const locations = Object.keys(locationCounts).sort();
+        
+        const currentSelection = locationSelect.value;
+        
+        locationSelect.innerHTML = `
+            <option value="">All Locations (${State.allData.length})</option>
+            ${locations.map(loc => 
+                `<option value="${loc}">${loc} (${locationCounts[loc]})</option>`
+            ).join('')}
+        `;
+        
+        if (currentSelection && locations.includes(currentSelection)) {
+            locationSelect.value = currentSelection;
+        }
+    }
+    
+    function validatePhoneNumber(phone) {
+        // Remove all spaces and special characters
+        const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+        
+        // Check if it's exactly 10 digits and starts with 07 or 01
+        const validFormat = /^(07|01)\d{8}$/;
+        
+        return validFormat.test(cleaned);
+    }
+
+    function formatPhoneNumber(phone) {
+        // Remove all spaces and special characters
+        const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+        
+        // Return as-is if it's already in the correct format
+        return cleaned;
+    }
+
     Els.tbody.addEventListener('click', (e) => {
         const row = e.target.closest('tr');
         if (!row) return;
@@ -563,6 +626,18 @@
             const message = Els.singleBody.value;
 
             if(!message) return Swal.fire("Empty Message", "Please write a message first.", "warning");
+
+            if (!validatePhoneNumber(State.currentClient.phone)) {
+                return Swal.fire({
+                    title: "Invalid Phone Number",
+                    html: `
+                        <p class="text-sm mb-2">The phone number <strong>${State.currentClient.phone}</strong> is not valid.</p>
+                        <p class="text-xs text-slate-500">Please update the client's phone number to a valid Kenyan format (e.g., 0712345678 or +254712345678)</p>
+                    `,
+                    icon: "warning",
+                    confirmButtonText: "OK"
+                });
+            }
 
             try {
                 btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`;
@@ -622,6 +697,30 @@
             const selectedClients = Array.from(State.selectedIds).map(id => 
                 State.allData.find(c => c.id === id)
             ).filter(Boolean);
+
+            const invalidClients = selectedClients.filter(client => !validatePhoneNumber(client.phone));
+    
+            if (invalidClients.length > 0) {
+                const invalidList = invalidClients.map(c => 
+                    `<li class="text-left py-1"><strong>${c.name}</strong>: ${c.phone}</li>`
+                ).join('');
+                
+                return Swal.fire({
+                    title: "Invalid Phone Numbers Detected",
+                    html: `
+                        <div class="text-sm mb-3">
+                            <p class="mb-2">${invalidClients.length} selected client(s) have invalid phone numbers:</p>
+                            <ul class="max-h-40 overflow-y-auto bg-slate-50 rounded p-2 text-xs">
+                                ${invalidList}
+                            </ul>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-3">Please update these phone numbers to valid Kenyan format before sending SMS.</p>
+                    `,
+                    icon: "warning",
+                    confirmButtonText: "OK",
+                    width: '500px'
+                });
+            }
 
             const messages = selectedClients.map(client => ({
                 phone: client.phone,
@@ -902,5 +1001,6 @@
     });
     Els.filter.addEventListener('change', applyFilters);
     document.addEventListener('DOMContentLoaded', initData);
+    document.getElementById('locationFilter').addEventListener('change', applyFilters);
 
 </script>

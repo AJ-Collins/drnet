@@ -138,10 +138,15 @@
         <div class="lg:col-span-8 space-y-4">
             <div class="glass-panel rounded-xl flex flex-col h-[100vh]">
                 <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-xl">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search user, phone or package..." 
-                            class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-xs font-bold text-slate-700 outline-none focus:border-teal-500 w-72 transition-all">
+                    <div class="flex gap-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search user, phone or package..." 
+                                class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-xs font-bold text-slate-700 outline-none focus:border-teal-500 w-72 transition-all">
+                        </div>
+                        <select id="locationFilter" onchange="renderTable()" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-xs font-bold text-slate-600 outline-none focus:border-teal-500 cursor-pointer transition-all">
+                            <option value="">All Locations</option>
+                        </select>
                     </div>
                     <div class="flex gap-2">
                         <button onclick="init()" class="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all" title="Refresh data"><i class="fas fa-sync-alt text-xs"></i></button>
@@ -153,6 +158,7 @@
                         <thead class="sticky top-0 z-10">
                             <tr>
                                 <th>Client Details</th>
+                                 <th>Location</th>
                                 <th>Package Plan</th>
                                 <th>Timeline</th>
                                 <th>Status</th>
@@ -333,6 +339,7 @@
             const res = await fetch('/api/subscriptions/dashboard-data');
             allData = await res.json();
             await renderStats();
+            populateLocationFilter();
             renderTable();
             populateDropdowns();
         } catch (e) {
@@ -385,126 +392,183 @@
     }
 
     function renderTable() {
-        const query = $('searchInput').value.toLowerCase();
-        const tbody = $('tableBody');
-        
-        const filtered = allData.subscriptions.filter(s => 
-            s.first_name.toLowerCase().includes(query) || 
+    const query = $('searchInput').value.toLowerCase();
+    const locationFilter = $('locationFilter').value;
+    const tbody = $('tableBody');
+    
+    // Create user map for location lookup
+    const userMap = new Map();
+    allData.users.forEach(user => {
+        userMap.set(user.id, user);
+    });
+    
+    const filtered = allData.subscriptions.filter(s => {
+        const matchesSearch = s.first_name.toLowerCase().includes(query) || 
             s.second_name.toLowerCase().includes(query) ||
             s.package_name.toLowerCase().includes(query) ||
-            s.phone.includes(query)
-        );
+            s.phone.includes(query);
+        
+        const userLocation = userMap.get(s.user_id)?.location || 'Not Set';
+        const matchesLocation = !locationFilter || userLocation === locationFilter;
+        
+        return matchesSearch && matchesLocation;
+    });
 
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 text-xs font-bold">No records found</td></tr>`;
-            return;
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 text-xs font-bold">No records found</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(sub => {
+        const user = userMap.get(sub.user_id);
+        const location = user?.location || 'Not Set';
+        
+        const now = new Date();
+        const start = new Date(sub.start_date);
+        const expiry = new Date(sub.expiry_date);
+        
+        const totalDurationMs = expiry.getTime() - start.getTime();
+        const timeRemainingMs = expiry.getTime() - now.getTime();
+        const timeElapsedMs = now.getTime() - start.getTime();
+        
+        const hoursRemaining = timeRemainingMs / (1000 * 60 * 60);
+        const daysRemaining = Math.floor(hoursRemaining / 24);
+        const exactHoursRemaining = Math.floor(hoursRemaining % 24);
+
+        let percentUsed = Math.floor((timeElapsedMs / totalDurationMs) * 100);
+        percentUsed = Math.max(0, Math.min(100, percentUsed));
+
+        const isExpired = timeRemainingMs <= 0;
+        const isCritical = hoursRemaining > 0 && hoursRemaining <= 120;
+        const isWarning = hoursRemaining > 120 && hoursRemaining <= 240;
+
+        let segmentClass = 'segment-fill-active';
+        if (isCritical) segmentClass = 'segment-fill-critical';
+        else if (isWarning) segmentClass = 'segment-fill-warning';
+
+        let segmentsHtml = '';
+        for (let i = 1; i <= 10; i++) {
+            const threshold = i * 10;
+            const isFilled = percentUsed >= threshold;
+            segmentsHtml += `<div class="segment ${isFilled ? segmentClass : 'segment-empty'}"></div>`;
         }
 
-        tbody.innerHTML = filtered.map(sub => {
-            const now = new Date();
-            const start = new Date(sub.start_date);
-            const expiry = new Date(sub.expiry_date);
-            
-            const totalDurationMs = expiry.getTime() - start.getTime();
-            const timeRemainingMs = expiry.getTime() - now.getTime();
-            const timeElapsedMs = now.getTime() - start.getTime();
-            
-            const hoursRemaining = timeRemainingMs / (1000 * 60 * 60);
-            const daysRemaining = Math.floor(hoursRemaining / 24);
-            const exactHoursRemaining = Math.floor(hoursRemaining % 24);
+        let statusBadge = '';
+        if (isExpired) {
+            statusBadge = `<span class="status-badge bg-slate-100 text-slate-500 border border-slate-200">Expired</span>`;
+        } else if (isCritical) {
+            let timeLeftStr = daysRemaining > 0 
+                ? `${daysRemaining}D ${exactHoursRemaining}H` 
+                : `${exactHoursRemaining}H Left`;
 
-            let percentUsed = Math.floor((timeElapsedMs / totalDurationMs) * 100);
-            percentUsed = Math.max(0, Math.min(100, percentUsed));
+            statusBadge = `
+                <div class="flex flex-col items-start gap-1">
+                    <span class="status-badge status-overdue">CRITICAL</span>
+                    <span class="text-[9px] font-black text-rose-600 animate-pulse uppercase tracking-tighter">
+                        <i class="fas fa-clock mr-0.5"></i> ${timeLeftStr}
+                    </span>
+                </div>`;
+        } else {
+            statusBadge = `<span class="status-badge status-active">Active</span>`;
+        }
 
-            const isExpired = timeRemainingMs <= 0;
-            const isCritical = hoursRemaining > 0 && hoursRemaining <= 120;
-            const isWarning = hoursRemaining > 120 && hoursRemaining <= 240;
-
-            let segmentClass = 'segment-fill-active';
-            if (isCritical) segmentClass = 'segment-fill-critical';
-            else if (isWarning) segmentClass = 'segment-fill-warning';
-
-            let segmentsHtml = '';
-            for (let i = 1; i <= 10; i++) {
-                const threshold = i * 10;
-                const isFilled = percentUsed >= threshold;
-                segmentsHtml += `<div class="segment ${isFilled ? segmentClass : 'segment-empty'}"></div>`;
-            }
-
-            let statusBadge = '';
-            if (isExpired) {
-                statusBadge = `<span class="status-badge bg-slate-100 text-slate-500 border border-slate-200">Expired</span>`;
-            } else if (isCritical) {
-                let timeLeftStr = daysRemaining > 0 
-                    ? `${daysRemaining}D ${exactHoursRemaining}H` 
-                    : `${exactHoursRemaining}H Left`;
-
-                statusBadge = `
-                    <div class="flex flex-col items-start gap-1">
-                        <span class="status-badge status-overdue">CRITICAL</span>
-                        <span class="text-[9px] font-black text-rose-600 animate-pulse uppercase tracking-tighter">
-                            <i class="fas fa-clock mr-0.5"></i> ${timeLeftStr}
-                        </span>
-                    </div>`;
-            } else {
-                statusBadge = `<span class="status-badge status-active">Active</span>`;
-            }
-
-            return `
-                <tr class="group transition-colors">
-                    <td>
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 overflow-hidden border border-slate-200">
-                                ${sub.image ? `<img src="${sub.image}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-xs"></i>`}
-                            </div>
-                            <div>
-                                <div class="font-black text-slate-800 leading-tight truncate max-w-[150px]" title="${sub.first_name} ${sub.second_name}">${sub.first_name} ${sub.second_name}</div>
-                                <div class="text-[12px] font-bold text-slate-400">${sub.phone}</div>
-                            </div>
+        return `
+            <tr class="group transition-colors">
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 overflow-hidden border border-slate-200">
+                            ${sub.image ? `<img src="${sub.image}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-xs"></i>`}
                         </div>
-                    </td>
-                    <td>
-                        <div class="font-bold text-slate-700 truncate max-w-[120px]" title="${sub.package_name}">${sub.package_name}</div>
-                        <div class="text-[10px] font-bold text-teal-600">${sub.speed}Mbps</div>
-                    </td>
-                    <td>
-                        <div class="flex flex-col gap-0.5">
-                            <div class="text-[10px] font-bold text-slate-400">
-                                <span class="uppercase text-[10px] opacity-70">Start:</span> ${start.toLocaleDateString('en-GB')} <span class="opacity-50">${start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                            </div>
-                            <div class="text-[10px] font-bold text-slate-600">
-                                <span class="uppercase text-[10px] opacity-70">Exp:</span> ${expiry.toLocaleDateString('en-GB')} <span class="text-indigo-500">${expiry.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                            </div>
+                        <div>
+                            <div class="font-black text-slate-800 leading-tight truncate max-w-[150px]" title="${sub.first_name} ${sub.second_name}">${sub.first_name} ${sub.second_name}</div>
+                            <div class="text-[12px] font-bold text-slate-400">${sub.phone}</div>
                         </div>
-                        <div class="w-24">
-                            <div class="segmented-progress">
-                                ${segmentsHtml}
-                            </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-map-marker-alt text-teal-500 text-xs opacity-60"></i>
+                        <span class="text-xs font-bold text-slate-600">${location}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="font-bold text-slate-700 truncate max-w-[120px]" title="${sub.package_name}">${sub.package_name}</div>
+                    <div class="text-[10px] font-bold text-teal-600">${sub.speed}Mbps</div>
+                </td>
+                <td>
+                    <div class="flex flex-col gap-0.5">
+                        <div class="text-[10px] font-bold text-slate-400">
+                            <span class="uppercase text-[10px] opacity-70">Start:</span> ${start.toLocaleDateString('en-GB')} <span class="opacity-50">${start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
-                    </td>
-                    <td>${statusBadge}</td>
-                    <td class="text-right">
-                        <div class="flex justify-end gap-2 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="viewPayments(${sub.user_id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-all" title="View payment history">
-                                <i class="fas fa-history text-[10px]"></i>
-                            </button>
-                            <button onclick="loadEdit(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="Edit Record">
-                                <i class="fas fa-pen text-[10px]"></i>
-                            </button>
-                            <button onclick="manuallyExtendDays(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-teal-500 hover:bg-teal-50 transition-all" title="Add Days">
-                                <i class="fas fa-calendar-plus text-[10px]"></i>
-                            </button>
-                            <button onclick="loadRenewal(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" title="Renew subscription">
-                                <i class="fas fa-sync-alt text-[10px]"></i>
-                            </button>
-                            <button onclick="deleteSub(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all">
-                                <i class="fas fa-trash-alt text-[10px]"></i>
-                            </button>
+                        <div class="text-[10px] font-bold text-slate-600">
+                            <span class="uppercase text-[10px] opacity-70">Exp:</span> ${expiry.toLocaleDateString('en-GB')} <span class="text-indigo-500">${expiry.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+                    </div>
+                    <div class="w-24">
+                        <div class="segmented-progress">
+                            ${segmentsHtml}
+                        </div>
+                    </div>
+                </td>
+                <td>${statusBadge}</td>
+                <td class="text-right">
+                    <div class="flex justify-end gap-2 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="viewPayments(${sub.user_id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-all" title="View payment history">
+                            <i class="fas fa-history text-[10px]"></i>
+                        </button>
+                        <button onclick="loadEdit(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="Edit Record">
+                            <i class="fas fa-pen text-[10px]"></i>
+                        </button>
+                        <button onclick="manuallyExtendDays(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-teal-500 hover:bg-teal-50 transition-all" title="Add Days">
+                            <i class="fas fa-calendar-plus text-[10px]"></i>
+                        </button>
+                        <button onclick="loadRenewal(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-sm" title="Renew subscription">
+                            <i class="fas fa-sync-alt text-[10px]"></i>
+                        </button>
+                        <button onclick="deleteSub(${sub.id})" class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all">
+                            <i class="fas fa-trash-alt text-[10px]"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+    function populateLocationFilter() {
+        const locationSelect = $('locationFilter');
+        
+        // Create a map to join subscription user_id with user location
+        const userMap = new Map();
+        allData.users.forEach(user => {
+            userMap.set(user.id, user.location || 'Not Set');
+        });
+        
+        // Get unique locations with counts
+        const locationCounts = {};
+        allData.subscriptions.forEach(sub => {
+            const location = userMap.get(sub.user_id) || 'Not Set';
+            locationCounts[location] = (locationCounts[location] || 0) + 1;
+        });
+        
+        // Sort locations alphabetically
+        const locations = Object.keys(locationCounts).sort();
+        
+        // Save current selection
+        const currentSelection = locationSelect.value;
+        
+        // Rebuild dropdown with counts
+        locationSelect.innerHTML = `
+            <option value="">All Locations (${allData.subscriptions.length})</option>
+            ${locations.map(loc => 
+                `<option value="${loc}">${loc} (${locationCounts[loc]})</option>`
+            ).join('')}
+        `;
+        
+        // Restore selection if it still exists
+        if (currentSelection && locations.includes(currentSelection)) {
+            locationSelect.value = currentSelection;
+        }
     }
 
     function populateDropdowns() {

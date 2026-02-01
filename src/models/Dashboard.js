@@ -241,8 +241,8 @@ const Dashboard = {
         SELECT COALESCE(SUM(p.price), 0) as subscriptionTotal
         FROM user_subscriptions us
         JOIN packages p ON us.package_id = p.id
-        WHERE YEAR(us.start_date) = YEAR(?)
-        AND MONTH(us.start_date) = MONTH(?)
+        WHERE us.start_date >= LAST_DAY(? - INTERVAL 1 MONTH) + INTERVAL 1 DAY
+        AND us.start_date <= LAST_DAY(?)
       `, [nowTimestamp, nowTimestamp]);
 
       const [monthlySalesRevenue] = await db.query(`
