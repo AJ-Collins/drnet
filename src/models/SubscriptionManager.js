@@ -55,15 +55,16 @@ const SubscriptionManager = {
             const validity = pkg[0].validity_days || 30;
             const price = pkg[0].price;
 
-            const startDate = data.start_date ? new Date(data.start_date) : new Date();
+            const now = new Date();
+            const startDate = data.start_date ? new Date(data.start_date) : now;
             const expiry = new Date(startDate);
             expiry.setDate(startDate.getDate() + validity);
 
             // A. Insert Subscription
             const [subResult] = await connection.execute(
-                `INSERT INTO user_subscriptions (user_id, package_id, start_date, expiry_date, status) 
-                 VALUES (?, ?, ?, ?, 'active')`,
-                [data.user_id, data.package_id, toSqlDatetime(startDate), toSqlDatetime(expiry)]
+                `INSERT INTO user_subscriptions (user_id, package_id, start_date, expiry_date, status, created_at) 
+                 VALUES (?, ?, ?, ?, 'active', ?)`,
+                [data.user_id, data.package_id, toSqlDatetime(startDate), toSqlDatetime(expiry), toSqlDatetime(now)]
             );
 
             // B. Record Payment
@@ -161,9 +162,10 @@ const SubscriptionManager = {
                 SET package_id = ?, 
                     start_date = ?, 
                     expiry_date = ?, 
-                    status = 'active'
+                    status = 'active',
+                    created_at = ?
                 WHERE id = ?
-            `, [data.package_id, toSqlDatetime(newStartDate), toSqlDatetime(newExpiryDate), id]);
+            `, [data.package_id, toSqlDatetime(newStartDate), toSqlDatetime(newExpiryDate), toSqlDatetime(now), id]);
 
             await connection.commit();
             return true;
@@ -182,26 +184,20 @@ const SubscriptionManager = {
 
     getSubscriptionMetrics: async (nowTimestamp) => {
         try {
+            const dateObj = new Date(nowTimestamp);
+
             const [activeRows] = await db.query(`
                 SELECT COUNT(DISTINCT user_id) as count
                 FROM user_subscriptions
                 WHERE expiry_date > ?
-            `, [nowTimestamp]);
+            `, [toSqlDatetime(dateObj)]);
 
             const [activeRevenueRows] = await db.query(`
                 SELECT COALESCE(SUM(p.price), 0) as total 
                 FROM user_subscriptions us
                 JOIN packages p ON us.package_id = p.id
                 WHERE us.expiry_date > ?
-            `, [nowTimestamp]);
-
-            // const [monthlyRevenueRows] = await db.query(`
-            //     SELECT COALESCE(SUM(p.price), 0) as total
-            //     FROM user_subscriptions us
-            //     JOIN packages p ON us.package_id = p.id
-            //     WHERE YEAR(us.start_date) = YEAR(?)
-            //     AND MONTH(us.start_date) = MONTH(?)
-            // `, [nowTimestamp, nowTimestamp]);
+            `, [toSqlDatetime(dateObj)]);
             
             const [monthlyRevenueRows] = await db.query(`
                 SELECT COALESCE(SUM(p.price), 0) as total
@@ -209,7 +205,7 @@ const SubscriptionManager = {
                 JOIN packages p ON us.package_id = p.id
                 WHERE us.start_date >= LAST_DAY(? - INTERVAL 1 MONTH) + INTERVAL 1 DAY
                 AND us.start_date <= LAST_DAY(?)
-            `, [nowTimestamp, nowTimestamp]);
+            `, [toSqlDatetime(dateObj), toSqlDatetime(dateObj)]);
 
             return {
                 activeCount: activeRows[0].count,
