@@ -12,12 +12,12 @@ const authRoutes = require("./src/routes/authRoutes");
 const admin = require("./src/routes/admin");
 const inventory = require("./src/routes/inventory");
 
-const staff = require("./src/routes/staff");
+const supervisor = require("./src/routes/supervisor");
 const client = require("./src/routes/client");
 const sitebookings = require("./src/routes/sitebookings");
 const bookings = require("./src/routes/bookings");
 const payment = require("./src/routes/payment");
-const staffAssignment = require("./src/routes/staff");
+const staffAssignment = require("./src/routes/supervisor");
 const schedules = require("./src/routes/schedules");
 
 // Support tickets
@@ -48,10 +48,9 @@ const expenses = require("./src/routes/expenses");
 const payslips = require("./src/routes/payslips");
 const profile = require("./src/routes/profile");
 const userProfile = require("./src/routes/userProfile");
-const teamChat = require("./src/routes/teamChat");
-const announcement = require("./src/routes/announcements");
+const communicationRoutes = require("./src/routes/communicationRoutes");
 const notificationsRoutes = require("./src/routes/notifications");
-const reports = require("./src/routes/reports");
+const reports = require("./src/routes//reportRoutes");
 // Admin dashboard
 const admindashboard = require("./src/routes/dashboard");
 //Subscriptions
@@ -272,7 +271,7 @@ app.use("/api", inventory);
 app.use("/api", attendance);
 app.use("/api", packages);
 app.use("/api", users);
-app.use("/api", staff);
+app.use("/api/sup", supervisor);
 app.use("/api", client);
 app.use("/api", payment);
 app.use("/api", staffAssignment);
@@ -286,10 +285,9 @@ app.use("/api", expenses);
 app.use("/api", payslips);
 app.use("/api", profile);
 app.use("/api", userProfile);
-app.use("/api", teamChat);
-app.use("/api", announcement);
+app.use("/api/communication", communicationRoutes);
 app.use("/api", notificationsRoutes);
-app.use("/api", reports);
+app.use("/api/reports", reports);
 // Admin dahsboard
 app.use("/api/dashboard", admindashboard);
 //Client
@@ -367,8 +365,6 @@ const adminPages = [
   "invoice-generator",
   "service-assignments",
   "inventory",
-  "admin-assistant-dashboard",
-  "supervisor-dashboard",
   "deleted-users",
   "attendance",
   "communication-team",
@@ -407,29 +403,17 @@ app.get("/admin", requireAdminAuth, (req, res) => {
 //Supervisor Routes
 const supervisorPages = [
   "dashboard",
+  "task-assignment",
   "staff-attendance",
-  "my-packages",
-  "manage-users",
   "service-management",
-  "support-tickets",
-  "finance",
-  "reports",
+  "manage-users",
   "profile",
-  "register-user",
   "website-bookings",
-  "invoice-generator",
-  "service-assignments",
-  "equipment-inventory",
-  "admin-assistant-dashboard",
-  "supervisor-dashboard",
-  "deleted-users",
-  "attendance",
+  "inventory",
   "communication-team",
-  "equipments",
-  "my-customers",
-  "work-schedule",
   "notifications",
   "daily_reports",
+  "onboard"
 ];
 
 app.get("/supervisor/:page", requireSupervisorAuth, (req, res) => {
@@ -462,7 +446,9 @@ const customerCarePages = [
   "communication-team",
   "notifications",
   "task-assignment",
-  "subscriptions"
+  "subscriptions",
+  "onboard",
+  "report"
 ];
 
 app.get("/customer-care/:page", requireCustomerCareAuth, (req, res) => {
@@ -497,7 +483,9 @@ const hrAssistantPages = [
   "planner",
   "reminders",
   "profile",
-  "communication-team"
+  "communication-team",
+  "onboard",
+  "report"
 ];
 
 app.get("/hr-assistant/:page", requireHrAssistantAuth, (req, res) => {
@@ -540,6 +528,7 @@ const staffPages = [
   "task-assignment",
   "earnings",
   "onboard",
+  "report",
   "communication-team",
   "notifications",
 ];

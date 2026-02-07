@@ -1,323 +1,1336 @@
 <style>
-        .chat-scroll::-webkit-scrollbar { width: 5px; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        * { font-family: 'Inter', sans-serif; }
         
-        .bubble-in { border-radius: 0 15px 15px 15px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .bubble-out { border-radius: 15px 0 15px 15px; background: #dcf8c6; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .chat-bg { background-color: #e5ddd5; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.05"><text x="10" y="50" font-size="80" fill="%23999">💬</text></svg>'); }
-    </style>
-<div class="bg-gray-100 h-screen overflow-hidden flex flex-col">
+        body { 
+            background: #f0f2f5;
+            overflow: hidden;
+        }
 
-    <header class="bg-teal-700 text-white p-4 flex justify-between items-center shadow-md z-30">
-        <h1 class="text-lg md:text-xl font-bold tracking-tight">TEAM COMMUNICATION</h1>
-        <div class="flex gap-2">
-            <button onclick="toggleAnnouncementModal()" class="bg-teal-600 hover:bg-teal-800 px-3 py-2 rounded text-xs md:text-sm font-semibold transition">
-                <i class="fas fa-bullhorn mr-1"></i> <span class="hidden md:inline">New Announcement</span>
-            </button>
-        </div>
-    </header>
+        /* Scrollbar Styling */
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    <div class="flex flex-1 overflow-hidden relative">
-        <!-- Sidebar: Team Members & Announcements -->
-        <aside id="sidebar" class="w-full md:w-1/3 lg:w-1/4 border-r bg-white flex flex-col z-20 transition-all duration-300">
-            <div class="p-4 border-b bg-teal-50">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-teal-700 uppercase flex items-center gap-2">
-                        <i class="fas fa-users"></i> Team Members
-                    </span>
-                    <span id="onlineCount" class="text-[10px] font-bold text-teal-600">0 online</span>
-                </div>
-            </div>
+        /* WhatsApp-style Message Bubbles */
+        .message-bubble-me {
+            background: #d9fdd3;
+            border-radius: 8px 8px 2px 8px;
+            position: relative;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            min-width: 100px;
+        }
+
+        .message-bubble-other {
+            background: #ffffff;
+            border-radius: 8px 8px 8px 2px;
+            position: relative;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            min-width: 100px;
+        }
+        
+        .message-bubble-me::before {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 0 13px 9px;
+            border-color: transparent transparent #d9fdd3 transparent;
+        }
+        
+        .message-bubble-other::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 9px 13px 0;
+            border-color: transparent #ffffff transparent transparent;
+        }
+
+        /* Chat Background Pattern (WhatsApp-like) */
+        .chat-bg {
+            background-color: #efeae2;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px),
+                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px);
+        }
+
+        /* Channel & Contact Items */
+        .channel-item {
+            transition: all 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .channel-item:hover {
+            background: #f5f6f6;
+            border-left-color: #10b981;
+        }
+        
+        .channel-item.active {
+            background: #ebebeb;
+            border-left-color: #10b981;
+            font-weight: 600;
+        }
+
+        /* Announcement Card */
+        .announcement-card {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #f0e5b5;
+        }
+        
+        .announcement-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        /* Announcement expansion */
+        .announcement-content {
+            max-height: 3.6em; /* ~2 lines */
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .announcement-content.expanded {
+            max-height: none;
+        }
+
+        /* Unread Badge */
+        .unread-badge {
+            background: #25d366;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+
+        /* Typing Indicator */
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #64748b;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
             
-            <!-- Team Members List -->
-            <div class="flex-1 overflow-y-auto p-3 space-y-2" id="teamMembers">
-                <div class="p-3 bg-gray-100 rounded animate-pulse h-16"></div>
-                <div class="p-3 bg-gray-100 rounded animate-pulse h-16"></div>
-            </div>
+            .sidebar-mobile.open {
+                transform: translateX(0);
+            }
+        }
 
-            <!-- Announcements Section -->
-            <div class="border-t bg-gray-50 p-4 max-h-64 overflow-y-auto">
-                <h3 class="text-xs font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
-                    <i class="fas fa-bullhorn text-teal-600"></i> Announcements
-                </h3>
-                <div id="announcementsList" class="space-y-2">
-                    <p class="text-xs text-gray-400 italic">No announcements</p>
-                </div>
-            </div>
-        </aside>
+        /* Input Focus */
+        .message-input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
 
-        <!-- Main Chat Area -->
-        <main id="mainDisplay" class="hidden md:flex flex-1 flex-col bg-white absolute inset-0 z-10 md:relative md:z-0">
-            <div class="p-3 md:p-4 border-b flex justify-between items-center bg-white shadow-sm">
-                <div class="flex items-center gap-3">
-                    <button onclick="closeChatMobile()" class="md:hidden p-2 -ml-2 text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                    </button>
-                    <div>
-                        <h2 class="text-sm md:text-lg font-bold text-teal-800 flex items-center gap-2">
-                            <i class="fas fa-comments"></i> #team-chat
-                        </h2>
-                        <p class="text-[10px] md:text-xs text-teal-600">Real-time team communication</p>
+        /* Status Indicator */
+        .status-online { background: #25d366; }
+        .status-busy { background: #ef4444; }
+        .status-away { background: #f59e0b; }
+        .status-offline { background: #94a3b8; }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Create Channel Form */
+        .create-form {
+            background: #f7f8fa;
+            border-radius: 12px;
+            border: 1px solid #e1e4e8;
+        }
+
+        /* Message Time */
+        .msg-time {
+            font-size: 11px;
+            color: rgba(0, 0, 0, 0.45);
+        }
+
+        /* Delete Button */
+        .delete-msg-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message-group:hover .delete-msg-btn {
+            opacity: 1;
+        }
+    </style><!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-[9999] space-y-2"></div>
+
+    <!-- Main Container -->
+    <div class="h-screen flex flex-col">
+
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">TEAM <span class="text-teal-600">CONNECT.</span></h1>
+                <p class="text-slate-400 font-bold text-xs uppercase tracking-[0.2em] mt-1">Real-time Communication</p>
+            </div>
+        </div>        
+
+        <!-- Main Content Area -->
+        <div class="flex flex-1 overflow-hidden">
+            
+            <!-- Left Sidebar -->
+            <aside id="sidebar" class="w-96 bg-white border-r border-gray-200 flex flex-col sidebar-mobile absolute lg:relative inset-y-0 left-0 z-40 lg:z-0">
+                
+                <!-- Announcements Section -->
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-gray-700 text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                            <i class="fas fa-bullhorn text-amber-500"></i>
+                            Announcements
+                        </h3>
+                        <button id="createAnnouncementBtn" onclick="toggleCreateAnnouncement()" class="w-6 h-6 bg-amber-500 hover:bg-amber-600 rounded flex items-center justify-center transition-colors shadow-sm">
+                            <i class="fas fa-plus text-white text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Create Announcement Form (Hidden by default) -->
+                    <div id="createAnnouncementForm" class="hidden mb-3 create-form p-3 fade-in">
+                        <input type="text" id="announcementTitle" placeholder="Announcement title..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm mb-2 focus:outline-none focus:border-amber-500">
+                        <textarea id="announcementContent" placeholder="Message..." rows="3" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm mb-2 resize-none focus:outline-none focus:border-amber-500"></textarea>
+                        <select id="announcementPriority" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm mb-2 focus:outline-none focus:border-amber-500">
+                            <option value="normal">Normal</option>
+                            <option value="important">Important</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <button onclick="submitAnnouncement()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-2 rounded-lg transition-colors">
+                                POST
+                            </button>
+                            <button onclick="toggleCreateAnnouncement()" class="px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold py-2 rounded-lg transition-colors">
+                                CANCEL
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Announcements List -->
+                    <div id="announcementsList" class="space-y-2 max-h-72 overflow-y-auto custom-scroll">
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin text-gray-400 text-xl mb-2"></i>
+                            <p class="text-gray-400 text-xs">Loading...</p>
+                        </div>
                     </div>
                 </div>
-                <button onclick="refreshChat()" class="text-teal-600 hover:text-teal-800 p-2">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
 
-            <!-- Chat Messages -->
-            <div class="flex-1 flex flex-col chat-bg">
-                <div id="chatMessages" class="flex-1 overflow-y-auto p-4 chat-scroll flex flex-col gap-3">
-                    <div class="text-center text-gray-400 py-10">
-                        <i class="fas fa-comment-slash text-5xl mb-3"></i>
-                        <p class="text-sm">No messages yet. Start the conversation!</p>
+                <!-- Channels Section -->
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-gray-700 text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                            <i class="fas fa-hashtag text-emerald-500"></i>
+                            Channels
+                        </h3>
+                        <button id="createChannelBtn" onclick="toggleCreateChannel()" class="w-6 h-6 bg-emerald-500 hover:bg-emerald-600 rounded flex items-center justify-center transition-colors shadow-sm">
+                            <i class="fas fa-plus text-white text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Create Channel Form (Hidden by default) -->
+                    <div id="createChannelForm" class="hidden mb-3 create-form p-3 fade-in">
+                        <input type="text" id="channelName" placeholder="Channel name..." class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm mb-2 focus:outline-none focus:border-emerald-500">
+                        <textarea id="channelDescription" placeholder="Description (optional)..." rows="2" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm mb-2 resize-none focus:outline-none focus:border-emerald-500"></textarea>
+                        <div class="flex gap-2">
+                            <button onclick="submitChannel()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg transition-colors">
+                                CREATE
+                            </button>
+                            <button onclick="toggleCreateChannel()" class="px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold py-2 rounded-lg transition-colors">
+                                CANCEL
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Channels List -->
+                    <div id="channelsList" class="space-y-1">
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin text-gray-400 text-xl mb-2"></i>
+                            <p class="text-gray-400 text-xs">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Direct Messages Section -->
+                <div class="p-4 flex-1 overflow-hidden flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-gray-700 text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                            <i class="fas fa-user text-blue-500"></i>
+                            Direct Messages
+                        </h3>
+                        <button id="createNewDmBtn" onclick="toggleNewDM()" class="w-6 h-6 bg-blue-500 hover:bg-blue-600 rounded flex items-center justify-center transition-colors shadow-sm">
+                            <i class="fas fa-plus text-white text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- New DM Selection (Hidden by default) -->
+                    <div id="newDMSection" class="hidden mb-3 create-form p-3 max-h-64 overflow-y-auto custom-scroll fade-in">
+                        <p class="text-gray-600 text-xs mb-2 font-semibold">Select a person to message:</p>
+                        <div id="staffList" class="space-y-1">
+                            <p class="text-gray-400 text-xs text-center py-2">Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- DM Contacts List -->
+                    <div id="dmList" class="space-y-1 flex-1 overflow-y-auto custom-scroll">
+                        <div class="text-center py-8">
+                            <i class="fas fa-comments text-gray-300 text-3xl mb-2"></i>
+                            <p class="text-gray-400 text-xs">No conversations yet</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Chat Area -->
+            <main class="flex-1 flex flex-col bg-gray-50">
+                
+                <!-- Chat Header -->
+                <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center" id="chatIcon">
+                            <i class="fas fa-hashtag text-emerald-500"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-gray-900 font-bold text-lg" id="chatTitle">General</h2>
+                            <p class="text-gray-500 text-xs" id="chatDescription">Team-wide announcements and general discussion</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button id="deleteChannelBtn" onclick="deleteCurrentChannel()" class="hidden px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition-colors">
+                            <i class="fas fa-trash mr-1"></i> DELETE CHANNEL
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div id="messagesContainer" class="flex-1 overflow-y-auto custom-scroll p-6 space-y-2 chat-bg">
+                    <div class="flex flex-col items-center justify-center h-full text-center">
+                        <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-comment-slash text-gray-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-gray-600 font-bold text-lg mb-2">No messages yet</h3>
+                        <p class="text-gray-400 text-sm">Be the first to start the conversation!</p>
+                    </div>
+                </div>
+
+                <!-- Typing Indicator -->
+                <div id="typingIndicator" class="hidden px-6 py-2 chat-bg">
+                    <div class="flex items-center gap-2 text-gray-600 text-sm">
+                        <div class="flex gap-1">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                        <span id="typingText">Someone is typing...</span>
                     </div>
                 </div>
 
                 <!-- Message Input -->
-                <div class="p-3 bg-white border-t flex gap-2">
-                    <textarea 
-                        id="messageInput" 
-                        rows="1" 
-                        placeholder="Type a message..." 
-                        class="flex-1 p-2 bg-gray-100 border-none rounded-full px-4 text-sm outline-none resize-none"
-                        oninput="autoResize(this)"
-                        onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }"></textarea>
-                    <button onclick="sendMessage()" class="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-full">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                    </button>
+                <div class="bg-white border-t border-gray-200 p-4 shrink-0">
+                    <div class="flex items-end gap-3">
+                        
+                        <div class="flex-1 relative">
+                            <textarea 
+                                id="messageInput"
+                                rows="1"
+                                placeholder="Type a message..."
+                                class="w-full bg-gray-100 border-none rounded-full px-4 py-3 text-gray-900 text-sm resize-none message-input custom-scroll pr-16"
+                                oninput="autoResize(this); handleTyping()"
+                                onkeydown="handleKeyPress(event)"
+                                maxlength="2000"
+                            ></textarea>
+                            <span class="absolute bottom-3 right-3 text-gray-400 text-xs" id="charCount">0/2000</span>
+                        </div>
+
+                        <button onclick="sendMessage()" class="w-12 h-12 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center transition-colors shadow-md">
+                            <i class="fas fa-paper-plane text-white"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </main>
-    </div>
-</div>
-
-<!-- Announcement Modal -->
-<div id="announcementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-        <div class="p-6 border-b bg-teal-50">
-            <h2 class="text-xl font-bold text-teal-800 flex items-center gap-2">
-                <i class="fas fa-bullhorn"></i> New Announcement
-            </h2>
+            </main>
         </div>
-        <form onsubmit="saveAnnouncement(event)" class="p-6 space-y-4">
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Title</label>
-                <input type="text" id="annTitle" required placeholder="Announcement title..." 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Message</label>
-                <textarea id="annBody" required rows="4" placeholder="Announcement details..." 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none resize-none"></textarea>
-            </div>
-            <div class="flex gap-3 pt-2">
-                <button type="submit" class="flex-1 bg-teal-600 text-white py-2.5 rounded-lg font-bold hover:bg-teal-700 transition">
-                    Post Announcement
-                </button>
-                <button type="button" onclick="toggleAnnouncementModal()" class="px-6 py-2.5 text-gray-600 font-semibold hover:text-gray-900">
-                    Cancel
-                </button>
-            </div>
-        </form>
     </div>
-</div>
 
-<script>
-    const API_BASE = "/api";
-    let messages = [];
-    let teamMembers = [];
-    let announcements = [];
-    let currentUser = null;
+    <script>
+        // ==================== GLOBAL STATE ====================
+        let socket;
+        let currentUser = { id: null, name: '', type: 'staff', role: '' };
+        let activeView = { type: 'channel', id: 1 }; // Default to general channel
+        let channels = [];
+        let dmContacts = [];
+        let announcements = [];
+        let allStaff = [];
+        let typingTimeout;
+        let currentSocketRoom = null; // Track current socket room
 
-    window.onload = () => {
-        loadData();
-        setInterval(loadData, 10000); // Auto-refresh every 10s
-    };
+        // ==================== INITIALIZATION ====================
+        window.onload = async () => {
+            await fetchCurrentUser();
+            initializeSocketIO();
+            await loadAllData();
+            requestNotificationPermission();
+        };
 
-    async function loadData() {
-        try {
-            const [msgRes, memberRes, annRes, userRes] = await Promise.all([
-                fetch(`${API_BASE}/team/messages`),
-                fetch(`${API_BASE}/team/members`),
-                fetch(`${API_BASE}/team/announcements`),
-                fetch(`${API_BASE}/auth/me`)
+        async function fetchCurrentUser() {
+            try {
+                const response = await fetch('/api/profile', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                
+                
+                if (data.profile) {
+                    currentUser.name = data.profile.first_name + ' ' + data.profile.second_name;
+                    currentUser.role = data.profile.role_name;
+                    
+                    const roleLower = data.profile.role_name.toLowerCase();
+                    currentUser.type = roleLower === 'admin' ? 'admin' : 'staff';
+
+                    if (roleLower !== 'admin') {
+                        
+                        const announcementBtn = document.getElementById('createAnnouncementBtn');
+                        const channelBtn = document.getElementById('createChannelBtn');
+                        const newDmBtn = document.getElementById('createNewDmBtn');
+                        
+                        if (announcementBtn) {
+                            announcementBtn.style.display = 'none';
+                        }
+                        
+                        if (channelBtn) {
+                            channelBtn.style.display = 'none';
+                        }
+                        if (newDmBtn) {
+                            newDmBtn.style.display = 'none';
+                        }
+                    } else {
+                        //
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }
+        }
+
+        async function loadAllData() {
+            await Promise.all([
+                loadChannels(),
+                loadAnnouncements(),
+                loadDMContacts(),
+                loadStaffList()
             ]);
-
-            const msgData = msgRes.ok ? await msgRes.json() : {};
-            const annData = annRes.ok ? await annRes.json() : {};
-
-            messages = Array.isArray(msgData.messages) ? msgData.messages : [];
-            teamMembers = memberRes.ok ? await memberRes.json() : [];
-            announcements = Array.isArray(annData.announcements) ? annData.announcements : [];
-            currentUser = userRes.ok ? await userRes.json() : null;
-
-            renderMessages();
-            renderMembers();
-            renderAnnouncements();
-        } catch (err) {
-            console.error("Failed to load data:", err);
-        }
-    }
-
-    function renderMessages() {
-        const container = document.getElementById('chatMessages');
-        if (!messages.length) {
-            container.innerHTML = `
-                <div class="text-center text-gray-400 py-10">
-                    <i class="fas fa-comment-slash text-5xl mb-3"></i>
-                    <p class="text-sm">No messages yet. Start the conversation!</p>
-                </div>`;
-            return;
+            
+            // Load default channel (General)
+            switchToChannel(1);
         }
 
-        container.innerHTML = messages.map(m => {
-            const isMe = currentUser && m.sender_id === currentUser.id;
-            const sender = m.sender_name || "Unknown";
-            const role = m.sender_role || "Staff";
+        // SOCKET.IO 
+        function initializeSocketIO() {
+            socket = io();
 
+            socket.on('connect', () => {
+                if (currentSocketRoom) {
+                    rejoinCurrentRoom();
+                }
+            });
+
+            socket.on('disconnect', () => {
+            });
+
+            // Channel events
+            socket.on('channelCreated', async (data) => {
+                await loadChannels();
+                showNotification('New Channel', `${data.name} has been created`);
+            });
+
+            socket.on('channelDeleted', async (data) => {
+                await loadChannels();
+                if (activeView.type === 'channel' && activeView.id == data.channelId) {
+                    switchToChannel(1); // Switch to General
+                }
+            });
+
+            // Listen for new messages on ANY channel
+            socket.on('newChannelMessage', (data) => {
+                // Only append if we're viewing this channel
+                if (activeView.type === 'channel' && activeView.id == data.channelId) {
+                    appendMessage(data.message);
+                    if (data.message.sender_id != currentUser.id) {
+                        showNotification('New Message', data.message.content);
+                    }
+                }
+            });
+
+            // FIXED: Listen for new direct messages
+            socket.on('newDirectMessage', (data) => {
+                
+                // Backend already filtered this message for us, so just check if we're in the right view
+                if (activeView.type === 'direct') {
+                    // Check if this message belongs to the current conversation
+                    const isRelevant = (
+                        (data.message.sender_id == activeView.id && data.message.sender_type == activeView.userType) ||
+                        (data.message.recipient_id == activeView.id && data.message.recipient_type == activeView.userType)
+                    );
+                    
+                    if (isRelevant) {
+                        appendMessage(data.message);
+                        // Backend will set isFromMe flag
+                        if (!data.message.isFromMe) {
+                            showNotification('New Message', data.message.content);
+                        }
+                    }
+                }
+                
+                loadDMContacts();
+            });
+
+            // Typing indicators for channels
+            socket.on('userTyping', (data) => {
+                if (activeView.type === 'channel' && activeView.id == data.channelId) {
+                    if (data.isTyping && data.userId != currentUser.id) {
+                        showTypingIndicator(data.userName || 'Someone');
+                    } else {
+                        hideTypingIndicator();
+                    }
+                }
+            });
+
+            socket.on('userTypingDM', (data) => {
+                
+                // Backend already validated this is for us
+               if (activeView.type === 'direct') {
+                    // Check: Is this typing event from the person I'm chatting with?
+                    const isChatPartnerTyping = (
+                        data.senderId == activeView.id && 
+                        data.senderType == activeView.userType
+                    );
+                    
+                    if (isChatPartnerTyping) {
+                        if (data.isTyping) {
+                            showTypingIndicator(data.senderName || 'Someone');
+                        } else {
+                            hideTypingIndicator();
+                        }
+                    }
+                }
+            });
+
+            socket.on('messageDeleted', (data) => {
+                const msgElement = document.querySelector(`[data-message-id="${data.messageId}"]`);
+                if (msgElement) {
+                    msgElement.remove();
+                }
+            });
+
+            // Announcement events
+            socket.on('newAnnouncement', async (data) => {
+                await loadAnnouncements();
+                showNotification('New Announcement', data.title);
+            });
+
+            socket.on('announcementDeleted', async () => {
+                await loadAnnouncements();
+            });
+        }
+
+        function rejoinCurrentRoom() {
+            if (activeView.type === 'channel') {
+                socket.emit('joinChannel', activeView.id);
+                currentSocketRoom = `channel_${activeView.id}`;
+            } else if (activeView.type === 'direct') {
+                socket.emit('joinDM', { 
+                    userId: activeView.id, 
+                    userType: activeView.userType 
+                });
+                currentSocketRoom = `dm_${activeView.id}_${activeView.userType}`;
+            }
+        }
+
+        // ==================== CHANNELS ====================
+        async function loadChannels() {
+            try {
+                const response = await fetch('/api/communication/channels', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    channels = data.channels;
+                    renderChannels();
+                }
+            } catch (error) {
+                console.error('Error loading channels:', error);
+            }
+        }
+
+        function renderChannels() {
+            const container = document.getElementById('channelsList');
+            
+            if (channels.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <p class="text-gray-400 text-xs">No channels yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = channels.map(channel => {
+                const isActive = activeView.type === 'channel' && activeView.id == channel.id;
+                return `
+                    <div onclick="switchToChannel(${channel.id})" 
+                         class="channel-item px-3 py-2.5 rounded-r-lg cursor-pointer ${isActive ? 'active' : ''}">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-hashtag text-sm ${isActive ? 'text-emerald-500' : 'text-gray-400'}"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold ${isActive ? 'text-gray-900' : 'text-gray-600'} truncate">
+                                    ${escapeHtml(channel.name)}
+                                </p>
+                                ${channel.is_default ? '<span class="text-[10px] text-gray-400 uppercase font-bold">Default</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function switchToChannel(channelId) {
+            // Leave previous room
+            if (currentSocketRoom && currentSocketRoom.startsWith('channel_')) {
+                socket.emit('leaveChannel', activeView.id);
+            } else if (currentSocketRoom && currentSocketRoom.startsWith('dm_')) {
+                socket.emit('leaveDM', { 
+                    userId: activeView.id, 
+                    userType: activeView.userType 
+                });
+            }
+
+            activeView = { type: 'channel', id: channelId };
+            
+            const channel = channels.find(c => c.id == channelId);
+            if (!channel) return;
+
+            // Update header
+            document.getElementById('chatIcon').innerHTML = '<i class="fas fa-hashtag text-emerald-500"></i>';
+            document.getElementById('chatTitle').textContent = channel.name;
+            document.getElementById('chatDescription').textContent = channel.description || 'Channel discussion';
+
+            // Show/hide delete button
+            const deleteBtn = document.getElementById('deleteChannelBtn');
+            if (currentUser.role === 'admin' && !channel.is_default) {
+                deleteBtn.classList.remove('hidden');
+            } else {
+                deleteBtn.classList.add('hidden');
+            }
+
+            // Load messages
+            await loadChannelMessages(channelId);
+            
+            // Re-render channels to update active state
+            renderChannels();
+            
+            // Join socket room
+            socket.emit('joinChannel', channelId);
+            currentSocketRoom = `channel_${channelId}`;
+        }
+
+        async function loadChannelMessages(channelId) {
+            try {
+                const response = await fetch(`/api/communication/messages/channel/${channelId}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    renderMessages(data.messages);
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        function toggleCreateChannel() {
+            const form = document.getElementById('createChannelForm');
+            form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                document.getElementById('channelName').focus();
+            }
+        }
+
+        async function submitChannel() {
+            const name = document.getElementById('channelName').value.trim();
+            const description = document.getElementById('channelDescription').value.trim();
+
+            if (!name) {
+                showToast('Channel name is required', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/communication/channels', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ name, description })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('channelName').value = '';
+                    document.getElementById('channelDescription').value = '';
+                    toggleCreateChannel();
+                    showToast('Channel created successfully', 'success');
+                    await loadChannels();
+                } else {
+                    showToast(data.message || 'Failed to create channel', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        async function deleteCurrentChannel() {
+            if (!confirm('Are you sure you want to delete this channel? All messages will be lost.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/communication/channels/${activeView.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Channel deleted', 'success');
+                    switchToChannel(1); // Switch to General
+                } else {
+                    showToast(data.message || 'Failed to delete channel', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        // ==================== DIRECT MESSAGES ====================
+        async function loadDMContacts() {
+            try {
+                const response = await fetch('/api/communication/contacts', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    dmContacts = data.contacts;
+                    renderDMContacts();
+                }
+            } catch (error) {
+                console.error('Error loading DM contacts:', error);
+            }
+        }
+
+        function renderDMContacts() {
+            const container = document.getElementById('dmList');
+            
+            if (dmContacts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-comments text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-gray-400 text-xs">No conversations yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = dmContacts.map(contact => {
+                const isActive = activeView.type === 'direct' && activeView.id == contact.user_id && activeView.userType == contact.user_type;
+                const hasUnread = contact.unread_count > 0;
+                
+                return `
+                    <div onclick="switchToDM(${contact.user_id}, '${contact.user_type}')" 
+                         class="channel-item px-3 py-2.5 rounded-r-lg cursor-pointer ${isActive ? 'active' : ''}">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                    ${contact.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div class="absolute bottom-0 right-0 w-2.5 h-2.5 status-online rounded-full border-2 border-white"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold ${isActive ? 'text-gray-900' : 'text-gray-600'} truncate">
+                                    ${escapeHtml(contact.name)}
+                                </p>
+                                <p class="text-[10px] text-gray-400">
+                                    ${contact.user_type === 'admin' ? 'Administrator' : 'Team Member'}
+                                </p>
+                            </div>
+                            ${hasUnread ? `
+                                <span class="unread-badge w-5 h-5 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                    ${contact.unread_count}
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function switchToDM(userId, userType) {
+            // Leave previous room
+            if (currentSocketRoom && currentSocketRoom.startsWith('dm_')) {
+                socket.emit('leaveDM', { 
+                    userId: activeView.id, 
+                    userType: activeView.userType 
+                });
+            } else if (currentSocketRoom && currentSocketRoom.startsWith('channel_')) {
+                socket.emit('leaveChannel', activeView.id);
+            }
+
+            activeView = { type: 'direct', id: userId, userType: userType };
+            
+            // Find contact info
+            let contact = dmContacts.find(c => c.user_id == userId && c.user_type == userType);
+            if (!contact) {
+                contact = allStaff.find(s => s.id == userId);
+            }
+            
+            if (!contact) return;
+
+            // Update header
+            document.getElementById('chatIcon').innerHTML = `
+                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    ${contact.name.charAt(0).toUpperCase()}
+                </div>
+            `;
+            document.getElementById('chatTitle').textContent = contact.name;
+            document.getElementById('chatDescription').textContent = 'Direct Message';
+            document.getElementById('deleteChannelBtn').classList.add('hidden');
+
+            // Load messages
+            await loadDirectMessages(userId, userType);
+            
+            // Re-render DM list
+            renderDMContacts();
+            
+            // Join socket room
+            socket.emit('joinDM', { userId, userType });
+            currentSocketRoom = `dm_${userId}_${userType}`;
+        }
+
+        async function loadDirectMessages(otherUserId, otherUserType) {
+            try {
+                const response = await fetch(`/api/communication/messages/direct/${otherUserId}/${otherUserType}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    renderMessages(data.messages);
+                }
+            } catch (error) {
+                console.error('Error loading direct messages:', error);
+            }
+        }
+
+        async function loadStaffList() {
+            try {
+                const response = await fetch('/api/communication/staff', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    allStaff = data.staff.filter(s => s.id != currentUser.id);
+                }
+            } catch (error) {
+                console.error('Error loading staff:', error);
+            }
+        }
+
+        function toggleNewDM() {
+            const section = document.getElementById('newDMSection');
+            const isHidden = section.classList.contains('hidden');
+            
+            if (isHidden) {
+                renderStaffList();
+            }
+            
+            section.classList.toggle('hidden');
+        }
+
+        function renderStaffList() {
+            const container = document.getElementById('staffList');
+            
+            if (allStaff.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-xs text-center py-2">No staff available</p>';
+                return;
+            }
+
+            container.innerHTML = allStaff.map(staff => `
+                <div onclick="startNewDM(${staff.id}, 'staff')" 
+                     class="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors">
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                        ${staff.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-gray-700">${escapeHtml(staff.name)}</p>
+                        <p class="text-[10px] text-gray-400">${staff.email}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function startNewDM(userId, userType) {
+            toggleNewDM();
+            switchToDM(userId, userType);
+        }
+
+        // ==================== MESSAGES (WhatsApp Style) ====================
+        function renderMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-center">
+                        <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-comment-slash text-gray-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-gray-600 font-bold text-lg mb-2">No messages yet</h3>
+                        <p class="text-gray-400 text-sm">Be the first to start the conversation!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => createMessageHTML(msg)).join('');
+            scrollToBottom();
+        }
+
+        function createMessageHTML(msg) {
+            const isMe = msg.isFromMe !== undefined ? msg.isFromMe : false;
+            const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
             return `
-                <div class="${isMe ? 'self-end' : 'self-start'} max-w-[80%]">
-                    <span class="text-[10px] text-gray-600 ${isMe ? 'mr-2 text-right block' : 'ml-2'}">
-                        ${isMe ? 'You' : escapeHtml(sender)}
-                        ${role === 'Admin' ? '<span class="ml-1 px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[9px] font-bold">ADMIN</span>' : ''}
-                    </span>
-                    <div class="${isMe ? 'bubble-out' : 'bubble-in'} p-3 text-sm text-gray-800">
-                        ${escapeHtml(m.message)}
-                        <span class="block text-[9px] text-gray-400 text-right mt-1">
-                            ${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </span>
+                <div data-message-id="${msg.id}" class="message-group fade-in ${isMe ? 'flex justify-end' : 'flex justify-start'} mb-2">
+                    <div class="max-w-[70%] relative">
+                        ${!isMe && activeView.type === 'channel' ? `
+                            <p class="text-xs font-semibold text-gray-700 mb-1 ${isMe ? 'mr-2' : 'ml-2'}">${escapeHtml(msg.sender_name)}</p>
+                        ` : ''}
+                        
+                        <div class="${isMe ? 'message-bubble-me' : 'message-bubble-other'} px-3 pt-2 pb-6 relative">
+                            <p class="text-gray-900 text-[15px] leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(msg.content)}</p>
+                            <div class="absolute bottom-1.5 right-3 flex items-center gap-1.5">
+                                <span class="msg-time text-[11px]">${time}</span>
+                                ${isMe ? '<i class="fas fa-check-double text-blue-500 text-[11px]"></i>' : ''}
+                            </div>
+                        </div>
+                        
+                        ${isMe ? `
+                            <button onclick="deleteMessage(${msg.id})" 
+                                class="delete-msg-btn absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-md">
+                                <i class="fas fa-trash text-white text-xs"></i>
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             `;
-        }).join('');
+        }
 
-        container.scrollTop = container.scrollHeight;
-    }
+        function appendMessage(msg) {
+            const container = document.getElementById('messagesContainer');
+            
+            // Remove empty state if exists
+            const emptyState = container.querySelector('.flex.flex-col.items-center');
+            if (emptyState) {
+                container.innerHTML = '';
+            }
+            
+            container.insertAdjacentHTML('beforeend', createMessageHTML(msg));
+            scrollToBottom();
+        }
 
-    function renderMembers() {
-        const container = document.getElementById('teamMembers');
-        const onlineCount = teamMembers.filter(m => m.online).length;
-        document.getElementById('onlineCount').textContent = `${onlineCount} online`;
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
 
-        container.innerHTML = teamMembers.map(m => `
-            <div class="p-3 border-b hover:bg-teal-50 cursor-pointer transition rounded flex items-center gap-3">
-                <div class="relative">
-                    <div class="w-10 h-10 rounded-full ${m.role === 'Admin' ? 'bg-purple-600' : 'bg-teal-600'} text-white flex items-center justify-center font-bold">
-                        ${m.name.charAt(0).toUpperCase()}
+            if (!content) return;
+
+            const payload = {
+                message_type: activeView.type,
+                content: content
+            };
+
+            if (activeView.type === 'channel') {
+                payload.channel_id = activeView.id;
+            } else if (activeView.type === 'direct') {
+                payload.recipient_id = activeView.id;
+                payload.recipient_type = activeView.userType;
+            }
+
+            try {
+                const response = await fetch('/api/communication/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    input.value = '';
+                    autoResize(input);
+                    updateCharCount();
+                    
+                    // Stop typing indicator
+                    stopTyping();
+                } else {
+                    showToast(data.message || 'Failed to send message', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        async function deleteMessage(messageId) {
+            if (!confirm('Delete this message?')) return;
+
+            try {
+                const response = await fetch(`/api/communication/messages/${messageId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Message deleted', 'success');
+                } else {
+                    showToast(data.message || 'Failed to delete message', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        // ==================== ANNOUNCEMENTS ====================
+        async function loadAnnouncements() {
+            try {
+                const response = await fetch('/api/communication/announcements', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    announcements = data.announcements;
+                    renderAnnouncements();
+                }
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+            }
+        }
+
+        function renderAnnouncements() {
+            const container = document.getElementById('announcementsList');
+            
+            if (announcements.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-bullhorn text-gray-300 text-2xl mb-2"></i>
+                        <p class="text-gray-400 text-xs">No announcements</p>
                     </div>
-                    ${m.online ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>' : ''}
-                </div>
-                <div class="flex-1">
-                    <div class="font-semibold text-gray-800 text-sm">${escapeHtml(m.name)}</div>
-                    <div class="text-xs ${m.online ? 'text-green-600' : 'text-gray-400'}">
-                        ${m.online ? 'Online' : 'Offline'} • ${m.role || 'Staff'}
+                `;
+                return;
+            }
+
+            container.innerHTML = announcements.map(ann => {
+                const priorityColors = {
+                    normal: 'from-gray-100 to-gray-200 border-gray-300',
+                    important: 'from-blue-100 to-blue-200 border-blue-300',
+                    urgent: 'from-red-100 to-red-200 border-red-300'
+                };
+                
+                const textColors = {
+                    normal: 'text-gray-700',
+                    important: 'text-blue-700',
+                    urgent: 'text-red-700'
+                };
+                
+                const needsExpansion = ann.content.length > 100;
+                
+                return `
+                    <div class="announcement-card bg-gradient-to-br ${priorityColors[ann.priority]} border p-3 relative">
+                        <div class="relative z-10">
+                            <div class="flex items-start justify-between mb-2">
+                                <span class="bg-white/50 ${textColors[ann.priority]} text-[9px] font-black px-2 py-0.5 rounded uppercase border border-current">
+                                    ${ann.priority}
+                                </span>
+                                ${currentUser.role === 'admin' ? `
+                                    <button onclick="deleteAnnouncement(${ann.id})" class="text-gray-500 hover:text-gray-700">
+                                        <i class="fas fa-times text-xs"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <h4 class="${textColors[ann.priority]} font-bold text-sm mb-1">${escapeHtml(ann.title)}</h4>
+                            <div class="announcement-content ${needsExpansion ? '' : 'expanded'}" id="ann-content-${ann.id}">
+                                <p class="text-gray-700 text-xs leading-relaxed">${escapeHtml(ann.content)}</p>
+                            </div>
+                            ${needsExpansion ? `
+                                <button onclick="toggleAnnouncement(${ann.id})" 
+                                    class="text-xs ${textColors[ann.priority]} font-semibold mt-1 hover:underline" 
+                                    id="ann-btn-${ann.id}">
+                                    Show more
+                                </button>
+                            ` : ''}
+                            <p class="text-gray-500 text-[10px] mt-2">${new Date(ann.created_at).toLocaleDateString()}</p>
+                        </div>
                     </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderAnnouncements() {
-        const container = document.getElementById('announcementsList');
-        if (!announcements.length) {
-            container.innerHTML = `<p class="text-xs text-gray-400 italic">No announcements</p>`;
-            return;
+                `;
+            }).join('');
         }
 
-        container.innerHTML = announcements.map(a => `
-            <div class="p-3 bg-teal-50 border-l-4 border-teal-600 rounded text-xs group relative">
-                <h4 class="font-bold text-teal-800">${escapeHtml(a.title)}</h4>
-                <p class="text-gray-700 mt-1 text-[11px]">${escapeHtml(a.message.substring(0, 80))}${a.message.length > 80 ? '...' : ''}</p>
-                <p class="text-[9px] text-gray-500 mt-2">${new Date(a.created_at).toLocaleDateString()}</p>
-                ${currentUser?.role === 'Admin' ? `
-                    <button onclick="deleteAnnouncement(${a.id})" 
-                        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">
-                        <i class="fas fa-trash text-xs"></i>
-                    </button>
-                ` : ''}
-            </div>
-        `).join('');
-    }
+        function toggleAnnouncement(id) {
+            const content = document.getElementById(`ann-content-${id}`);
+            const btn = document.getElementById(`ann-btn-${id}`);
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                btn.textContent = 'Show more';
+            } else {
+                content.classList.add('expanded');
+                btn.textContent = 'Show less';
+            }
+        }
 
-    async function sendMessage() {
-        const input = document.getElementById('messageInput');
-        const msg = input.value.trim();
-        if (!msg) return;
+        function toggleCreateAnnouncement() {
+            const form = document.getElementById('createAnnouncementForm');
+            form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                document.getElementById('announcementTitle').focus();
+            }
+        }
 
-        try {
-            await fetch(`${API_BASE}/team/messages`, {
+        async function submitAnnouncement() {
+            const title = document.getElementById('announcementTitle').value.trim();
+            const content = document.getElementById('announcementContent').value.trim();
+            const priority = document.getElementById('announcementPriority').value;
+
+            if (!title || !content) {
+                showToast('Title and content are required', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/communication/announcements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ title, content, priority })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('announcementTitle').value = '';
+                    document.getElementById('announcementContent').value = '';
+                    document.getElementById('announcementPriority').value = 'normal';
+                    toggleCreateAnnouncement();
+                    showToast('Announcement posted', 'success');
+                    await loadAnnouncements();
+                } else {
+                    showToast(data.message || 'Failed to post announcement', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        async function deleteAnnouncement(id) {
+            if (!confirm('Delete this announcement?')) return;
+
+            try {
+                const response = await fetch(`/api/communication/announcements/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Announcement deleted', 'success');
+                } else {
+                    showToast(data.message || 'Failed to delete', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        // ==================== TYPING INDICATORS ====================
+        function handleTyping() {
+            const payload = { is_typing: true };
+            
+            if (activeView.type === 'channel') {
+                payload.channel_id = activeView.id;
+            } else if (activeView.type === 'direct') {
+                payload.recipient_id = activeView.id;
+                payload.recipient_type = activeView.userType;
+            } else {
+                return; // Don't send typing for unknown view types
+            }
+
+            // Notify server that user is typing
+            fetch('/api/communication/typing', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(payload)
             });
-            input.value = '';
-            input.style.height = 'auto';
-            loadData();
-        } catch (err) {
-            alert('Failed to send message');
+
+            // Clear existing timeout
+            clearTimeout(typingTimeout);
+
+            // Set new timeout to stop typing after 3 seconds
+            typingTimeout = setTimeout(stopTyping, 3000);
         }
-    }
 
-    function toggleAnnouncementModal() {
-        const modal = document.getElementById('announcementModal');
-        modal.classList.toggle('hidden');
-        if (!modal.classList.contains('hidden')) {
-            document.getElementById('annTitle').value = '';
-            document.getElementById('annBody').value = '';
-        }
-    }
+        function stopTyping() {
+            const payload = { is_typing: false };
+            
+            if (activeView.type === 'channel') {
+                payload.channel_id = activeView.id;
+            } else if (activeView.type === 'direct') {
+                payload.recipient_id = activeView.id;
+                payload.recipient_type = activeView.userType;
+            } else {
+                return;
+            }
 
-    async function saveAnnouncement(e) {
-        e.preventDefault();
-        const title = document.getElementById('annTitle').value.trim();
-        const body = document.getElementById('annBody').value.trim();
-
-        if (!title || !body) return;
-
-        try {
-            await fetch(`${API_BASE}/team/announcements`, {
+            fetch('/api/communication/typing', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, body })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(payload)
             });
-            toggleAnnouncementModal();
-            loadData();
-        } catch (err) {
-            alert('Failed to save announcement');
         }
-    }
 
-    async function deleteAnnouncement(id) {
-        if (!confirm('Delete this announcement?')) return;
-        try {
-            await fetch(`${API_BASE}/team/announcements/${id}`, { method: 'DELETE' });
-            loadData();
-        } catch (err) {
-            alert('Failed to delete');
+        function showTypingIndicator(userName) {
+            const indicator = document.getElementById('typingIndicator');
+            const text = document.getElementById('typingText');
+            text.textContent = `${userName} is typing...`;
+            indicator.classList.remove('hidden');
         }
-    }
 
-    function refreshChat() {
-        loadData();
-    }
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.classList.add('hidden');
+        }
 
-    function closeChatMobile() {
-        const main = document.getElementById('mainDisplay');
-        const sidebar = document.getElementById('sidebar');
-        main.classList.add('hidden');
-        sidebar.classList.remove('hidden');
-        sidebar.classList.add('w-full');
-    }
+        // ==================== NOTIFICATIONS ====================
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
 
-    function autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-    }
+        function showNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico'
+                });
+            }
+        }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-</script>
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+            updateCharCount();
+        }
+
+        function updateCharCount() {
+            const input = document.getElementById('messageInput');
+            const counter = document.getElementById('charCount');
+            counter.textContent = `${input.value.length}/2000`;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const colors = {
+                success: 'bg-emerald-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg text-sm font-semibold fade-in flex items-center gap-2`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>

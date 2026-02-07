@@ -201,6 +201,20 @@ function toggleMessage(id, fullText) {
     }
 }
 
+function toggleDrawerMessage(id, fullText) {
+    const textElem = document.getElementById(`drawer-text-${id}`);
+    const btnElem = document.getElementById(`drawer-btn-${id}`);
+    const isExpanded = btnElem.innerText === "SHOW LESS";
+
+    if (isExpanded) {
+        textElem.innerText = fullText.substring(0, 120) + "...";
+        btnElem.innerText = "SHOW MORE";
+    } else {
+        textElem.innerText = fullText;
+        btnElem.innerText = "SHOW LESS";
+    }
+}
+
 let editMode = false;
 let editId = null;
 
@@ -354,9 +368,19 @@ async function fetchAdminInbox() {
                             <span class="text-[9px] font-medium text-slate-400">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                         
-                        <p class="text-sm ${isRead ? 'text-slate-500 font-normal' : 'text-slate-800 font-semibold'} line-clamp-2 leading-relaxed mb-3">
-                            ${msg.message_content}
-                        </p>
+                        <div class="message-container mb-3">
+                            <p id="drawer-text-${msg.id}" class="text-sm ${isRead ? 'text-slate-500 font-normal' : 'text-slate-800 font-semibold'} leading-relaxed break-words">
+                                ${msg.message_content.length > 120 
+                                    ? msg.message_content.substring(0, 120) + '...' 
+                                    : msg.message_content}
+                            </p>
+                            ${msg.message_content.length > 120 ? `
+                                <button onclick="toggleDrawerMessage(${msg.id}, '${escapeHTMLAttr(msg.message_content)}')" 
+                                        class="text-[10px] font-bold text-emerald-600 uppercase mt-1 hover:underline tracking-widest" 
+                                        id="drawer-btn-${msg.id}">
+                                    Show More
+                                </button>` : ''}
+                        </div>
 
                         <div class="flex items-center justify-between">
                             <div id="status-container-${msg.id}" class="flex items-center gap-1.5">

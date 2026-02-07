@@ -25,7 +25,6 @@ const StaffPayslip = require("./StaffPayslip");
 const StaffSchedule = require("./StaffSchedule");
 const StaffTask = require("./StaffTask");
 const SupportTicket = require("./SupportTicket");
-const TeamMessage = require("./TeamMessage");
 const User = require("./User");
 
 // Staff Assignments
@@ -69,7 +68,6 @@ module.exports = {
   StaffSchedule,
   StaffTask,
   SupportTicket,
-  TeamMessage,
   User,
   HRTask,
   HRCommunication,

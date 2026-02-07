@@ -1,2166 +1,566 @@
 <style>
-  .stat-card {
-    transition: all 0.3s ease;
-  }
-  .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  }
-  .pulse-ring {
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0% {
-      transform: scale(0.95);
-      box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7);
-    }
-    70% {
-      transform: scale(1);
-      box-shadow: 0 0 0 10px rgba(13, 148, 136, 0);
-    }
-    100% {
-      transform: scale(0.95);
-      box-shadow: 0 0 0 0 rgba(13, 148, 136, 0);
-    }
-  }
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .slide-in {
-    animation: slideIn 0.4s ease-out;
-  }
-  .user-row:hover {
-    background: linear-gradient(to right, #f0fdfa, #ccfbf1);
-  }
-  /* Skeleton Loading */
-  @keyframes skeleton {
-    0% {
-      background-color: #f3f4f6;
-    }
-    100% {
-      background-color: #e5e7eb;
-    }
-  }
-  .skeleton {
-    background: #e5e7eb;
-    animation: skeleton 1.2s ease-in-out infinite;
-    border-radius: 0.5rem;
-  }
-  .skeleton-text {
-    height: 1rem;
-  }
-  .skeleton-title {
-    height: 1.5rem;
-    width: 60%;
-  }
-  .skeleton-circle {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 9999px;
-  }
-
-  .scale-95 {
-    transform: scale(0.95);
-  }
-  .scale-100 {
-    transform: scale(1);
-  }
-  .transition-all {
-    transition: all 0.2s ease;
-  }
-</style>
-
-<!-- ==================== HEADER ==================== -->
-<div class="flex items-center justify-between mb-8 px-6 pt-6">
-  <div>
-    <h3 class="text-2xl font-bold text-teal-800">User Management</h3>
-    <p class="text-teal-600 mt-1">
-      Manage all clients and staff members efficiently
-    </p>
-  </div>
-  <div class="flex gap-3">
-    <button
-      id="addClientBtn"
-      class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
-    >
-      <i
-        class="fas fa-user-plus group-hover:scale-110 transition-transform"
-      ></i>
-      <span>Add Client</span>
-    </button>
-    <button
-      id="addStaffBtn"
-      class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
-      style="display: none"
-    >
-      <i class="fas fa-user-tie group-hover:scale-110 transition-transform"></i>
-      <span>Add Staff</span>
-    </button>
-  </div>
-</div>
-
-<!-- ==================== TABS ==================== -->
-<div class="mb-6 slide-in px-6">
-  <div
-    class="bg-white rounded-xl shadow-md p-2 inline-flex border border-gray-200"
-  >
-    <button
-      id="clientsTab"
-      class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md"
-    >
-      <i class="fas fa-users mr-2"></i>Clients (<span id="clientCount">0</span>)
-    </button>
-  </div>
-</div>
-
-<!-- ==================== CLIENTS SECTION ==================== -->
-<div id="clientsSection" class="space-y-6 px-6">
-  <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Search</label
-        >
-        <input
-          type="text"
-          id="clientsSearch"
-          placeholder="Name, email, phone..."
-          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Subscriptions</label
-        >
-        <select
-          id="clientSubFilter"
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-        >
-          <option value="">All Subscriptions</option>
-          <option>Paid</option>
-          <option>Unpaid</option>
-          <option>Overdue</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Status</label
-        >
-        <select
-          id="clientStatusFilter"
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-        >
-          <option value="">All Status</option>
-          <option>Active</option>
-          <option>Expired</option>
-          <option>Suspended</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Plans</label
-        >
-        <select
-          id="clientPlanFilter"
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-        >
-          <option value="">All Plans</option>
-          <option>Premium 50Mbps</option>
-          <option>Standard 20Mbps</option>
-          <option>Basic 10Mbps</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="px-6 py-4 border-b border-teal-200">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold text-teal-800">
-          <i class="fas fa-list mr-2"></i>Client Directory
-        </h3>
-        <button
-          onclick="exportData('clients')"
-          class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-100 rounded-lg transition-all"
-        >
-          <i class="fas fa-download mr-1"></i>Export
-        </button>
-      </div>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="w-full" id="clientsTable">
-        <thead class="bg-gray-50 border-b border-gray-200">
-          <tr>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              <input
-                type="checkbox"
-                id="selectAllClients"
-                class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2"
-              />
-              User
-            </th>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Contact Info
-            </th>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Current Plan
-            </th>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Subscription Amount
-            </th>
-            <th
-              class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody id="clientsTableBody"></tbody>
-      </table>
-    </div>
-
-    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-sm text-gray-600">
-          Showing <span id="clientsRange">0-0</span> of
-          <span id="totalClients">0</span> clients
-        </p>
-        <div class="flex items-center space-x-2" id="clientsPagination"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== STAFF SECTION ==================== -->
-<div id="staffSection" class="hidden space-y-6 px-6">
-  <div class="bg-white shadow-md p-6 border border-gray-200 slide-in">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold text-gray-800">
-        <i class="fas fa-filter text-teal-600 mr-2"></i>Staff Filters
-      </h3>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
-      <div class="relative">
-        <i
-          class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-        ></i>
-        <input
-          type="text"
-          id="staffSearch"
-          placeholder="Search staff..."
-          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-        />
-      </div>
-      <select
-        id="staffDeptFilter"
-        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white"
-      >
-        <option value="">All Departments</option>
-        <option>Technical</option>
-        <option>Support</option>
-        <option>Sales</option>
-        <option>Management</option>
-      </select>
-      <select
-        id="staffRoleFilter"
-        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white"
-      >
-        <option value="">All Roles</option>
-        <option>Network Engineer</option>
-        <option>Support Agent</option>
-        <option>Sales Rep</option>
-        <option>Manager</option>
-      </select>
-      <select
-        id="staffStatusFilter"
-        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition-all appearance-none bg-white"
-      >
-        <option value="">All Status</option>
-        <option>Active</option>
-        <option>On Leave</option>
-        <option>Inactive</option>
-      </select>
-    </div>
-
-    <div class="px-6 py-4 border-b border-teal-200">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold text-teal-800">
-          <i class="fas fa-list mr-2"></i>Staff Directory
-        </h3>
-        <button
-          onclick="exportData('staff')"
-          class="px-3 py-2 text-sm text-teal-600 border border-teal-400 hover:bg-teal-100 rounded-lg transition-all"
-        >
-          <i class="fas fa-download mr-1"></i>Export
-        </button>
-      </div>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="w-full" id="staffTable">
-        <thead class="bg-gray-50 border-b border-gray-200">
-          <tr>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              <input
-                type="checkbox"
-                id="selectAllStaff"
-                class="rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2"
-              />
-              Staff Member
-            </th>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Role & Department
-            </th>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Contact
-            </th>
-            <th
-              class="text-left p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Basic Salary
-            </th>
-            <th
-              class="text-right p-4 font-semibold text-gray-700 text-sm uppercase tracking-wider"
-            >
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody id="staffTableBody"></tbody>
-      </table>
-    </div>
-
-    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-sm text-gray-600">
-          Showing <span id="staffRange">0-0</span> of
-          <span id="totalStaff">0</span> staff members
-        </p>
-        <div class="flex items-center space-x-2" id="staffPagination"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== MODAL ==================== -->
-<div
-  id="addUserModal"
-  class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
->
-  <div
-    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
-  >
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h3 class="text-2xl font-bold text-teal-800 flex items-center">
-          <i class="fas fa-user-plus mr-3 text-teal-600"></i
-          ><span id="modalTitle">Add New User</span>
-        </h3>
-        <p class="text-gray-600 text-sm mt-1">
-          Fill in the details to create a new account
-        </p>
-      </div>
-      <button
-        type="button"
-        onclick="closeAddUserModal()"
-        class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-      >
-        <i class="fas fa-times text-xl"></i>
-      </button>
-    </div>
-
-    <form id="addUserForm" class="space-y-5">
-      <input type="hidden" id="editUserId" />
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >First Name *</label
-          >
-          <input
-            type="text"
-            id="first_name"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Second Name *</label
-          >
-          <input
-            type="text"
-            id="second_name"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Email Address *</label
-          >
-          <input
-            type="email"
-            id="email"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Phone Number *</label
-          >
-          <input
-            type="tel"
-            id="phone"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >ID Number</label
-          >
-          <input
-            type="text"
-            id="idNumber"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Password *</label
-          >
-          <input
-            type="text"
-            id="password"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-          />
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div id="roleContainer" class="hidden">
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Position *</label
-          >
-          <select
-            id="role"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
-          >
-            <option value="" disabled selected hidden>Select position</option>
-            <option value="Network Engineer">Network Engineer</option>
-            <option value="Support Agent">Support Agent</option>
-            <option value="Sales Rep">Sales Rep</option>
-            <option value="Manager">Manager</option>
-          </select>
-        </div>
-        <div id="departmentContainer" class="hidden">
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Department *</label
-          >
-          <select
-            id="department"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all appearance-none bg-white"
-          >
-            <option value="" disabled selected hidden>Select department</option>
-            <option>Technical</option>
-            <option>Support</option>
-            <option>Sales</option>
-            <option>Management</option>
-          </select>
-        </div>
-        <div id="salaryContainer" class="hidden">
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Basic Salary (KSh) *</label
-          >
-          <input
-            type="number"
-            id="basic_salary"
-            min="0"
-            step="100"
-            placeholder="e.g. 45000"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-          />
-        </div>
-      </div>
-
-      <!-- <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
-        <p class="text-sm text-teal-800">
-          <strong>Note:</strong> Login credentials will be sent via email.
-        </p>
-      </div> -->
-
-      <div class="flex space-x-3 pt-4">
-        <button
-          type="button"
-          onclick="closeAddUserModal()"
-          class="flex-1 py-3 px-6 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition-all"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          class="flex-1 py-3 px-6 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg font-semibold hover:from-teal-700 hover:to-teal-800 shadow-lg hover:shadow-xl transition-all"
-        >
-          <span id="submitBtnText">Create User</span>
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ==================== VIEW USER MODAL ==================== -->
-<div
-  id="viewUserModal"
-  class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
->
-  <div
-    class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95"
-  >
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-2xl font-bold text-teal-800 flex items-center">
-        <i class="fas fa-user-circle mr-3 text-teal-600"></i
-        ><span id="viewModalTitle">User Details</span>
-      </h3>
-      <button
-        type="button"
-        onclick="closeViewUserModal()"
-        class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-      >
-        <i class="fas fa-times text-xl"></i>
-      </button>
-    </div>
-
-    <div class="space-y-5">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <p class="text-sm text-gray-600 font-medium">Full Name</p>
-          <p id="viewFullName" class="text-lg font-semibold text-gray-900">-</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <p class="text-sm text-gray-600 font-medium">Email</p>
-          <p id="viewEmail" class="text-lg font-semibold text-gray-900">-</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <p class="text-sm text-gray-600 font-medium">Phone</p>
-          <p id="viewPhone" class="text-lg font-semibold text-gray-900">-</p>
-        </div>
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <p class="text-sm text-gray-600 font-medium">ID Number</p>
-          <p id="viewIdNumber" class="text-lg font-semibold text-gray-900">-</p>
-        </div>
-      </div>
-
-      <div
-        id="clientFields"
-        class="grid grid-cols-1 md:grid-cols-2 gap-5 hidden"
-      >
-        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
-          <p class="text-sm text-teal-700 font-medium">Service Plan</p>
-          <p id="viewPlan" class="text-lg font-bold text-teal-800">-</p>
-        </div>
-        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
-          <p class="text-sm text-teal-700 font-medium">Status</p>
-          <p id="viewClientStatus" class="text-lg font-bold text-teal-800">-</p>
-        </div>
-        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
-          <p class="text-sm text-teal-700 font-medium">Last Payment</p>
-          <p id="viewLastPayment" class="text-lg font-bold text-teal-800">-</p>
-        </div>
-        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
-          <p class="text-sm text-teal-700 font-medium">Payment Status</p>
-          <p id="viewPaymentStatus" class="text-lg font-bold text-teal-800">
-            -
-          </p>
-        </div>
-      </div>
-
-      <div
-        id="staffFields"
-        class="grid grid-cols-1 md:grid-cols-2 gap-5 hidden"
-      >
-        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-          <p class="text-sm text-purple-700 font-medium">Role</p>
-          <p id="viewRole" class="text-lg font-bold text-purple-800">-</p>
-        </div>
-        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-          <p class="text-sm text-purple-700 font-medium">Department</p>
-          <p id="viewDepartment" class="text-lg font-bold text-purple-800">-</p>
-        </div>
-        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-          <p class="text-sm text-purple-700 font-medium">Basic Salary</p>
-          <p id="viewBasicSalary" class="text-lg font-bold text-purple-800">
-            -
-          </p>
-        </div>
-        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-          <p class="text-sm text-purple-700 font-medium">Status</p>
-          <p id="viewStaffStatus" class="text-lg font-bold text-purple-800">
-            -
-          </p>
-        </div>
-        <div
-          class="bg-purple-50 p-4 rounded-lg border border-purple-200 md:col-span-2"
-        >
-          <p class="text-sm text-purple-700 font-medium">Joined Date</p>
-          <p id="viewJoined" class="text-lg font-bold text-purple-800">-</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex justify-end mt-6">
-      <button
-        onclick="closeViewUserModal()"
-        class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition-all"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== SUBSCRIPTION MODAL ==================== -->
-<div
-  id="subscriptionModal"
-  class="fixed inset-0 bg-black bg-opacity-60 z-50 items-center justify-center p-4 backdrop-blur-sm hidden"
->
-  <div
-    class="bg-white shadow-2xl max-w-2xl w-full p-8 transform transition-all scale-95 max-h-[90vh] overflow-y-auto rounded-xl"
-  >
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-2xl font-bold text-teal-800 flex items-center">
-        <i class="fas fa-wifi mr-3 text-indigo-600"></i>
-        <span>Manage Subscription</span>
-      </h3>
-      <button
-        type="button"
-        onclick="closeSubscriptionModal()"
-        class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-      >
-        <i class="fas fa-times text-xl"></i>
-      </button>
-    </div>
-
-    <div class="space-y-6">
-      <div class="bg-gray-50 p-4 rounded-lg">
-        <p class="text-sm text-gray-600">Client</p>
-        <p id="subClientName" class="text-lg font-bold text-gray-900">-</p>
-      </div>
-
-      <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
-        <p class="text-sm text-teal-700 font-medium">Current Plan</p>
-        <p id="currentPlanName" class="text-xl font-bold text-teal-800">-</p>
-        <p id="currentPlanExpiry" class="text-sm text-teal-600 mt-1">-</p>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
-          Select Plan
-        </label>
-        <select
-          id="subscriptionPlanSelect"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white"
-        >
-          <option value="">Loading plans...</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
-          Start Date
-        </label>
-        <input
-          type="date"
-          id="subscriptionStartDate"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-          required
-        />
-      </div>
-
-      <div
-        class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 space-y-5"
-      >
-        <div class="flex items-center justify-between">
-          <h4 class="font-bold text-amber-900 flex items-center">
-            <i class="fas fa-money-bill-wave mr-2"></i> Subscription & Payment
-            History
-          </h4>
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              id="markAsPaid"
-              class="w-5 h-5 text-green-600 rounded focus:ring-green-500"
-            />
-            <span class="font-medium text-amber-900"
-              >Mark New Payment as Paid</span
-            >
-          </label>
-        </div>
-
-        <!-- Existing input fields for NEW payment (kept exactly as before) -->
-        <div
-          class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 border-amber-200"
-        >
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Amount (KSh)</label
-            >
-            <input
-              type="number"
-              id="paymentAmount"
-              placeholder="e.g. 2500"
-              min="0"
-              step="100"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Transaction ID</label
-            >
-            <input
-              type="text"
-              id="transactionId"
-              placeholder="e.g. MPESA123XYZ"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Payment Method</label
-            >
-            <select
-              id="paymentMethod"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
-            >
-              <option value="mpesa">MPESA</option>
-              <option value="cash">Cash</option>
-              <option value="bank">Bank Transfer</option>
-              <option value="card">Card</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Payment Date</label
-            >
-            <input
-              type="date"
-              id="paymentDate"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            />
-          </div>
-        </div>
-
-        <!-- List of existing subscriptions -->
-        <div id="subscriptionsList" class="space-y-3 mt-4">
-          <!-- Filled dynamically by JS -->
-        </div>
-      </div>
-
-      <div
-        class="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-4 mt-4"
-      >
-        <p class="text-sm text-teal-700 font-medium">Subscription Preview</p>
-        <p
-          id="subscriptionExpiryPreview"
-          class="text-lg font-bold text-teal-800 mt-1"
-        >
-          Select a plan and start date
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <button
-          onclick="assignPlan()"
-          class="py-2 px-4 bg-teal-400 text-white rounded-lg font-semibold hover:bg-teal-500 shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-1 text-sm"
-        >
-          <i class="fas fa-plus"></i>
-          <span>Subscribe</span>
-        </button>
-
-        <!-- <button
-          onclick="renewPlan()"
-          class="py-2 px-4 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-1 text-sm"
-        >
-          <i class="fas fa-sync"></i>
-          <span>Renew</span>
-        </button>
-
-        <button
-          onclick="upgradePlan()"
-          class="py-2 px-4 bg-teal-800 text-white rounded-lg font-semibold hover:bg-teal-900 shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-1 text-sm"
-        >
-          <i class="fas fa-arrow-up"></i>
-          <span>Upgrade</span>
-        </button> -->
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  /* ---------- CONFIG & HELPERS ---------- */
-  let clientsCache = [];
-  let staffCache = [];
-  const API_BASE = "/api";
-  const PACKAGES_API = "/api/packages";
-  const $ = (id) => document.getElementById(id);
-  let currentUserType = "clients";
-  let currentPage = { clients: 1, staff: 1 };
-  const itemsPerPage = 10;
-
-  let currentClientId = null;
-  let packagesCache = [];
-  let currentSubscription = null;
-
-  const api = {
-    async get(type) {
-      const res = await fetch(`${API_BASE}/${type}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-    async create(type, data) {
-      const res = await fetch(`${API_BASE}/${type}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-    async update(type, id, data) {
-      const res = await fetch(`${API_BASE}/${type}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-    async delete(type, id) {
-      const res = await fetch(`${API_BASE}/${type}/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-    async getPackages() {
-      const res = await fetch(PACKAGES_API);
-      if (!res.ok && res.status !== 304) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-  };
-
-  const showSkeleton = (tbodyId, count = 5) => {
-    const tbody = $(tbodyId);
-    if (!tbody) return;
-    tbody.innerHTML = Array(count)
-      .fill("")
-      .map(
-        () => `
-      <tr>
-        <td class="p-4">
-          <div class="flex items-center space-x-3">
-            <div class="skeleton skeleton-circle"></div>
-            <div>
-              <div class="skeleton skeleton-title mb-1"></div>
-              <div class="skeleton skeleton-text w-20"></div>
-            </div>
-          </div>
-        </td>
-        <td class="p-4"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text w-24 mt-1"></div></td>
-        <td class="p-4"><div class="skeleton skeleton-text w-32"></div></td>
-        <td class="p-4"><div class="skeleton skeleton-text w-20"></div></td>
-        <td class="p-4"><div class="skeleton skeleton-text w-24"></div></td>
-        <td class="p-4"><div class="flex space-x-2">${Array(4)
-          .fill("")
-          .map(() => `<div class="skeleton w-9 h-9 rounded-lg"></div>`)
-          .join("")}</div></td>
-      </tr>
-    `
-      )
-      .join("");
-  };
-
-  const getPlanColor = (plan) =>
-    ({
-      "Premium 50Mbps": "from-teal-400 to-teal-600",
-      "Standard 20Mbps": "from-blue-400 to-blue-600",
-      "Basic 10Mbps": "from-pink-400 to-red-500",
-    }[plan] || "from-gray-400 to-gray-600");
-
-  const getStatusBadge = (plan) => {
-    if (!plan || plan === "No Plan") return "bg-gray-100 text-gray-600";
-    if (plan.includes("Premium")) return "bg-teal-100 text-teal-700";
-    if (plan.includes("Silver") || plan.includes("Gold"))
-      return "bg-blue-100 text-blue-700";
-    if (plan.includes("Bronze") || plan.includes("Basic"))
-      return "bg-amber-100 text-amber-700";
-    return "bg-indigo-100 text-indigo-700";
-  };
-
-  const formatDate = (date) =>
-    new Date(date).toLocaleDateString("en-KE", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-
-  /* ---------- FILTER & PAGINATION ---------- */
-  const applyFilters = (type, data) => {
-    let filtered = [...data];
-    const search = $(type + "Search")?.value.toLowerCase() || "";
-    if (search) {
-      filtered = filtered.filter(
-        (u) =>
-          `${u.first_name} ${u.second_name}`.toLowerCase().includes(search) ||
-          u.email?.toLowerCase().includes(search) ||
-          u.phone?.includes(search)
-      );
-    }
-
-    if (type === "clients") {
-      const sub = $("clientSubFilter")?.value;
-      const status = $("clientStatusFilter")?.value;
-      const plan = $("clientPlanFilter")?.value;
-      if (sub) filtered = filtered.filter((c) => c.paymentStatus === sub);
-      if (status) filtered = filtered.filter((c) => c.status === status);
-      if (plan) filtered = filtered.filter((c) => c.plan === plan);
-    }
-
-    if (type === "staff") {
-      const dept = $("staffDeptFilter")?.value;
-      const role = $("staffRoleFilter")?.value;
-      const status = $("staffStatusFilter")?.value;
-      if (dept) filtered = filtered.filter((s) => s.department === dept);
-      if (role) filtered = filtered.filter((s) => s.role === role);
-      if (status) filtered = filtered.filter((s) => s.status === status);
-    }
-
-    return filtered;
-  };
-
-  const paginate = (arr, page, size) =>
-    arr.slice((page - 1) * size, page * size);
-
-  const renderPagination = (type, total) => {
-    const pages = Math.ceil(total / itemsPerPage);
-    const container = $(type + "Pagination");
-    if (!container || pages <= 1) {
-      container.innerHTML = "";
-      return;
-    }
-
-    const btn = (txt, page, disabled = false) => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.textContent = txt;
-      b.disabled = disabled;
-      b.className = `px-4 py-2 rounded text-sm font-medium border ${
-        disabled
-          ? "opacity-50 cursor-not-allowed bg-gray-100"
-          : "hover:bg-gray-100"
-      } ${
-        page === currentPage[type] ? "bg-teal-600 text-white" : "text-gray-700"
-      }`;
-      if (!disabled)
-        b.onclick = () => {
-          currentPage[type] = page;
-          renderTable(type);
-        };
-      return b;
-    };
-
-    container.innerHTML = "";
-    container.appendChild(
-      btn("Prev", currentPage[type] - 1, currentPage[type] === 1)
-    );
-    for (let i = 1; i <= pages; i++) container.appendChild(btn(i, i));
-    container.appendChild(
-      btn("Next", currentPage[type] + 1, currentPage[type] === pages)
-    );
-  };
-
-  const updateRange = (type, total) => {
-    const start = (currentPage[type] - 1) * itemsPerPage + 1;
-    const end = Math.min(currentPage[type] * itemsPerPage, total);
-    $(type + "Range").textContent = total ? `${start}-${end}` : "0-0";
-    $(`total${type === "clients" ? "Clients" : "Staff"}`).textContent = total;
-  };
-
-  /* ---------- TABLE RENDER ---------- */
-  const renderTable = async (type) => {
-    const tbody = $(type + "TableBody");
-    if (!tbody) return;
-
-    showSkeleton(type + "TableBody");
-
-    try {
-      const data = await api.get(type);
-
-      if (type === "clients") {
-        // Fetch current subscriptions
-        const subs = await Promise.all(
-          data.map(async (client) => {
-            try {
-              const res = await fetch(
-                `/api/subscribe/client/current?userId=${client.id}`,
-                {
-                  headers: { "X-Admin-Request": "true" },
-                }
-              );
-              if (res.ok) {
-                const subsArray = await res.json(); // it's an array!
-                const sub =
-                  Array.isArray(subsArray) && subsArray.length > 0
-                    ? subsArray[0]
-                    : null;
-                return { userId: client.id, plan: sub };
-              }
-              return { userId: client.id, plan: null };
-            } catch {
-              return { userId: client.id, plan: null };
-            }
-          })
-        );
-
-        // Merge subscription into user
-        data.forEach((user) => {
-          const sub = subs.find((s) => s.userId === user.id);
-          user.currentPlan = sub?.plan || null;
-        });
-      }
-      if (type === "clients") clientsCache = data;
-      else staffCache = data;
-
-      const filtered = applyFilters(type, data);
-      const paginated = paginate(filtered, currentPage[type], itemsPerPage);
-
-      tbody.innerHTML =
-        paginated
-          .map((user) => {
-            return `
-          <tr class="user-row transition-all duration-200 cursor-pointer" onclick="viewUser('${
-            user.id
-          }', '${type}')">
-            <td class="p-4" onclick="event.stopPropagation()">
-              <div class="flex items-center space-x-3">
-                <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" value="${
-                  user.id
-                }">
-                <div class="w-11 h-11 bg-gradient-to-br ${getPlanColor(
-                  type === "clients"
-                    ? user.currentPlan?.package?.name || "No Plan"
-                    : user.role
-                )} rounded-full flex items-center justify-center shadow-md">
-                  <span class="text-white font-bold text-sm truncate overflow-hidden whitespace-nowrap">${user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()}</span>
-                </div>
-                <div class="flex flex-col w-40">
-                  <p class="font-semibold text-gray-900 truncate">${
-                    user.name
-                  }</p>
-                  <p class="text-xs text-gray-500">ID: ${user.employeeId}</p>
-                </div>
-              </div>
-            </td>
-            <td class="p-4">
-              <div class="space-y-1">
-                <p class="text-gray-700 text-sm flex items-center">
-                  <i class="fas fa-envelope text-gray-400 mr-2 text-xs"></i>
-                  <span class="truncate overflow-hidden whitespace-nowrap flex-1">${
-                    user.email
-                  }</span>
-                </p>
-                <p class="text-gray-600 text-sm flex items-center"><i class="fas fa-phone text-gray-400 mr-2 text-xs"></i>${
-                  user.phone
-                }</p>
-              </div>
-            </td>
-            ${
-              type === "clients"
-                ? `<td class="p-4">
-                  <div class="flex flex-col">
-                    <!-- PLAN NAME + BADGE -->
-                    <span class="px-3 py-1.5 rounded-lg text-sm font-semibold whitespace-nowrap ${
-                      user.currentPlan
-                        ? getStatusBadge(
-                            user.currentPlan.package?.name || "Active"
-                          )
-                        : "bg-gray-100 text-gray-600"
-                    }">
-                      ${
-                        user.currentPlan
-                          ? user.currentPlan.package?.name || "Unknown Plan"
-                          : "No Plan"
-                      }
-                    </span>
-
-                    <!-- EXPIRY INFO -->
-                    ${
-                      user.currentPlan &&
-                      (user.currentPlan.expires || user.currentPlan.expiry_date)
-                        ? (() => {
-                            const expiry = new Date(
-                              user.currentPlan.expires ||
-                                user.currentPlan.expiry_date
-                            );
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            const isExpired = expiry < today;
-                            const daysLeft = Math.ceil(
-                              (expiry - today) / (1000 * 60 * 60 * 24)
-                            );
-
-                            return `
-                            <p class="text-xs mt-1 font-medium ${
-                              isExpired
-                                ? "text-red-600"
-                                : daysLeft <= 7
-                                ? "text-orange-600"
-                                : "text-gray-600"
-                            }">
-                              ${
-                                isExpired
-                                  ? `Expired ${formatDate(expiry)}`
-                                  : daysLeft === 0
-                                  ? "Expires today"
-                                  : `Expires in ${daysLeft} day${
-                                      daysLeft !== 1 ? "s" : ""
-                                    } • ${formatDate(expiry)}`
-                              }
-                            </p>`;
-                          })()
-                        : user.currentPlan
-                        ? '<p class="text-xs mt-1 text-gray-500">No expiry set</p>'
-                        : ""
-                    }
-                  </div>
-                </td>`
-                : `<td class="p-4"><p class="font-semibold text-gray-800">${user.role}</p><p class="text-sm text-gray-500">${user.department}</p></td>`
-            }
-            ${
-              type === "staff"
-                ? `
-              <td class="p-4">
-                <p class="text-gray-700 font-medium text-xs">KSh ${
-                  user.salary.basic_salary
-                    ? Number(user.salary.basic_salary).toLocaleString()
-                    : "-"
-                }</p>
-              </td>
-            `
-                : ""
-            }
-
-            ${
-              type === "clients"
-                ? `
-                <td class="p-4">
-                  <div class="text-sm>
-                    <!-- Amount -->
-                    <p class="text-gray-700 font-medium">
-                      KSh ${
-                        user.currentPlan?.payment?.amount
-                          ? Number(
-                              user.currentPlan.payment.amount
-                            ).toLocaleString()
-                          : "-"
-                      }
-                    </p>
-
-                    <!-- Paid / Unpaid Badge -->
-                    <div class="mt-1">
-                      ${
-                        user.currentPlan
-                          ? (() => {
-                              const isPaid =
-                                user.currentPlan.payment?.status === "paid";
-                              return `
-                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                isPaid
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-orange-100 text-orange-800"
-                              }">
-                                ${isPaid ? "Paid" : "Unpaid"}
-                              </span>`;
-                            })()
-                          : '<span class="text-gray-400 text-xs">No Plan</span>'
-                      }
-                    </div>
-                  </div>
-                </td>
-                `
-                : ""
-            }
-            <td class="p-4" onclick="event.stopPropagation()">
-              <div class="flex items-center justify-end space-x-2">
-                <button type="button" onclick="viewUser('${
-                  user.id
-                }', '${type}')" 
-                        class="w-9 h-9 flex items-center justify-center text-teal-600 hover:bg-teal-50 rounded-lg transition-all" 
-                        title="View details"><i class="fas fa-eye"></i></button>
-
-                ${
-                  type === "clients"
-                    ? `
-                  <button type="button" onclick="openSubscriptionModal('${user.id}')" 
-                          class="w-9 h-9 flex items-center justify-center text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" 
-                          title="Manage Plan"><i class="fas fa-wifi"></i></button>
-                `
-                    : ""
-                }
-
-                <!-- Edit button: only show for clients -->
-                ${
-                  type === "clients"
-                    ? `
-                  <button type="button" onclick="editUser('${user.id}', '${type}')" 
-                          class="w-9 h-9 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-lg transition-all" 
-                          title="Edit"><i class="fas fa-edit"></i></button>
-                `
-                    : ""
-                }
-
-                <button type="button" onclick="messageUser('${user.id}')" 
-                        class="w-9 h-9 flex items-center justify-center text-purple-600 hover:bg-purple-50 rounded-lg transition-all" 
-                        title="Message"><i class="fas fa-comment"></i></button>
-              </div>
-            </td>
-          </tr>`;
-          })
-          .join("") ||
-        `<tr><td colspan="6" class="p-8 text-center text-gray-500">No ${type} found</td></tr>`;
-
-      renderPagination(type, filtered.length);
-      updateRange(type, filtered.length);
-      updateCounts();
-    } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-600">Error: ${e.message}</td></tr>`;
-    }
-  };
-
-  const updateCounts = async () => {
-    try {
-      const [c, s] = await Promise.all([api.get("clients"), api.get("staff")]);
-      $("clientCount").textContent = c.length;
-      $("staffCount").textContent = s.length;
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const loadAllPackages = async () => {
-    try {
-      const res = await fetch("/api/packages");
-      if (!res.ok) throw new Error("Failed to load packages");
-      const data = await res.json();
-      packagesCache = Array.isArray(data) ? data : [];
-      return packagesCache;
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "Failed to load packages", "error");
-      return [];
-    }
-  };
-
-  window.openSubscriptionModal = async (clientId) => {
-    currentClientId = clientId;
-    const modal = $("subscriptionModal");
-    modal.style.display = "flex";
-    modal.querySelector(".bg-white").classList.remove("scale-95");
-    modal.querySelector(".bg-white").classList.add("scale-100");
-
-    const client = clientsCache.find((u) => u.id === parseInt(clientId));
-    $(
-      "subClientName"
-    ).textContent = `${client.first_name} ${client.second_name}`;
-
-    // Reset everything
-    $("subscriptionPlanSelect").innerHTML =
-      '<option value="">Loading plans...</option>';
-    $("subscriptionStartDate").value = new Date().toISOString().split("T")[0];
-    $("subscriptionExpiryPreview").textContent = "Select a plan and start date";
-
-    // Reset payment fields
-    $("markAsPaid").checked = false;
-    $("paymentAmount").value = "";
-    $("transactionId").value = "";
-    $("paymentMethod").value = "mpesa";
-    $("paymentDate").value = new Date().toISOString().split("T")[0];
-
-    let currentPlanStartDate = null;
-    currentSubscription = null;
-    allSubscriptions = [];
-
-    try {
-      // Fetch ALL subscriptions (no filtering on backend needed)
-      const res = await fetch(
-        `/api/subscribe/client/current?userId=${clientId}`,
-        {
-          headers: { "X-Admin-Request": "true" },
-        }
-      );
-
-      if (res.status === 404) {
-        // This is perfectly fine — user never had a plan
-        allSubscriptions = [];
-        $("currentPlanName").textContent = "No Subscriptions";
-        $("currentPlanExpiry").textContent = "User has no subscriptions";
-      } else if (res.ok) {
-        allSubscriptions = await res.json();
-
-        // Determine the TRUE current/active subscription
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize to start of day
-
-        currentSubscription = allSubscriptions.find((sub) => {
-          const expiryDate = new Date(sub.expires || sub.expiry_date);
-          return expiryDate >= today && sub.subscription_status !== "expired";
-        });
-
-        // Fallback: if no active, take the most recent one
-        if (!currentSubscription && allSubscriptions.length > 0) {
-          allSubscriptions.sort(
-            (a, b) => new Date(b.start_date) - new Date(a.start_date)
-          );
-          currentSubscription = allSubscriptions[0];
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
         }
 
-        if (currentSubscription?.payment) {
-          $("markAsPaid").checked =
-            currentSubscription.payment.status === "paid";
-          $("paymentAmount").value = currentSubscription.payment.amount
-            ? Number(currentSubscription.payment.amount)
-            : "";
-          $("transactionId").value =
-            currentSubscription.payment.transaction_id || "";
-          $("paymentMethod").value =
-            currentSubscription.payment.payment_method || "mpesa";
-          $("paymentDate").value = currentSubscription.payment.payment_date
-            ? currentSubscription.payment.payment_date.split(" ")[0]
-            : new Date().toISOString().split("T")[0];
+        /* Custom Scrollbar for the table and sidebar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
         }
 
-        // Update "Current Plan" display (top section)
-        if (currentSubscription) {
-          $("currentPlanName").textContent = `${
-            currentSubscription.package_name ||
-            currentSubscription.package?.name ||
-            "Unknown Plan"
-          } ${
-            currentSubscription.package?.speed
-              ? `(${currentSubscription.package.speed})`
-              : ""
-          }`;
-
-          const expiry =
-            currentSubscription.expires || currentSubscription.expiry_date;
-          $("currentPlanExpiry").textContent = expiry
-            ? `Expires: ${formatDate(expiry)}${
-                new Date(expiry) < today ? " (Expired)" : ""
-              }`
-            : "No expiry date";
-
-          currentPlanStartDate = currentSubscription.start_date;
-        } else {
-          $("currentPlanName").textContent = "No Plan Found";
-          $("currentPlanExpiry").textContent = "";
-        }
-
-        // Render full history list (ALL subscriptions, no filtering)
-        renderSubscriptionsList();
-      } else {
-        throw new Error(`Failed to load subscriptions: HTTP ${res.status}`);
-      }
-    } catch (err) {
-      console.error("Failed to load subscriptions:", err);
-      $("currentPlanName").textContent = "Error loading plans";
-      $("currentPlanExpiry").textContent = "";
-      $(
-        "subscriptionsList"
-      ).innerHTML = `<p class="text-red-600 text-sm">Failed to load history</p>`;
-    }
-
-    // Load packages (unchanged)
-    const select = $("subscriptionPlanSelect");
-    select.innerHTML = '<option value="">Select a plan...</option>';
-    const pkgs = await loadAllPackages();
-    pkgs.forEach((pkg) => {
-      const opt = document.createElement("option");
-      opt.value = pkg.id;
-      opt.textContent = `${pkg.name} - KSh ${pkg.price} (${pkg.speed})`;
-      if (currentSubscription && currentSubscription.package_id == pkg.id)
-        opt.selected = true;
-      select.appendChild(opt);
-    });
-
-    // Autofill start date
-    $("subscriptionStartDate").value =
-      currentPlanStartDate || new Date().toISOString().split("T")[0];
-
-    // Button text logic (unchanged)
-    const assignBtn = document.querySelector(
-      "#subscriptionModal button[onclick='assignPlan()']"
-    );
-    if (currentSubscription) {
-      assignBtn.innerHTML = `<i class="fas fa-save"></i><span>Update Plan</span>`;
-      assignBtn.onclick = updatePlan;
-    } else {
-      assignBtn.innerHTML = `<i class="fas fa-plus"></i><span>Subscribe</span>`;
-      assignBtn.onclick = assignPlan;
-    }
-
-    // Preview & other listeners (unchanged)
-    const updatePreview = () => {
-      /* ... your existing preview code ... */
-    };
-    $("subscriptionPlanSelect").onchange = updatePreview;
-    $("subscriptionStartDate").oninput = updatePreview;
-    updatePreview();
-    renderSubscriptionsList();
-  };
-
-  const renderSubscriptionsList = () => {
-    const container = $("subscriptionsList");
-
-    if (!allSubscriptions || allSubscriptions.length === 0) {
-      container.innerHTML = `
-      <div class="text-center py-12 text-gray-500">
-        <i class="fas fa-inbox text-5xl mb-4 opacity-30"></i>
-        <p class="font-semibold text-lg">No subscription history</p>
-        <p class="text-sm mt-2">This client has never been subscribed</p>
-      </div>`;
-      return;
-    }
-
-    // Sort newest first
-    const sorted = [...allSubscriptions].sort(
-      (a, b) => new Date(b.start_date) - new Date(a.start_date)
-    );
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    container.innerHTML = sorted
-      .map((sub) => {
-        const start = sub.start_date;
-        const end = sub.expires || sub.expiry_date;
-        const isActive = end && new Date(end) >= today;
-        const isCurrent =
-          currentSubscription && currentSubscription.id === sub.id;
-        const payment = sub.payment;
-
-        return `
-      <div class="bg-white rounded-xl p-5 border-2 ${
-        isCurrent
-          ? "border-teal-500 shadow-xl ring-4 ring-teal-100"
-          : "border-gray-200"
-      } relative transition-all hover:shadow-lg">
-        ${
-          isCurrent
-            ? '<div class="absolute -top-3 left-6 bg-teal-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md">CURRENT</div>'
-            : ""
+        .input-field { 
+            background: #f1f5f9; 
+            border: 1px solid #cbd5e1; 
+            transition: all 0.2s; 
         }
         
-        <div class="flex justify-between items-start gap-4">
-          <div class="flex-1">
-            <h4 class="font-bold text-gray-900 text-lg">
-              ${sub.package?.name || sub.package_name || "Unknown Plan"}
-              ${
-                sub.package?.speed
-                  ? ` <span class="text-teal-600">– ${sub.package.speed}</span>`
-                  : ""
-              }
-            </h4>
-            <p class="text-sm text-gray-600 mt-1">
-              ${start ? formatDate(start) : "?"} → ${
-          end ? formatDate(end) : "?"
-        } 
-              <span class="ml-3 px-3 py-1 rounded-full text-xs font-medium ${
-                isActive
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }">
-                ${isActive ? "Active" : "Expired"}
-              </span>
-            </p>
+        .input-field:focus { 
+            background: white; 
+            border-color: #0d9488; 
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1); 
+        }
+        
+        .table-row {
+            transition: background-color 0.2s;
+        }
+        
+        .table-row:hover { 
+            background-color: #f0f9ff; 
+        }
 
-            ${
-              payment
-                ? `
-              <div class="mt-4 text-sm bg-gray-50 p-3 rounded-lg">
-                <div class="font-bold text-gray-800">
-                  KSh ${Number(payment.amount).toLocaleString()}
-                  • ${payment.payment_method?.toUpperCase() || "Unknown"}
-                  • <span class="${
-                    payment.status === "paid"
-                      ? "text-green-600"
-                      : "text-orange-600"
-                  } font-bold">
-                    ${payment.status?.toUpperCase()}
-                  </span>
+        .label-caps { 
+            font-size: 10px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: #64748b; 
+        }
+
+        /* Animations */
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fa-spin-slow {
+            animation: fa-spin 1s infinite linear;
+        }
+
+        /* Detail View Specific Styles */
+        .detail-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .detail-group {
+            margin-bottom: 1rem;
+        }
+        .detail-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            font-size: 0.925rem;
+            font-weight: 600;
+            color: #1e293b;
+            word-break: break-word;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
+        }
+    </style>
+
+    <div class="h-screen flex flex-col overflow-hidden">
+
+        <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+
+        <div class="p-4 md:p-6 h-full flex flex-col">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 flex-shrink-0">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Client Directory</h1>
+                    <p class="text-slate-500 font-bold text-xs md:text-sm tracking-widest uppercase mt-1">Customer Management Portal</p>
                 </div>
-                ${
-                  payment.transaction_id
-                    ? `<div class="text-xs text-gray-500 mt-1">TXN: ${payment.transaction_id}</div>`
-                    : ""
-                }
-                ${
-                  payment.payment_date
-                    ? `<div class="text-xs text-gray-500">Paid on: ${formatDate(
-                        payment.payment_date
-                      )}</div>`
-                    : ""
-                }
-              </div>
-            `
-                : '<p class="text-sm text-gray-500 italic mt-4">No payment recorded</p>'
-            }
-          </div>
+            </div>
 
-          <div class="flex gap-2">
-            ${
-              payment
-                ? `
-              <button onclick="deletePayment(${payment.id}, ${sub.id})"
-                class="text-red-600 hover:bg-red-50 p-3 rounded-lg transition" title="Delete payment only">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            `
-                : ""
-            }
-            <button onclick="deleteSubscription(${sub.id})"
-              class="text-red-700 hover:bg-red-50 p-3 rounded-lg transition" title="Delete subscription">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
+            <div class="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 relative">
+                
+                <div id="listContainer" class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden transition-all duration-300">
+                    
+                    <div class="p-4 border-b border-slate-200 bg-slate-50">
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <div class="relative flex-grow max-w-xl">
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input 
+                                    type="text" 
+                                    onkeyup="filterData(this.value)" 
+                                    placeholder="Search clients by name, email or phone..." 
+                                    class="w-full pl-11 pr-4 py-2.5 rounded-lg input-field text-sm font-bold outline-none"
+                                >
+                            </div>
+                            <div class="min-w-[200px]">
+                                <select 
+                                    id="location-filter" 
+                                    onchange="filterByLocation(this.value)"
+                                    class="w-full px-4 py-2.5 rounded-lg input-field text-sm font-bold outline-none cursor-pointer"
+                                >
+                                    <option value="">All Locations</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto bg-white relative">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 z-10 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                                <tr>
+                                    <th class="px-6 py-4 label-caps w-[30%]">Client Identity</th>
+                                    <th class="px-6 py-4 label-caps w-[20%]">Location</th>
+                                    <th class="px-6 py-4 label-caps w-[20%]">ID Number</th>
+                                    <th class="px-6 py-4 label-caps w-[20%]">Contact</th>
+                                    <th class="px-6 py-4 label-caps w-[10%] text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientsTable" class="divide-y divide-slate-100">
+                                </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs font-bold text-slate-500 text-right">
+                        Showing <span id="clientCount">0</span> Clients
+                    </div>
+                </div>
+
+                <aside id="profileContainer" class="hidden w-full lg:w-[450px] bg-white rounded-lg shadow-lg border border-slate-200 flex flex-col overflow-hidden animate-slide-in absolute lg:relative inset-0 lg:inset-auto z-20">
+                    
+                    <div class="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex justify-between items-center flex-shrink-0">
+                        <div>
+                            <h2 class="text-base font-black tracking-tight uppercase">Client Profile</h2>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Read-only view</p>
+                        </div>
+                        <button 
+                            onclick="hideProfile()" 
+                            class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center transition"
+                            title="Close Profile"
+                        >
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-5 bg-slate-50">
+                        <div id="profileContent" class="space-y-4">
+                            
+                            <div class="detail-card text-center relative overflow-hidden">
+                                <div class="absolute top-0 left-0 w-full h-16 bg-gradient-to-r from-teal-50 to-emerald-50 border-b border-slate-100"></div>
+                                <div class="relative z-10">
+                                    <div class="profile-avatar mx-auto mb-3" id="profileAvatar">?</div>
+                                    <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight" id="profileFullName">---</h3>
+                                </div>
+                            </div>
+
+                            <div class="detail-card">
+                                <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2 pb-2 border-b border-slate-100">
+                                    <i class="fas fa-user text-teal-500"></i>
+                                    Personal Details
+                                </h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="detail-group">
+                                        <div class="detail-label">First Name</div>
+                                        <div class="detail-value" id="detailFirstName">---</div>
+                                    </div>
+                                    <div class="detail-group">
+                                        <div class="detail-label">Last Name</div>
+                                        <div class="detail-value" id="detailLastName">---</div>
+                                    </div>
+                                    <div class="detail-group col-span-2">
+                                        <div class="detail-label">National ID / Passport</div>
+                                        <div class="detail-value font-mono bg-slate-50 px-2 py-1 rounded inline-block border border-slate-200 text-slate-600" id="detailIdNumber">---</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detail-card">
+                                <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2 pb-2 border-b border-slate-100">
+                                    <i class="fas fa-address-book text-teal-500"></i>
+                                    Contact Info
+                                </h4>
+                                <div class="space-y-4">
+                                    <div class="detail-group">
+                                        <div class="detail-label">Email Address</div>
+                                        <div class="detail-value flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-envelope text-slate-400 text-[10px]"></i>
+                                            </div>
+                                            <span id="detailEmail">---</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-group">
+                                        <div class="detail-label">Phone Number</div>
+                                        <div class="detail-value flex items-center gap-2 font-mono">
+                                            <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-phone text-slate-400 text-[10px]"></i>
+                                            </div>
+                                            <span id="detailPhone">---</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detail-card">
+                                <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2 pb-2 border-b border-slate-100">
+                                    <i class="fas fa-map-marked-alt text-teal-500"></i>
+                                    Location Data
+                                </h4>
+                                <div class="space-y-4">
+                                    <div class="detail-group">
+                                        <div class="detail-label">Region / Location</div>
+                                        <div class="detail-value" id="detailLocation">---</div>
+                                    </div>
+                                    <div class="detail-group">
+                                        <div class="detail-label">Physical Address</div>
+                                        <div class="detail-value text-sm leading-relaxed" id="detailAddress">---</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-white border-t border-slate-200">
+                        <button 
+                            onclick="hideProfile()" 
+                            class="w-full bg-slate-900 text-white py-3 rounded-lg font-black text-xs uppercase tracking-widest hover:bg-teal-600 transition-all shadow-md"
+                        >
+                            Close Details
+                        </button>
+                    </div>
+                </aside>
+            </div>
         </div>
-      </div>`;
-      })
-      .join("");
-  };
-  // UPDATE PLAN
-  window.updatePlan = async () => {
-    const planId = $("subscriptionPlanSelect").value;
-    const startDate = getStartDate();
-    if (!planId) return Swal.fire("Select Plan", "Choose a plan", "warning");
+    </div>
 
-    const paymentData = getPaymentData();
+    <script>
+        // Global State
+        let allClients = [];
+        let filteredClients = [];
 
-    try {
-      const res = await fetch(
-        `/api/subscribe/client/${currentSubscription.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Admin-Request": "true",
-          },
-          body: JSON.stringify({
-            package_id: planId,
-            start_date: startDate,
-            payment: paymentData,
-          }),
+        // 1. INITIALIZATION
+        window.onload = () => {
+            fetchClients();
+        };
+
+        // 2. DATA FETCHING
+        async function fetchClients() {
+            setLoadingState(true);
+            
+            try {
+                const res = await fetch('/api/manage/clients');
+                
+                if (!res.ok) throw new Error('Network response was not ok');
+                
+                // Simulate small delay for UI smoothness if API is instant
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                allClients = await res.json();
+                filteredClients = [...allClients]; // Create a copy
+                renderTable();
+            } catch (e) {
+                console.error("Fetch Error:", e);
+                showToast("ERROR", 'Could not load client database.');
+                
+                // Fallback for UI visualization if API fails (Optional: Remove if not needed)
+                const tbody = document.getElementById('clientsTable');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-20 text-center text-rose-500">
+                            <i class="fas fa-exclamation-circle text-3xl mb-2"></i>
+                            <p class="font-bold">Connection Failed</p>
+                        </td>
+                    </tr>`;
+            }
         }
-      );
 
-      if (!res.ok) {
-        let message = "Unknown error";
+        // 3. RENDER LOGIC
+        function renderTable() {
+            const tbody = document.getElementById('clientsTable');
+            const countEl = document.getElementById('clientCount');
+            
+            // Update Count
+            countEl.textContent = filteredClients.length;
 
-        try {
-          const errorData = await res.json();
-          message = errorData.error || JSON.stringify(errorData);
-        } catch {
-          message = await res.text(); // fallback for non-JSON response
+            // Empty State
+            if (!filteredClients || filteredClients.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-20 text-center select-none">
+                            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-folder-open text-slate-300 text-2xl"></i>
+                            </div>
+                            <h3 class="text-slate-900 font-bold mb-1">No clients found</h3>
+                            <p class="text-slate-400 text-xs font-semibold">Try adjusting your search filters</p>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            // Populate Rows
+            tbody.innerHTML = filteredClients.map(client => {
+                const fName = client.first_name || 'Unknown';
+                const sName = client.second_name || '';
+                const fullName = `${fName} ${sName}`;
+                const initials = (fName[0] || '?') + (sName[0] || '');
+
+                return `
+                    <tr class="table-row group cursor-pointer border-b border-slate-50 last:border-0" onclick="showProfile(${client.id})">
+                        
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-slate-600 font-bold text-xs overflow-hidden shrink-0 shadow-sm group-hover:from-teal-500 group-hover:to-teal-600 group-hover:text-white transition-all">
+                                    ${client.image ? `<img src="${client.image}" class="w-full h-full object-cover">` : initials}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-black text-slate-800 uppercase tracking-tight group-hover:text-teal-700 transition-colors">${fullName}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Client #${client.id}</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <div class="text-xs font-bold text-slate-600 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+                                ${client.location || 'Not Set'}
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <div class="text-xs font-bold text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded inline-block">
+                                ${client.id_number || '---'}
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1">
+                                <div class="text-xs font-bold text-slate-600 flex items-center gap-2">
+                                    <i class="fas fa-envelope text-slate-300 text-[10px]"></i>
+                                    <span class="truncate max-w-[150px]">${client.email || '---'}</span>
+                                </div>
+                                <div class="text-xs font-bold text-slate-600 flex items-center gap-2">
+                                    <i class="fas fa-phone text-slate-300 text-[10px]"></i>
+                                    <span class="font-mono">${client.phone || '---'}</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4 text-right">
+                            <button 
+                                onclick="event.stopPropagation(); showProfile(${client.id})" 
+                                class="px-3 py-1.5 rounded-md bg-white border border-slate-200 text-slate-600 hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50 transition-all font-bold text-[10px] uppercase tracking-wider shadow-sm"
+                            >
+                                <i class="fas fa-eye mr-1"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Only populate drop down once or if needed dynamically
+            if (document.getElementById('location-filter').options.length <= 1) {
+                populateLocationFilter();
+            }
         }
 
-        throw new Error(message);
-      }
-      const data = await res.json();
+        // 4. PROFILE SIDEBAR LOGIC
+        function showProfile(id) {
+            const client = allClients.find(c => c.id === id);
+            if (!client) return;
 
-      Swal.fire(
-        "Updated!",
-        `${data.package} updated. Expiry: ${data.expiry_date}`,
-        "success"
-      );
-      closeSubscriptionModal();
-      renderTable("clients");
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
+            // DOM Elements
+            const container = document.getElementById('profileContainer');
+            const avatarEl = document.getElementById('profileAvatar');
+            
+            // Show Container
+            container.classList.remove('hidden');
+            container.classList.add('flex');
 
-  let allSubscriptions = [];
+            // --- Populate Data ---
+            
+            // 1. Avatar
+            const fName = client.first_name || 'Client';
+            const sName = client.second_name || '';
+            const initials = (fName[0] || '?') + (sName[0] || '');
+            
+            if (client.image) {
+                avatarEl.innerHTML = `<img src="${client.image}" class="w-full h-full object-cover">`;
+            } else {
+                avatarEl.textContent = initials;
+            }
 
-  // Delete entire subscription
-  window.deleteSubscription = async (subscriptionId) => {
-    const confirm = await Swal.fire({
-      title: "Delete Subscription?",
-      text: "This will permanently remove the subscription record.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it",
-    });
-    if (!confirm.isConfirmed) return;
+            // 2. Header
+            document.getElementById('profileFullName').textContent = `${fName} ${sName}`;
 
-    try {
-      const res = await fetch(`/api/subscribe/client/${subscriptionId}`, {
-        method: "DELETE",
-        headers: { "X-Admin-Request": "true" },
-      });
-      if (!res.ok) throw new Error(await res.text());
+            // 3. Details
+            document.getElementById('detailFirstName').textContent = fName;
+            document.getElementById('detailLastName').textContent = sName;
+            document.getElementById('detailIdNumber').textContent = client.id_number || 'Not Provided';
+            document.getElementById('detailEmail').textContent = client.email || 'Not Provided';
+            document.getElementById('detailPhone').textContent = client.phone || 'Not Provided';
+            document.getElementById('detailLocation').textContent = client.location || 'Not Set';
+            document.getElementById('detailAddress').textContent = client.address || 'No physical address recorded';
 
-      Swal.fire("Deleted!", "Subscription removed.", "success");
-      await openSubscriptionModal(currentClientId); // Refresh modal
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
-
-  // Delete only payment (mark subscription as unpaid)
-  window.deletePayment = async (paymentId, subscriptionId) => {
-    const confirm = await Swal.fire({
-      title: "Delete Payment?",
-      text: "Payment will be removed and subscription marked as unpaid.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      confirmButtonText: "Yes, delete payment",
-    });
-    if (!confirm.isConfirmed) return;
-
-    try {
-      const res = await fetch(`/api/subscribe/client/payment/${paymentId}`, {
-        method: "DELETE",
-        headers: { "X-Admin-Request": "true" },
-      });
-      if (!res.ok) throw new Error(await res.text());
-
-      Swal.fire("Deleted!", "Payment removed.", "success");
-      await openSubscriptionModal(currentClientId); // Refresh
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
-
-  window.closeSubscriptionModal = () => {
-    const modal = $("subscriptionModal");
-    modal.querySelector(".bg-white").classList.remove("scale-100");
-    modal.querySelector(".bg-white").classList.add("scale-95");
-    setTimeout(() => (modal.style.display = "none"), 200);
-  };
-
-  //Date helper function
-  const getStartDate = () => {
-    const date = $("subscriptionStartDate").value;
-    if (!date) throw new Error("Please select a start date");
-    return date;
-  };
-
-  const getPaymentData = () => ({
-    status: $("markAsPaid").checked ? "paid" : "unpaid",
-    amount: $("paymentAmount").value.trim()
-      ? Number($("paymentAmount").value)
-      : null,
-    transaction_id: $("transactionId").value.trim() || null,
-    payment_method: $("paymentMethod").value,
-    payment_date: $("paymentDate").value || null,
-  });
-
-  // Assign
-  window.assignPlan = async () => {
-    const planId = $("subscriptionPlanSelect").value;
-    const startDate = getStartDate();
-    if (!planId)
-      return Swal.fire("Select Plan", "Please choose a plan", "warning");
-
-    const paymentData = getPaymentData();
-    if ($("markAsPaid").checked && !paymentData.amount) {
-      return Swal.fire(
-        "Amount Required",
-        "Enter payment amount if marked as paid",
-        "warning"
-      );
-    }
-
-    try {
-      const res = await fetch(
-        `/api/subscribe/client/${planId}?userId=${currentClientId}&start_date=${startDate}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Admin-Request": "true",
-          },
-          body: JSON.stringify(paymentData),
+            // Mobile handling: Scroll to profile if on small screen
+            if (window.innerWidth < 1024) {
+                container.scrollIntoView({ behavior: 'smooth' });
+            }
         }
-      );
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      Swal.fire(
-        "Success!",
-        `Subscribed & ${
-          $("markAsPaid").checked ? "paid" : "recorded as unpaid"
-        }`,
-        "success"
-      );
-      closeSubscriptionModal();
-      renderTable("clients");
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
 
-  // Renew
-  window.renewPlan = async () => {
-    if (!currentSubscription)
-      return Swal.fire(
-        "No Plan",
-        "User has no active plan to renew",
-        "warning"
-      );
-
-    const startDate = getStartDate();
-    const paymentData = getPaymentData();
-
-    try {
-      const res = await fetch(
-        `/api/subscribe/client/renew?userId=${currentClientId}&start_date=${startDate}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Admin-Request": "true",
-          },
-          body: JSON.stringify(paymentData),
+        function hideProfile() {
+            const container = document.getElementById('profileContainer');
+            container.classList.add('hidden');
+            container.classList.remove('flex');
         }
-      );
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      Swal.fire(
-        "Renewed!",
-        `Renewed from ${startDate}. New expiry: ${data.expires}`,
-        "success"
-      );
-      closeSubscriptionModal();
-      renderTable("clients");
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
 
-  // Upgrade
-  window.upgradePlan = async () => {
-    const planId = $("subscriptionPlanSelect").value;
-    const startDate = getStartDate();
-    if (!planId)
-      return Swal.fire("Select Plan", "Choose a plan to upgrade to", "warning");
-    if (!currentSubscription)
-      return Swal.fire(
-        "No Plan",
-        "User must have a plan to upgrade",
-        "warning"
-      );
-
-    const paymentData = getPaymentData();
-
-    try {
-      const res = await fetch(
-        `/api/subscribe/client/upgrade/${planId}?userId=${currentClientId}&start_date=${startDate}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Admin-Request": "true",
-          },
-          body: JSON.stringify(paymentData),
+        // 5. FILTERING LOGIC
+        function filterData(val) {
+            const term = val.toLowerCase();
+            const locationFilter = document.getElementById('location-filter');
+            const selectedLocation = locationFilter ? locationFilter.value : '';
+            
+            applyFilters(term, selectedLocation);
         }
-      );
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      Swal.fire(
-        "Upgraded!",
-        `Upgraded to ${data.name} from ${startDate}. Expires: ${data.expires}`,
-        "success"
-      );
-      closeSubscriptionModal();
-      renderTable("clients");
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
 
-  /* ---------- TAB SWITCH ---------- */
-  window.switchTab = (tab) => {
-    currentUserType = tab;
-    $("clientsSection").classList.toggle("hidden", tab !== "clients");
-
-    document
-      .querySelectorAll(".tab-btn")
-      .forEach(
-        (b) =>
-          (b.className =
-            "tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-gray-600 hover:bg-gray-50")
-      );
-    $(tab + "Tab").className =
-      "tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md";
-
-    $("addClientBtn").style.display = tab === "clients" ? "flex" : "none";
-    $("addStaffBtn").style.display = "none";
-
-    currentPage[tab] = 1;
-    renderTable(tab);
-  };
-
-  /* ---------- FETCH & CACHE PACKAGES ---------- */
-  const loadPackages = async () => {
-    const select = $("plan");
-    if (!select) return;
-
-    // Show skeleton
-    select.innerHTML = `<option class="skeleton w-full h-10"></option>`.repeat(
-      3
-    );
-    select.disabled = true;
-
-    try {
-      const data = await api.getPackages();
-      packagesCache = Array.isArray(data) ? data : [];
-
-      select.innerHTML = `
-        <option value="" disabled selected hidden>Select plan</option>
-        ${packagesCache
-          .map(
-            (pkg) => `
-          <option value="${pkg.id}" data-name="${pkg.name}" data-price="${pkg.price}">
-            ${pkg.name} (Ksh ${pkg.price})
-          </option>
-        `
-          )
-          .join("")}
-      `;
-      select.disabled = false;
-    } catch (e) {
-      select.innerHTML = `<option value="">Error loading plans</option>`;
-      select.disabled = true;
-      console.error("Failed to load packages:", e);
-    }
-  };
-
-  /* ---------- MODAL ---------- */
-  window.openAddUserModal = (type, id = null) => {
-    currentUserType = type;
-    const modal = $("addUserModal");
-    modal.style.display = "flex";
-    modal.querySelector(".bg-white").classList.remove("scale-95");
-    modal.querySelector(".bg-white").classList.add("scale-100");
-
-    $("modalTitle").textContent = id
-      ? `Edit ${type.slice(0, -1)}`
-      : `Add New ${type.slice(0, -1)}`;
-    $("submitBtnText").textContent = id ? "Update" : "Create";
-
-    // Show/hide fields
-    $("roleContainer").classList.toggle("hidden", type !== "staff");
-    $("departmentContainer").classList.toggle("hidden", type !== "staff");
-    $("salaryContainer").classList.toggle("hidden", type !== "staff");
-    $("role").required = type === "staff";
-    $("department").required = type === "staff";
-    $("basic_salary").required = type === "staff";
-
-    $("addUserForm").reset();
-    $("editUserId").value = "";
-
-    if (id) {
-      const cache = type === "clients" ? clientsCache : staffCache;
-      const user = cache.find((u) => u.id === parseInt(id));
-      if (!user) {
-        Swal.fire("Error", "User not found.", "error");
-        return;
-      }
-
-      const fullName = user.name || "";
-      const nameParts = fullName.split(" ");
-      $("editUserId").value = user.id;
-      $("first_name").value = nameParts[0] || "";
-      $("second_name").value = nameParts.slice(1).join(" ") || "";
-      $("email").value = user.email || "";
-      $("phone").value = user.phone || "";
-      $("idNumber").value = user.employeeId || "";
-      const roleSelect = $("role");
-      const userPosition = user.position || "";
-
-      if (userPosition) {
-        let option = Array.from(roleSelect.options).find(
-          (o) => o.value === userPosition
-        );
-        if (!option) {
-          option = new Option(userPosition, userPosition);
-          roleSelect.add(option);
+        function filterByLocation(location) {
+            const searchInput = document.querySelector('input[type="text"]');
+            const term = searchInput.value.toLowerCase();
+            
+            applyFilters(term, location);
         }
-        roleSelect.value = userPosition;
-      }
-      $("department").value = user.department || "";
 
-      if (type === "clients") {
-        // Match by ID or name fallback
-        const pkg =
-          packagesCache.find((p) => p.id == user.plan) ||
-          packagesCache.find((p) => p.name === user.plan);
-      } else {
-        $("role").value = user.role || "";
-        $("department").value = user.department || "";
-        $("basic_salary").value = user.salary.basic_salary || "";
-      }
-    }
-  };
+        function applyFilters(searchTerm, location) {
+            filteredClients = allClients.filter(client => {
+                const fName = (client.first_name || '').toLowerCase();
+                const sName = (client.second_name || '').toLowerCase();
+                const email = (client.email || '').toLowerCase();
+                const phone = (client.phone || '').toLowerCase();
 
-  window.closeAddUserModal = () => {
-    const modal = $("addUserModal");
-    modal.querySelector(".bg-white").classList.remove("scale-100");
-    modal.querySelector(".bg-white").classList.add("scale-95");
-    setTimeout(() => (modal.style.display = "none"), 200);
-  };
-
-  window.openViewUserModal = (user, type, currentSub) => {
-    const modal = $("viewUserModal");
-    modal.style.display = "flex";
-    modal.querySelector(".bg-white").classList.remove("scale-95");
-    modal.querySelector(".bg-white").classList.add("scale-100");
-
-    // Common fields
-    $("viewModalTitle").textContent = `${
-      type === "clients" ? "Client" : "Staff"
-    } Details #${user.id}`;
-    $("viewFullName").textContent = user.name;
-    $("viewEmail").textContent = user.email || "-";
-    $("viewPhone").textContent = user.phone || "-";
-    $("viewIdNumber").textContent = user.employeeId || "-";
-
-    // Toggle sections
-    $("clientFields").classList.toggle("hidden", type !== "clients");
-    $("staffFields").classList.toggle("hidden", type !== "staff");
-
-    if (type === "clients") {
-      if (currentSub) {
-        $("viewPlan").textContent = currentSub.package?.name || "Unknown Plan";
-
-        const expiry = currentSub.expires || currentSub.expiry_date;
-        $("viewClientStatus").textContent = expiry
-          ? `Expires ${formatDate(expiry)}`
-          : "Active";
-
-        const amount = currentSub.payment?.amount;
-        $("viewLastPayment").textContent = amount
-          ? `KSh ${Number(amount).toLocaleString()}`
-          : "-";
-
-        const paid = currentSub.payment?.status === "paid";
-        $("viewPaymentStatus").textContent = paid ? "Paid" : "Unpaid";
-        $("viewPaymentStatus").className = paid
-          ? "text-green-700 font-bold"
-          : "text-orange-700 font-bold";
-      } else {
-        $("viewPlan").textContent = "No Active Plan";
-        $("viewClientStatus").textContent = "Not Subscribed";
-        $("viewLastPayment").textContent = "-";
-        $("viewPaymentStatus").textContent = "No Plan";
-      }
-    } else {
-      // Staff fields
-      $("viewRole").textContent = user.role || "-";
-      $("viewDepartment").textContent = user.department || "-";
-      $("viewBasicSalary").textContent = "-";
-      $("viewStaffStatus").textContent = user.status || "-";
-      $("viewJoined").textContent = user.joined ? formatDate(user.joined) : "-";
-    }
-  };
-
-  window.closeViewUserModal = () => {
-    const modal = $("viewUserModal");
-    modal.querySelector(".bg-white").classList.remove("scale-100");
-    modal.querySelector(".bg-white").classList.add("scale-95");
-    setTimeout(() => (modal.style.display = "none"), 200);
-  };
-
-  /* ---------- FORM SUBMIT ---------- */
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-
-    if (
-      currentUserType === "staff" &&
-      (!$("role").value || !$("department").value)
-    )
-      return Swal.fire(
-        "Validation",
-        "Please select Role and Department.",
-        "warning"
-      );
-
-    const id = $("editUserId").value;
-    const data = {
-      first_name: $("first_name").value.trim(),
-      second_name: $("second_name").value.trim(),
-      email: $("email").value.trim(),
-      phone: $("phone").value.trim(),
-      idNumber: $("idNumber").value.trim(),
-      password: $("password").value.trim(),
-    };
-
-    if (currentUserType !== "clients") {
-      data.role = $("role").value;
-      data.department = $("department").value;
-      data.basic_salary = $("basic_salary").value.trim();
-    }
-
-    try {
-      id
-        ? await api.update(currentUserType, id, data)
-        : await api.create(currentUserType, data);
-      closeAddUserModal();
-      renderTable(currentUserType);
-      updateCounts();
-      Swal.fire("Success!", id ? "User updated." : "User created.", "success");
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
-  /* ---------- USER ACTIONS ---------- */
-  window.viewUser = async (id, type) => {
-    const list = type === "clients" ? clientsCache : staffCache;
-    const user = list.find((u) => u.id === parseInt(id));
-    if (!user) {
-      Swal.fire("Error", "User not found.", "error");
-      return;
-    }
-
-    let currentSub = null;
-    if (type === "clients") {
-      try {
-        const res = await fetch(`/api/subscribe/client/current?userId=${id}`, {
-          headers: { "X-Admin-Request": "true" },
-        });
-        if (res.ok) {
-          const arr = await res.json();
-          currentSub = Array.isArray(arr) && arr.length > 0 ? arr[0] : null;
+                const matchesSearch = 
+                    fName.includes(searchTerm) || 
+                    sName.includes(searchTerm) ||
+                    email.includes(searchTerm) ||
+                    phone.includes(searchTerm);
+                
+                const matchesLocation = !location || client.location === location;
+                
+                return matchesSearch && matchesLocation;
+            });
+            
+            renderTable();
         }
-      } catch (e) {
-        console.error("Failed to fetch subscription for view modal", e);
-      }
-    }
 
-    openViewUserModal(user, type, currentSub);
-  };
+        function populateLocationFilter() {
+            const locationFilter = document.getElementById('location-filter');
+            
+            // Extract unique locations
+            const locations = [...new Set(allClients
+                .map(client => client.location)
+                .filter(loc => loc && loc.trim() !== '')
+            )].sort();
+            
+            // Add to dropdown
+            const currentVal = locationFilter.value;
+            locationFilter.innerHTML = `<option value="">All Locations</option>`;
+            
+            locations.forEach(loc => {
+                const count = allClients.filter(c => c.location === loc).length;
+                const option = document.createElement('option');
+                option.value = loc;
+                option.textContent = `${loc} (${count})`;
+                locationFilter.appendChild(option);
+            });
 
-  window.editUser = (id, type) => openAddUserModal(type, id);
-  window.messageUser = (id) =>
-    Swal.fire("Messaging", `Open chat with user. Coming soon!! #${id}`, "info");
-  window.deleteUser = async (id, type) => {
-    const confirm = await Swal.fire({
-      title: "Delete user?",
-      text: "This action cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-    });
-    if (!confirm.isConfirmed) return;
-    try {
-      await api.delete(type, id);
-      renderTable(type);
-      updateCounts();
-      Swal.fire("Deleted!", "", "success");
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
+            locationFilter.value = currentVal;
+        }
 
-  window.exportData = (type) => {
-    const data = type === "clients" ? clientsCache : staffCache;
-    if (!data.length) return;
-    const csv = [Object.keys(data[0]), ...data.map(Object.values)]
-      .map((e) => e.join(","))
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${type}-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+        // 6. UTILITIES
+        function showToast(title, msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const isError = title === 'ERROR';
+            const bgColor = isError ? 'bg-rose-600' : 'bg-emerald-600';
+            
+            toast.className = `${bgColor} text-white p-4 rounded-xl shadow-xl min-w-[280px] animate-slide-in flex items-center gap-3`;
+            toast.innerHTML = `
+                <div class="text-2xl opacity-50"><i class="fas ${isError ? 'fa-times-circle' : 'fa-check-circle'}"></i></div>
+                <div>
+                    <h5 class="text-[10px] font-black uppercase opacity-70 mb-0.5">${title}</h5>
+                    <p class="text-sm font-bold">${msg}</p>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
-  const debounce = (fn, delay) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), delay);
-    };
-  };
-
-  /* ---------- INIT ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
-    // Attach button events
-    $("addClientBtn").onclick = () => openAddUserModal("clients");
-
-    // Tabs
-    $("clientsTab").onclick = () => switchTab("clients");
-
-    // Filters
-    ["clientsSearch", "staffSearch"].forEach((id) =>
-      $(id)?.addEventListener(
-        "input",
-        debounce(() => {
-          currentPage[currentUserType] = 1;
-          renderTable(currentUserType);
-        }, 300)
-      )
-    );
-    [
-      "clientSubFilter",
-      "clientStatusFilter",
-      "clientPlanFilter",
-      "staffDeptFilter",
-      "staffRoleFilter",
-      "staffStatusFilter",
-    ].forEach((id) =>
-      $(id)?.addEventListener("change", () => {
-        currentPage[currentUserType] = 1;
-        renderTable(currentUserType);
-      })
-    );
-
-    $("addUserForm").addEventListener("submit", handleFormSubmit);
-
-    // Initial load
-    switchTab("clients");
-    renderTable("clients");
-    updateCounts();
-    $("addStaffBtn").style.display = "none";
-  });
-</script>
+        function setLoadingState(isLoading) {
+            const tbody = document.getElementById('clientsTable');
+            if (isLoading) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-32 text-center">
+                            <div class="inline-flex flex-col items-center">
+                                <i class="fas fa-circle-notch fa-spin-slow text-4xl text-teal-500 mb-4"></i>
+                                <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400 animate-pulse">
+                                    Loading Directory...
+                                </p>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
+        }
+    </script>

@@ -335,6 +335,7 @@ router.post("/login", async (req, res) => {
         phone: user.phone || null,
         id_number: user.id_number || null,
         employee_id: user.employee_id || null,
+        department: user.department || null,
         userType: userType,
         first_name: user.first_name || "",
         second_name: user.second_name || "",

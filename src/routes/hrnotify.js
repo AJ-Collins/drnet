@@ -44,7 +44,7 @@ router.post('/dispatch/sms', async (req, res) => {
             if (!canSend) {
                 const timeInfo = await SmsLog.getTimeUntilNextAllowed(subscriptionId, messageType);
                 return res.status(429).json({ 
-                    error: `Rate limit: ${messageType} SMS already sent in last 24 hours. Try again in ${timeInfo.hoursRemaining} hour(s).`,
+                    error: `Rate limit: ${messageType} SMS already sent in last 48 hours. Try again in ${timeInfo.hoursRemaining} hour(s).`,
                     rateLimited: true,
                     hoursRemaining: timeInfo.hoursRemaining,
                     messageType: messageType

@@ -14,7 +14,10 @@ const createRenewalsTable = require("./renewals");
 const createBookingsTable = require("./bookings");
 const createClientPaymentReceiptsTable = require("./client_payment_receipt");
 const createUserSubscriptionsTable = require("./user_subscriptions");
-const createReports = require("./reports");
+
+// Reports
+const createStaffReports = require("./staff_reports");
+
 // HR-ASSISTANT
 const createHrExpensesTable = require("./hr-expenses");
 const createHrTasksTable = require("./hr-tasks");
@@ -56,14 +59,12 @@ const createStaffAttendanceTable = require("./staff_attendance");
 const createStaffClientAssignmentsTable = require("./staff_client_assignments");
 const createStaffSchedulesTable = require("./staff_schedules");
 
-const createAnnouncementsTable = require("./announcements");
-
 // Support tickets
 const createSupportTicketsTable = require("./support_tickets");
 const createSupportTicketMessagesTable = require("./support_ticket_messages");
 const createTicketAssignmentsTable = require("./support_ticket_assignments");
 
-const createTeamMessagesTable = require("./team_messages");
+const createCommunicationTables = require("./Communication");
 const createNotificationsTable = require("./notifications"); // added notifications table
 
 async function runMigrations() {
@@ -90,15 +91,12 @@ async function runMigrations() {
   await createStaffClientAssignmentsTable();
   await createStaffSchedulesTable();
 
-  // Communication & notifications
-  await createAnnouncementsTable();
-
   // Support tickets
   await createSupportTicketsTable();
   await createSupportTicketMessagesTable();
   await createTicketAssignmentsTable();
 
-  await createTeamMessagesTable();
+  await createCommunicationTables();
   await createNotificationsTable();
 
   await createUserSubscriptionsTable();
@@ -116,7 +114,7 @@ async function runMigrations() {
   await createPurchaseInvoiceTable();
   await createItemsPurchaseInvoiceTable();
   await createExpensesTable();
-  await  createReports();
+  await  createStaffReports();
 
   //hr-assistant
   await createHrExpensesTable();

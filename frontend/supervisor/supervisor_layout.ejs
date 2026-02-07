@@ -20,6 +20,12 @@
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">    
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
       rel="stylesheet"
@@ -74,19 +80,17 @@
 
           <!-- Navigation -->
           <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <% const pages = [ {slug:'dashboard', name:'Dashboard'},
-            { slug:'my-customers', name:'My Assignments' },
-            { slug:'work-schedule', name:'Work Schedule' },
+            <% const pages = [ {slug:'dashboard', name:'Dashboard'},                        
+            {slug:'staff-attendance', name:'Staff Attendance'},            
             { slug:'daily_reports', name:'Daily Reports' },
-            {slug:'staff-attendance', name:'Staff Attendance'},
-            { slug: 'my-packages', name: 'My Packages' },
-            {slug:'manage-users', name:'User Management'},
+            { slug: 'task-assignment', name: 'Assigned Tasks' },
+            { slug: 'onboard', name: 'Onboard'},
             {slug:'service-management', name:'Service Management'},
-            {slug:'support-tickets', name:'Support Tickets'},
-            {slug:'website-bookings', name:'Website Bookings'},
+            {slug:'manage-users', name:'User Management'},            
+            {slug:'website-bookings', name:'Website Bookings'},            
+            {slug:'inventory', name:'Inventory'},
             {slug:'communication-team', name:'Team Connect'},
-            {slug:'equipments', name:'Equipments & Tools'}, {slug:'profile',
-            name:'Profile'} ]; %> <% pages.forEach(p => { %>
+            {slug:'profile', name:'Profile'} ]; %> <% pages.forEach(p => { %>
             <a
               href="/supervisor/<%= p.slug %>"
               class="nav-link flex items-center px-4 py-3 rounded-lg w-full <%= currentPage===p.slug ? 'bg-teal-900/50 text-white font-medium' : 'text-teal-100 font-medium' %> transition-all duration-200 hover:bg-teal-900/50 hover:text-white hover:translate-x-1"
@@ -97,13 +101,15 @@
                    p.slug.includes('work-schedule') ? 'fa-tasks' :
                   p.slug.includes('work-schedule') ? 'fa-calendar-alt' :
                   p.slug.includes('daily_reports') ? 'fa-calendar-day' :
+                  p.slug.includes('task-assignment') ? 'fa-tasks' :
+                  p.slug.includes('onboard') ? 'fa-hand-holding-usd' :
                   p.slug.includes('attendance') ? 'fa-user-check' :
                   p.slug.includes('users') ? 'fa-users' :
                   p.slug.includes('service') ? 'fa-tools' :
                   p.slug.includes('ticket') ? 'fa-ticket-alt' :
                   p.slug.includes('booking') ? 'fa-globe' :
                   p.slug.includes('communication') ? 'fa-comments' :
-                  p.slug.includes('equipments') ? 'fa-tools' :
+                  p.slug.includes('inventory') ? 'fa-tools' :
                   p.slug === 'my-packages' ? 'fa-box' :  // Added this line
                   'fa-cog' 
                 %> w-6 text-lg"

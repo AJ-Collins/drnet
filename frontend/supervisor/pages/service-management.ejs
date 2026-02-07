@@ -1,810 +1,1168 @@
-<style>
-  .slide-in {
-    animation: slideIn 0.4s ease-out;
-  }
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .stat-card {
-    transition: all 0.3s ease;
-  }
-  .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  }
-</style>
-<div class="flex items-center justify-between mb-8">
-  <div>
-    <h3 class="text-2xl font-bold text-teal-800">
-      Service Assignment Management
-    </h3>
-    <p class="text-teal-600 mt-1">
-      Assign installations, maintenance, and asset recovery tasks to technicians
-    </p>
-  </div>
-  <button
-    onclick="openCreateModal()"
-    class="bg-teal-500 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
-  >
-    <i class="fas fa-user-plus"></i> <span>New Assignment</span>
-  </button>
-</div>
-
-<!-- STATS CARDS -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-  <div
-    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <h3 class="text-teal-600 text-sm font-bold mb-1">Total Assignments</h3>
-        <h2 id="totalAssignments" class="text-3xl font-bold text-gray-800">
-          0
-        </h2>
-      </div>
-      <div
-        class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
-      >
-        <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
-      </div>
-    </div>
-  </div>
-  <div
-    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <h3 class="text-teal-600 text-sm font-bold mb-1">Active Assignments</h3>
-        <h2 id="activeAssignments" class="text-3xl font-bold text-gray-800">
-          0
-        </h2>
-      </div>
-      <div
-        class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
-      >
-        <i class="fas fa-hourglass-half text-green-600 text-xl"></i>
-      </div>
-    </div>
-  </div>
-  <div
-    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <h3 class="text-teal-600 text-sm font-bold mb-1">Pending Review</h3>
-        <h2 id="pendingAssignments" class="text-3xl font-bold text-gray-800">
-          0
-        </h2>
-      </div>
-      <div
-        class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
-      >
-        <i class="fas fa-eye text-orange-600 text-xl"></i>
-      </div>
-    </div>
-  </div>
-  <div
-    class="stat-card bg-teal-50 rounded-xl shadow-lg p-6 border border-teal-400"
-  >
-    <div class="flex items-center justify-between">
-      <div>
-        <h3 class="text-teal-600 text-sm font-bold mb-1">Completed Today</h3>
-        <h2 id="completedToday" class="text-3xl font-bold text-gray-800">0</h2>
-      </div>
-      <div
-        class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
-      >
-        <i class="fas fa-check-circle text-purple-600 text-xl"></i>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- FILTERS -->
-<div class="bg-white shadow-xl p-6 mb-8">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6">
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Client, tech, ID…"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-      />
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2"
-        >Service Type</label
-      >
-      <select
-        id="serviceTypeFilter"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-      >
-        <option value="">All Types</option>
-        <option value="installation">Installation</option>
-        <option value="maintenance">Maintenance</option>
-        <option value="asset_recovery">Asset Recovery</option>
-        <option value="repair">Repair</option>
-        <option value="inspection">Inspection</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-      <select
-        id="statusFilter"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-      >
-        <option value="">All Status</option>
-        <option value="assigned">Assigned</option>
-        <option value="in_progress">In Progress</option>
-        <option value="completed">Completed</option>
-        <option value="pending_review">Pending Review</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2"
-        >Technician</label
-      >
-      <select
-        id="technicianFilter"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white"
-      >
-        <option value="">All Technicians</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="px-6 py-4 border-b border-gray-200">
-    <h3 class="text-lg font-bold text-teal-800">
-      <i class="fas fa-list mr-2"></i>Assignments
-    </h3>
-  </div>
-
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-teal-50">
-        <tr>
-          <th
-            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
-          >
-            ID
-          </th>
-          <th
-            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
-          >
-            Client
-          </th>
-          <th
-            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
-          >
-            Service
-          </th>
-          <th
-            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
-          >
-            Tech
-          </th>
-          <th
-            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
-          >
-            Date
-          </th>
-          <th
-            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
-          >
-            Status
-          </th>
-          <th
-            class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider"
-          >
-            Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody
-        id="assignmentsTableBody"
-        class="bg-white divide-y divide-gray-200"
-      ></tbody>
-    </table>
-  </div>
-
-  <!-- PAGINATION -->
-  <div id="pagination" class="flex justify-center space-x-2 mt-6"></div>
-</div>
-<!-- CREATE / EDIT MODAL -->
-<div
-  id="createAssignmentModal"
-  class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4"
->
-  <div
-    class="bg-white shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-  >
-    <div class="bg-teal-700 px-8 py-6">
-      <h2 id="modalTitle" class="text-2xl font-bold text-white">
-        Create Service Assignment
-      </h2>
-      <p class="text-teal-100 mt-1">
-        Assign a new service task to a technician
-      </p>
-    </div>
-    <div class="p-8">
-      <form id="assignmentForm" class="space-y-6">
-        <input type="hidden" id="editId" />
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
-              Assignment Details
-            </h3>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Service Type *</label
-              >
-              <select
-                id="serviceType"
-                required
-                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              >
-                <option value="">Select…</option>
-                <option value="installation">Installation</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="asset_recovery">Asset Recovery</option>
-                <option value="repair">Repair</option>
-                <option value="inspection">Inspection</option>
-              </select>
+<div class="bg-gray-100 h-screen overflow-hidden flex flex-col">
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+    
+    <header class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md z-30">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
+                <i class="fas fa-users-cog text-lg"></i>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Priority *</label
-              >
-              <select
-                id="priority"
-                required
-                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              >
-                <option value="">Select…</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
+                <h1 class="text-lg md:text-xl font-bold tracking-tight">STAFF TASK ASSIGNMENT</h1>
+                <p class="text-xs text-gray-300">Admin Panel - Assign & Manage Tasks</p>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Scheduled Date *</label
-              >
-              <input
-                id="scheduledDate"
-                type="datetime-local"
-                required
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Estimated Duration (hrs) *</label
-              >
-              <input
-                id="estimatedDuration"
-                type="number"
-                min="0.5"
-                step="0.5"
-                required
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              />
-            </div>
-          </div>
-          <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
-              Client & Technician
-            </h3>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Client Name *</label
-              >
-              <input
-                id="clientName"
-                type="text"
-                required
-                placeholder="John Doe / ABC Ltd"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Client Contact (optional)</label
-              >
-              <input
-                id="clientContact"
-                type="text"
-                placeholder="Phone / Email"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Service Address *</label
-              >
-              <textarea
-                id="serviceAddress"
-                rows="3"
-                required
-                placeholder="Full address…"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              ></textarea>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Technician *</label
-              >
-              <select
-                id="technicianId"
-                required
-                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              >
-                <option value="">Select…</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Supervisor *</label
-              >
-              <select
-                id="supervisorId"
-                required
-                class="w-full bg-white p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              >
-                <option value="">Select…</option>
-              </select>
-            </div>
-          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Description *</label
-          >
-          <textarea
-            id="description"
-            rows="4"
-            required
-            placeholder="Detailed description…"
-            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-          ></textarea>
+        <div class="flex gap-2">
+            <button onclick="toggleCreateAssignmentForm()" class="bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-xs md:text-sm font-semibold transition flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                <span class="hidden md:inline">New Assignment</span>
+            </button>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Required Equipment / Assets</label
-          >
-          <textarea
-            id="requiredEquipment"
-            rows="3"
-            placeholder="List items…"
-            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-          ></textarea>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Left Sidebar - Staff List -->
+        <aside id="sidebar" class="w-full md:w-1/3 lg:w-1/4 border-r bg-white flex flex-col">
+            <div class="p-4 border-b bg-gray-50">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Staff Members</span>
+                    <input type="text" id="staffSearch" onkeyup="filterStaff()" placeholder="Search staff..." class="w-2/3 p-2 border rounded text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto" id="staffList">
+                <!-- Loading Skeleton -->
+                <div class="animate-pulse space-y-3 p-4">
+                    <div class="h-20 bg-slate-100 rounded-xl"></div>
+                    <div class="h-20 bg-slate-100 rounded-xl"></div>
+                    <div class="h-20 bg-slate-100 rounded-xl"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col bg-white">
+            <!-- Staff Details Header -->
+            <div id="staffHeader" class="p-4 border-b bg-white shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                            <i class="fas fa-user-tie text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-lg">Select Staff Member</h2>
+                            <p class="text-xs text-slate-500">Choose a staff member to view and manage assignments</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="assignTaskBtn" onclick="toggleCreateAssignmentForm()" 
+                                class="hidden text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Assign Task
+                        </button>
+                        <button id="viewStatsBtn" onclick="viewPerformanceStats()" 
+                                class="hidden text-xs bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                            <i class="fas fa-chart-bar"></i> View Stats
+                        </button>
+                        <button id="viewProfileBtn" onclick="viewStaffDetails()" 
+                                class="hidden text-xs bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                            <i class="fas fa-eye"></i> View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Assignment Form (Replaces content area) -->
+            <div id="createAssignmentForm" class="hidden flex-1 overflow-y-auto">
+                <div class="p-6 bg-gray-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-900">Create New Assignment</h3>
+                        <button onclick="toggleCreateAssignmentForm()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <form id="assignmentForm" class="space-y-6 max-w-2xl">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Select Staff Member</label>
+                                <select id="staffSelect" class="w-full p-3 bg-white border rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="">-- Choose Staff --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Due Date</label>
+                                <input type="datetime-local" id="dueDate" 
+                                       class="w-full p-3 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
+                            <input type="text" id="taskSubject" placeholder="Brief description of the task" 
+                                   class="w-full p-3 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Assignment Note (Optional)</label>
+                            <textarea id="assignmentNote" rows="4" placeholder="Provide clear instructions for the staff member..." 
+                                      class="w-full p-3 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-500 resize-none"></textarea>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-100">
+                            <input type="checkbox" id="sendNotification" checked class="w-4 h-4 text-green-600 rounded">
+                            <label for="sendNotification" class="text-sm text-gray-700 cursor-pointer">Send notification to staff member</label>
+                        </div>
+                        
+                        <div class="flex gap-4 pt-4">
+                            <button type="button" onclick="toggleCreateAssignmentForm()" 
+                                    class="px-8 py-3 text-gray-600 font-semibold hover:text-gray-900">
+                                Cancel
+                            </button>
+                            <button type="button" onclick="saveAssignment()" 
+                                    class="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-paper-plane"></i> Assign Task
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Content Area (Default view) -->
+            <div id="contentArea" class="flex-1 overflow-y-auto p-6">
+                <!-- Default State -->
+                <div id="defaultState" class="flex flex-col items-center justify-center h-full text-gray-400 p-6 text-center">
+                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-user-check text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-semibold mb-1">Select a Staff Member</p>
+                    <p class="text-xs text-gray-500">Choose a staff member from the list to view their assignments</p>
+                </div>
+
+                <!-- Active Assignments View -->
+                <div id="activeAssignmentsView" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Active Assignments</h3>
+                            <p class="text-sm text-gray-500">Tasks currently assigned to this staff member</p>
+                        </div>
+                        <button onclick="toggleCreateAssignmentForm()" class="text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                    </div>
+                    <div id="activeAssignmentsList" class="space-y-4">
+                        <!-- Assignments will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Completed Assignments View -->
+                <div id="completedAssignmentsView" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Completed Assignments</h3>
+                            <p class="text-sm text-gray-500">Tasks completed by this staff member</p>
+                        </div>
+                    </div>
+                    <div id="completedAssignmentsList" class="space-y-4">
+                        <!-- Completed assignments will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Performance Stats View -->
+                <div id="statsView" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Performance Statistics</h3>
+                            <p class="text-sm text-gray-500">Staff performance metrics and analytics</p>
+                        </div>
+                        <button onclick="showActiveAssignments()" class="text-sm bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                            <i class="fas fa-tasks"></i> Back to Tasks
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl border shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500 font-semibold">Total Tasks</p>
+                                    <p id="totalTasks" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                                </div>
+                                <div class="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-tasks text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500 font-semibold">Completion Rate</p>
+                                    <p id="completionRate" class="text-3xl font-bold text-gray-800 mt-2">0%</p>
+                                </div>
+                                <div class="w-14 h-14 bg-green-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500 font-semibold">Avg. Time</p>
+                                    <p id="avgTime" class="text-3xl font-bold text-gray-800 mt-2">0h</p>
+                                </div>
+                                <div class="w-14 h-14 bg-purple-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-clock text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl border shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+                        <div id="recentActivity" class="space-y-4">
+                            <!-- Activity items will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Details View -->
+                <div id="staffDetailsView" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Staff Profile</h3>
+                            <p class="text-sm text-gray-500">Detailed information about the staff member</p>
+                        </div>
+                        <button onclick="showActiveAssignments()" class="text-sm bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                            <i class="fas fa-tasks"></i> Back to Tasks
+                        </button>
+                    </div>
+                    
+                    <div id="staffDetailsContent" class="bg-white p-6 rounded-xl border shadow-sm">
+                        <!-- Staff details will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Assignment Details View -->
+                <div id="assignmentDetailsView" class="hidden">
+                    <div id="assignmentDetailsContent" class="bg-white p-6 rounded-lg border shadow-sm">
+                        <!-- Assignment details will be loaded here -->
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="flex justify-end space-x-4 pt-6 border-t">
-          <button
-            type="button"
-            onclick="closeCreateModal()"
-            class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            id="submitBtn"
-            class="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
-          >
-            Create Assignment
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 
 <script>
-  const API = {
-    ASSIGNMENTS: "/api/assignments",
-    TECHNICIANS: "/api/technicians",
-    SUPERVISORS: "/api/supervisors",
-  };
+    let allStaff = [];
+    let selectedStaffId = null;
+    let selectedStaffAssignments = [];
+    let isCreateFormVisible = false;
+    let currentView = 'default'; // 'default', 'active', 'completed', 'stats', 'details', 'assignment'
 
-  let assignments = [];
-  let technicians = [];
-  let supervisors = [];
-  let filtered = [];
-  let currentPage = 1;
-  const itemsPerPage = 8;
-
-  const $ = (id) => document.getElementById(id);
-
-  const priorityBadge = (p) => {
-    const map = {
-      low: "bg-green-100 text-green-700",
-      medium: "bg-yellow-100 text-yellow-700",
-      high: "bg-orange-100 text-orange-700",
-      urgent: "bg-red-100 text-red-700",
+    // Initialize
+    window.onload = async () => {
+        await loadStaff();
+        populateStaffSelect();
     };
-    return map[p] || "bg-gray-100 text-gray-700";
-  };
-  const statusBadge = (s) => {
-    const map = {
-      assigned: "bg-blue-100 text-blue-700",
-      in_progress: "bg-indigo-100 text-indigo-700",
-      completed: "bg-green-100 text-green-700",
-      pending_review: "bg-orange-100 text-orange-700",
-    };
-    return map[s] || "bg-gray-100 text-gray-700";
-  };
 
-  // === API CALLS ===
-  const api = {
-    async get(url) {
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-    async post(url, data) {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-    async put(url, data) {
-      const res = await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-    async delete(url) {
-      const res = await fetch(url, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-  };
-
-  // === LOAD DATA ===
-  async function loadData() {
-    try {
-      const [assignData, techData, supData] = await Promise.all([
-        api.get(API.ASSIGNMENTS),
-        api.get(API.TECHNICIANS),
-        api.get(API.SUPERVISORS),
-      ]);
-      assignments = assignData;
-      technicians = techData;
-      supervisors = supData;
-      populateSelects();
-      applyFilters();
-      updateStats();
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  }
-
-  function populateSelects() {
-    const populate = (id, list, valueKey, labelKey) => {
-      const sel = $(id);
-      sel.innerHTML = '<option value="">Select…</option>';
-      list.forEach((item) => {
-        const opt = document.createElement("option");
-        opt.value = item[valueKey];
-        opt.textContent = item[labelKey];
-        sel.appendChild(opt);
-      });
-    };
-    populate("technicianId", technicians, "id", "name");
-    populate("supervisorId", supervisors, "id", "name");
-    populate(
-      "technicianFilter",
-      [{ id: "", name: "All Technicians" }, ...technicians],
-      "id",
-      "name"
-    );
-  }
-
-  // === FILTER & RENDER ===
-  function applyFilters() {
-    let list = [...assignments];
-    const q = $("searchInput").value.toLowerCase().trim();
-    const type = $("serviceTypeFilter").value;
-    const status = $("statusFilter").value;
-    const tech = $("technicianFilter").value;
-
-    if (q) {
-      list = list.filter((a) => {
-        const idStr = String(a.id).toLowerCase();
-        const clientStr = (a.clientName || "").toLowerCase();
-        const techName = technicians.find((t) => t.id === a.technicianId)?.name || "";
-        const techStr = techName.toLowerCase();
-
-        return (
-          idStr.includes(q) ||
-          clientStr.includes(q) ||
-          techStr.includes(q)
-        );
-      });
-    }
-    if (type) list = list.filter((a) => a.serviceType === type);
-    if (status) list = list.filter((a) => a.status === status);
-    if (tech) list = list.filter((a) => a.technicianId === tech);
-
-    filtered = list;
-    currentPage = 1;
-    renderTable();
-  }
-
-  function renderTable() {
-    const start = (currentPage - 1) * itemsPerPage;
-    const pageItems = filtered.slice(start, start + itemsPerPage);
-    const tbody = $("assignmentsTableBody");
-
-    if (!pageItems.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">No assignments found</td></tr>`;
-      renderPagination(0);
-      return;
+    // Load all staff members
+    async function loadStaff() {
+        try {
+            const res = await fetch('/api/manage/staff');
+            if (!res.ok) throw new Error('Failed to load staff');
+            
+            allStaff = await res.json();
+            renderStaffList(allStaff);
+            
+        } catch (err) {
+            console.error("Failed to load staff:", err);
+            showToast("Failed to load staff members", 'error');
+            
+            const list = document.getElementById('staffList');
+            list.innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <p class="text-sm font-semibold">Unable to load staff</p>
+                    <button onclick="loadStaff()" class="text-xs text-blue-600 hover:underline font-bold mt-2">
+                        Retry
+                    </button>
+                </div>
+            `;
+        }
     }
 
-    tbody.innerHTML = pageItems
-      .map((a) => {
-        const tech =
-          technicians.find((t) => t.id === a.technicianId)?.name || "—";
-        return `
-        <tr class="hover:bg-teal-50 transition">
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${
-            a.id
-          }</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
-            a.clientName
-          }</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${a.serviceType.replace(
-            /_/g,
-            " "
-          )}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${tech}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dayjs(
-            a.scheduledDate
-          ).format("DD MMM YYYY, HH:mm")}</td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge(
-              a.status
-            )}">
-              ${a.status.replace(/_/g, " ").toUpperCase()}
-            </span>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-            <button onclick="viewAssignment(${
-              a.id
-            })" class="text-teal-600 hover:text-teal-900"><i class="fas fa-eye"></i></button>
-            <button onclick="openEditModal(${
-              a.id
-            })" class="text-blue-600 hover:text-blue-900"><i class="fas fa-edit"></i></button>
-            <button onclick="deleteAssignment(${
-              a.id
-            })" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-          </td>
-        </tr>`;
-      })
-      .join("");
-
-    renderPagination(filtered.length);
-  }
-
-  function renderPagination(total) {
-    const pages = Math.ceil(total / itemsPerPage);
-    const nav = $("pagination");
-    nav.innerHTML = "";
-    if (pages <= 1) return;
-
-    const btn = (text, page, disabled = false) => {
-      const b = document.createElement("button");
-      b.textContent = text;
-      b.disabled = disabled;
-      b.className = `px-4 py-2 border rounded text-sm ${
-        disabled ? "opacity-50" : "hover:bg-gray-100"
-      }`;
-      if (!disabled)
-        b.onclick = () => {
-          currentPage = page;
-          renderTable();
-        };
-      return b;
-    };
-
-    nav.appendChild(btn("Prev", currentPage - 1, currentPage === 1));
-    for (let i = 1; i <= pages; i++) {
-      const b = btn(i, i);
-      if (i === currentPage) b.className += " bg-teal-600 text-white";
-      nav.appendChild(b);
+    function populateStaffSelect() {
+        const select = document.getElementById('staffSelect');
+        select.innerHTML = '<option value="">-- Choose Staff --</option>' +
+            allStaff.map(staff => `
+                <option value="${staff.id}">${staff.first_name} ${staff.second_name} - ${staff.position}</option>
+            `).join('');
     }
-    nav.appendChild(btn("Next", currentPage + 1, currentPage === pages));
-  }
 
-  function updateStats() {
-    const today = dayjs().startOf("day");
-    $("totalAssignments").textContent = assignments.length;
-    $("activeAssignments").textContent = assignments.filter((a) =>
-      ["assigned", "in_progress"].includes(a.status)
-    ).length;
-    $("pendingAssignments").textContent = assignments.filter(
-      (a) => a.status === "pending_review"
-    ).length;
-    $("completedToday").textContent = assignments.filter(
-      (a) =>
-        a.status === "completed" &&
-        a.completedAt &&
-        dayjs(a.completedAt).isSame(today, "day")
-    ).length;
-  }
+    function renderStaffList(staffMembers) {
+        const list = document.getElementById('staffList');
+        
+        if (!staffMembers || staffMembers.length === 0) {
+            list.innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-slash text-xl"></i>
+                    </div>
+                    <p class="text-sm font-semibold">No staff members found</p>
+                </div>
+            `;
+            return;
+        }
+        
+        list.innerHTML = staffMembers.map(staff => {
+            const isActive = staff.id === selectedStaffId;
+            const activeAssignments = staff.active_assignments || 0;
+            
+            return `
+                <div class="p-4 border-b hover:bg-blue-50 cursor-pointer transition border-l-4 ${isActive ? 'border-l-blue-500 bg-blue-50' : 'border-l-transparent'}" 
+                     onclick="selectStaff(${staff.id})">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-100 border">
+                            ${staff.image ? 
+                                `<img src="${staff.image}" alt="${staff.first_name}" class="w-full h-full object-cover">` :
+                                `<div class="w-full h-full flex items-center justify-center text-slate-600 font-bold">
+                                    ${staff.first_name.charAt(0)}${staff.second_name?.charAt(0) || ''}
+                                </div>`
+                            }
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="text-sm font-semibold text-gray-800">${staff.first_name} ${staff.second_name}</h4>
+                                    <p class="text-xs text-gray-500">${staff.position || 'Staff'}</p>
+                                </div>
+                                ${activeAssignments > 0 ? `
+                                    <span class="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                        ${activeAssignments}
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-xs font-semibold ${staff.is_active ? 'text-green-600' : 'text-red-600'}">
+                                    <i class="fas fa-circle text-[6px]"></i> ${staff.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                                <span class="text-xs text-gray-500">• ${staff.department || 'No Dept'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 
-  // === MODAL ===
-  function openCreateModal() {
-    $("modalTitle").textContent = "Create Service Assignment";
-    $("submitBtn").textContent = "Create Assignment";
-    $("assignmentForm").reset();
-    $("editId").value = "";
-    $("createAssignmentModal").classList.remove("hidden");
-  }
+    function toggleCreateAssignmentForm() {
+        const form = document.getElementById('createAssignmentForm');
+        const contentArea = document.getElementById('contentArea');
+        const isVisible = form.classList.contains('hidden');
+        
+        if (isVisible) {
+            // Show create form, hide content area
+            form.classList.remove('hidden');
+            contentArea.classList.add('hidden');
+            isCreateFormVisible = true;
+            currentView = 'create';
+            
+            // If a staff is selected, pre-fill the staff select
+            if (selectedStaffId) {
+                document.getElementById('staffSelect').value = selectedStaffId;
+            }
+            
+            // Set default due date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('dueDate').value = tomorrow.toISOString().slice(0, 16);
+        } else {
+            // Hide create form, show content area
+            form.classList.add('hidden');
+            contentArea.classList.remove('hidden');
+            isCreateFormVisible = false;
+            document.getElementById('assignmentForm').reset();
+            
+            // Return to current view
+            showView(currentView === 'create' ? 'active' : currentView);
+        }
+    }
 
-  function openEditModal(id) {
-    const a = assignments.find((x) => x.id === id);
-    if (!a) return;
-    $("modalTitle").textContent = "Edit Assignment";
-    $("submitBtn").textContent = "Update Assignment";
-    $("editId").value = a.id;
-    $("serviceType").value = a.serviceType;
-    $("priority").value = a.priority;
-    $("scheduledDate").value = a.scheduledDate.slice(0, 16);
-    $("estimatedDuration").value = a.estimatedDuration;
-    $("clientName").value = a.clientName;
-    $("clientContact").value = a.clientContact || "";
-    $("serviceAddress").value = a.serviceAddress;
-    $("technicianId").value = a.technicianId;
-    $("supervisorId").value = a.supervisorId;
-    $("description").value = a.description;
-    $("requiredEquipment").value = a.requiredEquipment || "";
-    $("createAssignmentModal").classList.remove("hidden");
-  }
-
-  function closeCreateModal() {
-    $("createAssignmentModal").classList.add("hidden");
-  }
-
-  // === FORM SUBMIT ===
-  $("assignmentForm").onsubmit = async (e) => {
-    e.preventDefault();
-    if (!$("assignmentForm").checkValidity())
-      return $("assignmentForm").reportValidity();
-
-    const data = {
-      serviceType: $("serviceType").value,
-      priority: $("priority").value,
-      scheduledDate: $("scheduledDate").value,
-      estimatedDuration: parseFloat($("estimatedDuration").value),
-      clientName: $("clientName").value.trim(),
-      clientContact: $("clientContact").value.trim(),
-      serviceAddress: $("serviceAddress").value.trim(),
-      technicianId: $("technicianId").value,
-      supervisorId: $("supervisorId").value,
-      description: $("description").value.trim(),
-      requiredEquipment: $("requiredEquipment").value.trim(),
-    };
-
-    try {
-      if ($("editId").value) {
-        await api.put(`${API.ASSIGNMENTS}/${$("editId").value}`, data);
-        Swal.fire("Updated!", "", "success");
-      } else {
-        await api.post(API.ASSIGNMENTS, data);
-        Swal.fire("Created!", "", "success");
+    async function selectStaff(staffId) {
+      if (isCreateFormVisible) {
+          toggleCreateAssignmentForm();
       }
-      closeCreateModal();
-      loadData();
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
+      
+      selectedStaffId = staffId;
+      const staff = allStaff.find(s => s.id === staffId);
+      
+      if (!staff) return;
+      
+      // Update staff list selection
+      renderStaffList(allStaff);
+      
+      // Update header (this replaces the buttons, so we don't need to show them separately)
+      updateStaffHeader(staff);
+      
+      // Load staff assignments
+      await loadStaffAssignments(staffId);
+      
+      // Show active assignments view
+      showActiveAssignments();
+    } 
+
+    function updateStaffHeader(staff) {
+        document.getElementById('staffHeader').innerHTML = `
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full overflow-hidden bg-blue-50 border">
+                        ${staff.image ? 
+                            `<img src="${staff.image}" alt="${staff.first_name}" class="w-full h-full object-cover">` :
+                            `<div class="w-full h-full flex items-center justify-center text-blue-600 font-bold text-lg">
+                                ${staff.first_name.charAt(0)}${staff.second_name?.charAt(0) || ''}
+                            </div>`
+                        }
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-lg">${staff.first_name} ${staff.second_name}</h2>
+                        <div class="flex items-center gap-3">
+                            <p class="text-xs text-gray-500">${staff.position || 'Staff'}</p>
+                            <span class="text-xs font-semibold ${staff.is_active ? 'text-green-600' : 'text-red-600'}">
+                                <i class="fas fa-circle text-[6px]"></i> ${staff.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                            <span class="text-xs text-gray-500">${staff.department || 'No Department'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleCreateAssignmentForm()" 
+                            class="text-xs bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Assign Task
+                    </button>
+                    <button onclick="viewPerformanceStats()" 
+                            class="text-xs bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                        <i class="fas fa-chart-bar"></i> View Stats
+                    </button>
+                    <button onclick="viewStaffDetails()" 
+                            class="text-xs bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold flex items-center gap-2">
+                        <i class="fas fa-eye"></i> View Profile
+                    </button>
+                </div>
+            </div>
+        `;
     }
-  };
 
-  // === VIEW / DELETE ===
-  window.viewAssignment = async (id) => {
-    const a = assignments.find((x) => x.id === id);
-    if (!a) return;
-    const tech = technicians.find((t) => t.id === a.technicianId)?.name || "—";
-    const sup = supervisors.find((s) => s.id === a.supervisorId)?.name || "—";
+    async function loadStaffAssignments(staffId) {
+        try {
+            const res = await fetch(`/api/staff/${staffId}/assignments`);
+            if (!res.ok) throw new Error('Failed to load assignments');
+            
+            selectedStaffAssignments = await res.json();
+            renderActiveAssignments();
+            renderCompletedAssignments();
+            renderPerformanceStats();
+            
+        } catch (err) {
+            console.error("Failed to load assignments:", err);
+            showToast("Failed to load assignments", 'error');
+        }
+    }
 
-    Swal.fire({
-      title: `#${a.id} – ${a.clientName}`,
-      html: `
-        <div class="text-left space-y-2">
-          <p><strong>Service:</strong> ${a.serviceType.replace(/_/g, " ")}</p>
-          <p><strong>Priority:</strong> <span class="${priorityBadge(
-            a.priority
-          )} px-2 py-0.5 rounded text-xs">${a.priority}</span></p>
-          <p><strong>Status:</strong> <span class="${statusBadge(
-            a.status
-          )} px-2 py-0.5 rounded text-xs">${a.status.replace(
-        /_/g,
-        " "
-      )}</span></p>
-          <p><strong>Scheduled:</strong> ${dayjs(a.scheduledDate).format(
-            "DD MMM YYYY, HH:mm"
-          )}</p>
-          <p><strong>Duration:</strong> ${a.estimatedDuration} h</p>
-          <p><strong>Address:</strong> ${a.address}</p>
-          <p><strong>Tech:</strong> ${tech}</p>
-          <p><strong>Supervisor:</strong> ${sup}</p>
-          <p><strong>Description:</strong> ${a.description}</p>
-          ${
-            a.requiredEquipment
-              ? `<p><strong>Equipment:</strong> ${a.requiredEquipment}</p>`
-              : ""
+    function showView(view) {
+
+      if (isCreateFormVisible && view !== 'create') {
+        const form = document.getElementById('createAssignmentForm');
+        const contentArea = document.getElementById('contentArea');
+        form.classList.add('hidden');
+        contentArea.classList.remove('hidden');
+        isCreateFormVisible = false;
+        document.getElementById('assignmentForm').reset();
+      }
+        currentView = view;
+        
+        // Hide all views
+        document.getElementById('defaultState').classList.add('hidden');
+        document.getElementById('activeAssignmentsView').classList.add('hidden');
+        document.getElementById('completedAssignmentsView').classList.add('hidden');
+        document.getElementById('statsView').classList.add('hidden');
+        document.getElementById('staffDetailsView').classList.add('hidden');
+        document.getElementById('assignmentDetailsView').classList.add('hidden');
+        
+        // Show selected view
+        if (view === 'default') {
+            document.getElementById('defaultState').classList.remove('hidden');
+        } else if (view === 'active') {
+            document.getElementById('activeAssignmentsView').classList.remove('hidden');
+        } else if (view === 'completed') {
+            document.getElementById('completedAssignmentsView').classList.remove('hidden');
+        } else if (view === 'stats') {
+            document.getElementById('statsView').classList.remove('hidden');
+        } else if (view === 'details') {
+            document.getElementById('staffDetailsView').classList.remove('hidden');
+        } else if (view === 'assignment') {
+            document.getElementById('assignmentDetailsView').classList.remove('hidden');
+        }
+    }
+
+    function showActiveAssignments() {
+        showView('active');
+    }
+
+    function viewPerformanceStats() {
+        showView('stats');
+    }
+
+    function viewStaffDetails() {
+        showView('details');
+        renderStaffDetailsContent();
+    }
+
+    function renderActiveAssignments() {
+        const container = document.getElementById('activeAssignmentsList');
+        // Show ALL assignments without filtering by status
+        const allAssignments = selectedStaffAssignments;
+        
+        if (allAssignments.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-12 text-gray-400">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-inbox text-xl"></i>
+                    </div>
+                    <p class="text-sm font-semibold">No assignments</p>
+                    <p class="text-xs mt-1">No tasks have been assigned yet</p>
+                    <button onclick="toggleCreateAssignmentForm()" class="text-xs text-blue-600 hover:underline font-bold mt-2">
+                        + Create First Task
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = allAssignments.map(assignment => {
+            const isTicket = assignment.type === 'ticket';
+            const status = assignment.status || 'pending';
+            
+            // Determine status badge color
+            let statusBadgeClass = 'bg-blue-100 text-blue-700';
+            let statusIcon = 'fa-clock';
+            let statusText = status.charAt(0).toUpperCase() + status.slice(1);
+            
+            if (status === 'completed') {
+                statusBadgeClass = 'bg-green-100 text-green-700';
+                statusIcon = 'fa-check-circle';
+                statusText = 'Completed';
+            } else if (status === 'pending') {
+                statusBadgeClass = 'bg-amber-100 text-amber-700';
+                statusIcon = 'fa-spinner';
+                statusText = 'Pending';
+            } else if (status === 'seen') {
+                statusBadgeClass = 'bg-purple-100 text-purple-700';
+                statusIcon = 'fa-user-check';
+                statusText = 'Seen';
+            }
+            
+            return `
+                <div class="bg-white p-5 rounded-lg border shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold bg-gray-100 text-gray-700 px-3 py-1 rounded-full uppercase">
+                                <i class="fas fa-ticket-alt mr-1"></i> ${assignment.assignment_ticket_id}
+                            </span>
+                            <span class="text-xs font-bold ${statusBadgeClass} px-3 py-1 rounded-full uppercase">
+                                <i class="fas ${statusIcon} mr-1"></i> ${statusText}
+                            </span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="viewAssignmentDetails(${assignment.id})" class="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 hover:bg-blue-50 rounded-lg">
+                                <i class="fas fa-eye mr-1"></i> View
+                            </button>
+                            <button onclick="editAssignment(${assignment.id})" class="text-sm text-yellow-600 hover:text-yellow-800 px-3 py-1 hover:bg-yellow-50 rounded-lg">
+                                <i class="fas fa-edit mr-1"></i> Edit
+                            </button>
+                            <button onclick="deleteAssignment(${assignment.id})" class="text-sm text-red-600 hover:text-red-800 px-3 py-1 hover:bg-red-50 rounded-lg">
+                                <i class="fas fa-trash mr-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-base font-semibold text-gray-800 mb-3 ${status === 'completed' ? 'line-through' : ''} cursor-pointer hover:text-blue-600" onclick="viewAssignmentDetails(${assignment.id})">
+                        ${assignment.issue_subject || assignment.note || 'No title'}
+                    </h4>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div>
+                            <i class="fas fa-calendar mr-1"></i>
+                            Assigned: ${formatDate(assignment.assigned_at)}
+                        </div>
+                        ${assignment.due_date ? `
+                            <div class="text-amber-600 font-semibold">
+                                <i class="fas fa-clock mr-1"></i>
+                                Due: ${formatDate(assignment.due_date)}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderCompletedAssignments() {
+      const container = document.getElementById('completedAssignmentsList');
+      // Show ALL assignments, not just completed ones
+      const allAssignments = selectedStaffAssignments;
+      
+      if (allAssignments.length === 0) {
+          container.innerHTML = `
+              <div class="text-center py-12 text-gray-400">
+                  <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                      <i class="fas fa-history text-xl"></i>
+                  </div>
+                  <p class="text-sm font-semibold">No assignments</p>
+                  <p class="text-xs mt-1">No tasks have been assigned yet</p>
+              </div>
+          `;
+          return;
+      }
+      
+      container.innerHTML = allAssignments.map(assignment => {
+          const isTicket = assignment.type === 'ticket';
+          const status = assignment.status || 'pending';
+          
+          // Determine status badge color
+          let statusBadgeClass = 'bg-blue-100 text-blue-700';
+          let statusIcon = 'fa-clock';
+          let statusText = status.charAt(0).toUpperCase() + status.slice(1);
+          
+          if (status === 'completed') {
+              statusBadgeClass = 'bg-green-100 text-green-700';
+              statusIcon = 'fa-check-circle';
+              statusText = 'Completed';
+          } else if (status === 'in_progress' || status === 'in progress') {
+              statusBadgeClass = 'bg-amber-100 text-amber-700';
+              statusIcon = 'fa-spinner';
+              statusText = 'In Progress';
+          } else if (status === 'pending') {
+              statusBadgeClass = 'bg-blue-100 text-blue-700';
+              statusIcon = 'fa-clock';
+              statusText = 'Pending';
+          } else if (status === 'assigned') {
+              statusBadgeClass = 'bg-purple-100 text-purple-700';
+              statusIcon = 'fa-user-check';
+              statusText = 'Assigned';
           }
-        </div>`,
-      icon: "info",
-      confirmButtonColor: "#0d9488",
-    });
-  };
+          
+          return `
+              <div class="bg-white p-5 rounded-xl border shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex justify-between items-start mb-3">
+                      <div class="flex items-center gap-2 flex-wrap">
+                          <span class="text-xs font-bold ${isTicket ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700'} px-3 py-1 rounded-full uppercase">
+                              <i class="fas ${isTicket ? 'fa-ticket-alt' : 'fa-tasks'} mr-1"></i> ${isTicket ? 'Ticket' : 'Task'}
+                          </span>
+                          <span class="text-xs font-bold ${statusBadgeClass} px-3 py-1 rounded-full uppercase">
+                              <i class="fas ${statusIcon} mr-1"></i> ${statusText}
+                          </span>
+                      </div>
+                      <div class="flex gap-2">
+                          <button onclick="viewAssignmentDetails(${assignment.id})" class="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 hover:bg-blue-50 rounded-lg">
+                              <i class="fas fa-eye mr-1"></i> View
+                          </button>
+                      </div>
+                  </div>
+                  
+                  <h4 class="text-base font-semibold text-gray-800 mb-3 ${status === 'completed' ? 'line-through' : ''} cursor-pointer hover:text-blue-600" onclick="viewAssignmentDetails(${assignment.id})">
+                      ${assignment.issue_subject || assignment.note || 'No title'}
+                  </h4>
+                  
+                  <div class="text-sm text-gray-500">
+                      <div class="flex items-center gap-4">
+                          <span>
+                              <i class="fas fa-calendar mr-1"></i>
+                              Assigned: ${formatDate(assignment.assigned_at)}
+                          </span>
+                          ${assignment.due_date ? `
+                              <span class="text-amber-600 font-semibold">
+                                  <i class="fas fa-clock mr-1"></i>
+                                  Due: ${formatDate(assignment.due_date)}
+                              </span>
+                          ` : ''}
+                      </div>
+                  </div>
+              </div>
+          `;
+      }).join('');
+    }
 
-  window.deleteAssignment = async (id) => {
-    const res = await Swal.fire({
-      title: "Delete?",
-      text: "Cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-    });
-    if (!res.isConfirmed) return;
-    await api.delete(`${API.ASSIGNMENTS}/${id}`);
-    loadData();
-    Swal.fire("Deleted!", "", "success");
-  };
+    function renderPerformanceStats() {
+        const totalTasks = selectedStaffAssignments.length;
+        const completedTasks = selectedStaffAssignments.filter(a => a.status === 'completed').length;
+        const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        
+        document.getElementById('totalTasks').textContent = totalTasks;
+        document.getElementById('completionRate').textContent = `${completionRate}%`;
+        
+        // Calculate average time (simplified)
+        const avgTime = totalTasks > 0 ? Math.round(totalTasks * 2) : 0;
+        document.getElementById('avgTime').textContent = `${avgTime}h`;
+        
+        // Render recent activity
+        const activityContainer = document.getElementById('recentActivity');
+        const recentActivities = selectedStaffAssignments
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+            .slice(0, 5);
+        
+        if (recentActivities.length === 0) {
+            activityContainer.innerHTML = `
+                <div class="text-center py-6 text-gray-400">
+                    <p class="text-sm">No recent activity</p>
+                </div>
+            `;
+            return;
+        }
+        
+        activityContainer.innerHTML = recentActivities.map(assignment => {
+            const isCompleted = assignment.status === 'completed';
+            const icon = isCompleted ? 'fa-check-circle text-green-600' : 'fa-clock text-blue-600';
+            const action = isCompleted ? 'completed' : 'assigned';
+            
+            return `
+                <div class="flex items-center gap-4 p-4 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer" onclick="viewAssignmentDetails(${assignment.id})">
+                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                        <i class="fas ${icon} text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-base text-gray-800">
+                            ${assignment.issue_subject || assignment.note || 'Untitled task'}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            ${action} on ${formatDateTime(assignment.updated_at)}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 
-  // === FILTER INPUTS ===
-  [
-    "searchInput",
-    "serviceTypeFilter",
-    "statusFilter",
-    "technicianFilter",
-  ].forEach((id) => {
-    $(id).addEventListener("input", applyFilters);
-    $(id).addEventListener("change", applyFilters);
-  });
+    function renderStaffDetailsContent() {
+        const staff = allStaff.find(s => s.id === selectedStaffId);
+        if (!staff) return;
+        
+        document.getElementById('staffDetailsContent').innerHTML = `
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-8 mb-8">
+                <div class="w-28 h-28 rounded-full overflow-hidden bg-blue-50 border-4 border-white shadow-lg">
+                    ${staff.image ? 
+                        `<img src="${staff.image}" alt="${staff.first_name}" class="w-full h-full object-cover">` :
+                        `<div class="w-full h-full flex items-center justify-center text-blue-600 font-bold text-3xl">
+                            ${staff.first_name.charAt(0)}${staff.second_name?.charAt(0) || ''}
+                        </div>`
+                    }
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-2xl font-bold text-gray-900">${staff.first_name} ${staff.second_name}</h3>
+                    <p class="text-gray-600 text-lg">${staff.position || 'Staff'} • ${staff.department || 'No Department'}</p>
+                    <div class="flex items-center gap-3 mt-3">
+                        <span class="text-sm font-semibold ${staff.is_active ? 'text-green-600 bg-green-50 px-3 py-1.5 rounded-lg' : 'text-red-600 bg-red-50 px-3 py-1.5 rounded-lg'}">
+                            <i class="fas fa-circle text-[8px] mr-1"></i> ${staff.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        <span class="text-sm text-gray-500">Role: ${staff.role_name || 'Staff'}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div class="bg-gray-50 p-5 rounded-xl">
+                        <h4 class="text-base font-semibold text-gray-700 mb-3">Contact Information</h4>
+                        <div class="space-y-3">
+                            <p class="flex items-center gap-3 text-gray-600">
+                                <i class="fas fa-envelope text-green-500 text-lg"></i>
+                                <span>${staff.email || 'No email'}</span>
+                            </p>
+                            <p class="flex items-center gap-3 text-gray-600">
+                                <i class="fas fa-phone text-green-500 text-lg"></i>
+                                <span>${staff.phone || 'No phone'}</span>
+                            </p>
+                            <p class="flex items-center gap-3 text-gray-600">
+                                <i class="fas fa-id-badge text-green-500 text-lg"></i>
+                                <span>Employee ID: ${staff.employee_id || 'N/A'}</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-5 rounded-xl">
+                        <h4 class="text-base font-semibold text-gray-700 mb-3">Performance Summary</h4>
+                        <div class="space-y-3">
+                            <p class="text-gray-600">Total Assignments: <span class="font-semibold text-lg">${selectedStaffAssignments.length}</span></p>
+                            <p class="text-gray-600">Active Tasks: <span class="font-semibold text-lg">${selectedStaffAssignments.filter(a => a.status !== 'completed').length}</span></p>
+                            <p class="text-gray-600">Completion Rate: <span class="font-semibold text-lg">${selectedStaffAssignments.length > 0 ? Math.round((selectedStaffAssignments.filter(a => a.status === 'completed').length / selectedStaffAssignments.length) * 100) : 0}%</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-gray-50 p-5 rounded-xl">
+                        <h4 class="text-base font-semibold text-gray-700 mb-3">Employment Details</h4>
+                        <div class="space-y-3">
+                            <p class="text-gray-600">Department: <span class="font-semibold">${staff.department || 'Not specified'}</span></p>
+                            <p class="text-gray-600">Position: <span class="font-semibold">${staff.position || 'Staff'}</span></p>
+                            ${staff.hire_date ? `
+                                <p class="text-gray-600">Hire Date: <span class="font-semibold">${formatDate(staff.hire_date)}</span></p>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-5 rounded-xl">
+                        <h4 class="text-base font-semibold text-gray-700 mb-3">Quick Actions</h4>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="toggleCreateAssignmentForm()" class="text-sm bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2">
+                                <i class="fas fa-plus"></i> Assign Task
+                            </button>
+                            <button onclick="showActiveAssignments()" class="text-sm bg-gray-600 hover:bg-gray-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2">
+                                <i class="fas fa-tasks"></i> View Tasks
+                            </button>
+                            <button onclick="viewPerformanceStats()" class="text-sm bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2">
+                                <i class="fas fa-chart-bar"></i> View Stats
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
-  // === INIT ===
-  document.addEventListener("DOMContentLoaded", () => {
-    loadData();
-  });
+    async function saveAssignment() {
+        const staffId = document.getElementById('staffSelect').value;
+        const subject = document.getElementById('taskSubject').value;
+        const instructions = document.getElementById('assignmentNote').value;
+        const dueDate = document.getElementById('dueDate').value;
+        const sendNotification = document.getElementById('sendNotification').checked;
+        
+        if (!staffId) {
+            showToast("Please select a staff member", 'error');
+            return;
+        }
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner"></span>`;
+        btn.disabled = true;
+        
+        try {
+            const res = await fetch('/api/assignments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    staff_id: staffId,
+                    subject: subject,
+                    instructions: instructions,
+                    due_date: dueDate || null,
+                    send_notification: sendNotification
+                })
+            });
+            
+            if (res.ok) {
+                showToast("Task assigned successfully!", 'success');
+                toggleCreateAssignmentForm();
+                
+                // Reload assignments if this staff is selected
+                if (selectedStaffId == staffId) {
+                    await loadStaffAssignments(staffId);
+                } else {
+                    // Select this staff
+                    selectStaff(parseInt(staffId));
+                }
+                
+            } else {
+                const error = await res.json();
+                showToast(error.error || "Failed to assign task", 'error');
+            }
+        } catch (err) {
+            console.error("Failed to assign task:", err);
+            showToast("Failed to assign task", 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
 
-  // Global
-  window.openCreateModal = openCreateModal;
-  window.openEditModal = openEditModal;
-  window.closeCreateModal = closeCreateModal;
+    function viewAssignmentDetails(assignmentId) {
+        const assignment = selectedStaffAssignments.find(a => a.id === assignmentId);
+        if (!assignment) return;
+        
+        showView('assignment');
+        
+        const isTicket = assignment.type === 'ticket';
+        
+        let ticketLink = '';
+        if (isTicket && assignment.ticket_id) {
+            ticketLink = `
+                <div class="mt-6 pt-6 border-t">
+                    <a href="/support/tickets/${assignment.ticket_id}" target="_blank" 
+                       class="text-base text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-2">
+                        <i class="fas fa-external-link-alt"></i>
+                        View Support Ticket #${assignment.ticket_number || assignment.ticket_id}
+                    </a>
+                </div>
+            `;
+        }
+        
+        document.getElementById('assignmentDetailsContent').innerHTML = `
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Assignment Details</h3>
+                    <p class="text-sm text-gray-500">View and manage this task</p>
+                </div>
+                <button onclick="showActiveAssignments()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-xs font-bold bg-gray-100 text-gray-700 px-3 py-1 rounded-full uppercase">
+                      <i class="fas fa-ticket-alt mr-1"></i> ${assignment.assignment_ticket_id}
+                    </span>
+                    <span class="text-sm font-bold ${assignment.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} px-4 py-2 rounded-full uppercase">
+                        ${assignment.status || 'pending'}
+                    </span>
+                </div>
+                
+                <div class="bg-gray-50 p-5 rounded-xl">
+                    <h4 class="text-base font-semibold text-gray-700 mb-2">Subject</h4>
+                    <p class="text-lg font-bold text-gray-900">${assignment.issue_subject || assignment.note || 'No title'}</p>
+                </div>
+                
+                ${assignment.instructions ? `
+                    <div class="bg-gray-50 p-5 rounded-xl">
+                        <h4 class="text-base font-semibold text-gray-700 mb-2">Instructions</h4>
+                        <p class="text-gray-700 whitespace-pre-line">${assignment.instructions}</p>
+                    </div>
+                ` : ''}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-5 rounded-xl">
+                        <h4 class="text-base font-semibold text-gray-700 mb-2">Assigned On</h4>
+                        <p class="text-gray-900 font-medium">${formatDateTime(assignment.assigned_at)}</p>
+                    </div>
+                    
+                    ${assignment.due_date ? `
+                        <div class="bg-gray-50 p-5 rounded-xl">
+                            <h4 class="text-base font-semibold text-gray-700 mb-2">Due Date</h4>
+                            <p class="text-gray-900 font-medium">${formatDateTime(assignment.due_date)}</p>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                ${ticketLink}
+                
+                <div class="flex gap-3 pt-6 border-t">
+                  <button onclick="editAssignment(${assignment.id})"
+                          class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
+                      <i class="fas fa-edit text-xs"></i> Edit
+                  </button>
+
+                  ${assignment.status !== 'completed' ? `
+                      <button onclick="markAsCompleted(${assignment.id})"
+                              class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
+                          <i class="fas fa-check-circle text-xs"></i> Complete
+                      </button>
+                  ` : ''}
+
+                  <button onclick="deleteAssignment(${assignment.id})"
+                          class="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center gap-1.5">
+                      <i class="fas fa-trash text-xs"></i> Delete
+                  </button>
+              </div>
+            </div>
+        `;
+    }
+
+    async function editAssignment(assignmentId) {
+        const assignment = selectedStaffAssignments.find(a => a.id === assignmentId);
+        if (!assignment) return;
+        
+        // Switch to create form mode
+        toggleCreateAssignmentForm();
+        
+        // Pre-fill the form
+        setTimeout(() => {
+            document.getElementById('staffSelect').value = assignment.staff_id;
+            document.getElementById('taskSubject').value = assignment.issue_subject || assignment.note || '';
+            document.getElementById('assignmentNote').value = assignment.instructions || '';
+            
+            if (assignment.due_date) {
+                document.getElementById('dueDate').value = new Date(assignment.due_date).toISOString().slice(0, 16);
+            }
+            
+            // Update button text
+            const submitBtn = document.querySelector('#assignmentForm button[type="button"]');
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Assignment';
+            submitBtn.setAttribute('onclick', `updateAssignment(${assignmentId})`);
+            
+        }, 100);
+    }
+
+    async function updateAssignment(assignmentId) {
+        const staffId = document.getElementById('staffSelect').value;
+        const subject = document.getElementById('taskSubject').value;
+        const instructions = document.getElementById('assignmentNote').value;
+        const dueDate = document.getElementById('dueDate').value;
+        const sendNotification = document.getElementById('sendNotification').checked;
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner"></span>`;
+        btn.disabled = true;
+        
+        try {
+            const res = await fetch(`/api/assignments/${assignmentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    staff_id: staffId,
+                    subject: subject,
+                    instructions: instructions,
+                    due_date: dueDate || null,
+                    send_notification: sendNotification
+                })
+            });
+            
+            if (res.ok) {
+                showToast("Assignment updated successfully!", 'success');
+                toggleCreateAssignmentForm();
+                
+                // Reload assignments
+                if (selectedStaffId) {
+                    await loadStaffAssignments(selectedStaffId);
+                }
+                
+            } else {
+                const error = await res.json();
+                showToast(error.error || "Failed to update assignment", 'error');
+            }
+        } catch (err) {
+            console.error("Failed to update assignment:", err);
+            showToast("Failed to update assignment", 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function markAsCompleted(assignmentId) {
+        if (!confirm("Mark this assignment as completed?")) return;
+        
+        try {
+            const res = await fetch(`/api/assignments/${assignmentId}/complete`, {
+                method: 'PATCH'
+            });
+            
+            if (res.ok) {
+                showToast("Assignment marked as completed!", 'success');
+                
+                // Reload assignments
+                if (selectedStaffId) {
+                    await loadStaffAssignments(selectedStaffId);
+                }
+                
+                // Return to active assignments
+                showActiveAssignments();
+                
+            } else {
+                const error = await res.json();
+                showToast(error.error || "Failed to complete assignment", 'error');
+            }
+        } catch (err) {
+            console.error("Failed to complete assignment:", err);
+            showToast("Failed to complete assignment", 'error');
+        }
+    }
+
+    async function deleteAssignment(assignmentId) {
+        if (!confirm("Are you sure you want to delete this assignment?")) return;
+        
+        try {
+            const res = await fetch(`/api/assignments/${assignmentId}`, {
+                method: 'DELETE'
+            });
+            
+            if (res.ok) {
+                showToast("Assignment deleted successfully!", 'success');
+                
+                // Remove from local array
+                selectedStaffAssignments = selectedStaffAssignments.filter(a => a.id !== assignmentId);
+                
+                // Update UI
+                renderActiveAssignments();
+                renderCompletedAssignments();
+                renderPerformanceStats();
+                
+                // Return to active assignments
+                showActiveAssignments();
+                
+            } else {
+                const error = await res.json();
+                showToast(error.error || "Failed to delete assignment", 'error');
+            }
+        } catch (err) {
+            console.error("Failed to delete assignment:", err);
+            showToast("Failed to delete assignment", 'error');
+        }
+    }
+
+    function filterStaff() {
+        const searchQuery = document.getElementById('staffSearch').value.toLowerCase();
+        
+        let filtered = allStaff;
+        
+        if (searchQuery) {
+            filtered = filtered.filter(staff => 
+                staff.first_name.toLowerCase().includes(searchQuery) ||
+                staff.second_name.toLowerCase().includes(searchQuery) ||
+                staff.email.toLowerCase().includes(searchQuery) ||
+                staff.phone.toLowerCase().includes(searchQuery) ||
+                staff.position.toLowerCase().includes(searchQuery)
+            );
+        }
+        
+        renderStaffList(filtered);
+    }
+
+    // Helper functions
+    function formatDate(dateString) {
+        if (!dateString) return 'Not set';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'short', 
+            year: 'numeric' 
+        });
+    }
+
+    function formatDateTime(dateString) {
+        if (!dateString) return 'Not set';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'short', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function showToast(msg, type = 'error') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-emerald-600';
+        const title = type === 'error' ? 'Error' : 'Success';
+        toast.className = `${bgColor} text-white p-4 rounded-xl shadow-lg min-w-[280px] animate-fade-in flex flex-col`;
+        toast.innerHTML = `
+            <span class="text-[10px] font-bold uppercase tracking-wider opacity-70">${title}</span>
+            <span class="text-sm font-semibold">${msg}</span>
+        `;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
 </script>

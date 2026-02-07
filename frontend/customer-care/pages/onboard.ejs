@@ -1,0 +1,536 @@
+<style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
+        }
+
+        .animate-fade-in { 
+            animation: fadeIn 0.3s ease-out forwards; 
+            opacity: 0;
+        }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        .spinner {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .acquisition-item {
+            transition: all 0.2s ease;
+        }
+
+        .acquisition-item:hover {
+            background-color: #f8fafc;
+            transform: translateX(4px);
+        }
+    </style>
+<div class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-[100] space-y-3"></div>
+
+    <div class="mb-6">
+        <h1 id="pageTitle" class="text-xl font-bold text-teal-800">CLIENT ONBOARDING</h1>
+        <p id="pageSubtitle" class="text-teal-600">
+            Register new onboards
+        </p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+        
+        <!-- Acquisitions List (Full Width by Default) -->
+        <div id="acquisitionsContainer" class="flex-1 bg-white flex flex-col">
+            <div class="p-4 border-b border-slate-200 bg-slate-50">
+                <div class="flex justify-between items-center mb-3">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">My Clients</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Clients onboarded this month</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="acquisitionCount" class="text-xs font-black text-slate-600 bg-slate-200 px-3 py-1 rounded-lg">0</span>
+                        <button 
+                            onclick="showOnboardForm()" 
+                            class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition flex items-center gap-2"
+                        >
+                            <i class="fas fa-plus"></i> New Client
+                        </button>
+                    </div>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    onkeyup="filterAcquisitions()" 
+                    placeholder="Search by name, phone, or package..." 
+                    class="w-full p-3 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                >
+            </div>
+            
+            <div id="acquisitionsList" class="flex-1 overflow-y-auto">
+                <div class="text-center py-12 text-slate-400">
+                    <i class="fas fa-circle-notch fa-spin text-2xl mb-3"></i>
+                    <p class="text-sm font-semibold">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Onboarding Form (Hidden by Default) -->
+        <aside id="formContainer" class="hidden w-full lg:w-2/5 bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden">
+            <div class="p-4 bg-slate-800 text-white flex justify-between items-center flex-shrink-0">
+                <div>
+                    <h2 class="text-lg font-black tracking-tight">New Client Registration</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Fill in client details to proceed</p>
+                </div>
+                <button 
+                    onclick="hideOnboardForm()" 
+                    class="w-8 h-8 rounded-full hover:bg-slate-700 flex items-center justify-center transition"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6">
+            <div class="flex-1 overflow-y-auto p-6">
+                <form id="onboardForm" onsubmit="handleOnboard(event)" class="space-y-6">
+                        
+                        <!-- Personal Details -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-user text-teal-500"></i> Personal Details
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">First Name *</label>
+                                    <input 
+                                        type="text" 
+                                        id="firstName"
+                                        required 
+                                        placeholder="John" 
+                                        class="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Last Name *</label>
+                                    <input 
+                                        type="text" 
+                                        id="lastName"
+                                        required 
+                                        placeholder="Doe" 
+                                        class="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Details -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-phone text-teal-500"></i> Contact Details
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Phone Number *</label>
+                                    <input 
+                                        type="tel" 
+                                        id="phone"
+                                        required 
+                                        placeholder="0712345678" 
+                                        class="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Email (Optional)</label>
+                                    <input 
+                                        type="email" 
+                                        id="email"
+                                        placeholder="client@email.com" 
+                                        class="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-map-marker-alt text-teal-500"></i> Location
+                            </h3>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Building / Address *</label>
+                                <textarea 
+                                    id="location"
+                                    required 
+                                    rows="2" 
+                                    placeholder="e.g. Sunrise Apartments, 3rd Floor, Apt C2"
+                                    class="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg outline-none text-sm font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition resize-none"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Package Selection -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-wifi text-teal-500"></i> Service Package
+                            </h3>
+                            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                                <label class="block text-xs font-bold text-indigo-900 uppercase mb-2">Select Package *</label>
+                                <select 
+                                    id="packageSelect" 
+                                    required 
+                                    class="w-full p-3 bg-white border border-indigo-300 rounded-lg outline-none text-sm font-bold text-slate-800 cursor-pointer focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                >
+                                    <option value="">-- Loading packages... --</option>
+                                </select>
+                                <p class="text-xs text-indigo-600 mt-2 font-medium">
+                                    <i class="fas fa-info-circle mr-1"></i> Package details will determine service speed and pricing
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="pt-4">
+                            <button 
+                                type="submit" 
+                                id="submitBtn" 
+                                class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg hover:shadow-xl flex justify-center items-center gap-3 group"
+                            >
+                                <i class="fas fa-user-check text-lg"></i>
+                                <span>Onboard Client</span>
+                                <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+    <script>
+        let allAcquisitions = [];
+        let allPackages = [];
+
+        // INITIALIZE
+        window.onload = () => {
+            loadPackages();
+            loadAcquisitions();
+        };
+
+        // SHOW/HIDE FORM
+        function showOnboardForm() {
+            document.getElementById('formContainer').classList.remove('hidden');
+            document.getElementById('formContainer').classList.add('flex');
+            document.getElementById('acquisitionsContainer').classList.remove('flex-1');
+            document.getElementById('acquisitionsContainer').classList.add('lg:w-3/5');
+        }
+
+        function hideOnboardForm() {
+            document.getElementById('formContainer').classList.add('hidden');
+            document.getElementById('formContainer').classList.remove('flex');
+            document.getElementById('acquisitionsContainer').classList.add('flex-1');
+            document.getElementById('acquisitionsContainer').classList.remove('lg:w-3/5');
+            
+            // Reset form
+            document.getElementById('onboardForm').reset();
+        }
+
+        // LOAD PACKAGES FROM API
+        async function loadPackages() {
+            try {
+                const res = await fetch('/api/packages');
+                allPackages = await res.json();
+                window.packagesData = allPackages;
+                
+                const select = document.getElementById('packageSelect');
+                
+                if (!Array.isArray(allPackages) || allPackages.length === 0) {
+                    select.innerHTML = '<option value="">-- No packages available --</option>';
+                    return;
+                }
+
+                select.innerHTML = '<option value="">-- Choose Package --</option>' +
+                    allPackages.map(pkg => `
+                        <option value="${pkg.id}" data-name="${pkg.name}" data-price="${pkg.price}">
+                            ${pkg.name} - KES ${parseFloat(pkg.price).toLocaleString()} (${pkg.speed} Mbps)
+                        </option>
+                    `).join('');
+                    
+            } catch (err) {
+                console.error('Error loading packages:', err);
+                showToast('Failed to load packages', 'error');
+            }
+        }
+
+        // LOAD ACQUISITIONS FROM API
+        async function loadAcquisitions() {
+            const container = document.getElementById('acquisitionsList');
+            
+            try {
+                const res = await fetch('/api/onboard/my-clients');
+                const data = await res.json();
+                
+                allAcquisitions = Array.isArray(data) ? data : (data.acquisitions || []);
+                
+                renderAcquisitions(allAcquisitions);
+                
+            } catch (err) {
+                console.error('Error loading acquisitions:', err);
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <p class="text-sm font-semibold">Failed to load.</p>
+                        <button onclick="loadAcquisitions()" class="text-xs text-teal-600 hover:underline mt-2">Try again</button>
+                    </div>
+                `;
+            }
+        }
+
+        // RENDER ACQUISITIONS
+        function renderAcquisitions(list) {
+            const container = document.getElementById('acquisitionsList');
+            const count = list.length;
+            document.getElementById('acquisitionCount').innerText = count;
+            
+            if (count === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <p class="text-sm font-semibold">No acquisitions yet</p>
+                        <p class="text-xs mt-1">Start onboarding clients to see them here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="w-full">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Client</th>
+                            <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Contact</th>
+                            <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Package</th>
+                            <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
+                            <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Date</th>
+                            <th class="text-right px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Commission</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-100">
+                        ${list.map(acq => {
+                            const getStatusConfig = (status) => {
+                            switch (status) {
+                                case 'active':
+                                    return { 
+                                        css: 'bg-emerald-100 text-emerald-700', 
+                                        text: 'Active', 
+                                        icon: 'fa-check-circle' 
+                                    };
+                                case 'rejected':
+                                    return { 
+                                        css: 'bg-rose-100 text-rose-700', 
+                                        text: 'Rejected', 
+                                        icon: 'fa-times-circle' 
+                                    };
+                                case 'inactive':
+                                    return { 
+                                        css: 'bg-slate-100 text-slate-600', 
+                                        text: 'Inactive', 
+                                        icon: 'fa-pause-circle' 
+                                    };
+                                default: // 'pending'
+                                    return { 
+                                        css: 'bg-amber-100 text-amber-700', 
+                                        text: 'Pending', 
+                                        icon: 'fa-clock' 
+                                    };
+                            }
+                        };
+
+                        const config = getStatusConfig(acq.status);
+                        const initials = getInitials(acq.first_name, acq.second_name);
+                        const timeAgo = formatTimeAgo(acq.created_at);
+
+                        return `
+                            <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">                                        
+                                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-700 flex-shrink-0">
+                                            ${initials}
+                                        </div>                                            
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-semibold text-slate-800">
+                                                ${acq.first_name} ${acq.second_name}
+                                            </span>
+                                            <span class="text-xs text-slate-500">
+                                                ${acq.email || '-'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2 text-sm text-slate-600">
+                                        <i class="fas fa-phone text-xs text-slate-400"></i>
+                                        <span>${acq.phone || 'N/A'}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2 text-sm text-slate-600">
+                                        <i class="fas fa-wifi text-xs text-green-400"></i>
+                                        <span>${acq.package_name || '-'}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold ${config.css} uppercase">
+                                        <i class="fas ${config.icon}"></i>
+                                        ${config.text}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-xs font-medium text-slate-500">${timeAgo}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-sm font-black ${acq.commission_status === 'paid' ? 'text-emerald-600' : 'text-slate-700'}">
+                                            KES ${parseFloat(acq.commission_amount || 0).toLocaleString()}
+                                        </span>
+                                        
+                                        <div class="flex items-center gap-1.5 mt-0.5">
+                                            <span class="text-[10px] font-black uppercase tracking-widest ${acq.commission_status === 'paid' ? 'text-emerald-700' : 'text-amber-700'}">
+                                                ${acq.commission_status || 'unpaid'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // FILTER ACQUISITIONS
+        function filterAcquisitions() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allAcquisitions.filter(acq => 
+                acq.first_name.toLowerCase().includes(query) ||
+                acq.second_name.toLowerCase().includes(query) ||
+                (acq.package_name && acq.package_name.toLowerCase().includes(query))
+            );
+            renderAcquisitions(filtered);
+        }
+
+        // HANDLE FORM SUBMISSION
+        async function handleOnboard(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const originalContent = btn.innerHTML;
+            
+            // Get form data
+            const packageSelect = document.getElementById('packageSelect');
+            const selectedOption = packageSelect.options[packageSelect.selectedIndex];
+            
+            const formData = {
+                first_name: document.getElementById('firstName').value.trim(),
+                second_name: document.getElementById('lastName').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                location: document.getElementById('location').value.trim(),
+                package_id: packageSelect.value
+            };
+
+            // Validation
+            if (!formData.package_id) {
+                showToast('Please select a package', 'error');
+                return;
+            }
+
+            // Loading state
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> <span>Processing...</span>`;
+
+            try {
+                const res = await fetch('/api/onboard/client', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await res.json();
+
+                if (res.ok && result.success) {
+                    showToast(`${formData.first_name} ${formData.second_name} onboarded successfully!`, 'success');
+                    
+                    // Reset form and hide it
+                    document.getElementById('onboardForm').reset();
+                    hideOnboardForm();
+                    
+                    // Reload acquisitions
+                    await loadAcquisitions();
+                } else {
+                    showToast(result.message || 'Failed to onboard client', 'error');
+                }
+
+            } catch (err) {
+                console.error('Onboard error:', err);
+                showToast('Error onboarding client. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        // UTILITY FUNCTIONS
+        function getInitials(firstName, lastName) {
+            const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+            const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+            return first + last || '?';
+        }
+
+        function formatTimeAgo(dateStr) {
+            if (!dateStr) return 'Unknown';
+            
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000); // seconds
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+            
+            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        }
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-emerald-600';
+            const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+            const title = type === 'error' ? 'Error' : 'Success';
+            
+            toast.className = `${bgColor} text-white p-4 rounded-2xl shadow-2xl min-w-[280px] animate-fade-in flex flex-col`;
+            toast.innerHTML = `
+                <span class="text-[10px] font-black uppercase tracking-widest opacity-70">${title}</span>
+                <span class="text-sm font-bold">${msg}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+    </script>

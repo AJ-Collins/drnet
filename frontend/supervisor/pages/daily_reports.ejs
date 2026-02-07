@@ -1,1016 +1,857 @@
-<!-- Header -->
-<div class="mb-10 text-center sm:text-left">
-  <h1 class="text-2xl sm:text-3xl font-bold text-teal-800">Supervisor Reports Dashboard</h1>
-  <p class="text-teal-600 mt-2">View live data and generate official reports</p>
-</div>
-<!-- Live Data Panels -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-10">
-  <!-- Staff Panel -->
-  <div class="bg-white rounded-xl shadow-lg p-5 border border-teal-200">
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="text-lg font-bold text-teal-800 flex items-center">
-        <i class="fas fa-users mr-2"></i> Active Staff
-      </h3>
-      <button onclick="useStaffForReport()" class="text-xs bg-teal-100 hover:bg-teal-200 text-teal-800 px-2 py-1 rounded" title="Use for Report">
-        <i class="fas fa-plus"></i>
-      </button>
-    </div>
-    <div id="staffList" class="space-y-2 max-h-80 overflow-y-auto text-sm"></div>
-  </div>
-
-  <!-- Assignments Panel -->
-  <div class="bg-white rounded-xl shadow-lg p-5 border border-teal-200">
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="text-lg font-bold text-teal-800 flex items-center">
-        <i class="fas fa-tasks mr-2"></i> Today's Jobs
-      </h3>
-      <button onclick="useAssignmentsForReport()" class="text-xs bg-teal-100 hover:bg-teal-200 text-teal-800 px-2 py-1 rounded" title="Use for Report">
-        <i class="fas fa-plus"></i>
-      </button>
-    </div>
-    <div id="assignmentsList" class="space-y-2 max-h-80 overflow-y-auto text-sm"></div>
-  </div>
-
-  <!-- Equipment Panel -->
-  <div class="bg-white rounded-xl shadow-lg p-5 border border-teal-200">
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="text-lg font-bold text-teal-800 flex items-center">
-        <i class="fas fa-toolbox mr-2"></i> Equipment
-      </h3>
-      <button onclick="useEquipmentForReport()" class="text-xs bg-teal-100 hover:bg-teal-200 text-teal-800 px-2 py-1 rounded" title="Use for Report">
-        <i class="fas fa-plus"></i>
-      </button>
-    </div>
-    <div id="equipmentList" class="space-y-2 max-h-80 overflow-y-auto text-sm"></div>
-  </div>
-
-  <!-- Performance Panel -->
-  <div class="bg-white rounded-xl shadow-lg p-5 border border-teal-200">
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="text-lg font-bold text-teal-800 flex items-center">
-        <i class="fas fa-chart-bar mr-2"></i> Weekly Performance
-      </h3>
-      <button onclick="usePerformanceForReport()" class="text-xs bg-teal-100 hover:bg-teal-200 text-teal-800 px-2 py-1 rounded" title="Use for Report">
-        <i class="fas fa-plus"></i>
-      </button>
-    </div>
-    <div id="performanceChart" class="text-center py-4 text-gray-500 text-sm">Loading...</div>
-  </div>
-
-  <!-- Expenses Panel -->
-  <div class="bg-white rounded-xl shadow-lg p-5 border border-teal-200">
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="text-lg font-bold text-teal-800 flex items-center">
-        <i class="fas fa-money-bill-wave mr-2"></i> Recent Expenses
-      </h3>
-      <button onclick="useExpensesForReport()" class="text-xs bg-teal-100 hover:bg-teal-200 text-teal-800 px-2 py-1 rounded" title="Use for Report">
-        <i class="fas fa-plus"></i>
-      </button>
-    </div>
-    <div id="expensesList" class="space-y-2 max-h-80 overflow-y-auto text-sm"></div>
-  </div>
-</div>
-
-<!-- Quick Generate Section -->
-<div class="bg-gradient-to-r from-teal-50 to-blue-50 rounded-xl shadow-lg p-6 mb-8 border border-teal-200">
-  <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-    <div>
-      <h2 class="text-xl font-bold text-teal-800 mb-2">Quick Report Generation</h2>
-      <p class="text-teal-700">Auto-generate reports with one click. Customize before submission.</p>
-    </div>
-    <div class="flex flex-wrap gap-3">
-      <button onclick="generateDailyReport()" class="bg-teal-400 hover:bg-teal-500 text-white px-5 py-3 rounded-lg font-medium flex items-center gap-2">
-        <i class="fas fa-sun"></i> Daily Report
-      </button>
-      <button onclick="generateWeeklySummary()" class="bg-teal-400 hover:bg-teal-500 text-white px-5 py-3 rounded-lg font-medium flex items-center gap-2">
-        <i class="fas fa-chart-line"></i> Weekly Summary
-      </button>
-      <button onclick="generateEquipmentReport()" class="bg-teal-400 hover:bg-teal-500 text-white px-5 py-3 rounded-lg font-medium flex items-center gap-2">
-        <i class="fas fa-tools"></i> Equipment Report
-      </button>
-      <button onclick="generatePerformanceReport()" class="bg-teal-400 hover:bg-teal-500 text-white px-5 py-3 rounded-lg font-medium flex items-center gap-2">
-        <i class="fas fa-trophy"></i> Performance Report
-      </button>
-      <button onclick="generateFinancialReport()" class="bg-teal-400 hover:bg-teal-500 text-white px-5 py-3 rounded-lg font-medium flex items-center gap-2">
-        <i class="fas fa-file-invoice-dollar"></i> Financial Report
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Report Form -->
-<div class="bg-white rounded-xl shadow-xl p-6 sm:p-8 border-2 border-teal-300 mb-10">
-  <!-- <div class="flex justify-between items-center mb-6">
-    <h2 class="text-xl sm:text-2xl font-bold text-teal-800">Generate / Edit Report</h2>
-    <div class="flex gap-2">
-      <button onclick="suggestContent()" class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2">
-        <i class="fas fa-magic"></i> AI Suggest
-      </button>
-      <button onclick="autoFormatReport()" class="bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2">
-        <i class="fas fa-align-left"></i> Auto Format
-      </button>
-    </div>
-  </div> -->
-  
-  <form id="reportForm" class="space-y-6">
-    <input type="hidden" id="editReportId" />
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <label class="block text-gray-700 font-semibold mb-2">Report Type</label>
-        <select id="reportType" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500">
-          <option value="daily">Daily Activity Report</option>
-          <option value="weekly">Weekly Summary Report</option>
-          <option value="equipment">Equipment Status Report</option>
-          <option value="staff">Staff Performance Report</option>
-          <option value="incident">Incident Report</option>
-          <option value="maintenance">Maintenance Report</option>
-          <option value="financial">Financial / Expenses Report</option>
-        </select>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-gray-700 font-semibold mb-2">From</label>
-          <input type="date" id="startDate" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500" required>
-        </div>
-        <div>
-          <label class="block text-gray-700 font-semibold mb-2">To</label>
-          <input type="date" id="endDate" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500" required>
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <div class="flex justify-between items-center mb-3">
-        <label class="block text-gray-700 font-semibold">Report Content</label>
-        <div class="text-xs text-gray-500" id="wordCount">0 words</div>
-      </div>
-      <textarea id="reportContent" rows="10" class="w-full px-5 py-4 border-2 border-gray-300 rounded-lg focus:border-teal-500 resize-none text-sm sm:text-base" placeholder="Write your report using live data above..." oninput="updateWordCount()"></textarea>
-    </div>
-
-    <div class="flex flex-wrap gap-3 justify-end">
-      <!-- <div class="flex flex-wrap gap-3">
-        <button type="button" onclick="loadSampleReport()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium text-sm">
-          Load Sample
-        </button>
-        <button type="button" onclick="resetForm()" class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-3 rounded-lg font-medium text-sm">
-          Cancel
-        </button>
-      </div> -->
-      <div class="flex flex-wrap gap-3">
-        <button type="button" onclick="previewReport()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium text-sm flex items-center gap-2">
-          <i class="fas fa-eye"></i> Preview
-        </button>
-        <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-lg font-medium shadow-lg text-sm flex items-center gap-2">
-          <i class="fas fa-paper-plane"></i>
-          <span id="submitBtnText">Submit Report</span>
-        </button>
-      </div>
-    </div>
-  </form>
-</div>
-
-<!-- Reports Table -->
-<div class="bg-white rounded-xl shadow-xl overflow-hidden">
-  <div class="p-6 border-b border-gray-200">
-    <h3 class="text-xl sm:text-2xl font-bold text-teal-800">Generated Reports</h3>
-  </div>
-
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-teal-50">
-        <tr>
-          <th class="px-4 py-3 text-left text-xs font-medium text-teal-700 uppercase">Ref</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-teal-700 uppercase hidden sm:table-cell">Type</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-teal-700 uppercase hidden md:table-cell">Period</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-teal-700 uppercase hidden lg:table-cell">Generated</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-teal-700 uppercase">Status</th>
-          <th class="px-4 py-3 text-right text-xs font-medium text-teal-700 uppercase">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="reportsTableBody" class="bg-white divide-y divide-gray-200 text-sm">
-        <!-- Filled by JS -->
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Preview Modal -->
-<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-screen overflow-y-auto">
-    <div class="p-6 border-b border-gray-200">
-      <div class="flex justify-between items-center">
-        <h3 class="text-2xl font-bold text-teal-800">Report Preview</h3>
-        <button onclick="closePreviewModal()" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times text-2xl"></i>
-        </button>
-      </div>
-    </div>
-    <div class="p-6">
-      <div class="bg-gray-50 p-6 rounded-lg mb-6">
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p class="text-gray-600">Type:</p>
-            <p class="font-semibold" id="previewType">Daily Report</p>
-          </div>
-          <div>
-            <p class="text-gray-600">Period:</p>
-            <p class="font-semibold" id="previewPeriod">01/01/2024 - 01/01/2024</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white p-6 border border-gray-200 rounded-lg">
-        <pre id="previewContent" class="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed"></pre>
-      </div>
-    </div>
-    <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
-      <button onclick="usePreviewForEditing()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2">
-        <i class="fas fa-edit"></i> Use for Editing
-      </button>
-      <button onclick="closePreviewModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium">
-        Close
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- View Report Modal -->
-<div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-screen overflow-y-auto">
-    <div class="p-6 border-b border-gray-200">
-      <div class="flex justify-between items-center">
-        <h3 class="text-2xl font-bold text-teal-800" id="modalTitle">Report</h3>
-        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times text-2xl"></i>
-        </button>
-      </div>
-    </div>
-    <div class="p-6">
-      <pre id="modalContent" class="whitespace-pre-wrap font-sans text-gray-700 leading-relaxed"></pre>
-    </div>
-    <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
-      <button onclick="downloadCurrentPDF()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2">
-        <i class="fas fa-download"></i> Download PDF
-      </button>
-      <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium">
-        Close
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Notification Toast -->
-<div id="toast" class="fixed top-4 right-4 bg-teal-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
-  <div class="flex items-center gap-3">
-    <i class="fas fa-check-circle"></i>
-    <span id="toastMessage">Operation completed successfully!</span>
-  </div>
-</div>
-
-<script>
-const API = '/api';
-let staff = [], equipment = [], assignments = [], performance = [], expenses = [], reports = [];
-let currentReport = null;
-let autoGeneratedContent = '';
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('startDate').valueAsDate = new Date();
-  document.getElementById('endDate').valueAsDate = new Date();
-  loadData();
-  setInterval(loadData, 30000);
-});
-
-// Show notification toast
-function showToast(message, type = 'success') {
-  const toast = document.getElementById('toast');
-  const toastMessage = document.getElementById('toastMessage');
-  
-  toastMessage.textContent = message;
-  toast.classList.remove('bg-red-600', 'bg-yellow-600', 'bg-teal-600');
-  
-  if (type === 'error') {
-    toast.classList.add('bg-red-600');
-  } else if (type === 'warning') {
-    toast.classList.add('bg-yellow-600');
-  } else {
-    toast.classList.add('bg-teal-600');
-  }
-  
-  toast.classList.remove('translate-x-full');
-  setTimeout(() => {
-    toast.classList.add('translate-x-full');
-  }, 3000);
-}
-
-// Update word count
-function updateWordCount() {
-  const content = document.getElementById('reportContent').value;
-  const words = content.trim().split(/\s+/).filter(word => word.length > 0);
-  document.getElementById('wordCount').textContent = `${words.length} words`;
-}
-
-// Load all data
-async function loadData() {
-  try {
-    const [s, e, a, p, exp] = await Promise.all([
-      fetch(`${API}/staff`).then(r => r.json()),
-      fetch(`${API}/inventory`).then(r => r.json()),
-      fetch(`${API}/my/dashboard/assignments`).then(r => r.json()),
-      fetch(`${API}/performance/weekly`).then(r => r.json()),
-      fetch(`${API}/expenses`).then(r => r.json()).catch(() => [])
-    ]);
-
-    staff = Array.isArray(s) ? s : [];
-    equipment = Array.isArray(e) ? e : [];
-    assignments = Array.isArray(a) ? a : [];
-    performance = p || { labels: [], values: [] };
-    expenses = Array.isArray(exp) ? exp : [];
-
-    renderStaff(); renderAssignments(); renderEquipment(); renderPerformance(); renderExpenses();
-    loadReportsTable();
-  } catch (err) {
-    console.error("Load error:", err);
-    showToast("Failed to load data", "error");
-  }
-}
-
-// Render functions (keep your existing renderStaff, renderAssignments, etc.)
-function renderStaff() {
-  const el = document.getElementById('staffList');
-  const active = staff.filter(s => s.status === 'Active');
-  el.innerHTML = active.map(s => `
-    <div class="flex items-center gap-3 p-2 bg-teal-50 rounded">
-      <img src="${s.image || 'https://via.placeholder.com/32'}" class="w-8 h-8 rounded-full">
-      <div class="flex-1 min-w-0">
-        <p class="font-medium truncate">${s.name}</p>
-        <p class="text-xs text-teal-600">${s.position}</p>
-      </div>
-    </div>
-  `).join('') || '<p class="text-gray-500 text-center py-4">No active staff</p>';
-}
-
-function renderAssignments() {
-  const el = document.getElementById('assignmentsList');
-  el.innerHTML = assignments.map(a => `
-    <div class="p-2 bg-teal-50 rounded">
-      <div class="flex justify-between items-start">
-        <p class="font-medium text-sm">${a.title}</p>
-        <span class="text-xs px-2 py-1 rounded-full ${a.statusColor === 'yellow' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}">
-          ${a.status}
-        </span>
-      </div>
-      <p class="text-xs text-gray-600 mt-1">Client: ${a.client}</p>
-    </div>
-  `).join('') || '<p class="text-gray-500 text-center py-4">No jobs today</p>';
-}
-
-function renderEquipment() {
-  const el = document.getElementById('equipmentList');
-  const avail = equipment.filter(e => e.status === 'available');
-  el.innerHTML = avail.map(e => `
-    <div class="p-2 bg-teal-50 rounded flex justify-between text-sm">
-      <div>
-        <p class="font-medium">${e.name}</p>
-        <p class="text-xs text-gray-600">Qty: ${e.quantity}</p>
-      </div>
-      <span class="text-green-600 text-xs font-medium">Available</span>
-    </div>
-  `).join('') || '<p class="text-gray-500 text-center py-4">No equipment</p>';
-}
-
-function renderPerformance() {
-  const el = document.getElementById('performanceChart');
-  if (!performance.labels?.length) {
-    el.innerHTML = '<p class="text-gray-500">No data</p>'; return;
-  }
-  const max = Math.max(...performance.values);
-  el.innerHTML = `
-    <div class="grid grid-cols-7 gap-1 text-center text-xs">
-      ${performance.labels.map((d, i) => `
-        <div>
-          <p class="text-gray-600">${d}</p>
-          <div class="bg-gray-200 rounded-full h-16 mt-2 relative overflow-hidden">
-            <div class="absolute bottom-0 w-full bg-teal-600 transition-all" style="height: ${max === 0 ? 0 : (performance.values[i]/max)*100}%"></div>
-          </div>
-          <p class="font-bold text-teal-700 mt-1">${performance.values[i]}</p>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderExpenses() {
-  const el = document.getElementById('expensesList');
-  const recent = expenses.slice(0, 6);
-  el.innerHTML = recent.map(exp => `
-    <div class="p-2 bg-red-50 rounded border border-red-200">
-      <div class="flex justify-between">
-        <p class="font-medium text-sm">${exp.category}</p>
-        <p class="font-bold text-red-600">KES ${parseFloat(exp.amount).toLocaleString()}</p>
-      </div>
-      <p class="text-xs text-gray-600 mt-1">${exp.payee || 'N/A'} • ${new Date(exp.date).toLocaleDateString('en-GB')}</p>
-    </div>
-  `).join('') || '<p class="text-gray-500 text-center py-4">No expenses recorded</p>';
-}
-
-// AUTO-GENERATION FUNCTIONS
-
-// 1. Daily Activity Report
-function generateDailyReport() {
-  const activeStaff = staff.filter(s => s.status === 'Active');
-  const todayAssignments = assignments.filter(a => {
-    const assignmentDate = new Date(a.date || new Date()).toDateString();
-    return assignmentDate === new Date().toDateString();
-  });
-  const completedJobs = todayAssignments.filter(a => a.status === 'completed' || a.status === 'Completed');
-  const pendingJobs = todayAssignments.filter(a => a.status === 'pending' || a.status === 'Pending');
-  
-  document.getElementById('reportType').value = 'daily';
-  document.getElementById('startDate').valueAsDate = new Date();
-  document.getElementById('endDate').valueAsDate = new Date();
-  
-  autoGeneratedContent = `DAILY ACTIVITY REPORT
-Date: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-Generated: ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-
-EXECUTIVE SUMMARY
-• Total Active Staff: ${activeStaff.length}
-• Jobs Assigned Today: ${todayAssignments.length}
-• Completed Jobs: ${completedJobs.length}
-• Pending Jobs: ${pendingJobs.length}
-
-STAFF DEPLOYMENT
-${activeStaff.map(s => `• ${s.name} - ${s.position} (${s.specialization || 'General'})`).join('\n')}
-
-ASSIGNMENT STATUS
-${todayAssignments.map(a => `• ${a.title}: ${a.client} - ${a.status.toUpperCase()}${a.notes ? ` (${a.notes})` : ''}`).join('\n')}
-
-EQUIPMENT CHECK
-• All critical equipment reported functional
-• No maintenance issues logged
-
-INCIDENTS & ISSUES
-• No major incidents reported
-• Minor delays in ${pendingJobs.length > 0 ? pendingJobs.map(j => j.title).join(', ') : 'none'}
-
-RECOMMENDATIONS
-${pendingJobs.length > 0 ? `1. Prioritize completion of pending jobs\n2. Reallocate resources if needed` : '1. Continue current operational tempo'}
-
-NEXT DAY PREVIEW
-• Continue scheduled assignments
-• Equipment maintenance scheduled as per routine
-
-Report Prepared By: `;
-
-  document.getElementById('reportContent').value = autoGeneratedContent;
-  updateWordCount();
-  showToast("Daily report auto-generated. Review and edit before submission.");
-}
-
-// 2. Weekly Summary Report
-function generateWeeklySummary() {
-  const activeStaff = staff.filter(s => s.status === 'Active');
-  const weeklyExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-  const avgPerformance = performance.values?.length ? 
-    (performance.values.reduce((a, b) => a + b, 0) / performance.values.length).toFixed(1) : 'N/A';
-  
-  // Calculate week start and end
-  const today = new Date();
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay());
-  const endOfWeek = new Date(today);
-  endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
-  
-  document.getElementById('reportType').value = 'weekly';
-  document.getElementById('startDate').value = startOfWeek.toISOString().split('T')[0];
-  document.getElementById('endDate').value = endOfWeek.toISOString().split('T')[0];
-  
-  autoGeneratedContent = `WEEKLY OPERATIONAL SUMMARY REPORT
-Period: ${startOfWeek.toLocaleDateString('en-GB')} to ${endOfWeek.toLocaleDateString('en-GB')}
-Report Generated: ${new Date().toLocaleDateString('en-GB')}
-
-OVERVIEW
-• Active Team Members: ${activeStaff.length}
-• Total Assignments This Week: ${assignments.length}
-• Average Performance Score: ${avgPerformance}/10
-• Weekly Operational Expenses: KES ${weeklyExpenses.toLocaleString()}
-
-PERFORMANCE ANALYSIS
-${performance.labels?.map((day, i) => `• ${day}: ${performance.values[i]} tasks completed`).join('\n') || 'No performance data available'}
-
-STAFF HIGHLIGHTS
-${activeStaff.map(s => `• ${s.name}: Consistently ${performance.values?.length > 3 ? 'meeting' : 'exceeding'} targets`).join('\n')}
-
-FINANCIAL SUMMARY
-${expenses.slice(0, 5).map(e => `• ${e.category}: KES ${parseFloat(e.amount).toLocaleString()} - ${e.description || ''}`).join('\n')}
-• Total Weekly Expenditure: KES ${weeklyExpenses.toLocaleString()}
-
-EQUIPMENT STATUS
-• All major equipment operational
-• Maintenance performed: ${equipment.filter(e => e.status === 'maintenance').length} items
-• Available for deployment: ${equipment.filter(e => e.status === 'available').length} items
-
-CHALLENGES & SOLUTIONS
-${assignments.filter(a => a.status === 'pending').length > 0 ? 
-`• Challenge: ${assignments.filter(a => a.status === 'pending').length} pending assignments
-• Solution: Resource reallocation planned for next week` : 
-'• No significant challenges encountered this week'}
-
-RECOMMENDATIONS FOR NEXT WEEK
-1. Maintain current staffing levels
-2. Schedule equipment maintenance checks
-3. Focus on completing pending assignments
-${weeklyExpenses > 100000 ? '4. Review expense categories for cost optimization' : ''}
-
-APPROVALS REQUIRED
-• None - All operations within budget and schedule
-
-Report Compiled By: `;
-
-  document.getElementById('reportContent').value = autoGeneratedContent;
-  updateWordCount();
-  showToast("Weekly summary generated. Add specific details as needed.");
-}
-
-// 3. Equipment Status Report
-function generateEquipmentReport() {
-  const available = equipment.filter(e => e.status === 'available');
-  const inUse = equipment.filter(e => e.status === 'in_use');
-  const maintenance = equipment.filter(e => e.status === 'maintenance');
-  const damaged = equipment.filter(e => e.status === 'damaged');
-  
-  document.getElementById('reportType').value = 'equipment';
-  document.getElementById('startDate').valueAsDate = new Date();
-  document.getElementById('endDate').valueAsDate = new Date();
-  
-  autoGeneratedContent = `EQUIPMENT STATUS REPORT
-Report Date: ${new Date().toLocaleDateString('en-GB')}
-Inventory Check: Full System Audit
-
-EQUIPMENT OVERVIEW
-• Total Items in Inventory: ${equipment.length}
-• Available for Deployment: ${available.length}
-• Currently in Use: ${inUse.length}
-• Under Maintenance: ${maintenance.length}
-• Damaged/Out of Service: ${damaged.length}
-
-DETAILED INVENTORY
-
-AVAILABLE EQUIPMENT (Ready for Use)
-${available.map(e => `• ${e.name}: ${e.quantity} units - ${e.category || 'General'} - Last checked: ${new Date(e.last_maintenance || new Date()).toLocaleDateString('en-GB')}`).join('\n')}
-
-EQUIPMENT IN USE
-${inUse.map(e => `• ${e.name}: ${e.quantity} units - Assigned to: ${e.assigned_to || 'Field Team'} - Expected return: ${e.return_date || 'N/A'}`).join('\n')}
-
-MAINTENANCE REQUIRED
-${maintenance.map(e => `• ${e.name}: ${e.quantity} units - Issue: ${e.issue || 'Routine maintenance'} - ETA for repair: ${e.repair_eta || '3-5 days'}`).join('\n')}
-
-DAMAGED/EQUIPMENT
-${damaged.map(e => `• ${e.name}: ${e.quantity} units - Damage description: ${e.damage_description || 'Not specified'} - Replacement cost estimate: KES ${e.replacement_cost || '0'}`).join('\n')}
-
-CRITICAL EQUIPMENT STATUS
-• All safety equipment: Fully functional and up-to-date
-• Communication devices: 100% operational
-• Transport vehicles: Serviced and roadworthy
-• Specialized tools: Calibrated and ready
-
-MAINTENANCE SCHEDULE
-• Next routine maintenance: ${new Date(new Date().setDate(new Date().getDate() + 7)).toLocaleDateString('en-GB')}
-• Annual calibration due: ${new Date(new Date().setMonth(new Date().getMonth() + 3)).toLocaleDateString('en-GB')}
-
-RECOMMENDATIONS
-${damaged.length > 0 ? `1. Urgent: Replace ${damaged.map(d => d.name).join(', ')}\n2. Budget allocation required for replacements` : '1. Continue with current maintenance schedule'}
-${maintenance.length > 5 ? '3. Increase maintenance team capacity' : '2. Maintain current maintenance intervals'}
-
-APPROVAL
-Inventory verified by:
-Next audit scheduled: ${new Date(new Date().setDate(new Date().getDate() + 30)).toLocaleDateString('en-GB')}`;
-
-  document.getElementById('reportContent').value = autoGeneratedContent;
-  updateWordCount();
-  showToast("Equipment report generated with current inventory status.");
-}
-
-// 4. Performance Report
-function generatePerformanceReport() {
-  const activeStaff = staff.filter(s => s.status === 'Active');
-  const avgPerformance = performance.values?.length ? 
-    (performance.values.reduce((a, b) => a + b, 0) / performance.values.length).toFixed(1) : 'N/A';
-  const topPerformers = activeStaff.slice(0, 3);
-  
-  document.getElementById('reportType').value = 'staff';
-  document.getElementById('startDate').valueAsDate = new Date();
-  document.getElementById('endDate').valueAsDate = new Date();
-  
-  autoGeneratedContent = `STAFF PERFORMANCE EVALUATION REPORT
-Evaluation Period: This Week
-Report Date: ${new Date().toLocaleDateString('en-GB')}
-
-PERFORMANCE OVERVIEW
-• Team Size: ${activeStaff.length}
-• Average Performance Score: ${avgPerformance}/10
-• Assignments Completed: ${assignments.filter(a => a.status === 'completed').length}
-• On-Time Completion Rate: ${assignments.length > 0 ? Math.round((assignments.filter(a => a.status === 'completed').length / assignments.length) * 100) : 0}%
-
-INDIVIDUAL PERFORMANCE ASSESSMENT
-
-TOP PERFORMERS
-${topPerformers.map((s, i) => `${i + 1}. ${s.name} - ${s.position}\n   • Strengths: ${s.specialization || 'Versatile'}\n   • Recent Achievements: Completed ${Math.floor(Math.random() * 5) + 3} assignments this week\n   • Recommendation: ${['Consider for leadership role', 'Ready for advanced tasks', 'Excellent team player'][i]}`).join('\n\n')}
-
-TEAM PERFORMANCE BREAKDOWN
-${activeStaff.map(s => `• ${s.name}: Estimated performance ${Math.floor(Math.random() * 3) + 7}/10 - ${['Meeting expectations', 'Exceeding targets', 'Consistently reliable'][Math.floor(Math.random() * 3)]}`).join('\n')}
-
-KEY METRICS
-• Productivity: ${Math.round(performance.values?.reduce((a, b) => a + b, 0) / 7) || 'N/A'} tasks/day average
-• Quality: No customer complaints recorded
-• Efficiency: ${assignments.length > 0 ? Math.round((assignments.filter(a => a.status === 'completed').length / assignments.length) * 100) : 0}% task completion rate
-• Attendance: 100% this week
-
-AREAS FOR IMPROVEMENT
-${activeStaff.length > 5 ? `1. Cross-training needed for specialized roles\n2. Time management workshops beneficial` : '1. Continue current development path'}
-
-RECOMMENDATIONS
-1. Recognize top performers in team meeting
-2. Schedule one-on-one feedback sessions
-3. Plan skill development for next quarter
-${avgPerformance < 7 ? '4. Implement performance improvement plans' : ''}
-
-TRAINING NEEDS IDENTIFIED
-• Advanced equipment operation (2 staff)
-• Customer service excellence (all field staff)
-• Safety protocol refresher (entire team)
-
-NEXT REVIEW SCHEDULED
-• Monthly performance review: ${new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString('en-GB')}
-• Quarterly assessment: ${new Date(new Date().setMonth(new Date().getMonth() + 3)).toLocaleDateString('en-GB')}
-
-Prepared By: Supervisor
-For: Management Review`;
-
-  document.getElementById('reportContent').value = autoGeneratedContent;
-  updateWordCount();
-  showToast("Performance report generated. Add individual feedback as needed.");
-}
-
-// 5. Financial Report
-function generateFinancialReport() {
-  const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-  const categoryTotals = {};
-  expenses.forEach(exp => {
-    categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + parseFloat(exp.amount || 0);
-  });
-  
-  // Calculate period (last 30 days)
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - 30);
-  
-  document.getElementById('reportType').value = 'financial';
-  document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
-  document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
-  
-  autoGeneratedContent = `FINANCIAL OPERATIONS REPORT
-Reporting Period: ${startDate.toLocaleDateString('en-GB')} to ${endDate.toLocaleDateString('en-GB')}
-Generated: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-
-EXECUTIVE FINANCIAL SUMMARY
-• Total Expenses This Period: KES ${totalExpenses.toLocaleString()}
-• Number of Transactions: ${expenses.length}
-• Average Daily Expenditure: KES ${(totalExpenses / 30).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-• Largest Expense Category: ${Object.keys(categoryTotals).reduce((a, b) => categoryTotals[a] > categoryTotals[b] ? a : b) || 'N/A'}
-
-EXPENSE BREAKDOWN BY CATEGORY
-${Object.entries(categoryTotals).map(([cat, total]) => `• ${cat}: KES ${total.toLocaleString()} (${((total / totalExpenses) * 100).toFixed(1)}%)`).join('\n')}
-
-TOP 5 EXPENSES
-${expenses.sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)).slice(0, 5).map((exp, i) => `${i + 1}. ${exp.category}: KES ${parseFloat(exp.amount).toLocaleString()}\n   Date: ${new Date(exp.date).toLocaleDateString('en-GB')}\n   Payee: ${exp.payee || 'Not specified'}\n   ${exp.description ? `Description: ${exp.description}` : ''}`).join('\n\n')}
-
-BUDGET ANALYSIS
-• Actual vs Budget: ${totalExpenses > 500000 ? 'Over budget by ' + (totalExpenses - 500000).toLocaleString() : 'Within budget'}
-• Most Cost-Effective Category: ${Object.keys(categoryTotals).reduce((a, b) => categoryTotals[a] < categoryTotals[b] ? a : b) || 'N/A'}
-• Areas for Cost Optimization: ${Object.entries(categoryTotals).filter(([_, total]) => total > 100000).map(([cat]) => cat).join(', ') || 'All categories within optimal range'}
-
-OPERATIONAL COST DRIVERS
-1. Staff salaries and benefits: ${categoryTotals['Salaries'] ? `${((categoryTotals['Salaries'] / totalExpenses) * 100).toFixed(1)}% of total` : 'Not specified'}
-2. Equipment maintenance: ${categoryTotals['Maintenance'] ? `KES ${categoryTotals['Maintenance'].toLocaleString()}` : 'Minimal costs'}
-3. Transportation and fuel: ${categoryTotals['Fuel'] || categoryTotals['Transport'] ? `${((((categoryTotals['Fuel'] || 0) + (categoryTotals['Transport'] || 0)) / totalExpenses) * 100).toFixed(1)}% of total` : 'Efficient usage'}
-
-RECOMMENDATIONS FOR COST MANAGEMENT
-${totalExpenses > 500000 ? `1. Immediate: Review ${Object.keys(categoryTotals).filter(cat => categoryTotals[cat] > 100000).join(', ')} expenses\n2. Implement spending approval for amounts over KES 50,000` : '1. Maintain current spending controls'}
-${expenses.filter(e => !e.category || !e.payee).length > 0 ? '3. Enforce proper expense categorization and documentation' : ''}
-
-FORECAST FOR NEXT PERIOD
-• Expected operational costs: KES ${(totalExpenses * 1.05).toLocaleString(undefined, { maximumFractionDigits: 0 })} (5% increase)
-• Planned capital expenditures: ${equipment.filter(e => e.status === 'damaged').length > 0 ? 'Equipment replacement budget required' : 'None planned'}
-• Contingency fund recommendation: KES ${(totalExpenses * 0.1).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-
-APPROVALS & AUTHORIZATIONS
-• All expenses verified and documented
-• Receipts archived for audit
-• Next financial review: ${new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString('en-GB')}
-
-Report Prepared By: Finance Supervisor
-Reviewed By: Operations Manager`;
-
-  document.getElementById('reportContent').value = autoGeneratedContent;
-  updateWordCount();
-  showToast("Financial report generated with expense analysis.");
-}
-
-// Helper functions for panel buttons
-function useStaffForReport() {
-  const activeStaff = staff.filter(s => s.status === 'Active');
-  const staffText = activeStaff.map(s => `${s.name} (${s.position})`).join(', ');
-  appendToReport(`\n\nActive Staff: ${activeStaff.length} team members currently deployed:\n${staffText}`);
-}
-
-function useAssignmentsForReport() {
-  const todayAssignments = assignments;
-  const assignmentText = todayAssignments.map(a => `${a.title}: ${a.client} - ${a.status}`).join('\n');
-  appendToReport(`\n\nToday's Assignments (${todayAssignments.length}):\n${assignmentText}`);
-}
-
-function useEquipmentForReport() {
-  const available = equipment.filter(e => e.status === 'available');
-  const equipmentText = available.map(e => `${e.name}: ${e.quantity} units`).join('\n');
-  appendToReport(`\n\nAvailable Equipment (${available.length} items):\n${equipmentText}`);
-}
-
-function usePerformanceForReport() {
-  const avgPerformance = performance.values?.length ? 
-    (performance.values.reduce((a, b) => a + b, 0) / performance.values.length).toFixed(1) : 'N/A';
-  appendToReport(`\n\nPerformance Summary: Average score ${avgPerformance}/10 this week`);
-}
-
-function useExpensesForReport() {
-  const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-  const recentExpenses = expenses.slice(0, 3).map(e => `${e.category}: KES ${parseFloat(e.amount).toLocaleString()}`).join(', ');
-  appendToReport(`\n\nFinancial Update: Total recent expenses KES ${totalExpenses.toLocaleString()}\nRecent: ${recentExpenses}`);
-}
-
-function appendToReport(text) {
-  const textarea = document.getElementById('reportContent');
-  textarea.value += text;
-  updateWordCount();
-  showToast("Data added to report");
-}
-
-// AI Content Suggestion
-function suggestContent() {
-  const reportType = document.getElementById('reportType').value;
-  const suggestions = {
-    daily: "Consider adding specific incident details and client feedback.",
-    weekly: "Include comparative analysis with previous week and trend observations.",
-    equipment: "Add maintenance schedules and replacement recommendations.",
-    staff: "Include training needs and career development suggestions.",
-    financial: "Add budget variance analysis and cost-saving recommendations."
-  };
-  
-  const currentContent = document.getElementById('reportContent').value;
-  const suggestion = suggestions[reportType] || "Review data for accuracy and add actionable recommendations.";
-  
-  if (currentContent.length < 50) {
-    document.getElementById('reportContent').value = suggestion + "\n\n" + currentContent;
-  } else {
-    document.getElementById('reportContent').value += "\n\n[SUGGESTION] " + suggestion;
-  }
-  
-  updateWordCount();
-  showToast("Content suggestion added");
-}
-
-// Auto Format Report
-function autoFormatReport() {
-  let content = document.getElementById('reportContent').value;
-  
-  // Add headings if missing
-  if (!content.includes('SUMMARY') && content.length > 100) {
-    content = "EXECUTIVE SUMMARY\n" + content + "\n\nRECOMMENDATIONS\n• TBD\n\nAPPROVALS\n• Prepared by: Supervisor\n• Date: " + new Date().toLocaleDateString('en-GB');
-  }
-  
-  // Format lists
-  content = content.replace(/\n• /g, '\n• ');
-  
-  document.getElementById('reportContent').value = content;
-  updateWordCount();
-  showToast("Report auto-formatted");
-}
-
-// Preview Report
-function previewReport() {
-  const type = document.getElementById('reportType').options[document.getElementById('reportType').selectedIndex].text;
-  const startDate = document.getElementById('startDate').value;
-  const endDate = document.getElementById('endDate').value;
-  const content = document.getElementById('reportContent').value;
-  
-  document.getElementById('previewType').textContent = type;
-  document.getElementById('previewPeriod').textContent = `${new Date(startDate).toLocaleDateString('en-GB')} to ${new Date(endDate).toLocaleDateString('en-GB')}`;
-  document.getElementById('previewContent').textContent = content || 'No content to preview';
-  
-  document.getElementById('previewModal').classList.remove('hidden');
-}
-
-function closePreviewModal() {
-  document.getElementById('previewModal').classList.add('hidden');
-}
-
-function usePreviewForEditing() {
-  document.getElementById('reportContent').value = document.getElementById('previewContent').textContent;
-  closePreviewModal();
-  updateWordCount();
-  showToast("Preview content loaded for editing");
-}
-
-// Rest of your existing functions (loadReportsTable, viewReport, closeModal, downloadPDF, etc.)
-// Keep all your existing functions from the original code here...
-// Including: loadReportsTable, viewReport, closeModal, downloadCurrentPDF, downloadPDF, deleteReport, editReport, resetForm, form submit handler, loadSampleReport, escapeHtml, modal close handlers
-
-// Your existing functions (I'll include the key ones but shortened for space)
-async function loadReportsTable() {
-  try {
-    const res = await fetch(`${API}/reports`);
-    reports = await res.json();
-    const tbody = document.getElementById('reportsTableBody');
-    tbody.innerHTML = reports.length === 0
-      ? `<tr><td colspan="6" class="text-center py-12 text-gray-500">No reports generated yet</td></tr>`
-      : reports.map(r => `
-        <tr class="hover:bg-teal-50">
-          <td class="px-4 py-4 font-medium">${r.reference || 'REP-' + r.id}</td>
-          <td class="px-4 py-4 hidden sm:table-cell capitalize">${r.report_type.replace('_', ' ')}</td>
-          <td class="px-4 py-4 hidden md:table-cell">
-            ${new Date(r.start_date).toLocaleDateString('en-GB')} - ${new Date(r.end_date).toLocaleDateString('en-GB')}
-          </td>
-          <td class="px-4 py-4 hidden lg:table-cell">${new Date(r.generated_at).toLocaleDateString('en-GB')}</td>
-          <td class="px-4 py-4">
-            <span class="px-3 py-1 text-xs rounded-full ${
-              r.status === 'approved' ? 'bg-green-100 text-green-800' :
-              r.status === 'rejected' ? 'bg-red-100 text-red-800' :
-              r.status === 'in_review' ? 'bg-orange-100 text-orange-800' :
-              'bg-yellow-100 text-yellow-800'
-            }">${(r.status || 'pending').toUpperCase()}</span>
-          </td>
-          <td class="px-4 py-4 text-right">
-            <div class="flex justify-end gap-2">
-              <button onclick="viewReport(${r.id})" class="p-2 rounded-lg hover:bg-teal-100 text-teal-600" title="View">
-                <i class="fas fa-eye"></i>
-              </button>
-              <button onclick="editReport(${r.id})" class="p-2 rounded-lg hover:bg-teal-100 text-teal-600" title="Edit">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button onclick="deleteReport(${r.id})" class="p-2 rounded-lg hover:bg-red-100 text-red-600" title="Delete">
-                <i class="fas fa-trash"></i>
-              </button>
+<style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f1f5f9; 
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .glass-panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-area {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .input-area:focus { 
+            background: white; 
+            border-color: #0f766e; 
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); 
+            outline: none;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feed-card {
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+        .feed-card:hover {
+            transform: translateY(-2px);
+            border-color: #99f6e4;
+        }
+
+        .tag-ops { background: #ccfbf1; color: #0f766e; }
+        .tag-support { background: #e0e7ff; color: #3730a3; }
+        .tag-general { background: #fef3c7; color: #92400e; }
+        
+        /* Filter Pills */
+        .filter-pill {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+        .filter-pill:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .filter-pill.active {
+            background: #0f766e;
+            color: white;
+            border-color: #0f766e;
+        }
+
+        /* Tab styles */
+        .tab-btn {
+            background: white;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-btn:hover {
+            color: #0f766e;
+        }
+        .tab-btn.active {
+            color: #0f766e;
+            border-bottom-color: #0f766e;
+        }
+        
+        /* Animation */
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Toast styles */
+        #toastContainer { position: fixed; top: 1.25rem; right: 1.25rem; z-index: 100; }
+        .toast {
+            min-width: 280px;
+            animation: slideIn 0.3s ease-out;
+            margin-bottom: 0.75rem;
+        }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style><div id="toastContainer"></div>
+
+    <!-- Navigation Header -->
+    <nav class="text-gray-900 h-16 flex items-center justify-between px-6 shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <div>
+                <h1 class="font-bold text-2xl tracking-wide">Daily Reporting</h1>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest">Daily Reporting System</p>
             </div>
-          </td>
-        </tr>
-      `).join('');
-  } catch (e) {
-    console.error(e);
-  }
-}
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+                <i class="fas fa-calendar-day text-white text-xs"></i>
+                <span class="text-xs text-white font-bold" id="currentDate">Loading...</span>
+            </div>
+        </div>
+    </nav>
 
-function viewReport(id) {
-  const r = reports.find(x => x.id === id);
-  if (!r) return;
-  currentReport = r;
-  document.getElementById('modalTitle').textContent = r.reference || 'Report';
-  document.getElementById('modalContent').textContent = r.content || 'No content';
-  document.getElementById('viewModal').classList.remove('hidden');
-}
+    <div class="flex-1 overflow-hidden p-4 md:p-6">
+        <div class="grid grid-cols-12 gap-6 h-full">
 
-function closeModal() {
-  document.getElementById('viewModal').classList.add('hidden');
-  currentReport = null;
-}
+            <!-- LEFT PANEL: Reports Feed with Tabs -->
+            <div class="col-span-12 lg:col-span-5 flex flex-col h-full">
+                <!-- Tab Navigation -->
+                <div class="mb-4 shrink-0">
+                    <div class="flex gap-2 mb-4 border-b border-slate-200">
+                        <button onclick="switchTab('staff')" id="staffTab" class="tab-btn active px-4 py-3 text-sm font-black uppercase transition-all">
+                            <i class="fas fa-users mr-2"></i>Staff Reports
+                        </button>
+                        <button onclick="switchTab('general')" id="generalTab" class="tab-btn px-4 py-3 text-sm font-black uppercase transition-all">
+                            <i class="fas fa-file-alt mr-2"></i>Generated Reports
+                        </button>
+                    </div>
 
-function downloadCurrentPDF() {
-  if (!currentReport) return;
-  downloadPDF(currentReport.reference || 'Report', currentReport.content || '');
-}
+                    <!-- Staff Reports Filters -->
+                   <div id="staffFilters" class="flex flex-wrap items-center gap-2">
+                        <button onclick="setRange('all')" 
+                            class="filter-pill active px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all">
+                            All
+                        </button>
 
-function downloadPDF(ref, content) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.setFontSize(20);
-  doc.text(ref, 105, 20, { align: 'center' });
-  doc.setFontSize(12);
-  const lines = doc.splitTextToSize(content, 170);
-  doc.text(lines, 20, 40);
-  doc.save(`${ref}.pdf`);
-}
+                        <button onclick="setRange('daily')" 
+                            class="filter-pill px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all">
+                            Daily
+                        </button>
 
-async function deleteReport(id) {
-  if (!confirm("Delete this report permanently?")) return;
-  try {
-    await fetch(`${API}/reports/${id}`, { method: 'DELETE' });
-    loadReportsTable();
-    showToast("Report deleted successfully");
-  } catch (e) { 
-    showToast("Failed to delete report", "error");
-  }
-}
+                        <button onclick="setRange('weekly')" 
+                            class="filter-pill px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all">
+                            Weekly
+                        </button>
 
-function editReport(id) {
-  const r = reports.find(x => x.id === id);
-  if (!r) return;
-  document.getElementById('editReportId').value = r.id;
-  document.getElementById('reportType').value = r.report_type;
-  document.getElementById('startDate').value = r.start_date;
-  document.getElementById('endDate').value = r.end_date;
-  document.getElementById('reportContent').value = r.content;
-  document.getElementById('submitBtnText').textContent = "Update Report";
-  updateWordCount();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  showToast("Report loaded for editing");
-}
+                        <!-- Date picker -->
+                        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 max-w-[180px]">
+                            <i class="far fa-calendar text-slate-400 text-[10px]"></i>
+                            <input type="date" id="historyFilter"
+                                onchange="applyFilters()"
+                                class="bg-transparent border-none text-[10px] font-black text-slate-700 focus:ring-0 p-0 w-full cursor-pointer">
+                        </div>
 
-function resetForm() {
-  document.getElementById('reportForm').reset();
-  document.getElementById('editReportId').value = '';
-  document.getElementById('submitBtnText').textContent = "Submit Report";
-  document.getElementById('startDate').valueAsDate = new Date();
-  document.getElementById('endDate').valueAsDate = new Date();
-  document.getElementById('reportContent').value = '';
-  updateWordCount();
-  showToast("Form reset");
-}
+                        <!-- Push department filter to the right -->
+                        <div class="ml-auto">
+                            <select id="feedFilter"
+                                onchange="applyDepartmentFilter(this.value)"
+                                class="text-xs font-bold bg-white border border-slate-300 rounded-lg px-3 py-2 outline-none">
+                                <option value="all">All Departments</option>
+                                <option value="ops">Field Staff (Ops)</option>
+                                <option value="support">Customer Support</option>
+                            </select>
+                        </div>
+                    </div>
 
-// Form submission
-document.getElementById('reportForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const id = document.getElementById('editReportId').value;
-  const payload = {
-    report_type: document.getElementById('reportType').value,
-    start_date: document.getElementById('startDate').value,
-    end_date: document.getElementById('endDate').value,
-    content: document.getElementById('reportContent').value.trim()
-  };
+                    <!-- General Reports Filters -->
+                    <div id="generalFilters" class="hidden space-y-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="setGeneralRange('all')" class="filter-pill active px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all" data-general-filter="all">All Time</button>
+                            <button onclick="setGeneralRange('month')" class="filter-pill px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all" data-general-filter="month">This Month</button>
+                            <button onclick="setGeneralRange('week')" class="filter-pill px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all" data-general-filter="week">This Week</button>
+                        </div>
+                    </div>
+                </div>
 
-  if (!payload.content) {
-    showToast("Please write the report content", "error");
-    return;
-  }
+                <!-- Staff Reports Feed -->
+                <div id="staffReportsFeed" class="flex-1 overflow-y-auto pr-2 space-y-4 min-w-[360px]">
+                    <div class="flex flex-col items-center justify-center p-10 text-slate-400">
+                        <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+                        <p class="text-xs font-bold uppercase">Loading Reports...</p>
+                    </div>
+                </div>
 
-  try {
-    const method = id ? 'PUT' : 'POST';
-    const url = id ? `${API}/report/${id}` : `${API}/report`;
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+                <!-- General Reports Feed -->
+                <div id="generalReportsFeed" class="hidden flex-1 overflow-y-auto pr-2 space-y-4 min-w-[360px]">
+                    <div class="flex flex-col items-center justify-center p-10 text-slate-400">
+                        <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+                        <p class="text-xs font-bold uppercase">Loading Generated Reports...</p>
+                    </div>
+                </div>
+            </div>
 
-    if (res.ok) {
-      showToast(id ? "Report updated successfully!" : "Report submitted successfully!");
-      resetForm();
-      loadReportsTable();
-    } else {
-      showToast("Failed to save report", "error");
-    }
-  } catch (err) {
-    showToast("Network error. Please try again.", "error");
-  }
-});
+            <!-- RIGHT PANEL: Report Generation / Detail View -->
+            <div class="col-span-12 lg:col-span-7 flex flex-col h-full">
+                <div class="glass-panel rounded-xl h-full flex flex-col overflow-hidden">
+                    
+                    <!-- Header -->
+                    <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
+                        <div>
+                            <h2 class="text-lg font-black text-slate-800" id="rightPanelTitle">Daily General Report</h2>
+                            <p class="text-xs text-slate-500 font-bold" id="rightPanelSubtitle">Synthesize data from field and support teams</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="generateReportBtn" onclick="toggleReportForm()" class="px-4 py-2 rounded-lg bg-teal-600 text-white font-bold text-xs hover:bg-teal-700 shadow-lg shadow-teal-500/20">
+                                <i class="fas fa-plus mr-2"></i>Generate Report
+                            </button>
+                        </div>
+                    </div>
 
-function loadSampleReport() {
-  const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0).toLocaleString();
-  document.getElementById('reportContent').value = `SUPERVISOR REPORT - ${new Date().toLocaleDateString('en-GB')}
+                    <!-- Default State (Empty View) -->
+                    <div id="defaultState" class="flex-1 flex flex-col items-center justify-center bg-white p-6 text-center">
+                        <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-file-alt text-2xl text-slate-400"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-600 mb-1">No Report Generated Today</p>
+                        <p class="text-xs text-slate-500 mb-4">Click "Generate Report" to create today's daily report</p>
+                        <button onclick="toggleReportForm()" class="text-xs text-teal-600 hover:text-teal-700 font-bold uppercase">
+                            <i class="fas fa-plus mr-1"></i> Create Report
+                        </button>
+                    </div>
 
-OPERATIONAL SUMMARY
-• Active Field Staff: ${staff.filter(s => s.status === 'Active').length}
-• Jobs Completed Today: ${assignments.length}
-• Equipment Status: All critical tools available
-• Incidents Reported: None
+                    <!-- Report Detail View -->
+                    <div id="reportDetailView" class="hidden flex-1 overflow-y-auto p-6 bg-white">
+                        <!-- Content will be dynamically loaded -->
+                    </div>
 
-FINANCIAL SUMMARY
-• Total Expenses (Recent): KES ${totalExpenses}
-• Major Categories: Salaries, Utilities, Fuel
+                    <!-- Report Form (Hidden by Default) -->
+                    <div id="reportFormContainer" class="hidden flex-1 overflow-y-auto p-6 bg-white">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-gray-900">Create Daily Report</h3>
+                            <button onclick="toggleReportForm()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
 
-PERFORMANCE
-• Weekly completion rate stable
-• Team morale high and on schedule
+                        <form id="generalReportForm" class="max-w-3xl mx-auto space-y-8">
 
-Recommendation: Continue current operations. No immediate concerns.
+                            <div class="animate-fade-in" style="animation-delay: 0.1s">
+                                <div class="section-label">
+                                    <i class="fas fa-network-wired text-teal-500"></i>
+                                    1. Operations & Logistics
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <textarea 
+                                        id="ops_summary"
+                                        rows="4" 
+                                        class="w-full input-area rounded-lg p-3 text-sm font-medium text-slate-700 placeholder-slate-400"
+                                        placeholder="Summarize daily installations, maintenance runs, and logistical challenges based on field staff reports..."
+                                    ></textarea>
+                                    <div class="mt-3 flex gap-3">
+                                        <div class="flex-1">
+                                            <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Installations Completed</label>
+                                            <input type="number" id="ops_installs" value="0" class="w-full input-area rounded p-2 text-sm font-bold">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Pending Jobs</label>
+                                            <input type="number" id="ops_pending" value="0" class="w-full input-area rounded p-2 text-sm font-bold">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-Prepared by: Current Supervisor`;
-  updateWordCount();
-  showToast("Sample report loaded");
-}
+                            <div class="animate-fade-in" style="animation-delay: 0.2s">
+                                <div class="section-label">
+                                    <i class="fas fa-users text-blue-500"></i>
+                                    2. Staff & Personnel
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <textarea 
+                                        id="staff_summary"
+                                        rows="3" 
+                                        class="w-full input-area rounded-lg p-3 text-sm font-medium text-slate-700 placeholder-slate-400"
+                                        placeholder="Note attendance issues, high performers, or incidents reported by staff..."
+                                    ></textarea>
+                                </div>
+                            </div>
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+                            <div class="animate-fade-in" style="animation-delay: 0.3s">
+                                <div class="section-label">
+                                    <i class="fas fa-headset text-indigo-500"></i>
+                                    3. Support & Client Feedback
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <textarea 
+                                        id="support_summary"
+                                        rows="3" 
+                                        class="w-full input-area rounded-lg p-3 text-sm font-medium text-slate-700 placeholder-slate-400"
+                                        placeholder="Summarize major client complaints, outages, or feedback from Support tickets..."
+                                    ></textarea>
+                                    <div class="mt-3">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" id="is_urgent" class="w-4 h-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500">
+                                            <span class="text-xs font-bold text-slate-600">Flag for Urgent Management Review</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
 
-// Close modal when clicking outside
-document.getElementById('viewModal').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('viewModal')) closeModal();
-});
+                            <div class="animate-fade-in" style="animation-delay: 0.4s">
+                                <div class="section-label">
+                                    <i class="fas fa-clipboard-check text-slate-500"></i>
+                                    4. Conclusion & Action Items
+                                </div>
+                                <textarea 
+                                    id="conclusion"
+                                    rows="3" 
+                                    class="w-full input-area rounded-lg p-3 text-sm font-medium text-slate-700 placeholder-slate-400 border-l-4 border-l-slate-800"
+                                    placeholder="Final remarks and required actions for tomorrow..."
+                                ></textarea>
+                            </div>
 
-document.getElementById('previewModal').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('previewModal')) closePreviewModal();
-});
-</script>
+                            <div class="flex gap-4 pt-4 border-t border-slate-200">
+                                <button type="button" onclick="toggleReportForm()" class="px-8 py-3 text-gray-600 font-semibold hover:text-gray-900">
+                                    Cancel
+                                </button>
+                                <button type="button" onclick="submitGeneralReport('draft')" class="px-8 py-3 rounded-lg border border-slate-300 bg-white text-slate-600 font-bold text-sm hover:bg-slate-50">
+                                    <i class="fas fa-save mr-2"></i>Save Draft
+                                </button>
+                                <button type="button" onclick="submitGeneralReport('submitted')" class="flex-1 bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 shadow-lg shadow-teal-500/20">
+                                    <i class="fas fa-paper-plane mr-2"></i>Submit Report
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // GLOBAL STATE
+        let allStaffReports = [];
+        let allGeneralReports = [];
+        let currentTab = 'staff';
+        let currentDepartmentFilter = 'all';
+        let currentRangeFilter = 'all';
+        let currentGeneralRangeFilter = 'all';
+        let isFormVisible = false;
+
+        // INITIALIZATION
+        window.onload = () => {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            
+            document.getElementById('historyFilter').valueAsDate = new Date();
+            
+            // Fetch all data
+            fetchStaffReports();
+            fetchGeneralReports();
+        };
+
+        // DATA FETCHING
+        async function fetchStaffReports() {
+            try {
+                const response = await fetch(`/api/reports/all-reports`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allStaffReports = data.reports;
+                    applyFilters();
+                }
+            } catch (error) {
+                console.error("Staff Reports Error:", error);
+                document.getElementById('staffReportsFeed').innerHTML = 
+                    `<p class="text-rose-500 text-xs p-4">Failed to load staff reports.</p>`;
+            }
+        }
+
+        async function fetchGeneralReports() {
+            try {
+                const response = await fetch(`/api/reports/general`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allGeneralReports = data.reports;
+                    applyGeneralFilters();
+                }
+            } catch (error) {
+                console.error("General Reports Error:", error);
+                document.getElementById('generalReportsFeed').innerHTML = 
+                    `<p class="text-rose-500 text-xs p-4">Failed to load general reports.</p>`;
+            }
+        }
+
+        // TAB SWITCHING
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.getElementById('staffTab').classList.toggle('active', tab === 'staff');
+            document.getElementById('generalTab').classList.toggle('active', tab === 'general');
+            
+            // Toggle filters
+            document.getElementById('staffFilters').classList.toggle('hidden', tab !== 'staff');
+            document.getElementById('generalFilters').classList.toggle('hidden', tab !== 'general');
+            
+            // Toggle feeds
+            document.getElementById('staffReportsFeed').classList.toggle('hidden', tab !== 'staff');
+            document.getElementById('generalReportsFeed').classList.toggle('hidden', tab !== 'general');
+            
+            // Update right panel
+            if (tab === 'staff') {
+                document.getElementById('rightPanelTitle').textContent = 'Daily General Report';
+                document.getElementById('rightPanelSubtitle').textContent = 'Synthesize data from field and support teams';
+                document.getElementById('generateReportBtn').classList.remove('hidden');
+                closeDetailView();
+            } else {
+                document.getElementById('rightPanelTitle').textContent = 'Report Details';
+                document.getElementById('rightPanelSubtitle').textContent = 'Click on a report to view details';
+                document.getElementById('generateReportBtn').classList.add('hidden');
+                closeDetailView();
+            }
+        }
+
+        // STAFF REPORTS FILTERING
+        function applyFilters() {
+            let filtered = [...allStaffReports];
+            const selectedHistoryDate = document.getElementById('historyFilter').value;
+
+            // Department Filter
+            if (currentDepartmentFilter !== 'all') {
+                filtered = filtered.filter(r => r.department === currentDepartmentFilter);
+            }
+            
+            // Range Logic
+            const referenceDate = selectedHistoryDate ? new Date(selectedHistoryDate + 'T00:00:00') : new Date();
+            const refDateStr = formatDate(referenceDate);
+
+            if (currentRangeFilter === 'daily') {
+                filtered = filtered.filter(r => {
+                    const rDate = formatDate(new Date(r.report_date || r.created_at));
+                    return rDate === refDateStr;
+                });
+            } else if (currentRangeFilter === 'weekly') {
+                const weekAgo = new Date(referenceDate);
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                filtered = filtered.filter(r => {
+                    const rDate = new Date(r.report_date || r.created_at);
+                    return rDate >= weekAgo && rDate <= referenceDate;
+                });
+            }
+            
+            renderStaffFeed(filtered);
+        }
+
+        function setRange(range) {
+            currentRangeFilter = range;
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                if (pill.hasAttribute('data-general-filter')) return;
+                pill.classList.toggle('active', pill.getAttribute('onclick').includes(`'${range}'`));
+            });
+            applyFilters();
+        }
+
+        function applyDepartmentFilter(value) {
+            currentDepartmentFilter = value;
+            applyFilters();
+        }
+
+        // GENERAL REPORTS FILTERING
+        function applyGeneralFilters() {
+            let filtered = [...allGeneralReports];
+            const now = new Date();
+
+            if (currentGeneralRangeFilter === 'week') {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                filtered = filtered.filter(r => {
+                    const rDate = new Date(r.report_date);
+                    return rDate >= weekAgo && rDate <= now;
+                });
+            } else if (currentGeneralRangeFilter === 'month') {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                filtered = filtered.filter(r => {
+                    const rDate = new Date(r.report_date);
+                    return rDate >= monthAgo && rDate <= now;
+                });
+            }
+
+            renderGeneralFeed(filtered);
+        }
+
+        function setGeneralRange(range) {
+            currentGeneralRangeFilter = range;
+            document.querySelectorAll('[data-general-filter]').forEach(pill => {
+                pill.classList.toggle('active', pill.getAttribute('data-general-filter') === range);
+            });
+            applyGeneralFilters();
+        }
+
+        // RENDERING
+        function renderStaffFeed(reports) {
+            const feedContainer = document.getElementById('staffReportsFeed');
+            feedContainer.innerHTML = '';
+
+            if (reports.length === 0) {
+                feedContainer.innerHTML = `
+                    <div class="p-8 text-center border-2 border-dashed border-slate-200 rounded mx-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No staff reports found</p>
+                    </div>`;
+                return;
+            }
+
+            reports.forEach(report => {
+                feedContainer.innerHTML += `
+                    <div class="bg-white border border-slate-300 shadow-sm mb-4 animate-fade-in mx-1">
+                        <div class="px-3 py-2 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-extrabold text-slate-900 uppercase tracking-tight">
+                                    ${escapeHtml(report.first_name || 'Unknown')} ${escapeHtml(report.second_name || '')}
+                                </span>
+                                <span class="text-slate-300">|</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">
+                                    ${escapeHtml(report.position || 'Staff')}
+                                </span>
+                            </div>
+                            <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                                DEPT: ${report.department}
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-white">
+                            <div class="text-xs text-slate-700 leading-relaxed font-medium">
+                                "${escapeHtml(report.content || 'No content provided.')}"
+                            </div>
+                        </div>
+
+                        <div class="px-3 py-2 border-t border-slate-100 flex justify-between items-center bg-white">
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center text-slate-400 gap-1.5">
+                                    <i class="far fa-calendar text-[10px]"></i>
+                                    <span class="text-[10px] font-bold">${new Date(report.created_at).toLocaleDateString()}</span>
+                                </div>
+                                <div class="flex items-center text-slate-400 gap-1.5">
+                                    <i class="far fa-clock text-[10px]"></i>
+                                    <span class="text-[10px] font-bold">${new Date(report.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                onclick="copyToForm(\`${escapeForJS(report.content || '')}\`, '${report.department}')" 
+                                class="px-3 py-1 bg-white hover:bg-slate-900 border border-slate-800 text-[10px] font-black text-slate-800 hover:text-white uppercase transition-all duration-200"
+                            >
+                                <i class="fas fa-plus mr-1"></i> Add to Report
+                            </button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function renderGeneralFeed(reports) {
+            const feedContainer = document.getElementById('generalReportsFeed');
+            feedContainer.innerHTML = '';
+
+            if (reports.length === 0) {
+                feedContainer.innerHTML = `<div class="p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-widest border-2 border-dashed border-slate-200">No generated reports found</div>`;
+                return;
+            }
+
+            reports.forEach(report => {
+                const statusBadge = report.status === 'submitted' 
+                    ? '<span class="text-[9px] font-black uppercase text-emerald-600 px-2 py-0.5 border border-emerald-600 bg-white">Finalized</span>'
+                    : '<span class="text-[9px] font-black uppercase text-slate-500 px-2 py-0.5 border border-slate-400 bg-white">Draft</span>';
+                
+                const urgentBadge = report.is_urgent 
+                    ? '<span class="text-[9px] font-black uppercase text-white px-2 py-0.5 bg-rose-600 border border-rose-600 ml-1">Urgent</span>'
+                    : '';
+                
+                feedContainer.innerHTML += `
+                    <div onclick="viewGeneralReport(${report.id})" class="bg-white border border-slate-300 shadow-sm mb-4 animate-fade-in cursor-pointer hover:border-slate-500 transition-all mx-1">
+                        <div class="px-3 py-2 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <div class="flex flex-col">
+                                <h4 class="text-[11px] font-black text-slate-900 uppercase tracking-tight">
+                                    Daily Report - ${new Date(report.report_date).toLocaleDateString()}
+                                </h4>
+                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-tighter">
+                                    Author: ${escapeHtml(report.first_name || '')} ${escapeHtml(report.second_name || '')}
+                                </p>
+                            </div>
+                            <div class="flex items-center">
+                                ${statusBadge}
+                                ${urgentBadge}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 divide-x divide-slate-200 border-b border-slate-100">
+                            <div class="p-3 text-center">
+                                <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Installations</p>
+                                <p class="text-sm font-black text-slate-900">${report.ops_installs || 0}</p>
+                            </div>
+                            <div class="p-3 text-center">
+                                <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Pending Jobs</p>
+                                <p class="text-sm font-black text-slate-900">${report.ops_pending || 0}</p>
+                            </div>
+                            <div class="p-3 text-center bg-slate-50/50">
+                                <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Record Time</p>
+                                <p class="text-[10px] font-black text-slate-700">
+                                    ${new Date(report.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="px-3 py-2 flex justify-between items-center bg-white">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                System ID: #${report.id}
+                            </span>
+                            <span class="text-[10px] font-black text-slate-900 uppercase flex items-center gap-1 group">
+                                Open Full Report <i class="fas fa-chevron-right text-[8px] transition-transform group-hover:translate-x-1"></i>
+                            </span>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // REPORT DETAIL VIEW
+        function viewGeneralReport(reportId) {
+            const report = allGeneralReports.find(r => r.id === reportId);
+            if (!report) return;
+
+            const detailView = document.getElementById('reportDetailView');
+            const defaultState = document.getElementById('defaultState');
+            const formContainer = document.getElementById('reportFormContainer');
+
+            // Hide other views
+            defaultState.classList.add('hidden');
+            formContainer.classList.add('hidden');
+            detailView.classList.remove('hidden');
+
+            // Sharp, high-contrast badges
+            const urgentBadge = report.is_urgent 
+                ? '<span class="px-3 py-1 border border-rose-600 bg-rose-600 text-white text-[10px] font-black uppercase tracking-tighter"><i class="fas fa-exclamation-triangle mr-2"></i>Urgent Review Required</span>'
+                : '';
+
+            const statusBadge = report.status === 'submitted'
+                ? '<span class="px-3 py-1 border border-emerald-600 text-emerald-600 text-[10px] font-black uppercase tracking-tighter"><i class="fas fa-check-circle mr-2"></i>Submitted</span>'
+                : '<span class="px-3 py-1 border border-slate-400 text-slate-500 text-[10px] font-black uppercase tracking-tighter"><i class="fas fa-edit mr-2"></i>Draft Mode</span>';
+
+            detailView.innerHTML = `
+                <div class="max-w-4xl mx-auto bg-white border border-slate-300 shadow-sm p-6 md:p-8">
+                    <div class="mb-8 pb-6 border-b-2 border-slate-900">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight mb-1">Daily General Report</h2>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                                    Official Internal Record • ${new Date(report.report_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                </p>
+                            </div>
+                            <button onclick="closeDetailView()" class="p-2 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all">
+                                <i class="fas fa-times text-slate-900 text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            ${statusBadge}
+                            ${urgentBadge}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 divide-x divide-slate-200 border border-slate-200 mb-8">
+                        <div class="p-5 text-center">
+                            <p class="text-[10px] text-slate-400 font-black uppercase mb-1">Installations</p>
+                            <p class="text-4xl font-black text-slate-900">${report.ops_installs || 0}</p>
+                        </div>
+                        <div class="p-5 text-center">
+                            <p class="text-[10px] text-slate-400 font-black uppercase mb-1">Pending Jobs</p>
+                            <p class="text-4xl font-black text-slate-900">${report.ops_pending || 0}</p>
+                        </div>
+                        <div class="p-5 bg-slate-50">
+                            <p class="text-[10px] text-slate-400 font-black uppercase mb-1 text-center">Reporting Officer</p>
+                            <p class="text-xs font-black text-slate-900 text-center uppercase">${escapeHtml(report.first_name || '')} ${escapeHtml(report.second_name || '')}</p>
+                            <p class="text-[9px] text-slate-500 font-bold uppercase text-center tracking-tighter">${escapeHtml(report.position || 'Supervisor')}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-8">
+                        ${report.ops_summary ? `
+                        <div class="border-l-4 border-slate-900 pl-6 py-2">
+                            <h3 class="text-xs font-black text-slate-900 uppercase mb-3 flex items-center gap-2 tracking-widest">
+                                <i class="fas fa-network-wired text-[10px]"></i> 01. Operations & Logistics
+                            </h3>
+                            <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">${escapeHtml(report.ops_summary)}</p>
+                        </div>
+                        ` : ''}
+
+                        ${report.staff_summary ? `
+                        <div class="border-l-4 border-slate-900 pl-6 py-2">
+                            <h3 class="text-xs font-black text-slate-900 uppercase mb-3 flex items-center gap-2 tracking-widest">
+                                <i class="fas fa-users text-[10px]"></i> 02. Staff & Personnel
+                            </h3>
+                            <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">${escapeHtml(report.staff_summary)}</p>
+                        </div>
+                        ` : ''}
+
+                        ${report.support_summary ? `
+                        <div class="border-l-4 border-slate-900 pl-6 py-2">
+                            <h3 class="text-xs font-black text-slate-900 uppercase mb-3 flex items-center gap-2 tracking-widest">
+                                <i class="fas fa-headset text-[10px]"></i> 03. Support & Client Feedback
+                            </h3>
+                            <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">${escapeHtml(report.support_summary)}</p>
+                        </div>
+                        ` : ''}
+
+                        ${report.conclusion ? `
+                        <div class="bg-slate-900 p-6">
+                            <h3 class="text-xs font-black text-white uppercase mb-3 flex items-center gap-2 tracking-widest">
+                                <i class="fas fa-clipboard-check text-[10px]"></i> 04. Conclusion & Action Items
+                            </h3>
+                            <p class="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap font-medium">${escapeHtml(report.conclusion)}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="mt-12 pt-6 border-t border-slate-200 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span>System Log Entry: ${report.id}</span>
+                        <div class="text-right">
+                            <div>Generated: ${new Date(report.created_at).toLocaleString()}</div>
+                            ${report.updated_at !== report.created_at ? `<div class="text-slate-500">Last Modified: ${new Date(report.updated_at).toLocaleString()}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeDetailView() {
+            document.getElementById('reportDetailView').classList.add('hidden');
+            document.getElementById('defaultState').classList.remove('hidden');
+        }
+
+        // WORKSPACE TOGGLE LOGIC
+        function toggleReportForm() {
+            const defaultState = document.getElementById('defaultState');
+            const formContainer = document.getElementById('reportFormContainer');
+            const detailView = document.getElementById('reportDetailView');
+            const generateBtn = document.getElementById('generateReportBtn');
+            
+            isFormVisible = !isFormVisible;
+            
+            if (isFormVisible) {
+                defaultState.classList.add('hidden');
+                detailView.classList.add('hidden');
+                formContainer.classList.remove('hidden');
+                generateBtn.innerHTML = '<i class="fas fa-times mr-2"></i>Close Workspace';
+                generateBtn.classList.replace('bg-teal-600', 'bg-slate-600');
+            } else {
+                defaultState.classList.remove('hidden');
+                formContainer.classList.add('hidden');
+                detailView.classList.add('hidden');
+                generateBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Generate Report';
+                generateBtn.classList.replace('bg-slate-600', 'bg-teal-600');
+            }
+        }
+
+        // COMPOSER TOOLS
+        function copyToForm(text, dept) {
+            if (!isFormVisible) toggleReportForm();
+            
+            // Auto-select textarea based on staff department
+            let targetId = 'ops_summary';
+            if (dept === 'support') targetId = 'support_summary';
+            
+            const target = document.getElementById(targetId);
+            const separator = target.value ? "\n\n" : "";
+            target.value += `${separator}[Staff Entry]: ${text}`;
+            
+            showToast(`Added to ${dept} section`, 'success');
+            target.focus();
+        }
+
+        // PERSISTENCE
+        async function submitGeneralReport(status) {
+            const today = formatDate(new Date());
+            
+            const payload = {
+                report_date: today,
+                status: status,
+                ops_summary: document.getElementById('ops_summary').value,
+                ops_installs: parseInt(document.getElementById('ops_installs').value) || 0,
+                ops_pending: parseInt(document.getElementById('ops_pending').value) || 0,
+                staff_summary: document.getElementById('staff_summary').value,
+                support_summary: document.getElementById('support_summary').value,
+                is_urgent: document.getElementById('is_urgent').checked ? 1 : 0,
+                conclusion: document.getElementById('conclusion').value
+            };
+
+            try {
+                const response = await fetch('/api/reports/general', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(status === 'draft' ? "Draft Saved" : "Report Submitted", 'success');
+                    // Refresh general reports
+                    await fetchGeneralReports();
+                    // Switch to general tab to see the new report
+                    if (status === 'submitted') {
+                        switchTab('general');
+                        toggleReportForm();
+                    }
+                } else {
+                    showToast("Error saving report", 'error');
+                }
+            } catch (error) {
+                console.error("Submit error:", error);
+                showToast("Error saving report", 'error');
+            }
+        }
+
+        // HELPERS
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeForJS(str) {
+            return (str || '')
+                .replace(/\\/g, '\\\\')
+                .replace(/`/g, '\\`')
+                .replace(/\$/g, '\\$')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r');
+        }
+
+        function showToast(msg, type = 'error') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
+            
+            toast.className = `toast ${bgColor} text-white p-4 rounded-xl shadow-lg flex flex-col mb-2`;
+            toast.innerHTML = `<span class="text-xs font-bold">${escapeHtml(msg)}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>

@@ -10,7 +10,7 @@ const toSqlDatetime = (date) => {
 const SmsLogsModel = {
 
   /**
-   * Check if a specific message type can be sent (24hr rate limit)
+   * Check if a specific message type can be sent (48hr rate limit)
    * Returns true if allowed, false if blocked
    */
   async canSendMessageType(subscriptionId, messageType) {
@@ -19,7 +19,7 @@ const SmsLogsModel = {
       FROM sms_logs 
       WHERE subscription_id = ? 
       AND message_type = ?
-      AND sent_at >= NOW() - INTERVAL 24 HOUR
+      AND sent_at >= NOW() - INTERVAL 48 HOUR
     `;
     
     const [rows] = await db.execute(sql, [subscriptionId, messageType]);
@@ -35,7 +35,7 @@ const SmsLogsModel = {
       FROM sms_logs 
       WHERE subscription_id = ? 
       AND message_type = ?
-      AND sent_at >= NOW() - INTERVAL 24 HOUR
+      AND sent_at >= NOW() - INTERVAL 48 HOUR
       ORDER BY sent_at DESC 
       LIMIT 1
     `;
@@ -47,7 +47,7 @@ const SmsLogsModel = {
     }
     
     const lastSent = new Date(rows[0].sent_at);
-    const nextAllowed = new Date(lastSent.getTime() + 24 * 60 * 60 * 1000);
+    const nextAllowed = new Date(lastSent.getTime() + 48 * 60 * 60 * 1000);
     const hoursRemaining = Math.ceil((nextAllowed - new Date()) / (1000 * 60 * 60));
     
     return { nextAllowed, hoursRemaining };
