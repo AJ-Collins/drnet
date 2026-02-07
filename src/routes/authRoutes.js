@@ -187,6 +187,7 @@ router.post("/register", async (req, res) => {
 });
 
 // Unified Login
+// Unified Login
 router.post("/login", async (req, res) => {
   let connection;
   
@@ -220,7 +221,7 @@ router.post("/login", async (req, res) => {
     let user = null;
     let userType = null;
 
-    // Check users table
+    // Check users table (clients)
     const [userRows] = await connection.query(
       "SELECT * FROM users WHERE email = ? OR phone = ? OR id_number = ? LIMIT 1",
       [cleanIdentifier, cleanIdentifier, cleanIdentifier]
@@ -280,40 +281,50 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Get role information
-    const [roleRows] = await connection.query(
-      "SELECT name FROM roles WHERE id = ? LIMIT 1",
-      [user.role_id]
-    );
+    let role_name = null;
+    let redirectUrl = null;
 
-    const role_name = roleRows.length > 0 ? roleRows[0].name.toLowerCase() : null;
+    // HANDLE USERS (CLIENTS) - No role checking needed
+    if (userType === "user") {
+      role_name = "client";
+      redirectUrl = "/client/dashboard";
+    } 
+    // HANDLE STAFF - Role-based routing
+    else if (userType === "staff") {
+      // Get role information for staff
+      const [roleRows] = await connection.query(
+        "SELECT name FROM roles WHERE id = ? LIMIT 1",
+        [user.role_id]
+      );
 
-    if (!role_name) {
-      console.error("Role not found for user:", user.id);
-      return res.status(500).json({
-        success: false,
-        error: "Account configuration error. Please contact support.",
-      });
-    }
+      if (roleRows.length === 0) {
+        console.error("Role not found for staff:", user.id, "with role_id:", user.role_id);
+        return res.status(500).json({
+          success: false,
+          error: "Account configuration error. Please contact support.",
+        });
+      }
 
-    // Determine redirect URL
-    const roleRoutes = {
-      1: "/admin/dashboard",
-      2: "/supervisor/dashboard",
-      3: "/staff/dashboard",
-      4: "/client/dashboard",
-      5: "/customer-care/dashboard",
-      6: "/hr-assistant/dashboard",
-    };
+      role_name = roleRows[0].name.toLowerCase();
 
-    const redirectUrl = roleRoutes[user.role_id];
+      // Determine redirect URL for staff based on role
+      const roleRoutes = {
+        1: "/admin/dashboard",
+        2: "/supervisor/dashboard",
+        3: "/staff/dashboard",
+        5: "/customer-care/dashboard",
+        6: "/hr-assistant/dashboard",
+      };
 
-    if (!redirectUrl) {
-      console.error("Unknown role_id:", user.role_id);
-      return res.status(403).json({
-        success: false,
-        error: `Account role is not configured. Please contact support.`,
-      });
+      redirectUrl = roleRoutes[user.role_id];
+
+      if (!redirectUrl) {
+        console.error("Unknown role_id for staff:", user.role_id);
+        return res.status(403).json({
+          success: false,
+          error: `Account role is not configured. Please contact support.`,
+        });
+      }
     }
 
     // Create session
@@ -330,7 +341,7 @@ router.post("/login", async (req, res) => {
       req.session.user = {
         id: user.id,
         email: user.email || null,
-        role_id: user.role_id,
+        role_id: user.role_id || null,
         role_name: role_name,
         phone: user.phone || null,
         id_number: user.id_number || null,
@@ -355,7 +366,7 @@ router.post("/login", async (req, res) => {
         // Record successful login
         recordLoginAttempt(cleanIdentifier, true);
 
-        console.log(`User logged in: ${user.email || user.phone} (${role_name})`);
+        console.log(`User logged in: ${user.email || user.phone} (${role_name}) as ${userType}`);
 
         return res.json({
           success: true,
