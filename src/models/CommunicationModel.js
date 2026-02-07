@@ -338,6 +338,26 @@ class CommunicationModel {
     `, [channelId]);
     return users;
   }
+
+  static async deleteConversation(userId, userType, otherUserId, otherUserType) {
+    // Soft delete all messages in this conversation
+    await db.query(`
+      UPDATE messages 
+      SET is_deleted = TRUE 
+      WHERE is_deleted = FALSE 
+        AND message_type = 'direct'
+        AND (
+          (sender_id = ? AND sender_type = ? AND recipient_id = ? AND recipient_type = ?)
+          OR
+          (sender_id = ? AND sender_type = ? AND recipient_id = ? AND recipient_type = ?)
+        )
+    `, [
+      userId, userType, otherUserId, otherUserType,
+      otherUserId, otherUserType, userId, userType
+    ]);
+    
+    return true;
+  }
 }
 
 module.exports = CommunicationModel;

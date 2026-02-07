@@ -48,6 +48,10 @@ router.post("/channels", async (req, res) => {
 // Delete channel (admin only)
 router.delete("/channels/:id", async (req, res) => {
   try {
+    if (req.session.user.role_name.toLowerCase() !== 'admin') {
+      return res.status(403).json({ success: false, message: "Only admins can delete channels" });
+    }
+
     await CommunicationModel.deleteChannel(req.params.id);
     
     const io = req.app.get('socketio');
@@ -292,6 +296,10 @@ router.post("/announcements", async (req, res) => {
 // Delete announcement
 router.delete("/announcements/:id", async (req, res) => {
   try {
+    if (req.session.user.role_name.toLowerCase() !== 'admin') {
+      return res.status(403).json({ success: false, message: "Only admins can delete announcements" });
+    }
+    
     await CommunicationModel.deleteAnnouncement(req.params.id);
     
     const io = req.app.get('socketio');
@@ -352,6 +360,36 @@ router.post("/typing", async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error("Error updating typing status:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Delete entire DM conversation (admin only)
+router.delete("/conversations/:otherUserId/:otherUserType", async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const userType = req.session.user.role_name === 'admin' ? 'admin' : 'staff';
+    const { otherUserId, otherUserType } = req.params;
+
+    // Check if user is admin
+    if (req.session.user.role_name.toLowerCase() !== 'admin') {
+      return res.status(403).json({ success: false, message: "Only admins can delete conversations" });
+    }
+
+    await CommunicationModel.deleteConversation(
+      userId, userType,
+      parseInt(otherUserId), otherUserType
+    );
+    
+    const io = req.app.get('socketio');
+    io.emit('conversationDeleted', { 
+      userId: parseInt(otherUserId), 
+      userType: otherUserType 
+    });
+
+    res.json({ success: true, message: "Conversation deleted" });
+  } catch (error) {
+    console.error("Error deleting conversation:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
