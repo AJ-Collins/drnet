@@ -181,6 +181,45 @@
                             </div>
                         </div>
 
+                        <!-- Commission Type Checkboxes -->
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-check-square text-teal-500"></i> Onboard Type *
+                            </h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-slate-200 cursor-pointer hover:border-teal-300 transition" id="withRouterLabel">
+                                    <input 
+                                        type="checkbox" 
+                                        id="withRouter" 
+                                        class="w-5 h-5 text-teal-600 rounded focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                                        onchange="validateCommissionType()"
+                                    >
+                                    <div class="flex-1">
+                                        <span class="text-sm font-bold text-slate-700">Full Installation</span>
+                                        <p class="text-xs text-slate-500 mt-0.5">Package & Router</p>
+                                    </div>
+                                    <i class="fas fa-wifi text-teal-500"></i>
+                                </label>
+                                
+                                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-slate-200 cursor-pointer hover:border-teal-300 transition" id="packageOnlyLabel">
+                                    <input 
+                                        type="checkbox" 
+                                        id="packageOnly" 
+                                        class="w-5 h-5 text-teal-600 rounded focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                                        onchange="validateCommissionType()"
+                                    >
+                                    <div class="flex-1">
+                                        <span class="text-sm font-bold text-slate-700">Partial Installation</span>
+                                        <p class="text-xs text-slate-500 mt-0.5">Package Only</p>
+                                    </div>
+                                    <i class="fas fa-box text-teal-500"></i>
+                                </label>
+                            </div>
+                            <p class="text-xs text-rose-600 mt-2 font-medium hidden" id="commissionTypeError">
+                                <i class="fas fa-exclamation-circle mr-1"></i> Please select at least one commission type
+                            </p>
+                        </div>
+
                         <!-- Package Selection -->
                         <div>
                             <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -322,6 +361,7 @@
                             <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Package</th>
                             <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
                             <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Date</th>
+                            <th class="text-left px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Onboard Type</th>
                             <th class="text-right px-6 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">Commission</th>
                         </tr>
                     </thead>
@@ -399,6 +439,19 @@
                                     <span class="text-xs font-medium text-slate-500">${timeAgo}</span>
                                 </td>
                                 <td class="px-6 py-4">
+                                    <span class="text-sm text-slate-60">
+                                        ${
+                                        acq.with_router == 1 && acq.package_only == 1
+                                            ? 'Full Installation'
+                                            : acq.with_router == 1
+                                            ? 'Full Installation'
+                                            : acq.package_only == 1
+                                            ? 'Partial Installation'
+                                            : '-'
+                                        }
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
                                     <div class="flex flex-col items-end">
                                         <span class="text-sm font-black ${acq.commission_status === 'paid' ? 'text-emerald-600' : 'text-slate-700'}">
                                             KES ${parseFloat(acq.commission_amount || 0).toLocaleString()}
@@ -430,6 +483,27 @@
             renderAcquisitions(filtered);
         }
 
+        // Validate Commission Type - at least one must be selected
+        function validateCommissionType() {
+            const withRouter = document.getElementById('withRouter').checked;
+            const packageOnly = document.getElementById('packageOnly').checked;
+            const errorMsg = document.getElementById('commissionTypeError');
+            const withRouterLabel = document.getElementById('withRouterLabel');
+            const packageOnlyLabel = document.getElementById('packageOnlyLabel');
+            
+            if (!withRouter && !packageOnly) {
+                errorMsg.classList.remove('hidden');
+                withRouterLabel.classList.add('border-rose-300');
+                packageOnlyLabel.classList.add('border-rose-300');
+                return false;
+            } else {
+                errorMsg.classList.add('hidden');
+                withRouterLabel.classList.remove('border-rose-300');
+                packageOnlyLabel.classList.remove('border-rose-300');
+                return true;
+            }
+        }
+
         // HANDLE FORM SUBMISSION
         async function handleOnboard(e) {
             e.preventDefault();
@@ -447,12 +521,20 @@
                 phone: document.getElementById('phone').value.trim(),
                 email: document.getElementById('email').value.trim(),
                 location: document.getElementById('location').value.trim(),
-                package_id: packageSelect.value
+                package_id: packageSelect.value,
+                with_router: document.getElementById('withRouter').checked,
+                package_only: document.getElementById('packageOnly').checked
             };
 
             // Validation
             if (!formData.package_id) {
                 showToast('Please select a package', 'error');
+                return;
+            }
+
+            // Validate commission type
+            if (!validateCommissionType()) {
+                showToast('Please select at least one commission type', 'error');
                 return;
             }
 

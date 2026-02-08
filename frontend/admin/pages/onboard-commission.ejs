@@ -188,6 +188,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Contact</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Location</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Package</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Type</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Onboarded By</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Date</th>
@@ -196,7 +197,7 @@
                         </thead>
                         <tbody id="clientsTableBody" class="divide-y divide-slate-100">
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                                <td colspan="9" class="px-6 py-12 text-center text-slate-400">
                                     <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
                                     <p class="text-sm font-semibold">Loading clients...</p>
                                 </td>
@@ -373,7 +374,7 @@
                 </div>
             </aside>
 
-            <!-- RIGHT SIDE PANEL - COMMISSION FORM -->
+            <!-- COMMISSION FORM -->
             <aside id="commissionFormContainer" class="hidden w-full lg:w-1/3 bg-slate-50 border-l border-slate-200 flex flex-col overflow-hidden">
                 <div class="p-4 bg-emerald-700 text-white flex justify-between items-center flex-shrink-0">
                     <div>
@@ -395,6 +396,7 @@
                             <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
                                 <i class="fas fa-user text-indigo-600 text-xl"></i>
                             </div>
+
                             <div class="flex-1">
                                 <p class="text-sm font-black text-slate-800" id="commClientName">-</p>
                                 <p class="text-xs text-slate-500 mt-1">
@@ -405,6 +407,13 @@
                                     <i class="fas fa-user-tie mr-1"></i>
                                     Onboarded By: <span class="font-bold" id="commStaffName">-</span>
                                 </p>
+                            </div>
+
+                            <div class="text-right px-4 border-l border-slate-100">
+                                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Onboard Type</p>
+                                <div id="commOnboardType" class="text-xs font-bold py-1 px-3 rounded-full bg-slate-100 text-slate-600 inline-block">
+                                    -
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -550,9 +559,19 @@
         };
 
         // Initialize
-        window.onload = () => {
-            loadPackages();
-            switchTab('clients', null); 
+        window.onload = async () => {
+            try {
+                await Promise.all([
+                    loadPackages(),
+                    loadCommissions(),
+                    loadStaffEarnings()
+                ]);
+                
+                await switchTab('clients', null);
+            } catch (error) {
+                console.error('Error during initialization:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
         };
 
         // Tab Switching
@@ -633,9 +652,88 @@
             document.getElementById('commissionClientId').value = client.id;
             document.getElementById('commissionAmount').value = '';
             
+            const typeBadge = document.getElementById('commOnboardType');
+
+            if (client.with_router === 1) {
+                typeBadge.textContent = "Full Installation";
+                typeBadge.className = "text-xs font-bold py-1 px-3 rounded-full bg-green-100 text-green-700 inline-block";
+            } else if (client.package_only === 1) {
+                typeBadge.textContent = "Partial Installation";
+                typeBadge.className = "text-xs font-bold py-1 px-3 rounded-full bg-emerald-100 text-emerald-700 inline-block";
+            } else {
+                typeBadge.textContent = "Full Installation";
+                typeBadge.className = "text-xs font-bold py-1 px-3 rounded-full bg-slate-100 text-slate-600 inline-block";
+            }
+            
             const formContainer = document.getElementById('commissionFormContainer');
             formContainer.classList.remove('hidden');
             formContainer.classList.add('flex');
+        }
+
+        // Open Commission Form for Editing
+        async function openCommissionFormEdit(commissionId) {
+            const commission = allCommissions.find(c => c.id === commissionId);
+            if (!commission) {
+                showToast('Commission not found', 'error');
+                return;
+            }
+            
+            await switchTab('clients', null);
+
+            // Create a client object from commission data
+            const client = {
+                id: commission.onboard_id,
+                first_name: commission.client_fname,
+                second_name: commission.client_sname,
+                email: commission.client_email || 'No email',
+                staff_first_name: commission.staff_fname,
+                staff_second_name: commission.staff_sname
+            };
+            
+            // Populate the form
+            closeClientForm();
+            selectedClientForCommission = client;
+            
+            document.getElementById('commClientName').textContent = `${client.first_name} ${client.second_name}`;
+            document.getElementById('commClientEmail').textContent = client.email;
+            document.getElementById('commStaffName').textContent = `${client.staff_first_name} ${client.staff_second_name}`;
+            document.getElementById('commissionClientId').value = commissionId; // Store commission ID instead
+            document.getElementById('commissionAmount').value = commission.amount;
+            
+            // Mark as edit mode
+            document.getElementById('awardCommissionForm').dataset.editMode = 'true';
+            document.getElementById('awardCommissionForm').dataset.commissionId = commissionId;
+            document.getElementById('awardCommissionBtn').innerHTML = '<i class="fas fa-edit text-lg"></i><span>Update Commission</span>';
+            
+            const formContainer = document.getElementById('commissionFormContainer');
+            formContainer.classList.remove('hidden');
+            formContainer.classList.add('flex');
+        }
+
+        // Delete Commission
+        async function deleteCommission(commissionId) {
+            if (!confirm('Are you sure you want to delete this commission? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/onboard/commissions/${commissionId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    showToast('Commission deleted successfully', 'success');
+                    loadCommissions();
+                    if (loadedTabs.staff) {
+                        loadStaffEarnings();
+                    }
+                } else {
+                    throw new Error('Failed to delete commission');
+                }
+            } catch (error) {
+                console.error('Error deleting commission:', error);
+                showToast('Failed to delete commission', 'error');
+            }
         }
 
         // Close Commission Form
@@ -649,7 +747,14 @@
                 selectedClientRow = null;
             }
             
-            document.getElementById('awardCommissionForm').reset();
+            const form = document.getElementById('awardCommissionForm');
+            form.reset();
+            form.dataset.editMode = 'false';
+            form.dataset.commissionId = '';
+            
+            // Reset button text
+            document.getElementById('awardCommissionBtn').innerHTML = '<i class="fas fa-check-circle text-lg"></i><span>Award Commission</span>';
+            
             selectedClientForCommission = null;
         }
 
@@ -659,6 +764,9 @@
             
             const btn = document.getElementById('awardCommissionBtn');
             const originalContent = btn.innerHTML;
+            const form = document.getElementById('awardCommissionForm');
+            const isEditMode = form.dataset.editMode === 'true';
+            const commissionId = form.dataset.commissionId;
             
             const onboard_id = document.getElementById('commissionClientId').value;
             const amount = document.getElementById('commissionAmount').value;
@@ -669,19 +777,32 @@
             }
             
             btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> <span>Awarding...</span>`;
+            btn.innerHTML = `<span class="spinner"></span> <span>${isEditMode ? 'Updating...' : 'Awarding...'}</span>`;
             
             try {
-                const res = await fetch('/api/onboard/commissions/award', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ onboard_id, amount })
-                });
+                let res, result;
                 
-                const result = await res.json();
+                if (isEditMode) {
+                    res = await fetch(`/api/onboard/commissions/${commissionId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount })
+                    });
+                } else {
+                    // Award new commission
+                    res = await fetch('/api/onboard/commissions/award', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ onboard_id, amount })
+                    });
+                }
+                
+                result = await res.json();
                 
                 if (res.ok) {
-                    showToast(`Commission of KES ${parseFloat(amount).toLocaleString()} awarded successfully!`, 'success');
+                    const action = isEditMode ? 'updated' : 'awarded';
+                    await switchTab('commissions', null);
+                    showToast(`Commission of KES ${parseFloat(amount).toLocaleString()} ${action} successfully!`, 'success');
                     closeCommissionForm();
                     
                     if (loadedTabs.commissions) {
@@ -691,11 +812,11 @@
                         loadStaffEarnings();
                     }
                 } else {
-                    showToast(result.message || 'Failed to award commission', 'error');
+                    showToast(result.message || `Failed to ${isEditMode ? 'update' : 'award'} commission`, 'error');
                 }
             } catch (err) {
-                console.error('Award commission error:', err);
-                showToast('Error awarding commission. Please try again.', 'error');
+                console.error('Commission operation error:', err);
+                showToast(`Error ${isEditMode ? 'updating' : 'awarding'} commission. Please try again.`, 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalContent;
@@ -761,7 +882,7 @@
             if (clients.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                        <td colspan="9" class="px-6 py-12 text-center text-slate-400">
                             <i class="fas fa-users text-3xl mb-2"></i>
                             <p class="text-sm font-semibold">No clients found</p>
                         </td>
@@ -804,6 +925,19 @@
                             <div class="flex items-center gap-2 text-sm text-slate-600">
                                 <i class="fas fa-wifi text-xs text-slate-400"></i>
                                 ${packageName}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1">
+                                ${
+                                client.with_router == 1 && client.package_only == 1
+                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-bold"><i class="fas fa-exclamation-triangle"></i> Full Installation</span>'
+                                    : client.with_router == 1
+                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold"><i class="fas fa-tools"></i> Full Installation</span>'
+                                    : client.package_only == 1
+                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold"><i class="fas fa-box-open"></i> Partial Installation</span>'
+                                    : '<span class="text-xs text-slate-400">-</span>'
+                                }
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -1077,13 +1211,21 @@
                             <span class="text-xs font-medium text-slate-500">${formatDate(comm.awarded_at)}</span>
                         </td>
                         <td class="px-6 py-4">
-                            ${comm.status === 'unpaid' ? `
-                                <button onclick="markAsPaid(${comm.id})" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition">
-                                    <i class="fas fa-check mr-1"></i>Mark Paid
-                                </button>
-                            ` : `
-                                <span class="text-xs text-slate-400"><i class="fas fa-check-circle mr-1"></i>Paid</span>
-                            `}
+                            <div class="flex gap-2">
+                                ${comm.status === 'unpaid' ? `
+                                    <button onclick="openCommissionFormEdit(${comm.id})" class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200 transition">
+                                        <i class="fas fa-edit mr-1"></i>Edit
+                                    </button>
+                                    <button onclick="markAsPaid(${comm.id})" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition">
+                                        <i class="fas fa-check mr-1"></i>Mark Paid
+                                    </button>
+                                    <button onclick="deleteCommission(${comm.id})" class="text-slate-400 hover:text-rose-600 transition" title="Delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                ` : `
+                                    <span class="text-xs text-slate-400"><i class="fas fa-check-circle mr-1"></i>Paid</span>
+                                `}
+                            </div>
                         </td>
                     </tr>
                 `;

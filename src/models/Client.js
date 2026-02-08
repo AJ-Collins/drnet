@@ -5,8 +5,8 @@ const Client = {
 
     checkExisting: async (details, excludeId = null) => {
         const { email, phone, id_number } = details;
-        let query = "SELECT email, phone, id_number FROM users WHERE (email = ? OR phone = ? OR id_number = ?)";
-        let params = [email, phone, id_number];
+        let query = "SELECT email, id_number FROM users WHERE (email = ? OR id_number = ?)";
+        let params = [email, id_number];
 
         if (excludeId) {
             query += " AND id != ?";
@@ -16,7 +16,7 @@ const Client = {
         const [rows] = await db.query(query, params);
         if (rows.length > 0) {
             if (rows[0].email === email) return "Email address already exists.";
-            if (rows[0].phone === phone) return "Phone number already exists.";
+            if (rows[0].phone === phone) {console.warn("Duplicate phone number detected:", phone);}
             if (rows[0].id_number === id_number) return "ID / Passport number already exists.";
         }
         return null;

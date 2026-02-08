@@ -191,4 +191,41 @@ router.post("/commissions/award", async (req, res) => {
   }
 });
 
+// update commission
+router.patch("/commissions/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount } = req.body;
+
+    const result = await Client.updateCommission(id, { amount });
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Commission not found" });
+    }
+
+    res.json({ message: "Commission updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// delete commission
+router.delete("/commissions/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await Client.deleteCommission(id);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Commission not found" });
+    }
+
+    res.json({ message: "Commission deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 module.exports = router;

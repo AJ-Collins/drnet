@@ -3,9 +3,9 @@ const db = require("../config/db");
 const ClientsOnboard = {
   // Create
   create: async (data, staffId) => {
-    const { email, first_name, second_name, phone, location, package_id } = data;
-    const sql = `INSERT INTO client_onboard (email, first_name, second_name, phone, location, package_id, staff_id) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const [result] = await db.execute(sql, [email, first_name, second_name, phone, location, package_id, staffId]);
+    const { email, first_name, second_name, phone, location, package_id, with_router, package_only } = data;
+    const sql = `INSERT INTO client_onboard (email, first_name, second_name, phone, location, package_id, staff_id, with_router, package_only) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const [result] = await db.execute(sql, [email, first_name, second_name, phone, location, package_id, staffId, with_router, package_only]);
     return result;
   },
 
@@ -120,6 +120,20 @@ const ClientsOnboard = {
       WHERE c.id = ?`;
     const [rows] = await db.query(sql, [id]);
     return rows[0];
+  },
+
+  // Update a commission (Amount & Status)
+  updateCommission: async (id, data) => {
+    const { amount } = data;
+    const sql = `UPDATE onboard_commissions SET amount = ?, status = 'unpaid' WHERE id = ?`;
+    const [result] = await db.execute(sql, [amount, id]);
+    return result;
+  },
+
+  // Delete a specific commission
+  deleteCommission: async (id) => {
+    const [result] = await db.query("DELETE FROM onboard_commissions WHERE id = ?", [id]);
+    return result;
   },
 };
 
