@@ -692,10 +692,19 @@
             const selectedLocation = locationFilter ? locationFilter.value : '';
             
             filteredData = allData.filter(i => {
+                // Null checks
+                const firstName = i.first_name?.toLowerCase() || '';
+                const secondName = i.second_name?.toLowerCase() || '';
+                const email = i.email?.toLowerCase() || '';
+                const phone = i.phone?.toLowerCase() || '';
+                const idNumber = i.id_number?.toLowerCase() || '';
+
                 const matchesSearch = 
-                    i.first_name.toLowerCase().includes(term) || 
-                    i.second_name.toLowerCase().includes(term) ||
-                    i.email.toLowerCase().includes(term);
+                    firstName.includes(term) || 
+                    secondName.includes(term) ||
+                    email.includes(term) ||
+                    phone.includes(term) ||
+                    idNumber.includes(term);
                 
                 // Apply location filter only for clients
                 if (currentContext === 'clients' && selectedLocation) {
