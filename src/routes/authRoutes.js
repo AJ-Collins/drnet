@@ -316,35 +316,33 @@ router.post("/login", async (req, res) => {
     let user = null;
     let userType = null;
 
-
-    // Check users table (clients) - SQL injection safe with parameterized queries
-    const [userRows] = await connection.query(
-      `SELECT * FROM users 
+    const [staffRows] = await connection.query(
+      `SELECT * FROM staff 
        WHERE LOWER(TRIM(email)) = ? 
        OR REPLACE(TRIM(phone), ' ', '') = ? 
-       OR TRIM(id_number) = ? 
+       OR TRIM(employee_id) = ? 
        LIMIT 1`,
       [normalizedIdentifier, normalizedIdentifier, normalizedIdentifier]
     );
 
-    if (userRows.length > 0) {
-      user = userRows[0];
-      userType = "user";
+    if (staffRows.length > 0) {
+      user = staffRows[0];
+      userType = "staff";
     }
 
     if (!user) {
-      const [staffRows] = await connection.query(
-        `SELECT * FROM staff 
-         WHERE LOWER(TRIM(email)) = ? 
-         OR REPLACE(TRIM(phone), ' ', '') = ? 
-         OR TRIM(employee_id) = ? 
-         LIMIT 1`,
+      const [userRows] = await connection.query(
+        `SELECT * FROM users 
+        WHERE LOWER(TRIM(email)) = ? 
+        OR REPLACE(TRIM(phone), ' ', '') = ? 
+        OR TRIM(id_number) = ? 
+        LIMIT 1`,
         [normalizedIdentifier, normalizedIdentifier, normalizedIdentifier]
       );
 
-      if (staffRows.length > 0) {
-        user = staffRows[0];
-        userType = "staff";
+      if (userRows.length > 0) {
+        user = userRows[0];
+        userType = "user";
       }
     }
 
