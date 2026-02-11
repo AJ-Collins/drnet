@@ -429,7 +429,7 @@
             }
 
             tbody.innerHTML = filteredData.map(item => {
-                const fName = item.first_name ?? 'User';
+                const fName = item.first_name ?? '';
                 const sName = item.second_name ?? '';
                 const initials = (fName[0] || '?') + (sName[0] || '');
                 const position = currentContext === 'staff' 
