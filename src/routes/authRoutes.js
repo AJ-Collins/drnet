@@ -3,60 +3,147 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const db = require("../config/db");
 
-// Constants
+// Constants - More lenient rate limiting
 const SALT_ROUNDS = 12;
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+const MAX_LOGIN_ATTEMPTS = 20; // More attempts allowed
+const LOCKOUT_DURATION = 3 * 60 * 1000; // Only 3 minutes lockout
+const ATTEMPT_WINDOW = 30 * 60 * 1000; // Track attempts over 30 minutes
+const IP_MAX_ATTEMPTS = 50; // Per IP limit (prevents DDoS)
+const IP_LOCKOUT_DURATION = 10 * 60 * 1000; // 10 minutes for IP ban
 
-// Validation helpers
 const validators = {
-  email: (str) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str),
+  email: (str) => {
+    if (!str || typeof str !== 'string') return false;
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    return emailRegex.test(str.trim());
+  },
   phone: (str) => /^(\+)?[\d\s\-()]{10,}$/.test(str),
   password: (str) => str && str.length >= 8,
 };
 
-// Sanitize input
 const sanitizeInput = (input) => {
   if (typeof input !== "string") return "";
-  return input.trim().substring(0, 255); // Prevent excessively long inputs
+  return input.trim().substring(0, 255);
 };
 
-// Rate limiting helper (basic implementation)
-const loginAttempts = new Map();
+const loginAttempts = new Map(); // Per user/identifier
+const ipAttempts = new Map(); // Per IP address
 
-const checkRateLimit = (identifier) => {
+const getClientIP = (req) => {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    const ips = forwarded.split(',').map(ip => ip.trim());
+    return ips[0]; // First IP is the original client
+  }
+  
+  return req.headers['x-real-ip'] ||
+         req.connection.remoteAddress ||
+         req.socket.remoteAddress ||
+         req.connection.socket?.remoteAddress ||
+         'unknown';
+};
+
+const checkUserRateLimit = (identifier) => {
   const now = Date.now();
-  const attempts = loginAttempts.get(identifier) || { count: 0, firstAttempt: now };
+  const attempts = loginAttempts.get(identifier) || { count: 0, firstAttempt: now, lastAttempt: now };
 
-  if (now - attempts.firstAttempt > LOCKOUT_DURATION) {
+  if (now - attempts.firstAttempt > ATTEMPT_WINDOW) {
     loginAttempts.delete(identifier);
     return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS };
   }
 
+  // Check if currently locked out
   if (attempts.count >= MAX_LOGIN_ATTEMPTS) {
-    const timeLeft = Math.ceil((LOCKOUT_DURATION - (now - attempts.firstAttempt)) / 60000);
-    return { allowed: false, timeLeft };
+    const timeSinceLastAttempt = now - attempts.lastAttempt;
+    
+    // If lockout period has passed, reset
+    if (timeSinceLastAttempt > LOCKOUT_DURATION) {
+      loginAttempts.delete(identifier);
+      return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS };
+    }
+    
+    const timeLeft = Math.ceil((LOCKOUT_DURATION - timeSinceLastAttempt) / 60000);
+    return { allowed: false, timeLeft, attempts: attempts.count, reason: 'user' };
   }
 
   return { allowed: true, remaining: MAX_LOGIN_ATTEMPTS - attempts.count };
 };
 
-const recordLoginAttempt = (identifier, success) => {
+const checkIPRateLimit = (ip) => {
+  const now = Date.now();
+  const attempts = ipAttempts.get(ip) || { count: 0, firstAttempt: now, lastAttempt: now };
+
+  // Reset if outside the attempt window
+  if (now - attempts.firstAttempt > ATTEMPT_WINDOW) {
+    ipAttempts.delete(ip);
+    return { allowed: true, remaining: IP_MAX_ATTEMPTS };
+  }
+
+  if (attempts.count >= IP_MAX_ATTEMPTS) {
+    const timeSinceLastAttempt = now - attempts.lastAttempt;
+    
+    if (timeSinceLastAttempt > IP_LOCKOUT_DURATION) {
+      ipAttempts.delete(ip);
+      return { allowed: true, remaining: IP_MAX_ATTEMPTS };
+    }
+    
+    const timeLeft = Math.ceil((IP_LOCKOUT_DURATION - timeSinceLastAttempt) / 60000);
+    return { allowed: false, timeLeft, attempts: attempts.count, reason: 'ip' };
+  }
+
+  return { allowed: true, remaining: IP_MAX_ATTEMPTS - attempts.count };
+};
+
+// Record login attempt for user
+const recordUserAttempt = (identifier, success) => {
   if (success) {
     loginAttempts.delete(identifier);
     return;
   }
 
   const now = Date.now();
-  const attempts = loginAttempts.get(identifier) || { count: 0, firstAttempt: now };
+  const attempts = loginAttempts.get(identifier) || { count: 0, firstAttempt: now, lastAttempt: now };
   
   loginAttempts.set(identifier, {
     count: attempts.count + 1,
     firstAttempt: attempts.firstAttempt,
+    lastAttempt: now,
   });
 };
 
-console.log("Enhanced authRoutes loaded");
+const recordIPAttempt = (ip, success) => {
+  if (success) {
+    return;
+  }
+
+  const now = Date.now();
+  const attempts = ipAttempts.get(ip) || { count: 0, firstAttempt: now, lastAttempt: now };
+  
+  ipAttempts.set(ip, {
+    count: attempts.count + 1,
+    firstAttempt: attempts.firstAttempt,
+    lastAttempt: now,
+  });
+};
+
+setInterval(() => {
+  const now = Date.now();
+  
+  // Clean user attempts
+  for (const [key, value] of loginAttempts.entries()) {
+    if (now - value.lastAttempt > ATTEMPT_WINDOW) {
+      loginAttempts.delete(key);
+    }
+  }
+  
+  // Clean IP attempts
+  for (const [key, value] of ipAttempts.entries()) {
+    if (now - value.lastAttempt > ATTEMPT_WINDOW) {
+      ipAttempts.delete(key);
+    }
+  }
+}, 60000); // Clean up every minute
+
 
 // Client Registration
 router.post("/register", async (req, res) => {
@@ -75,7 +162,7 @@ router.post("/register", async (req, res) => {
 
     // Sanitize inputs
     const cleanIdentifier = sanitizeInput(identifier);
-    const cleanPassword = sanitizeInput(password);
+    const cleanPassword = password.trim();
 
     // Password strength validation
     if (!validators.password(cleanPassword)) {
@@ -106,10 +193,9 @@ router.post("/register", async (req, res) => {
     await connection.beginTransaction();
 
     try {
-      // Check if user exists
       const [existingUser] = await connection.query(
-        "SELECT id FROM users WHERE email = ? OR phone = ? OR id_number = ? LIMIT 1",
-        [email, phone, id_number]
+        "SELECT id FROM users WHERE LOWER(TRIM(email)) = ? OR phone = ? OR id_number = ? LIMIT 1",
+        [email ? email.toLowerCase() : null, phone, id_number]
       );
 
       if (existingUser.length > 0) {
@@ -139,7 +225,7 @@ router.post("/register", async (req, res) => {
 
       const clientRoleId = roleRows[0].id;
 
-      // Insert user
+      // Insert user - using parameterized query (SQL injection safe)
       const [insertResult] = await connection.query(
         `INSERT INTO users (email, phone, id_number, password, is_active, role_id, created_at) 
          VALUES (?, ?, ?, ?, ?, ?, NOW())`,
@@ -152,7 +238,6 @@ router.post("/register", async (req, res) => {
 
       await connection.commit();
 
-      console.log(`✅ New user registered: ${email || phone || id_number}`);
 
       return res.status(201).json({ 
         success: true, 
@@ -187,7 +272,6 @@ router.post("/register", async (req, res) => {
 });
 
 // Unified Login
-// Unified Login
 router.post("/login", async (req, res) => {
   let connection;
   
@@ -202,16 +286,27 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Sanitize inputs
-    const cleanIdentifier = sanitizeInput(identifier);
-    const cleanPassword = sanitizeInput(password);
+    const clientIP = getClientIP(req);
+    console.log(`🌐 Login attempt from IP: ${clientIP}`);
 
-    // Check rate limiting
-    const rateCheck = checkRateLimit(cleanIdentifier);
-    if (!rateCheck.allowed) {
+    const cleanIdentifier = sanitizeInput(identifier);
+    const normalizedIdentifier = cleanIdentifier.toLowerCase();
+    const cleanPassword = password.trim();
+
+    const ipRateCheck = checkIPRateLimit(clientIP);
+    if (!ipRateCheck.allowed) {
       return res.status(429).json({ 
         success: false, 
-        error: `Too many login attempts. Please try again in ${rateCheck.timeLeft} minutes.` 
+        error: `Too many requests from your network. Please try again in ${ipRateCheck.timeLeft} minute${ipRateCheck.timeLeft > 1 ? 's' : ''}.` 
+      });
+    }
+
+    // Check user-specific rate limiting (account protection)
+    const userRateCheck = checkUserRateLimit(normalizedIdentifier);
+    if (!userRateCheck.allowed) {
+      return res.status(429).json({ 
+        success: false, 
+        error: `Too many login attempts for this account. Please try again in ${userRateCheck.timeLeft} minute${userRateCheck.timeLeft > 1 ? 's' : ''}.` 
       });
     }
 
@@ -221,10 +316,15 @@ router.post("/login", async (req, res) => {
     let user = null;
     let userType = null;
 
-    // Check users table (clients)
+
+    // Check users table (clients) - SQL injection safe with parameterized queries
     const [userRows] = await connection.query(
-      "SELECT * FROM users WHERE email = ? OR phone = ? OR id_number = ? LIMIT 1",
-      [cleanIdentifier, cleanIdentifier, cleanIdentifier]
+      `SELECT * FROM users 
+       WHERE LOWER(TRIM(email)) = ? 
+       OR REPLACE(TRIM(phone), ' ', '') = ? 
+       OR TRIM(id_number) = ? 
+       LIMIT 1`,
+      [normalizedIdentifier, normalizedIdentifier, normalizedIdentifier]
     );
 
     if (userRows.length > 0) {
@@ -232,11 +332,14 @@ router.post("/login", async (req, res) => {
       userType = "user";
     }
 
-    // Check staff table if not found
     if (!user) {
       const [staffRows] = await connection.query(
-        "SELECT * FROM staff WHERE email = ? OR phone = ? OR employee_id = ? LIMIT 1",
-        [cleanIdentifier, cleanIdentifier, cleanIdentifier]
+        `SELECT * FROM staff 
+         WHERE LOWER(TRIM(email)) = ? 
+         OR REPLACE(TRIM(phone), ' ', '') = ? 
+         OR TRIM(employee_id) = ? 
+         LIMIT 1`,
+        [normalizedIdentifier, normalizedIdentifier, normalizedIdentifier]
       );
 
       if (staffRows.length > 0) {
@@ -247,7 +350,10 @@ router.post("/login", async (req, res) => {
 
     // User not found
     if (!user) {
-      recordLoginAttempt(cleanIdentifier, false);
+      recordUserAttempt(normalizedIdentifier, false);
+      recordIPAttempt(clientIP, false);
+      
+      // Generic error message to prevent user enumeration
       return res.status(401).json({ 
         success: false, 
         error: "Invalid credentials" 
@@ -262,11 +368,13 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Verify password
     const passwordMatch = await bcrypt.compare(cleanPassword, user.password);
     
     if (!passwordMatch) {
-      recordLoginAttempt(cleanIdentifier, false);
+      recordUserAttempt(normalizedIdentifier, false);
+      recordIPAttempt(clientIP, false);
+      
+      // Generic error message to prevent user enumeration
       return res.status(401).json({ 
         success: false, 
         error: "Invalid credentials" 
@@ -284,21 +392,18 @@ router.post("/login", async (req, res) => {
     let role_name = null;
     let redirectUrl = null;
 
-    // HANDLE USERS (CLIENTS) - No role checking needed
     if (userType === "user") {
       role_name = "client";
       redirectUrl = "/client/dashboard";
     } 
-    // HANDLE STAFF - Role-based routing
+
     else if (userType === "staff") {
-      // Get role information for staff
       const [roleRows] = await connection.query(
         "SELECT name FROM roles WHERE id = ? LIMIT 1",
         [user.role_id]
       );
 
       if (roleRows.length === 0) {
-        console.error("Role not found for staff:", user.id, "with role_id:", user.role_id);
         return res.status(500).json({
           success: false,
           error: "Account configuration error. Please contact support.",
@@ -319,7 +424,6 @@ router.post("/login", async (req, res) => {
       redirectUrl = roleRoutes[user.role_id];
 
       if (!redirectUrl) {
-        console.error("Unknown role_id for staff:", user.role_id);
         return res.status(403).json({
           success: false,
           error: `Account role is not configured. Please contact support.`,
@@ -330,7 +434,6 @@ router.post("/login", async (req, res) => {
     // Create session
     req.session.regenerate((err) => {
       if (err) {
-        console.error("Session regeneration error:", err);
         return res.status(500).json({
           success: false,
           error: "Unable to create session. Please try again.",
@@ -351,22 +454,23 @@ router.post("/login", async (req, res) => {
         first_name: user.first_name || "",
         second_name: user.second_name || "",
         loginTime: new Date().toISOString(),
+        loginIP: clientIP, // Track login IP
       };
 
       // Save session
       req.session.save((saveErr) => {
         if (saveErr) {
-          console.error("Session save error:", saveErr);
+          console.error("❌ Session save error:", saveErr);
           return res.status(500).json({
             success: false,
             error: "Session error. Please try again.",
           });
         }
 
-        // Record successful login
-        recordLoginAttempt(cleanIdentifier, true);
+        recordUserAttempt(normalizedIdentifier, true);
+        recordIPAttempt(clientIP, true);
 
-        console.log(`User logged in: ${user.email || user.phone} (${role_name}) as ${userType}`);
+        console.log(`LOGIN SUCCESS: ${user.email || user.phone} (${role_name}) from IP: ${clientIP}`);
 
         return res.json({
           success: true,
@@ -406,8 +510,6 @@ router.post("/logout", (req, res) => {
       });
     }
 
-    const userEmail = req.session.user?.email || "Unknown";
-
     req.session.destroy((err) => {
       if (err) {
         console.error("Logout error:", err);
@@ -423,7 +525,6 @@ router.post("/logout", (req, res) => {
         secure: process.env.NODE_ENV === "production",
       });
 
-      console.log(`✅ User logged out: ${userEmail}`);
 
       return res.json({ 
         success: true, 
@@ -439,7 +540,7 @@ router.post("/logout", (req, res) => {
   }
 });
 
-// Session check endpoint (optional but useful)
+// Session check endpoint
 router.get("/check-session", (req, res) => {
   try {
     if (req.session && req.session.user) {

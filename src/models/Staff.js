@@ -4,22 +4,41 @@ const SALT_ROUNDS = 12;
 
 const Staff = {
 
-    checkExisting: async (details, excludeId = null) => {
-        const { email, phone, employee_id } = details;
-        let query = "SELECT email, phone, employee_id FROM staff WHERE (email = ? OR phone = ? OR employee_id = ?)";
-        let params = [email, phone, employee_id];
+    checkExisting: async (data) => {
+        const checks = [];
+        const params = [];
 
-        if (excludeId) {
-            query += " AND id != ?";
-            params.push(excludeId);
+        if (data.email) {
+            checks.push("LOWER(TRIM(email)) = ?");
+            params.push(data.email.toLowerCase().trim());
+        }
+        if (data.phone) {
+            checks.push("REPLACE(TRIM(phone), ' ', '') = ?");
+            params.push(data.phone.replace(/\s/g, ''));
+        }
+        if (data.employee_id) {
+            checks.push("TRIM(employee_id) = ?");
+            params.push(data.employee_id.trim());
         }
 
+        if (checks.length === 0) return null;
+
+        const query = `SELECT id, email, phone, employee_id FROM staff WHERE ${checks.join(" OR ")} LIMIT 1`;
         const [rows] = await db.query(query, params);
+
         if (rows.length > 0) {
-            if (rows[0].email === email) return "Staff Email already exists.";
-            if (rows[0].phone === phone) return "Staff Phone number already exists.";
-            if (rows[0].employee_id === employee_id) return "Employee ID already exists.";
+            const existing = rows[0];
+            if (data.email && existing.email?.toLowerCase() === data.email.toLowerCase()) {
+                return "Email already exists";
+            }
+            if (data.phone && existing.phone?.replace(/\s/g, '') === data.phone.replace(/\s/g, '')) {
+                return "Phone number already exists";
+            }
+            if (data.employee_id && existing.employee_id === data.employee_id) {
+                return "Employee ID already exists";
+            }
         }
+
         return null;
     },
 
@@ -30,10 +49,29 @@ const Staff = {
         const salary = data.basic_salary;
         delete data.basic_salary;
 
-        if (data.password) data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+        if (data.password) {
+            data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+        }
+
+        // Normalize email and phone
+        if (data.email) {
+            data.email = data.email.toLowerCase().trim();
+        }
+        if (data.phone) {
+            data.phone = data.phone.replace(/\s/g, '');
+        }
+        if (data.employee_id) {
+            data.employee_id = data.employee_id.trim();
+        }
+
         const cols = Object.keys(data).join(", ");
         const placeholders = Object.keys(data).map(() => "?").join(", ");
-        const [result] = await db.query(`INSERT INTO staff (${cols}) VALUES (${placeholders})`, Object.values(data));
+        const values = Object.values(data);
+
+        const [result] = await db.query(
+            `INSERT INTO staff (${cols}) VALUES (${placeholders})`,
+            values
+        );
 
         if (salary !== undefined && salary !== null && salary !== '') {
             await db.query(
@@ -75,32 +113,80 @@ const Staff = {
     },
 
     update: async (id, data) => {
-        const [existing] = await db.query("SELECT id FROM staff WHERE id = ?", [id]);
+        const [existing] = await db.query("SELECT id, email, phone, employee_id FROM staff WHERE id = ?", [id]);
         if (existing.length === 0) {
             throw new Error("Staff member not found in the database.");
         }
 
+        if (data.email || data.phone || data.employee_id) {
+            const checks = [];
+            const params = [];
+
+            if (data.email) {
+                checks.push("LOWER(TRIM(email)) = ?");
+                params.push(data.email.toLowerCase().trim());
+            }
+            if (data.phone) {
+                checks.push("REPLACE(TRIM(phone), ' ', '') = ?");
+                params.push(data.phone.replace(/\s/g, ''));
+            }
+            if (data.employee_id) {
+                checks.push("TRIM(employee_id) = ?");
+                params.push(data.employee_id.trim());
+            }
+
+            params.push(id); 
+
+            const query = `SELECT id, email, phone, employee_id FROM staff WHERE (${checks.join(" OR ")}) AND id != ? LIMIT 1`;
+            const [duplicate] = await db.query(query, params);
+
+            if (duplicate.length > 0) {
+                const dup = duplicate[0];
+                if (data.email && dup.email?.toLowerCase() === data.email.toLowerCase()) {
+                    throw new Error("Email already exists");
+                }
+                if (data.phone && dup.phone?.replace(/\s/g, '') === data.phone.replace(/\s/g, '')) {
+                    throw new Error("Phone number already exists");
+                }
+                if (data.employee_id && dup.employee_id === data.employee_id) {
+                    throw new Error("Employee ID already exists");
+                }
+            }
+        }
+
         if (data.password && data.password.trim() !== "") {
-            const SALT_ROUNDS = 12;
             data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
         } else {
             delete data.password; 
         }
-        
+
         const salary = data.basic_salary;
         delete data.basic_salary;
 
-        const fields = Object.keys(data).map(k => `${k}=?`).join(", ");
+        if (data.email) {
+            data.email = data.email.toLowerCase().trim();
+        }
+        if (data.phone) {
+            data.phone = data.phone.replace(/\s/g, '');
+        }
+        if (data.employee_id) {
+            data.employee_id = data.employee_id.trim();
+        }
+
+        const fields = Object.keys(data).map(k => `${k} = ?`).join(", ");
         const values = [...Object.values(data), id];
-        
-        const [result] = await db.query(`UPDATE staff SET ${fields} WHERE id=?`, values);
+
+        const [result] = await db.query(
+            `UPDATE staff SET ${fields} WHERE id = ?`,
+            values
+        );
 
         if (salary !== undefined && salary !== null && salary !== '') {
             const [existingSalary] = await db.query(
                 "SELECT id FROM staff_salaries WHERE staff_id = ? AND effective_to IS NULL",
                 [id]
             );
-            
+
             if (existingSalary.length > 0) {
                 await db.query(
                     "UPDATE staff_salaries SET basic_salary = ? WHERE staff_id = ? AND effective_to IS NULL",
@@ -113,7 +199,7 @@ const Staff = {
                 );
             }
         }
-        
+
         return result;
     },
 
