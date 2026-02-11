@@ -158,7 +158,7 @@ router.patch("/commissions/:id/pay", async (req, res) => {
  */
 router.post("/commissions/award", async (req, res) => {
   try {
-    const { onboard_id, amount } = req.body;
+    const { onboard_id, amount, with_router, package_only } = req.body;
     
     // Validate input
     if (!onboard_id || !amount) {
@@ -178,7 +178,7 @@ router.post("/commissions/award", async (req, res) => {
     }
 
     // Award the commission
-    const result = await Client.awardCommission(onboard_id, client.staff_id, amount);
+    const result = await Client.awardCommission(onboard_id, client.staff_id, amount, with_router, package_only);
     
     res.status(201).json({ 
       success: true, 
@@ -195,9 +195,9 @@ router.post("/commissions/award", async (req, res) => {
 router.patch("/commissions/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { amount } = req.body;
+    const { amount, with_router, package_only } = req.body;
 
-    const result = await Client.updateCommission(id, { amount });
+    const result = await Client.updateCommission(id, { amount, with_router, package_only });
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Commission not found" });

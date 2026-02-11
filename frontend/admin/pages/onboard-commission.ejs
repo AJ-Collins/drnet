@@ -187,8 +187,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Client Details</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Contact</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Location</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Package</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Package</th>                                
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Onboarded By</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Date</th>
@@ -422,6 +421,44 @@
                         <!-- Hidden client ID -->
                         <input type="hidden" id="commissionClientId" value="">
 
+                        <div>
+                            <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-check-square text-teal-500"></i> Onboard Type *
+                            </h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-slate-200 cursor-pointer hover:border-teal-300 transition" id="withRouterLabel">
+                                    <input 
+                                        type="checkbox" 
+                                        id="withRouter" 
+                                        class="w-5 h-5 text-teal-600 rounded focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                                        onchange="handleCommissionTypeToggle('withRouter')"
+                                    >
+                                    <div class="flex-1">
+                                        <span class="text-sm font-bold text-slate-700">Full Installation</span>
+                                        <p class="text-xs text-slate-500 mt-0.5">Package & Router</p>
+                                    </div>
+                                    <i class="fas fa-wifi text-teal-500"></i>
+                                </label>
+                                
+                                <label class="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-slate-200 cursor-pointer hover:border-teal-300 transition" id="packageOnlyLabel">
+                                    <input 
+                                        type="checkbox" 
+                                        id="packageOnly" 
+                                        class="w-5 h-5 text-teal-600 rounded focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                                        onchange="handleCommissionTypeToggle('packageOnly')"
+                                    >
+                                    <div class="flex-1">
+                                        <span class="text-sm font-bold text-slate-700">Partial Installation</span>
+                                        <p class="text-xs text-slate-500 mt-0.5">Package Only</p>
+                                    </div>
+                                    <i class="fas fa-box text-teal-500"></i>
+                                </label>
+                            </div>
+                            <p class="text-xs text-rose-600 mt-2 font-medium hidden" id="commissionTypeError">
+                                <i class="fas fa-exclamation-circle mr-1"></i> Please select at least one commission type
+                            </p>
+                        </div>
+
                         <!-- Amount Input -->
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-3 flex items-center gap-2">
@@ -491,6 +528,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Commission ID</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Staff Member</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Client</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Type</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Amount</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Awarded Date</th>
@@ -687,7 +725,9 @@
                 second_name: commission.client_sname,
                 email: commission.client_email || 'No email',
                 staff_first_name: commission.staff_fname,
-                staff_second_name: commission.staff_sname
+                staff_second_name: commission.staff_sname,
+                packageOnly: commission.package_only,
+                with_router: commission.with_router
             };
             
             // Populate the form
@@ -699,6 +739,24 @@
             document.getElementById('commStaffName').textContent = `${client.staff_first_name} ${client.staff_second_name}`;
             document.getElementById('commissionClientId').value = commissionId; // Store commission ID instead
             document.getElementById('commissionAmount').value = commission.amount;
+            document.getElementById('packageOnly').checked = commission.package_only == 1;
+            document.getElementById('withRouter').checked = commission.with_router == 1;
+
+            // Update the badge display based on the commission type
+            const typeBadge = document.getElementById('commOnboardType');
+            if (commission.with_router == 1 && commission.package_only == 1) {
+                typeBadge.textContent = "Both Types";
+                typeBadge.className = "text-xs font-bold py-1 px-3 rounded-full bg-yellow-100 text-yellow-700 inline-block";
+            } else if (commission.with_router == 1) {
+                typeBadge.textContent = "Full Installation";
+                typeBadge.className = "text-xs font-bold py-1 px-3 rounded-full bg-green-100 text-green-700 inline-block";
+            } else if (commission.package_only == 1) {
+                typeBadge.textContent = "Partial Installation";
+                typeBadge.className = "text-xs font-bold py-1 px-3 rounded-full bg-emerald-100 text-emerald-700 inline-block";
+            } else {
+                typeBadge.textContent = "Not Set";
+                typeBadge.className = "text-xs font-bold py-1 px-3 rounded-full bg-slate-100 text-slate-600 inline-block";
+            }
             
             // Mark as edit mode
             document.getElementById('awardCommissionForm').dataset.editMode = 'true';
@@ -723,10 +781,9 @@
                 
                 if (res.ok) {
                     showToast('Commission deleted successfully', 'success');
-                    loadCommissions();
-                    if (loadedTabs.staff) {
-                        loadStaffEarnings();
-                    }
+                    await loadCommissions();
+                    await loadStaffEarnings();
+                    await loadClients();
                 } else {
                     throw new Error('Failed to delete commission');
                 }
@@ -758,6 +815,40 @@
             selectedClientForCommission = null;
         }
 
+        // Validate Commission Type - at least one must be selected
+        function validateCommissionType() {
+            const withRouter = document.getElementById('withRouter').checked;
+            const packageOnly = document.getElementById('packageOnly').checked;
+            const errorMsg = document.getElementById('commissionTypeError');
+            const withRouterLabel = document.getElementById('withRouterLabel');
+            const packageOnlyLabel = document.getElementById('packageOnlyLabel');
+            
+            if (!withRouter && !packageOnly) {
+                errorMsg.classList.remove('hidden');
+                withRouterLabel.classList.add('border-rose-300');
+                packageOnlyLabel.classList.add('border-rose-300');
+                return false;
+            } else {
+                errorMsg.classList.add('hidden');
+                withRouterLabel.classList.remove('border-rose-300');
+                packageOnlyLabel.classList.remove('border-rose-300');
+                return true;
+            }
+        }
+
+        function handleCommissionTypeToggle(checkedBox) {
+            const withRouter = document.getElementById('withRouter');
+            const packageOnly = document.getElementById('packageOnly');
+            
+            if (checkedBox === 'withRouter' && withRouter.checked) {
+                packageOnly.checked = false;
+            } else if (checkedBox === 'packageOnly' && packageOnly.checked) {
+                withRouter.checked = false;
+            }
+            
+            validateCommissionType();
+        }
+
         // Handle Award Commission
         async function handleAwardCommission(event) {
             event.preventDefault();
@@ -770,9 +861,17 @@
             
             const onboard_id = document.getElementById('commissionClientId').value;
             const amount = document.getElementById('commissionAmount').value;
+
+            const with_router = document.getElementById('withRouter').checked;
+            const package_only = document.getElementById('packageOnly').checked;
             
             if (!amount || parseFloat(amount) <= 0) {
                 showToast('Please enter a valid commission amount', 'error');
+                return;
+            }
+
+            if (!validateCommissionType()) {
+                showToast('Please select at least one commission type', 'error');
                 return;
             }
             
@@ -786,14 +885,14 @@
                     res = await fetch(`/api/onboard/commissions/${commissionId}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount })
+                        body: JSON.stringify({ amount, with_router, package_only })
                     });
                 } else {
                     // Award new commission
                     res = await fetch('/api/onboard/commissions/award', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ onboard_id, amount })
+                        body: JSON.stringify({ onboard_id, amount, with_router, package_only })
                     });
                 }
                 
@@ -926,20 +1025,7 @@
                                 <i class="fas fa-wifi text-xs text-slate-400"></i>
                                 ${packageName}
                             </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col gap-1">
-                                ${
-                                client.with_router == 1 && client.package_only == 1
-                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-bold"><i class="fas fa-exclamation-triangle"></i> Full Installation</span>'
-                                    : client.with_router == 1
-                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold"><i class="fas fa-tools"></i> Full Installation</span>'
-                                    : client.package_only == 1
-                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold"><i class="fas fa-box-open"></i> Partial Installation</span>'
-                                    : '<span class="text-xs text-slate-400">-</span>'
-                                }
-                            </div>
-                        </td>
+                        </td>                        
                         <td class="px-6 py-4">
                             <span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded text-xs font-bold">
                                 <i class="fas fa-user-tie mr-1"></i> ${client.staff_first_name} ${client.staff_second_name}
@@ -1029,10 +1115,8 @@
                 
                 if (res.ok) {
                     showToast(`Status updated to ${newStatus}`, 'success');
-                    loadClients();
-                    if (loadedTabs.commissions) {
-                        loadCommissions();
-                    }
+                    await loadClients();
+                    await loadCommissions();
                 } else {
                     throw new Error('Failed to update status');
                 }
@@ -1086,7 +1170,9 @@
                     }
 
                     closeClientForm();
-                    loadClients();
+                    await loadClients();
+                    await loadCommissions();
+                    await loadStaffEarnings();
                 } else {
                     showToast(result.message || result.error || 'Failed to create client', 'error');
                 }
@@ -1122,7 +1208,9 @@
 
                 if (res.ok) {
                     showToast('Client deleted successfully', 'success');
-                    loadClients();
+                    await loadClients();
+                    await loadCommissions();
+                    await loadStaffEarnings();
                 } else {
                     throw new Error('Failed to delete client');
                 }
@@ -1196,6 +1284,19 @@
                             <span class="text-sm text-slate-600">${comm.client_fname} ${comm.client_sname}</span>
                         </td>
                         <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1">
+                                ${
+                                comm.with_router == 1 && comm.package_only == 1
+                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-bold"><i class="fas fa-exclamation-triangle"></i> Full Installation</span>'
+                                    : comm.with_router == 1
+                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold"><i class="fas fa-tools"></i> Full Installation</span>'
+                                    : comm.package_only == 1
+                                    ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold"><i class="fas fa-box-open"></i> Partial Installation</span>'
+                                    : '<span class="text-xs text-slate-400">-</span>'
+                                }
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
                             <span class="text-sm font-bold text-emerald-600">KES ${parseFloat(comm.amount).toLocaleString()}</span>
                         </td>
                         <td class="px-6 py-4">
@@ -1255,10 +1356,9 @@
                 
                 if (res.ok) {
                     showToast(`Commission marked as ${newStatus}`, 'success');
-                    loadCommissions();
-                    if (loadedTabs.staff) {
-                        loadStaffEarnings();
-                    }
+                    await loadCommissions();
+                    await loadStaffEarnings();
+                    await loadClients();
                 } else {
                     throw new Error('Failed to update commission');
                 }

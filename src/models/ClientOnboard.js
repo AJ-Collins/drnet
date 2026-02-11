@@ -3,9 +3,9 @@ const db = require("../config/db");
 const ClientsOnboard = {
   // Create
   create: async (data, staffId) => {
-    const { email, first_name, second_name, phone, location, package_id, with_router, package_only } = data;
-    const sql = `INSERT INTO client_onboard (email, first_name, second_name, phone, location, package_id, staff_id, with_router, package_only) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    const [result] = await db.execute(sql, [email, first_name, second_name, phone, location, package_id, staffId, with_router, package_only]);
+    const { email, first_name, second_name, phone, location, package_id } = data;
+    const sql = `INSERT INTO client_onboard (email, first_name, second_name, phone, location, package_id, staff_id) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const [result] = await db.execute(sql, [email, first_name, second_name, phone, location, package_id, staffId]);
     return result;
   },
 
@@ -75,7 +75,8 @@ const ClientsOnboard = {
     const sql = `
       SELECT oc.*, 
              s.first_name as staff_fname, s.second_name as staff_sname,
-             c.first_name as client_fname, c.second_name as client_sname
+             c.first_name as client_fname, c.second_name as client_sname,
+             c.with_router, c.package_only
       FROM onboard_commissions oc
       JOIN staff s ON oc.staff_id = s.id
       JOIN client_onboard c ON oc.onboard_id = c.id
@@ -106,9 +107,13 @@ const ClientsOnboard = {
     return rows;
   },
 
-  awardCommission: async (onboard_id, staff_id, amount) => {
+  awardCommission: async (onboard_id, staff_id, amount, with_router, package_only) => {
     const sql = `INSERT INTO onboard_commissions (onboard_id, staff_id, amount) VALUES (?, ?, ?)`;
     const [result] = await db.execute(sql, [onboard_id, staff_id, amount]);
+
+    const sqlClient = `UPDATE client_onboard SET with_router = ?, package_only = ? WHERE id = ?`;
+    await db.execute(sqlClient, [with_router ? 1 : 0, package_only ? 1 : 0, onboard_id]);
+
     return result;
   },
 
@@ -124,14 +129,32 @@ const ClientsOnboard = {
 
   // Update a commission (Amount & Status)
   updateCommission: async (id, data) => {
-    const { amount } = data;
+    const { amount, with_router, package_only } = data;
     const sql = `UPDATE onboard_commissions SET amount = ?, status = 'unpaid' WHERE id = ?`;
     const [result] = await db.execute(sql, [amount, id]);
+
+    const sqlClient = `
+      UPDATE client_onboard 
+      SET with_router = ?, package_only = ? 
+      WHERE id = (SELECT onboard_id FROM onboard_commissions WHERE id = ?)`;
+    await db.execute(sqlClient, [with_router ? 1 : 0, package_only ? 1 : 0, id]);
+
     return result;
   },
 
   // Delete a specific commission
   deleteCommission: async (id) => {
+    const [comm] = await db.query("SELECT onboard_id FROM onboard_commissions WHERE id = ?", [id]);
+
+    if (comm.length > 0) {
+      const onboardId = comm[0].onboard_id;
+      // Reset the flags on the client
+      await db.execute(
+        "UPDATE client_onboard SET with_router = 0, package_only = 0 WHERE id = ?", 
+        [onboardId]
+      );
+    }
+
     const [result] = await db.query("DELETE FROM onboard_commissions WHERE id = ?", [id]);
     return result;
   },
