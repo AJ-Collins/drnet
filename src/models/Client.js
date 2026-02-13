@@ -4,20 +4,29 @@ const bcrypt = require("bcrypt");
 const Client = {
 
     checkExisting: async (details, excludeId = null) => {
-        const { email, phone, id_number } = details;
-        let query = "SELECT email, id_number FROM users WHERE (email = ? OR id_number = ?)";
-        let params = [email, id_number];
-
-        if (excludeId) {
-            query += " AND id != ?";
-            params.push(excludeId);
-        }
+        const { email, id_number } = details;
+        
+        // We check both tables. We use 'source' to identify where the conflict is.
+        let query = `
+            SELECT email, id_number, 'user' as source FROM users WHERE (email = ? OR id_number = ?)
+            UNION
+            SELECT email, employee_id as id_number, 'staff' as source FROM staff WHERE (email = ? OR employee_id = ?)
+        `;
+        
+        let params = [email, id_number, email, id_number];
 
         const [rows] = await db.query(query, params);
+
         if (rows.length > 0) {
-            if (rows[0].email === email) return "Email address already exists.";
-            if (rows[0].phone === phone) {console.warn("Duplicate phone number detected:", phone);}
-            if (rows[0].id_number === id_number) return "ID / Passport number already exists.";
+            // Filter out the current user when performing an update
+            const conflict = rows.find(r => !(excludeId && r.source === 'user' && r.id === excludeId));
+            
+            if (conflict) {
+                const tableLabel = conflict.source === 'staff' ? "an employee (Staff)" : "another client (User)";
+                
+                if (conflict.email === email) return `Email already exists as ${tableLabel}.`;
+                if (conflict.id_number === id_number) return `ID / Employee ID already exists as ${tableLabel}.`;
+            }
         }
         return null;
     },
@@ -27,6 +36,7 @@ const Client = {
         if (warning) throw new Error(warning);
 
         const SALT_ROUNDS = 12;
+        if (!data.password) throw new Error("Password is required to create a user.");
         const plainPassword = data.password.toString(); 
         const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
         const { onboard_id, password, ...userFields } = data;
@@ -52,7 +62,7 @@ const Client = {
                 WHERE id = ?`,
             [onboard_id]
         );
-}
+    }
 
         return result;
     },

@@ -5,37 +5,33 @@ const SALT_ROUNDS = 12;
 const Staff = {
 
     checkExisting: async (data) => {
-        const checks = [];
-        const params = [];
+        const email = data.email ? data.email.toLowerCase().trim() : null;
+        const employee_id = data.employee_id ? data.employee_id.trim() : null;
 
-        if (data.email) {
-            checks.push("LOWER(TRIM(email)) = ?");
-            params.push(data.email.toLowerCase().trim());
-        }
-        if (data.phone) {
-            checks.push("REPLACE(TRIM(phone), ' ', '') = ?");
-            params.push(data.phone.replace(/\s/g, ''));
-        }
-        if (data.employee_id) {
-            checks.push("TRIM(employee_id) = ?");
-            params.push(data.employee_id.trim());
-        }
+        if (!email && !employee_id) return null;
 
-        if (checks.length === 0) return null;
+        // Cross-table check: employee_id vs id_number
+        const query = `
+            SELECT email, employee_id AS ident, 'staff' AS source FROM staff 
+            WHERE (LOWER(TRIM(email)) = ? OR TRIM(employee_id) = ?)
+            UNION
+            SELECT email, id_number AS ident, 'user' AS source FROM users 
+            WHERE (LOWER(TRIM(email)) = ? OR TRIM(id_number) = ?)
+            LIMIT 1
+        `;
 
-        const query = `SELECT id, email, phone, employee_id FROM staff WHERE ${checks.join(" OR ")} LIMIT 1`;
+        const params = [email, employee_id, email, employee_id];
         const [rows] = await db.query(query, params);
 
         if (rows.length > 0) {
-            const existing = rows[0];
-            if (data.email && existing.email?.toLowerCase() === data.email.toLowerCase()) {
-                return "Email already exists";
+            const conflict = rows[0];
+            const tableLabel = conflict.source === 'staff' ? "an existing staff member" : "a registered client (User)";
+
+            if (email && conflict.email?.toLowerCase() === email) {
+                return `Email already exists as ${tableLabel}`;
             }
-            if (data.phone && existing.phone?.replace(/\s/g, '') === data.phone.replace(/\s/g, '')) {
-                return "Phone number already exists";
-            }
-            if (data.employee_id && existing.employee_id === data.employee_id) {
-                return "Employee ID already exists";
+            if (employee_id && conflict.ident === employee_id) {
+                return `Employee ID / National ID already exists as ${tableLabel}`;
             }
         }
 
@@ -48,6 +44,8 @@ const Staff = {
 
         const salary = data.basic_salary;
         delete data.basic_salary;
+
+        if (!data.password) throw new Error("Password is required to create a staff.");
 
         if (data.password) {
             data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
