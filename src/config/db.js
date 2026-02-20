@@ -9,7 +9,20 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   dateStrings: true,
   timezone: '+00:00',
-  multipleStatements: true
+  multipleStatements: true,
+  waitForConnections: true,
+  queueLimit: 0
 });
+
+// Warm up pool on startup
+(async () => {
+    try {
+        const conn = await pool.getConnection();
+        console.log('MySQL pool warmed up');
+        conn.release();
+    } catch (err) {
+        console.error('MySQL warmup failed:', err.message);
+    }
+})();
 
 module.exports = pool;
