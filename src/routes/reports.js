@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Report = require("../models/Reports");
+const AnalyticsReport = require("../models/AnalyticReport");
 const notificationService = require("../services/notificationService");
 const Staff = require("../models/Staff");
 const Role = require("../models/Role");

@@ -61,6 +61,14 @@
             background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         }
 
+        #previewWrapper.fullscreen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: white;
+            padding: 20px;
+        }
+
         .animate-fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -164,12 +172,10 @@
                         </div>
                         
                         <div class="p-6 space-y-6">
-                            
+
                             <!-- Report Type -->
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">
-                                    Report Type
-                                </label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">Report Type</label>
                                 <select id="reportType" class="w-full input-area rounded-lg p-3 text-sm font-bold">
                                     <option value="full">Complete Dashboard Summary</option>
                                     <option value="financial">Financial Overview Only</option>
@@ -178,47 +184,97 @@
                                 </select>
                             </div>
 
-                            <!-- Date Range -->
+                            <!-- Report Period -->
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">
-                                    Report Period
-                                </label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">Report Period</label>
                                 <select id="reportPeriod" class="w-full input-area rounded-lg p-3 text-sm font-bold" onchange="updateDateRange()">
                                     <option value="current">Current Month</option>
                                     <option value="last">Last Month</option>
-                                    <option value="custom">Custom Range</option>
+                                    <option value="custom">Custom Period</option>
                                 </select>
                             </div>
 
-                            <!-- Custom Date Range (Hidden by default) -->
-                            <div id="customDateRange" class="hidden space-y-3">
+                            <!-- Custom Period Options (hidden until "Custom" selected) -->
+                            <div id="customDateRange" class="hidden space-y-4 bg-slate-50 p-4 border border-slate-200 rounded-lg">
+
+                                <!-- Toggle: month picker vs date range -->
                                 <div>
-                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">From Date</label>
-                                    <input type="date" id="dateFrom" class="w-full input-area rounded p-2 text-sm font-bold">
+                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Custom Type</label>
+                                    <div class="flex gap-2">
+                                        <label class="flex-1 cursor-pointer">
+                                            <input type="radio" name="customMode" id="modeMonth" value="month" checked
+                                                onchange="toggleCustomMode()" class="peer sr-only">
+                                            <div class="border-2 border-slate-200 rounded-lg p-2 text-center peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all">
+                                                <i class="fas fa-calendar-alt text-slate-400 peer-checked:text-teal-600 mb-1"></i>
+                                                <p class="font-bold text-[10px] text-slate-700 uppercase">Specific Month</p>
+                                            </div>
+                                        </label>
+                                        <label class="flex-1 cursor-pointer">
+                                            <input type="radio" name="customMode" id="modeRange" value="range"
+                                                onchange="toggleCustomMode()" class="peer sr-only">
+                                            <div class="border-2 border-slate-200 rounded-lg p-2 text-center peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all">
+                                                <i class="fas fa-calendar-week text-slate-400 peer-checked:text-teal-600 mb-1"></i>
+                                                <p class="font-bold text-[10px] text-slate-700 uppercase">Date Range</p>
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">To Date</label>
-                                    <input type="date" id="dateTo" class="w-full input-area rounded p-2 text-sm font-bold">
+
+                                <!-- Month + Year pickers -->
+                                <div id="monthPickerFields" class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Month</label>
+                                        <select id="customMonth" class="w-full input-area rounded p-2 text-sm font-bold">
+                                            <option value="1">January</option>
+                                            <option value="2">February</option>
+                                            <option value="3">March</option>
+                                            <option value="4">April</option>
+                                            <option value="5">May</option>
+                                            <option value="6">June</option>
+                                            <option value="7">July</option>
+                                            <option value="8">August</option>
+                                            <option value="9">September</option>
+                                            <option value="10">October</option>
+                                            <option value="11">November</option>
+                                            <option value="12">December</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Year</label>
+                                        <select id="customYear" class="w-full input-area rounded p-2 text-sm font-bold">
+                                            <!-- Populated by JS on load -->
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Date range pickers (hidden by default) -->
+                                <div id="dateRangeFields" class="hidden space-y-3">
+                                    <div>
+                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">From Date</label>
+                                        <input type="date" id="dateFrom" class="w-full input-area rounded p-2 text-sm font-bold">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">To Date</label>
+                                        <input type="date" id="dateTo" class="w-full input-area rounded p-2 text-sm font-bold">
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Format Options -->
+                            <!-- Export Format -->
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">
-                                    Export Format
-                                </label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">Export Format</label>
                                 <div class="grid grid-cols-2 gap-3">
                                     <label class="relative cursor-pointer">
                                         <input type="radio" name="exportFormat" value="pdf" checked class="peer sr-only">
                                         <div class="bg-slate-50 border-2 border-slate-200 rounded-lg p-3 peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all text-center">
-                                            <i class="fas fa-file-pdf text-2xl text-slate-400 peer-checked:text-red-600 mb-1"></i>
+                                            <i class="fas fa-file-pdf text-2xl text-slate-400 mb-1"></i>
                                             <p class="font-bold text-xs text-slate-700">PDF Report</p>
                                         </div>
                                     </label>
                                     <label class="relative cursor-pointer">
                                         <input type="radio" name="exportFormat" value="view" class="peer sr-only">
                                         <div class="bg-slate-50 border-2 border-slate-200 rounded-lg p-3 peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all text-center">
-                                            <i class="fas fa-eye text-2xl text-slate-400 peer-checked:text-red-600 mb-1"></i>
+                                            <i class="fas fa-eye text-2xl text-slate-400 mb-1"></i>
                                             <p class="font-bold text-xs text-slate-700">View Only</p>
                                         </div>
                                     </label>
@@ -226,7 +282,7 @@
                             </div>
 
                             <!-- Generate Button -->
-                            <button onclick="generateAnalyticsReport()" class="w-full bg-gray-600 text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-700 shadow-lg uppercase">
+                            <button onclick="generateAnalyticsReport()" class="w-full bg-gray-700 text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-800 shadow-lg uppercase">
                                 <i class="fas fa-chart-bar mr-2"></i>Generate Report
                             </button>
 
@@ -235,16 +291,29 @@
                 </div>
 
                 <!-- Right: Preview Area -->
-                <div class="col-span-12 lg:col-span-7">
+                <div id="previewWrapper" class="col-span-12 lg:col-span-7">
                     <div class="bg-white border border-slate-200 shadow-sm">
                         <div class="section-header px-4 py-3 flex items-center justify-between">
-                            <h3 class="text-sm font-black text-white uppercase tracking-wide">Report Preview</h3>
-                            <button onclick="downloadCurrentReport()" id="downloadReportBtn" class="hidden px-3 py-1 bg-white text-slate-800 rounded text-xs font-bold hover:bg-slate-100 uppercase">
-                                <i class="fas fa-download mr-1"></i>Download
-                            </button>
+                            <h3 class="text-sm font-black text-white uppercase tracking-wide">
+                                Report Preview
+                            </h3>
+
+                            <div class="flex items-center gap-2">
+                                <button onclick="togglePreviewFullscreen()" 
+                                    class="px-3 py-1 bg-white/10 text-white rounded text-[10px] font-bold hover:bg-white/20 uppercase flex items-center gap-1">
+                                    <i class="fas fa-expand" id="fullscreenIcon"></i>
+                                    <span class="hidden sm:inline">Full screen</span>
+                                </button>
+
+                                <button onclick="downloadCurrentReport()" id="downloadReportBtn" 
+                                    class="hidden px-3 py-1 bg-white text-slate-800 rounded text-xs font-bold hover:bg-slate-100 uppercase">
+                                    <i class="fas fa-download mr-1"></i>Download
+                                </button>
+                            </div>
+
                         </div>
                         
-                        <div id="analyticsPreview" class="p-6 min-h-[600px] overflow-y-auto max-h-[calc(100vh-300px)]">
+                        <div id="analyticsPreview" class="p-6 min-h-[900px] overflow-y-auto max-h-[calc(100vh-300px)]">
                             <div class="flex flex-col items-center justify-center p-20 text-slate-400">
                                 <i class="fas fa-chart-pie text-5xl mb-4"></i>
                                 <p class="text-sm font-bold uppercase">No report generated yet</p>
@@ -265,6 +334,24 @@
         let filteredReports = [];
         let currentTab = 'general';
         let currentAnalyticsData = null;
+
+        const BRAND = {
+            name:    'DR.NET Technology Labs',
+            tagline: 'INNOVATIVE CONNECTIONS WITH DOCTORS PRECISION',
+            color:   [240, 23, 122],
+            dark:    [15,  23,  42],
+        };
+
+        const CHART = {
+            pink:   '#F0177A',
+            green:  '#16a34a',
+            red:    '#dc2626',
+            blue:   '#2563eb',
+            amber:  '#d97706',
+            purple: '#7c3aed',
+            sky:    '#0284c7',
+            pkg:    ['#F0177A','#2563eb','#16a34a','#d97706','#7c3aed'],
+        };
 
         // Initialize
         window.onload = () => {
@@ -302,6 +389,43 @@
             } catch (error) {
                 console.error('Error fetching reports:', error);
                 showToast('Failed to load reports', 'error');
+            }
+        }
+
+        (function initAnalyticsForm() {
+            const yearSelect = document.getElementById('customYear');
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1;
+
+            // Populate years (current year back to 3 years)
+            for (let y = currentYear; y >= currentYear - 3; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                yearSelect.appendChild(opt);
+            }
+
+            // Pre-select current month
+            document.getElementById('customMonth').value = currentMonth;
+        })();
+
+        function toggleCustomMode() {
+            const isRange = document.getElementById('modeRange').checked;
+            document.getElementById('monthPickerFields').classList.toggle('hidden', isRange);
+            document.getElementById('dateRangeFields').classList.toggle('hidden', !isRange);
+        }
+
+        function togglePreviewFullscreen() {
+            const wrapper = document.getElementById('previewWrapper');
+            const icon    = document.getElementById('fullscreenIcon');
+            const label   = document.getElementById('fullscreenLabel');
+            const isFs    = wrapper.classList.toggle('fullscreen');
+            icon.className  = isFs ? 'fas fa-compress' : 'fas fa-expand';
+            if (label) label.textContent = isFs ? 'Collapse' : 'Expand';
+
+            if (isFs) {
+                const inner = document.getElementById('analyticsPreview');
+                if (inner) inner.scrollTop = 0;
             }
         }
 
@@ -656,72 +780,150 @@
             }
         }
 
+        function addPdfHeader(doc, subtitle) {
+            const W = doc.internal.pageSize.getWidth();
+
+            // Brand name
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9.5);
+            doc.setTextColor(...BRAND.color);
+            doc.text(BRAND.name, 14, 10);
+
+            // Tagline
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(5.8);
+            doc.text(BRAND.tagline, W - 14, 10, { align: 'right' });
+
+            // Thin divider line
+            doc.setDrawColor(...BRAND.color);
+            doc.setLineWidth(0.3);
+            doc.line(0, 14, W, 14);
+
+            // Subtitle
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(...BRAND.dark);
+            doc.text(subtitle, 14, 22);
+
+            // Reset text color
+            doc.setTextColor(0, 0, 0);
+
+            return 28;
+        }
+
+        function addPdfFooter(doc) {
+            const n = doc.internal.getNumberOfPages();
+            const W = doc.internal.pageSize.getWidth();
+            const H = doc.internal.pageSize.getHeight();
+            for (let i = 1; i <= n; i++) {
+                doc.setPage(i);
+                doc.setDrawColor(180, 180, 180);
+                doc.setLineWidth(0.3);
+                doc.line(14, H - 11, W - 14, H - 11);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7);
+                doc.setTextColor(140, 140, 140);
+                doc.text(BRAND.name + '  —  Confidential', 14, H - 6);
+                doc.text(`Page ${i} of ${n}`, W - 14, H - 6, { align: 'right' });
+            }
+        }
+
+        function fmt(n)  { return Number(n || 0).toLocaleString(); }
+        function fmtK(n) { const v = Number(n||0); return v >= 1000 ? (v/1000).toFixed(1)+'K' : String(v); }
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         async function downloadGeneralReportPDF(id) {
             const report = allReports.find(r => r.id === id);
             if (!report) return;
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            const W   = doc.internal.pageSize.getWidth();
 
-            doc.setFont('helvetica');
-            doc.setFontSize(20);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Daily General Report', 20, 20);
+            let y = addPdfHeader(doc, 'Daily General Report');
 
-            doc.setFontSize(10);
+            // Meta
             doc.setFont('helvetica', 'normal');
-            doc.text(`Report #${report.id} - ${new Date(report.report_date).toLocaleDateString()}`, 20, 30);
-            doc.text(`Created by: ${report.first_name} ${report.second_name}`, 20, 36);
-
-            let yPos = 50;
-
-            // Operations
-            doc.setFontSize(12);
+            doc.setFontSize(8.5);
+            doc.setTextColor(80, 80, 80);
+            doc.text(`Report #${report.id}   |   Date: ${new Date(report.report_date).toLocaleDateString()}`, 14, y);
+            doc.text(`Prepared by: ${report.first_name} ${report.second_name}  —  ${report.position||''}`, 14, y + 5);
             doc.setFont('helvetica', 'bold');
-            doc.text('Operations & Logistics', 20, yPos);
-            yPos += 7;
+            doc.setTextColor(...BRAND.dark);
+            doc.text(`Status: ${(report.status||'').toUpperCase()}     Priority: ${report.is_urgent ? 'URGENT' : 'NORMAL'}`, 14, y + 10);
+            doc.setTextColor(0, 0, 0);
+            y += 17;
 
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            const opsSummary = doc.splitTextToSize(report.ops_summary || 'No summary', 170);
-            doc.text(opsSummary, 20, yPos);
-            yPos += (opsSummary.length * 5) + 10;
+            // Section builder
+            function genSection(title, body, extraFn) {
+                if (y > 242) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
 
-            // Staff
-            if (yPos > 250) { doc.addPage(); yPos = 20; }
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Staff & Personnel', 20, yPos);
-            yPos += 7;
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            const staffSummary = doc.splitTextToSize(report.staff_summary || 'No summary', 170);
-            doc.text(staffSummary, 20, yPos);
-            yPos += (staffSummary.length * 5) + 10;
+                // Heavy rule + caps, no color
+                doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.6);
+                doc.line(14, y, W - 14, y);
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
+                doc.text(title.toUpperCase(), 14, y + 5.5);
+                doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.25);
+                doc.line(14, y + 7, W - 14, y + 7);
+                doc.setTextColor(0, 0, 0);
+                y += 12;
 
-            // Support
-            if (yPos > 250) { doc.addPage(); yPos = 20; }
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Support & Client Feedback', 20, yPos);
-            yPos += 7;
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            const supportSummary = doc.splitTextToSize(report.support_summary || 'No summary', 170);
-            doc.text(supportSummary, 20, yPos);
-            yPos += (supportSummary.length * 5) + 10;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(50, 50, 50);
+                const lines = doc.splitTextToSize(body || 'No summary provided.', W - 28);
+                doc.text(lines, 14, y);
+                y += lines.length * 5 + 4;
+                if (extraFn) extraFn();
+                y += 5;
+            }
 
-            // Conclusion
-            if (yPos > 250) { doc.addPage(); yPos = 20; }
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Conclusion', 20, yPos);
-            yPos += 7;
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            const conclusion = doc.splitTextToSize(report.conclusion || 'No conclusion', 170);
-            doc.text(conclusion, 20, yPos);
+            genSection('Operations & Logistics', report.ops_summary, () => {
+                if (y > 250) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
+                const bW = (W - 32) / 2;
 
+                // Stat boxes — white fill, hairline border, dark text
+                doc.setFillColor(255, 255, 255);
+                doc.setDrawColor(170, 170, 170); doc.setLineWidth(0.4);
+                doc.rect(14, y, bW - 2, 13, 'FD');
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+                doc.text('INSTALLATIONS', 16, y + 5);
+                doc.setFontSize(14); doc.setTextColor(15, 23, 42);
+                doc.text(String(report.ops_installs || 0), 16, y + 11.5);
+
+                doc.rect(14 + bW + 2, y, bW - 2, 13, 'FD');
+                doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+                doc.text('PENDING JOBS', 16 + bW + 2, y + 5);
+                doc.setFontSize(14); doc.setTextColor(15, 23, 42);
+                doc.text(String(report.ops_pending || 0), 16 + bW + 2, y + 11.5);
+
+                doc.setTextColor(0, 0, 0); y += 17;
+            });
+
+            genSection('Staff & Personnel',         report.staff_summary);
+            genSection('Support & Client Feedback', report.support_summary);
+
+            // Conclusion — dark left rule (not brand color)
+            if (y > 232) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
+            doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.6);
+            doc.line(14, y, W - 14, y);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
+            doc.text('CONCLUSION & ACTION ITEMS', 14, y + 5.5);
+            doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.25);
+            doc.line(14, y + 7, W - 14, y + 7);
+            y += 12;
+
+            const cLines = doc.splitTextToSize(report.conclusion || 'No conclusion provided.', W - 34);
+            // Dark left accent rule
+            doc.setFillColor(15, 23, 42);
+            doc.rect(14, y - 2, 2, cLines.length * 5 + 4, 'F');
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(50, 50, 50);
+            doc.text(cLines, 20, y);
+
+            addPdfFooter(doc);
             doc.save(`Report-${report.id}-${report.report_date}.pdf`);
             showToast('PDF downloaded successfully', 'success');
         }
@@ -730,290 +932,559 @@
 
         function updateDateRange() {
             const period = document.getElementById('reportPeriod').value;
-            const customRange = document.getElementById('customDateRange');
-            
-            if (period === 'custom') {
-                customRange.classList.remove('hidden');
-            } else {
-                customRange.classList.add('hidden');
-            }
+            document.getElementById('customDateRange').classList.toggle('hidden', period !== 'custom');
         }
 
         async function generateAnalyticsReport() {
-            const reportType = document.getElementById('reportType').value;
-            const period = document.getElementById('reportPeriod').value;
-            const format = document.querySelector('input[name="exportFormat"]:checked').value;
+            const reportType  = document.getElementById('reportType').value;
+            const period      = document.getElementById('reportPeriod').value;
+            const format      = document.querySelector('input[name="exportFormat"]:checked').value;
+            const dateFrom    = document.getElementById('dateFrom').value;
+            const dateTo      = document.getElementById('dateTo').value;
+            const customYear  = document.getElementById('customYear')?.value;
+            const customMonth = document.getElementById('customMonth')?.value;
 
-            showToast('Generating analytics report...', 'info');
+            const params = new URLSearchParams({ period, report_type: reportType });
+
+            if (period === 'custom') {
+                const isRange = document.getElementById('modeRange')?.checked;
+                if (isRange && dateFrom && dateTo) {
+                    params.set('date_from', dateFrom);
+                    params.set('date_to', dateTo);
+                } else if (customYear && customMonth) {
+                    params.set('year', customYear);
+                    params.set('month', customMonth);
+                } else {
+                    showToast('Please fill in the custom period fields', 'error');
+                    return;
+                }
+            }
+
+            document.getElementById('analyticsPreview').innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:#94a3b8">
+                    <i class="fas fa-circle-notch fa-spin" style="font-size:2.2rem;margin-bottom:14px;color:#F0177A"></i>
+                    <p style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0">Building Report…</p>
+                </div>`;
 
             try {
-                const response = await fetch('/api/dashboard/summary');
-                const data = await response.json();
-
-                if (data.success) {
-                    currentAnalyticsData = data.data;
-                    
-                    if (format === 'pdf') {
-                        generateAnalyticsPDF(reportType, currentAnalyticsData);
-                    } else {
-                        displayAnalyticsPreview(reportType, currentAnalyticsData);
-                    }
-                } else {
-                    showToast('Failed to generate report', 'error');
+                const res    = await fetch(`/api/reports/analytics?${params.toString()}`);
+                const result = await res.json();
+                if (!result.success) {
+                    showToast(result.message || 'Failed to generate report', 'error');
+                    return;
                 }
-            } catch (error) {
-                console.error('Error generating analytics:', error);
+                currentAnalyticsData = result.data;
+                displayAnalyticsPreview(result.data);
+                if (format === 'pdf') generateAnalyticsPDF(result.data);
+                document.getElementById('downloadReportBtn').classList.remove('hidden');
+            } catch (err) {
+                console.error(err);
                 showToast('Failed to generate report', 'error');
             }
         }
 
-        function displayAnalyticsPreview(reportType, data) {
-            const preview = document.getElementById('analyticsPreview');
-            document.getElementById('downloadReportBtn').classList.remove('hidden');
+        function buildBarChart(canvasId, labels, values, color) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            const P = { t: 12, r: 10, b: 30, l: 52 };
+            const cW = W - P.l - P.r, cH = H - P.t - P.b;
+            ctx.clearRect(0, 0, W, H);
 
-            let content = `
-                <div class="space-y-6">
-                    <div class="border-b border-slate-200 pb-4">
-                        <h2 class="text-2xl font-black text-slate-900 uppercase">Analytics Report</h2>
-                        <p class="text-sm text-slate-600 mt-1">Generated on ${new Date().toLocaleDateString()}</p>
-                    </div>
-            `;
+            const max  = Math.max(...values, 1);
+            const barW = Math.max(5, (cW / values.length) - 5);
 
-            if (reportType === 'full' || reportType === 'financial') {
-                content += `
-                    <div>
-                        <h3 class="text-lg font-black text-slate-800 uppercase mb-4 border-b border-slate-200 pb-2">
-                            <i class="fas fa-dollar-sign text-emerald-600 mr-2"></i>Financial Overview
-                        </h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-emerald-50 p-4 border border-emerald-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Monthly Revenue</p>
-                                <p class="text-3xl font-black text-emerald-600">KES ${Number(data.financial.monthly_revenue).toLocaleString()}</p>
-                                <p class="text-xs text-emerald-700 mt-1">
-                                    <i class="fas fa-arrow-up mr-1"></i>${data.financial.revenue_trend}% vs last month
-                                </p>
-                            </div>
-                            <div class="bg-blue-50 p-4 border border-blue-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Projected Revenue</p>
-                                <p class="text-3xl font-black text-blue-600">KES ${Number(data.financial.projected_revenue).toLocaleString()}</p>
-                                <p class="text-xs text-blue-700 mt-1">
-                                    ${data.financial.projection_growth}% growth expected
-                                </p>
-                            </div>
-                            <div class="bg-red-50 p-4 border border-red-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Monthly Expenditure</p>
-                                <p class="text-3xl font-black text-red-600">KES ${Number(data.financial.monthly_expenditure).toLocaleString()}</p>
-                            </div>
-                            <div class="bg-purple-50 p-4 border border-purple-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Staff Salaries Payable</p>
-                                <p class="text-3xl font-black text-purple-600">KES ${Number(data.financial.staff_salaries_payable).toLocaleString()}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
+            // Grid lines
+            [0.25, 0.5, 0.75, 1].forEach(f => {
+                const y = P.t + cH * (1 - f);
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.8;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(P.l, y); ctx.lineTo(W - P.r, y); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#94a3b8'; ctx.font = '9px system-ui';
+                ctx.textAlign = 'right';
+                ctx.fillText(fmtK(max * f), P.l - 4, y + 3);
+            });
 
-            if (reportType === 'full' || reportType === 'clients') {
-                content += `
-                    <div>
-                        <h3 class="text-lg font-black text-slate-800 uppercase mb-4 border-b border-slate-200 pb-2">
-                            <i class="fas fa-users text-blue-600 mr-2"></i>Client Statistics
-                        </h3>
-                        <div class="grid grid-cols-3 gap-4">
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Total Users</p>
-                                <p class="text-2xl font-black text-slate-900">${data.financial.total_users}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Active Subscriptions</p>
-                                <p class="text-2xl font-black text-emerald-600">${data.financial.active_subscriptions}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Expired/Overdue</p>
-                                <p class="text-2xl font-black text-red-600">${data.financial.expired_users + data.financial.overdue_users}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">New This Week</p>
-                                <p class="text-2xl font-black text-blue-600">${data.financial.new_clients_week}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">New This Month</p>
-                                <p class="text-2xl font-black text-blue-600">${data.financial.new_clients_month}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Inactive Users</p>
-                                <p class="text-2xl font-black text-amber-600">${data.financial.inactive_users}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
+            // Baseline
+            ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(P.l, P.t + cH); ctx.lineTo(W - P.r, P.t + cH);
+            ctx.stroke();
 
-            if (reportType === 'full' || reportType === 'operations') {
-                content += `
-                    <div>
-                        <h3 class="text-lg font-black text-slate-800 uppercase mb-4 border-b border-slate-200 pb-2">
-                            <i class="fas fa-cogs text-amber-600 mr-2"></i>Operations Summary
-                        </h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Total Bookings</p>
-                                <p class="text-2xl font-black text-slate-900">${data.financial.total_bookings}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Pending Bookings</p>
-                                <p class="text-2xl font-black text-amber-600">${data.financial.pending_bookings}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Pending Tickets</p>
-                                <p class="text-2xl font-black text-red-600">${data.financial.pending_tickets}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Pending Tasks</p>
-                                <p class="text-2xl font-black text-blue-600">${data.financial.pending_tasks}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Inventory Value</p>
-                                <p class="text-2xl font-black text-emerald-600">KES ${Number(data.financial.inventory_value).toLocaleString()}</p>
-                            </div>
-                            <div class="bg-white p-4 border border-slate-200">
-                                <p class="text-xs font-bold text-slate-600 uppercase">Staff On Duty</p>
-                                <p class="text-2xl font-black text-purple-600">${data.financial.staff_on_duty}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            content += '</div>';
-            preview.innerHTML = content;
-            preview.classList.add('animate-fade-in');
+            // Bars
+            values.forEach((v, i) => {
+                const x  = P.l + i * (cW / values.length) + (cW / values.length - barW) / 2;
+                const bH = (v / max) * cH;
+                const y  = P.t + cH - bH;
+                const g  = ctx.createLinearGradient(x, y, x, y + bH);
+                g.addColorStop(0, color);
+                g.addColorStop(1, color + '44');
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(x, y, barW, bH, [3, 3, 0, 0]);
+                else ctx.rect(x, y, barW, bH);
+                ctx.fill();
+                if (labels[i]) {
+                    ctx.fillStyle = '#64748b'; ctx.font = '8px system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(labels[i].slice(0, 5), x + barW / 2, H - 8);
+                }
+            });
         }
 
-        function generateAnalyticsPDF(reportType, data) {
+        function buildDonut(canvasId, labels, values, colors) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            const cx = W / 2, cy = H / 2;
+            const outer = Math.min(W, H) / 2 - 6;
+            const inner = outer * 0.56;
+            const total = values.reduce((a, b) => a + b, 0) || 1;
+            ctx.clearRect(0, 0, W, H);
+            let a = -Math.PI / 2;
+            values.forEach((v, i) => {
+                const sw = (v / total) * 2 * Math.PI;
+                ctx.beginPath(); ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, outer, a, a + sw);
+                ctx.closePath(); ctx.fillStyle = colors[i % colors.length]; ctx.fill();
+                a += sw;
+            });
+            ctx.beginPath(); ctx.arc(cx, cy, inner, 0, 2 * Math.PI);
+            ctx.fillStyle = '#fff'; ctx.fill();
+            ctx.fillStyle = '#1e293b'; ctx.font = 'bold 10px system-ui';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(values.length + ' pkgs', cx, cy);
+        }
+
+        function displayAnalyticsPreview(data) {
+            const preview = document.getElementById('analyticsPreview');
+            const { meta, financial, clients, operations, charts } = data;
+
+            const sec = (num, title) => `
+                <div style="border-top:2px solid #111827;padding:7px 0 5px;margin:${num > 1 ? '24px' : '0'} 0 12px">
+                    <p style="margin:0;font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#111827">
+                        ${num}. ${title}
+                    </p>
+                </div>`;
+
+            const mrow = (label, value, note) => `
+                <tr>
+                    <td style="padding:5px 8px 5px 0;font-size:11px;color:#374151;border-bottom:1px solid #f3f4f6">${label}</td>
+                    <td style="padding:5px 0;font-size:11px;font-weight:700;color:#111827;border-bottom:1px solid #f3f4f6;text-align:right;white-space:nowrap">${value}</td>
+                    ${note !== undefined ? `<td style="padding:5px 0 5px 12px;font-size:10px;color:#6b7280;border-bottom:1px solid #f3f4f6;text-align:right">${note}</td>` : ''}
+                </tr>`;
+
+            const factGrid = (items) => `
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #d1d5db;margin-bottom:16px">
+                    ${items.map(([lbl, val]) => `
+                    <div style="padding:10px 12px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb">
+                        <p style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 3px">${lbl}</p>
+                        <p style="font-size:17px;font-weight:800;color:#111827;margin:0;line-height:1.1">${val}</p>
+                    </div>`).join('')}
+                </div>`;
+
+            const barRow = (label, note, pct, color) => `
+                <div style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:11px;gap:8px">
+                    <span style="font-weight:500;color:#374151;width:130px;flex-shrink:0">${label}</span>
+                    ${note ? `<span style="font-size:9px;color:#9ca3af;white-space:nowrap">${note}</span>` : ''}
+                    <div style="flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden">
+                        <div style="height:100%;width:${pct}%;background:${color};border-radius:2px"></div>
+                    </div>
+                    <span style="font-weight:700;color:#111827;white-space:nowrap;min-width:80px;text-align:right"></span>
+                </div>`;
+
+            const perfRow = (dot, label, value) => `
+                <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:11px">
+                    <div style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0"></div>
+                    <span style="font-weight:500;color:#374151;flex:1">${label}</span>
+                    <span style="font-weight:700;color:#111827">${value}</span>
+                </div>`;
+
+            let html = `
+            <style>
+                .isp { font-family:'Plus Jakarta Sans',sans-serif;color:#111827;line-height:1.4 }
+                .isp table { width:100%;border-collapse:collapse }
+                .isp canvas { display:block;width:100%!important }
+                .isp-two { display:grid;grid-template-columns:1fr 1fr;gap:14px }
+                .isp-chart { border:1px solid #e5e7eb;padding:12px }
+                .isp-chart-lbl { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 8px }
+            </style>
+            <div class="isp">
+
+            <div style="padding-bottom:10px;margin-bottom:18px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end">
+                    <div>
+                        <p style="font-size:17px;font-weight:900;letter-spacing:0.02em;color:#111827;margin:0 0 2px;text-transform:uppercase">DR.NET Technology Labs</p>
+                        <p style="font-size:9px;font-weight:600;letter-spacing:0.09em;color:#6b7280;text-transform:uppercase;margin:0">Innovative Connections With Doctors Precision</p>
+                    </div>
+                    <div style="text-align:right">
+                        <p style="font-size:12px;font-weight:800;color:#111827;margin:0">Performance Report</p>
+                        <p style="font-size:9px;color:#6b7280;margin:3px 0 0">${meta.period_label}</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:8px;padding-top:7px;border-top:1px solid #e5e7eb">
+                    <span style="font-size:9px;color:#6b7280"><b style="color:#111827">Period:</b> ${meta.period_start} – ${meta.period_end}</span>
+                    <span style="font-size:9px;color:#6b7280"><b style="color:#111827">Generated:</b> ${new Date(meta.generated_at).toLocaleString()}</span>
+                    <span style="font-size:9px;color:#6b7280"><b style="color:#111827">Report Type:</b> ${meta.report_type.toUpperCase()}</span>
+                </div>
+            </div>`;
+
+            if (financial) {
+                const trend      = financial.revenue_trend_pct;
+                const trendColor = trend >= 0 ? CHART.green : CHART.red;
+                const trendArrow = trend >= 0 ? '▲' : '▼';
+                const dailyVals  = (charts?.daily_revenue || []).map(d => Number(d.total_revenue));
+
+                html += sec(1, 'Financial Performance');
+
+                html += factGrid([
+                    ['Total Revenue',      'KES ' + fmt(financial.total_revenue)],
+                    ['Net Profit',         'KES ' + fmt(financial.net_profit)],
+                    ['Profit Margin',      financial.profit_margin_pct + '%'],
+                    ['Subscription Rev.',  'KES ' + fmt(financial.subscription_revenue)],
+                    ['Sales Revenue',      'KES ' + fmt(financial.sales_revenue)],
+                    ['Expenditure',        'KES ' + fmt(financial.monthly_expenditure)],
+                    ['Staff Salaries',     'KES ' + fmt(financial.staff_salaries_payable)],
+                    ['Previous Period',    'KES ' + fmt(financial.prev_period_revenue)],
+                    ['Revenue Trend',      `<span style="color:${trendColor};font-weight:800">${trendArrow} ${Math.abs(trend)}%</span>`],
+                ]);
+
+                if (dailyVals.length) {
+                    html += `
+                    <div class="isp-chart" style="margin-bottom:14px">
+                        <p class="isp-chart-lbl">Daily Revenue Trend — ${meta.period_label} (KES)</p>
+                        <canvas id="chartRevDaily" height="120"></canvas>
+                    </div>`;
+                }
+
+                if (financial.expense_breakdown?.length) {
+                    html += `<div style="margin-bottom:14px">
+                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 8px">Expenditure by Category</p>`;
+                    const maxE = Math.max(...financial.expense_breakdown.map(e => Number(e.total_amount)));
+                    financial.expense_breakdown.forEach(e => {
+                        const pct = Math.round((Number(e.total_amount)/maxE)*100);
+                        html += `
+                        <div style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:11px;gap:8px">
+                            <span style="font-weight:500;color:#374151;width:130px;flex-shrink:0">${escapeHtml(e.category||'Other')}</span>
+                            <div style="flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden">
+                                <div style="height:100%;width:${pct}%;background:${CHART.red};border-radius:2px"></div>
+                            </div>
+                            <span style="font-weight:700;color:#111827;white-space:nowrap;min-width:90px;text-align:right">KES ${fmt(e.total_amount)}</span>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+            }
+
+            if (clients) {
+                const total       = clients.total_users || 1;
+                const activePct   = Math.round((clients.active_subscriptions / total) * 100);
+                const expiredPct  = Math.round((clients.expired_users        / total) * 100);
+                const inactivePct = Math.round((clients.inactive_users       / total) * 100);
+
+                html += sec(2, 'Client Overview');
+
+                html += factGrid([
+                    ['Total Users',       clients.total_users],
+                    ['Active Subs',       clients.active_subscriptions],
+                    ['New (Period)',       clients.new_clients_period],
+                    ['Expired',           clients.expired_users],
+                    ['Expiring ≤5 Days',  clients.overdue_users],
+                    ['No Subscription',   clients.inactive_users],
+                ]);
+
+                html += `
+                <div style="margin-bottom:14px">
+                    <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 5px">Subscription Health</p>
+                    <div style="display:flex;height:7px;border-radius:3px;overflow:hidden;border:1px solid #e5e7eb">
+                        <div style="width:${activePct}%;background:${CHART.green}"></div>
+                        <div style="width:${expiredPct}%;background:${CHART.red}"></div>
+                        <div style="width:${inactivePct}%;background:#d1d5db"></div>
+                    </div>
+                    <div style="display:flex;gap:16px;margin-top:5px">
+                        <span style="font-size:9px;font-weight:600;color:${CHART.green}">● Active ${activePct}%</span>
+                        <span style="font-size:9px;font-weight:600;color:${CHART.red}">● Expired ${expiredPct}%</span>
+                        <span style="font-size:9px;font-weight:600;color:#9ca3af">● No Sub ${inactivePct}%</span>
+                    </div>
+                </div>`;
+
+                if (clients.package_popularity?.length) {
+                    html += `
+                    <div class="isp-two" style="margin-bottom:14px">
+                        <div class="isp-chart">
+                            <p class="isp-chart-lbl">Top Packages — Active Subscriptions</p>
+                            <canvas id="chartPkgBar" height="110"></canvas>
+                        </div>
+                        <div class="isp-chart">
+                            <p class="isp-chart-lbl">Package Distribution</p>
+                            <canvas id="chartPkgDonut" height="90"></canvas>
+                            <div style="margin-top:8px">
+                                ${clients.package_popularity.slice(0,5).map((p,i) => `
+                                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                                    <div style="width:8px;height:8px;border-radius:2px;background:${CHART.pkg[i]};flex-shrink:0"></div>
+                                    <span style="font-size:9px;color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(p.package_name)}</span>
+                                    <span style="font-size:9px;font-weight:700;color:#111827">${p.subscription_count}</span>
+                                </div>`).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            if (operations) {
+                const bookPct = operations.bookings_in_period > 0
+                    ? Math.round((operations.bookings_completed / operations.bookings_in_period) * 100) : 0;
+
+                html += sec(3, 'Operations & Field Activity');
+
+                html += factGrid([
+                    ['Bookings (Period)',  operations.bookings_in_period],
+                    ['Completed',         operations.bookings_completed],
+                    ['Pending Bookings',  operations.pending_bookings],
+                    ['Open Tickets',      operations.pending_tickets],
+                    ['Resolved (Period)', operations.resolved_tickets_period],
+                    ['Pending Tasks',     operations.pending_tasks],
+                    ['Tasks Done',        operations.completed_tasks_period],
+                    ['Staff on Duty',     operations.staff_on_duty_today],
+                    ['Inventory Value',   'KES ' + fmt(operations.inventory_value)],
+                ]);
+
+                html += `
+                <div style="margin-bottom:14px">
+                    <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 5px">Booking Completion Rate</p>
+                    <div style="height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;border:1px solid #e5e7eb">
+                        <div style="height:100%;width:${bookPct}%;background:${CHART.green};border-radius:3px"></div>
+                    </div>
+                    <p style="font-size:9px;color:#6b7280;margin:4px 0 0">${bookPct}% completed (${operations.bookings_completed} of ${operations.bookings_in_period} bookings)</p>
+                </div>`;
+
+                html += `
+                <div class="isp-two" style="margin-bottom:14px">
+                    <div>
+                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 6px">Inventory Status</p>
+                        ${perfRow(CHART.green,  'In Stock',      operations.in_stock_items + ' items')}
+                        ${perfRow(CHART.red,    'Out of Stock',  operations.out_of_stock_items + ' items')}
+                        ${perfRow(CHART.purple, 'Total Value',   'KES ' + fmt(operations.inventory_value))}
+                    </div>
+                    <div>
+                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 6px">Support & Staff</p>
+                        ${perfRow(CHART.red,   'Open Tickets',   operations.pending_tickets)}
+                        ${perfRow(CHART.green, 'Resolved',       operations.resolved_tickets_period)}
+                        ${perfRow('#9ca3af',   'Staff on Duty',  operations.staff_on_duty_today + ' today')}
+                    </div>
+                </div>`;
+
+                if (operations.sales_by_category?.length) {
+                    html += `<div style="margin-bottom:14px">
+                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 6px">Sales by Product Category</p>`;
+                    const maxS = Math.max(...operations.sales_by_category.map(s => Number(s.total_revenue)));
+                    operations.sales_by_category.forEach(s => {
+                        const pct = Math.round((Number(s.total_revenue)/maxS)*100);
+                        html += `
+                        <div style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:11px;gap:8px">
+                            <span style="font-weight:500;color:#374151;width:130px;flex-shrink:0">${escapeHtml(s.category||'Other')}</span>
+                            <span style="font-size:9px;color:#9ca3af;white-space:nowrap">${s.sales_count} sales</span>
+                            <div style="flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden">
+                                <div style="height:100%;width:${pct}%;background:${CHART.blue};border-radius:2px"></div>
+                            </div>
+                            <span style="font-weight:700;color:#111827;white-space:nowrap;min-width:90px;text-align:right">KES ${fmt(s.total_revenue)}</span>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+            }
+
+            html += `
+                <div style="border-top:1px solid #d1d5db;margin-top:24px;padding-top:8px;display:flex;justify-content:space-between">
+                    <span style="font-size:9px;color:#9ca3af">${BRAND.name}</span>
+                    <span style="font-size:9px;color:#9ca3af">Confidential — Internal Use Only</span>
+                </div>
+            </div>`; // .isp
+
+            preview.innerHTML = html;
+
+            requestAnimationFrame(() => {
+                ['chartRevDaily','chartPkgBar','chartPkgDonut'].forEach(id => {
+                    const c = document.getElementById(id);
+                    if (c) c.width = c.offsetWidth || 300;
+                });
+                if (charts?.daily_revenue?.length) {
+                    buildBarChart('chartRevDaily',
+                        charts.daily_revenue.map(d => d.day_label),
+                        charts.daily_revenue.map(d => Number(d.total_revenue)),
+                        CHART.pink
+                    );
+                }
+                if (clients?.package_popularity?.length) {
+                    const pkgs = clients.package_popularity;
+                    buildBarChart('chartPkgBar',  pkgs.map(p=>p.package_name), pkgs.map(p=>p.subscription_count), CHART.pink);
+                    buildDonut('chartPkgDonut',   pkgs.map(p=>p.package_name), pkgs.map(p=>p.subscription_count), CHART.pkg);
+                }
+            });
+        }
+
+        function generateAnalyticsPDF(data) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            const { meta, financial, clients, operations } = data;
+            const W = doc.internal.pageSize.getWidth();
 
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(22);
-            doc.text('Analytics Report', 20, 20);
+            let y = addPdfHeader(doc, 'Analytics Report');
 
+            // Report meta — plain text
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-            doc.text(`Generated on ${new Date().toLocaleString()}`, 20, 28);
+            doc.setFontSize(8.5);
+            doc.setTextColor(80, 80, 80);
+            doc.text(`Period:      ${meta.period_label}  (${meta.period_start})`, 14, y);
+            doc.text(`Generated:   ${new Date(meta.generated_at).toLocaleString()}`, 14, y + 5);
+            doc.text(`Report Type: ${meta.report_type.toUpperCase()}`, 14, y + 10);
+            y += 17;
 
-            let yPos = 45;
-
-            if (reportType === 'full' || reportType === 'financial') {
-                doc.setFontSize(14);
+            function pdfSection(title) {
+                if (y > 245) { doc.addPage(); y = addPdfHeader(doc, 'Performance Report (cont.)') + 4; }
+                doc.setDrawColor(15, 23, 42);
+                doc.setLineWidth(0.6);
+                doc.line(14, y, W - 14, y);
                 doc.setFont('helvetica', 'bold');
-                doc.text('Financial Overview', 20, yPos);
-                yPos += 10;
-
-                doc.autoTable({
-                    startY: yPos,
-                    head: [['Metric', 'Value']],
-                    body: [
-                        ['Monthly Revenue', `KES ${Number(data.financial.monthly_revenue).toLocaleString()}`],
-                        ['Subscription Revenue', `KES ${Number(data.financial.monthly_subscription_revenue).toLocaleString()}`],
-                        ['Sales Revenue', `KES ${Number(data.financial.monthly_sales_revenue).toLocaleString()}`],
-                        ['Monthly Expenditure', `KES ${Number(data.financial.monthly_expenditure).toLocaleString()}`],
-                        ['Projected Revenue', `KES ${Number(data.financial.projected_revenue).toLocaleString()}`],
-                        ['Revenue Trend', `${data.financial.revenue_trend}%`]
-                    ],
-                    theme: 'grid',
-                    headStyles: { fillColor: [30, 41, 59] },
-                    margin: { left: 20 }
-                });
-
-                yPos = doc.lastAutoTable.finalY + 15;
+                doc.setFontSize(8.5);
+                doc.setTextColor(15, 23, 42);
+                doc.text(title.toUpperCase(), 14, y + 5.5);
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.25);
+                doc.line(14, y + 7, W - 14, y + 7);
+                doc.setTextColor(0, 0, 0);
+                y += 12;
             }
 
-            if (reportType === 'full' || reportType === 'clients') {
-                if (yPos > 220) {
-                    doc.addPage();
-                    yPos = 20;
+            function pdfTable(head, rows, colStyles) {
+                if (y > 238) { doc.addPage(); y = addPdfHeader(doc, 'Performance Report (cont.)') + 4; }
+                doc.autoTable({
+                    startY: y,
+                    head: [head],
+                    body: rows,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor:   [15, 23, 42],
+                        textColor:   [255, 255, 255],
+                        fontSize:    8,
+                        fontStyle:   'bold',
+                        cellPadding: 3,
+                    },
+                    bodyStyles: {
+                        fillColor:   [255, 255, 255],   // pure white — no color
+                        textColor:   [30, 30, 30],
+                        fontSize:    8.5,
+                        cellPadding: 3,
+                    },
+                    alternateRowStyles: {
+                        fillColor: [250, 250, 250],     // barely-off-white
+                    },
+                    columnStyles: colStyles || {},
+                    margin: { left: 14, right: 14 },
+                    tableLineColor: [200, 200, 200],
+                    tableLineWidth: 0.2,
+                });
+                y = doc.lastAutoTable.finalY + 8;
+            }
+
+            if (financial) {
+                pdfSection('1. Financial Performance');
+                pdfTable(
+                    ['Metric', 'This Period', 'Prev Period', 'Change'],
+                    [
+                        ['Total Revenue',          'KES '+fmt(financial.total_revenue),         'KES '+fmt(financial.prev_period_revenue), (financial.revenue_trend_pct>=0?'+':'')+financial.revenue_trend_pct+'%'],
+                        ['Subscription Revenue',   'KES '+fmt(financial.subscription_revenue),  '—', '—'],
+                        ['Sales Revenue',          'KES '+fmt(financial.sales_revenue),          '—', '—'],
+                        ['Total Expenditure',      'KES '+fmt(financial.monthly_expenditure),    '—', '—'],
+                        ['Net Profit',             'KES '+fmt(financial.net_profit),             '—', financial.profit_margin_pct+'% margin'],
+                        ['Staff Salaries Payable', 'KES '+fmt(financial.staff_salaries_payable), '—', '—'],
+                    ],
+                    { 0:{cellWidth:58}, 3:{cellWidth:26} }
+                );
+
+                if (financial.expense_breakdown?.length) {
+                    pdfSection('Expenditure Breakdown');
+                    pdfTable(
+                        ['Category', 'Transactions', 'Amount (KES)'],
+                        financial.expense_breakdown.map(e => [
+                            e.category||'Other', e.transaction_count, fmt(e.total_amount)
+                        ]),
+                        { 0:{cellWidth:85}, 2:{cellWidth:44} }
+                    );
                 }
-
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Client Statistics', 20, yPos);
-                yPos += 10;
-
-                doc.autoTable({
-                    startY: yPos,
-                    head: [['Metric', 'Count']],
-                    body: [
-                        ['Total Users', data.financial.total_users],
-                        ['Active Subscriptions', data.financial.active_subscriptions],
-                        ['Inactive Users', data.financial.inactive_users],
-                        ['Expired Users', data.financial.expired_users],
-                        ['Overdue Users', data.financial.overdue_users],
-                        ['New Clients (Week)', data.financial.new_clients_week],
-                        ['New Clients (Month)', data.financial.new_clients_month]
-                    ],
-                    theme: 'grid',
-                    headStyles: { fillColor: [30, 41, 59] },
-                    margin: { left: 20 }
-                });
-
-                yPos = doc.lastAutoTable.finalY + 15;
             }
 
-            if (reportType === 'full' || reportType === 'operations') {
-                if (yPos > 220) {
-                    doc.addPage();
-                    yPos = 20;
+            if (clients) {
+                pdfSection('2. Client Overview');
+                const total = clients.total_users || 1;
+                pdfTable(
+                    ['Metric', 'Count', '% of Users'],
+                    [
+                        ['Total Registered Users',  clients.total_users,         '100%'],
+                        ['Active Subscriptions',    clients.active_subscriptions, Math.round(clients.active_subscriptions/total*100)+'%'],
+                        ['New Clients (Period)',     clients.new_clients_period,   '—'],
+                        ['Expired Subscriptions',   clients.expired_users,        Math.round(clients.expired_users/total*100)+'%'],
+                        ['Expiring in ≤5 Days',     clients.overdue_users,        '—'],
+                        ['No Subscription',         clients.inactive_users,       Math.round(clients.inactive_users/total*100)+'%'],
+                    ],
+                    { 0:{cellWidth:85}, 2:{cellWidth:30} }
+                );
+
+                if (clients.package_popularity?.length) {
+                    pdfSection('Active Subscription Packages');
+                    pdfTable(
+                        ['Package Name', 'Speed', 'Price (KES)', 'Active Subs'],
+                        clients.package_popularity.map(p => [
+                            p.package_name, p.speed||'—', fmt(p.price), p.subscription_count
+                        ]),
+                        { 0:{cellWidth:65} }
+                    );
                 }
+            }
 
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Operations Summary', 20, yPos);
-                yPos += 10;
-
-                doc.autoTable({
-                    startY: yPos,
-                    head: [['Metric', 'Value']],
-                    body: [
-                        ['Total Bookings', data.financial.total_bookings],
-                        ['Pending Bookings', data.financial.pending_bookings],
-                        ['Pending Tickets', data.financial.pending_tickets],
-                        ['Pending Tasks', data.financial.pending_tasks],
-                        ['Inventory Value', `KES ${Number(data.financial.inventory_value).toLocaleString()}`],
-                        ['In Stock Items', data.financial.in_stock_count],
-                        ['Out of Stock Items', data.financial.out_stock_count],
-                        ['Staff On Duty', data.financial.staff_on_duty]
+            if (operations) {
+                pdfSection('3. Operations Summary');
+                const bookPct = operations.bookings_in_period > 0
+                    ? Math.round(operations.bookings_completed/operations.bookings_in_period*100) : 0;
+                pdfTable(
+                    ['Metric', 'Value', 'Notes'],
+                    [
+                        ['Bookings in Period',         operations.bookings_in_period,      bookPct+'% completed'],
+                        ['Pending Bookings',           operations.pending_bookings,        'Requires action'],
+                        ['Open Support Tickets',       operations.pending_tickets,         'In queue'],
+                        ['Tickets Resolved (Period)',  operations.resolved_tickets_period, '—'],
+                        ['Pending Staff Tasks',        operations.pending_tasks,           'Active assignments'],
+                        ['Tasks Completed (Period)',   operations.completed_tasks_period,  '—'],
+                        ['Inventory Value',            'KES '+fmt(operations.inventory_value), operations.in_stock_items+' in / '+operations.out_of_stock_items+' out'],
+                        ['Staff On Duty Today',        operations.staff_on_duty_today,     '—'],
                     ],
-                    theme: 'grid',
-                    headStyles: { fillColor: [30, 41, 59] },
-                    margin: { left: 20 }
-                });
+                    { 0:{cellWidth:68}, 2:{cellWidth:46} }
+                );
+
+                if (operations.sales_by_category?.length) {
+                    pdfSection('Sales by Product Category');
+                    pdfTable(
+                        ['Category', 'Sales Count', 'Revenue (KES)'],
+                        operations.sales_by_category.map(s => [
+                            s.category||'Other', s.sales_count, fmt(s.total_revenue)
+                        ]),
+                        { 0:{cellWidth:85}, 2:{cellWidth:44} }
+                    );
+                }
             }
 
-            // Footer
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Page ${i} of ${pageCount}`, 180, 285);
-            }
-
-            doc.save(`Report-${new Date().toISOString().split('T')[0]}.pdf`);
+            addPdfFooter(doc);
+            doc.save(`DR.NET-Performance-Report-${meta.period_start}-to-${meta.period_end}.pdf`);
             showToast('PDF downloaded successfully', 'success');
         }
 
         function downloadCurrentReport() {
-            if (!currentAnalyticsData) {
-                showToast('No report to download', 'error');
-                return;
-            }
-
-            const reportType = document.getElementById('reportType').value;
-            generateAnalyticsPDF(reportType, currentAnalyticsData);
+            if (!currentAnalyticsData) { showToast('No report to download', 'error'); return; }
+            generateAnalyticsPDF(currentAnalyticsData);
         }
-
-        // UTILITY FUNCTIONS
 
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
@@ -1033,12 +1504,5 @@
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        }        
     </script>

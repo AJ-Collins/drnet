@@ -70,4 +70,7 @@ Report.delete = async (id) => {
   return true;
 };
 
+//New analytics generator
+
+
 module.exports = Report;

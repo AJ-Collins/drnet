@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Report = require('../models/ReportModel');
+const AnalyticsReport = require("../models/AnalyticReport");
 const apiSessionAuth = require("../middleware/apiSessionAuth");
 
 router.use(apiSessionAuth);
@@ -178,6 +179,26 @@ router.delete('/general/:id', async (req, res) => {
     } catch (error) {
         console.error("Delete General Report Error:", error);
         res.status(500).json({ success: false, error: 'Failed to delete report' });
+    }
+});
+
+/**
+ * GET /api/reports/analytics
+ *
+ * Query params:
+ *   period       = "current" | "last" | "custom"          (default: current)
+ *   year         = YYYY      (with period=custom, month mode)
+ *   month        = M         (with period=custom, month mode)
+ *   date_from    = YYYY-MM-DD (with period=custom, range mode)
+ *   date_to      = YYYY-MM-DD (with period=custom, range mode)
+ *   report_type  = "full" | "financial" | "clients" | "operations"  (default: full)
+ */
+router.get("/analytics", async (req, res) => {
+    try {
+        const data = await AnalyticsReport.generate(req.query);
+        return res.json({ success: true, data });
+    } catch (err) {
+        return res.status(400).json({message: err.message});
     }
 });
 
