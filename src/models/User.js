@@ -68,6 +68,11 @@ const User = {
     return rows[0];
   },
 
+  findByIdRaw: async (id) => {
+    const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+    return rows[0];
+  },
+
   update: async (id, data) => {
     const fields = Object.keys(data)
       .map((k) => `${k}=?`)

@@ -85,6 +85,11 @@ const Client = {
         return rows[0];
     },
 
+    findByIdRaw: async (id) => {
+        const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+        return rows[0];
+    },
+
     update: async (id, data) => {
         const warning = await Client.checkExisting(data, id);
         if (warning) throw new Error(warning);

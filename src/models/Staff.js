@@ -110,6 +110,11 @@ const Staff = {
         return rows[0];
     },
 
+    findByIdRaw: async (id) => {
+        const [rows] = await db.query("SELECT * FROM staff WHERE id = ?", [id]);
+        return rows[0];
+    },
+
     update: async (id, data) => {
         const [existing] = await db.query("SELECT id, email, phone, employee_id FROM staff WHERE id = ?", [id]);
         if (existing.length === 0) {

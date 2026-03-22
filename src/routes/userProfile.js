@@ -23,12 +23,6 @@ const upload = multer({
   },
 });
 
-// Helper: Get raw user for password operations
-User.findByIdRaw = async (id) => {
-  const user = await User.findById(id);
-  return user;
-};
-
 // GET user profile
 router.get("/my/profile", async (req, res) => {
   try {
