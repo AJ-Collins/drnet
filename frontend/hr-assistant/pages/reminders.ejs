@@ -1,79 +1,176 @@
 <style>
-        :root { font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        body { background-color: #f8fafc; }
+    :root {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
 
-        .glass-panel { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid #e2e8f0; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
+    body {
+        background-color: #f8fafc;
+    }
 
-        table { border-collapse: separate; border-spacing: 0; width: 100%; }
-        th { 
-            background: #f8fafc; color: #64748b; font-size: 0.65rem; 
-            font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; 
-            padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid #e2e8f0;
-        }
-        td { 
-            padding: 1rem 1.5rem; border-bottom: 1px solid #f1f5f9; 
-            font-size: 0.85rem; vertical-align: middle;
-        }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background-color: #f8fafc; }
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
 
-        .badge { font-size: 0.65rem; font-weight: 800; padding: 0.35rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 0.35rem; }
-        .badge-active { background: #f0fdfa; color: #0d9488; border: 1px solid #ccfbf1; }
-        .badge-overdue { background: #fff1f2; color: #be123c; border: 1px solid #ffe4e6; }
-        .badge-inactive { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
-        .badge-expired { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+    }
 
-        .drawer-overlay { background: rgba(15, 23, 42, 0.093); backdrop-filter: blur(0px); }
-        .drawer-panel {
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-        }
-        .drawer-panel.open { transform: translateX(0); }
+    th {
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 1rem 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
 
-        .search-input { background: #f1f5f9; border: 1px solid transparent; transition: all 0.2s; }
-        .search-input:focus { background: white; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
-        .sms-editor {
-            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px;
-            font-family: 'Courier New', monospace;
-            line-height: 1.5;
-        }
+    td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
 
-        .custom-checkbox {
-            appearance: none; background-color: #fff; margin: 0;
-            font: inherit; color: currentColor; width: 1.15em; height: 1.15em;
-            border: 1px solid #cbd5e1; border-radius: 0.25em;
-            display: grid; place-content: center; cursor: pointer;
-        }
-        .custom-checkbox::before {
-            content: ""; width: 0.65em; height: 0.65em; transform: scale(0);
-            transition: 120ms transform ease-in-out;
-            box-shadow: inset 1em 1em white;
-            transform-origin: center;
-            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-        }
-        .custom-checkbox:checked { background-color: #0d9488; border-color: #0d9488; }
-        .custom-checkbox:checked::before { transform: scale(1); }
+    tr:last-child td {
+        border-bottom: none;
+    }
 
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    </style>
+    tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    .badge {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .badge-active {
+        background: #f0fdfa;
+        color: #0d9488;
+        border: 1px solid #ccfbf1;
+    }
+
+    .badge-overdue {
+        background: #fff1f2;
+        color: #be123c;
+        border: 1px solid #ffe4e6;
+    }
+
+    .badge-inactive {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .badge-expired {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .drawer-overlay {
+        background: rgba(15, 23, 42, 0.093);
+        backdrop-filter: blur(0px);
+    }
+
+    .drawer-panel {
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .drawer-panel.open {
+        transform: translateX(0);
+    }
+
+    .search-input {
+        background: #f1f5f9;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .search-input:focus {
+        background: white;
+        border-color: #0d9488;
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+    }
+
+    .sms-editor {
+        background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+        background-size: 20px 20px;
+        font-family: 'Courier New', monospace;
+        line-height: 1.5;
+    }
+
+    .custom-checkbox {
+        appearance: none;
+        background-color: #fff;
+        margin: 0;
+        font: inherit;
+        color: currentColor;
+        width: 1.15em;
+        height: 1.15em;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.25em;
+        display: grid;
+        place-content: center;
+        cursor: pointer;
+    }
+
+    .custom-checkbox::before {
+        content: "";
+        width: 0.65em;
+        height: 0.65em;
+        transform: scale(0);
+        transition: 120ms transform ease-in-out;
+        box-shadow: inset 1em 1em white;
+        transform-origin: center;
+        clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    }
+
+    .custom-checkbox:checked {
+        background-color: #0d9488;
+        border-color: #0d9488;
+    }
+
+    .custom-checkbox:checked::before {
+        transform: scale(1);
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+</style>
 <div class="max-w-full mx-auto flex flex-col min-h-screen">
-    
+
     <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tight">Client Comms</h1>
             <p class="text-slate-500 font-bold text-sm">SMS Dispatch Center</p>
         </div>
-        
-        <div id="balanceBadge" class="hidden bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+
+        <div id="balanceBadge"
+            class="hidden bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
                 <i class="fas fa-coins"></i>
             </div>
@@ -87,28 +184,32 @@
     <div class="glass-panel p-2 rounded-xl flex flex-col md:flex-row gap-2 mb-6 sticky top-4 z-20">
         <div class="relative flex-grow">
             <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="searchInput" placeholder="Search clients..." 
+            <input type="text" id="searchInput" placeholder="Search clients..."
                 class="w-full pl-10 pr-4 py-3 rounded-xl search-input text-sm font-semibold outline-none text-slate-700 placeholder:text-slate-400">
         </div>
-        
+
         <div class="flex gap-2">
-            <select id="statusFilter" class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
+            <select id="statusFilter"
+                class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="overdue">Overdue (Warning)</option>
                 <option value="expired">Expired (Disconnected)</option>
             </select>
 
-            <select id="locationFilter" class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
+            <select id="locationFilter"
+                class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
                 <option value="">All Locations</option>
             </select>
-            
-            <button id="btnBulkAction" onclick="Actions.openBulkDrawer()" class="hidden px-6 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 font-bold text-xs flex items-center gap-2">
+
+            <button id="btnBulkAction" onclick="Actions.openBulkDrawer()"
+                class="hidden px-6 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 font-bold text-xs flex items-center gap-2">
                 <i class="fas fa-paper-plane"></i>
                 <span id="bulkCount">0</span> SELECTED
             </button>
 
-            <button onclick="initData()" class="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+            <button onclick="initData()"
+                class="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
                 <i class="fas fa-sync-alt text-xs"></i>
             </button>
         </div>
@@ -125,7 +226,8 @@
                 <thead>
                     <tr>
                         <th class="w-10">
-                            <input type="checkbox" id="selectAll" class="custom-checkbox" onchange="Actions.toggleSelectAll()">
+                            <input type="checkbox" id="selectAll" class="custom-checkbox"
+                                onchange="Actions.toggleSelectAll()">
                         </th>
                         <th>Client Identity</th>
                         <th>Location</th>
@@ -143,68 +245,87 @@
         </div>
     </div>
 
-    <div id="paginationContainer" class="mt-auto pt-6 flex justify-between items-center border-t border-slate-200 hidden">
+    <div id="paginationContainer"
+        class="mt-auto pt-6 flex justify-between items-center border-t border-slate-200 hidden">
         <span id="pageInfo" class="text-xs font-bold text-slate-400 uppercase">Showing 0-0 of 0</span>
         <div class="flex gap-2">
-            <button id="btnPrev" class="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Previous</button>
-            <button id="btnNext" class="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Next</button>
+            <button id="btnPrev"
+                class="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Previous</button>
+            <button id="btnNext"
+                class="px-4 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Next</button>
         </div>
     </div>
 
 </div>
 
-<div id="drawerOverlay" class="fixed inset-0 drawer-overlay hidden z-40 transition-opacity opacity-0" onclick="UI.closeAllDrawers()"></div>
+<div id="drawerOverlay" class="fixed inset-0 drawer-overlay hidden z-40 transition-opacity opacity-0"
+    onclick="UI.closeAllDrawers()"></div>
 
-<div id="smsDrawer" class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
+<div id="smsDrawer"
+    class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
     <div class="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
         <div>
             <h2 id="dName" class="text-xl font-black text-slate-800 tracking-tight">Client Name</h2>
             <div class="flex items-center gap-2 mt-1">
                 <span id="dPhone" class="text-xs font-bold text-slate-500 font-mono">07XX XXX XXX</span>
-                <span id="dStatus" class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-600">Status</span>
+                <span id="dStatus"
+                    class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-600">Status</span>
             </div>
         </div>
-        <button onclick="UI.closeAllDrawers()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><i class="fas fa-times"></i></button>
+        <button onclick="UI.closeAllDrawers()"
+            class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><i
+                class="fas fa-times"></i></button>
     </div>
 
     <div class="flex-grow overflow-y-auto custom-scroll p-6 space-y-6">
         <div id="templateToggleContainer" class="flex p-1 bg-slate-100 rounded-lg">
-            <button data-type="reminder" onclick="Actions.setTemplate('reminder', this)" class="flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-slate-800 transition-all">Reminder</button>
-            <button data-type="receipt" onclick="Actions.setTemplate('receipt', this)" class="flex-1 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all">Confirmation</button>
-            <button data-type="custom" onclick="Actions.setTemplate('custom', this)" class="flex-1 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all">Custom</button>
+            <button data-type="reminder" onclick="Actions.setTemplate('reminder', this)"
+                class="flex-1 py-2 text-xs font-bold rounded-md bg-white shadow-sm text-slate-800 transition-all">Reminder</button>
+            <button data-type="receipt" onclick="Actions.setTemplate('receipt', this)"
+                class="flex-1 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all">Confirmation</button>
+            <button data-type="custom" onclick="Actions.setTemplate('custom', this)"
+                class="flex-1 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-700 transition-all">Custom</button>
         </div>
 
         <div class="relative group">
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Message Content</label>
-            <textarea id="singleSmsBody" class="w-full h-48 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50 transition-all resize-none"></textarea>            
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Message
+                Content</label>
+            <textarea id="singleSmsBody"
+                class="w-full h-48 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-50 transition-all resize-none"></textarea>
         </div>
     </div>
 
     <div class="p-6 bg-slate-50 border-t border-slate-100">
-        <button id="btnSendSingle" onclick="API.sendSingleSMS()" class="w-full py-4 rounded-xl bg-teal-600 text-white font-bold text-sm hover:bg-teal-700 shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2 transition-all">
+        <button id="btnSendSingle" onclick="API.sendSingleSMS()"
+            class="w-full py-4 rounded-xl bg-teal-600 text-white font-bold text-sm hover:bg-teal-700 shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2 transition-all">
             <i class="fas fa-paper-plane"></i> SEND SMS NOW
         </button>
     </div>
 </div>
 
-<div id="bulkDrawer" class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
+<div id="bulkDrawer"
+    class="fixed top-0 right-0 h-full w-full max-w-[480px] bg-white z-50 drawer-panel flex flex-col border-l border-slate-200">
     <div class="p-6 border-b border-slate-100 bg-slate-900 text-white">
         <h2 class="text-xl font-black tracking-tight">Bulk Dispatch</h2>
-        <p class="text-xs font-medium text-slate-400 mt-1">Sending to <span id="bulkTotalBadge" class="text-white font-bold">0</span> recipients</p>
+        <p class="text-xs font-medium text-slate-400 mt-1">Sending to <span id="bulkTotalBadge"
+                class="text-white font-bold">0</span> recipients</p>
     </div>
 
     <div class="flex-grow overflow-y-auto custom-scroll p-6 space-y-6">
-        
+
         <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Recipient Summary</p>
             <div class="flex flex-wrap gap-2" id="bulkRecipientList">
-                </div>
+            </div>
             <p id="bulkHiddenCount" class="text-[10px] text-slate-400 font-bold mt-2 hidden">+ 12 others</p>
         </div>
 
         <div class="relative">
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Message to All</label>
-            <textarea id="bulkSmsBody" class="w-full h-48 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-100 transition-all resize-none" placeholder="Type your message here..."></textarea>
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Message to
+                All</label>
+            <textarea id="bulkSmsBody"
+                class="w-full h-48 sms-editor p-4 rounded-xl border border-slate-200 text-xs text-slate-700 outline-none focus:border-slate-800 focus:ring-4 focus:ring-slate-100 transition-all resize-none"
+                placeholder="Type your message here..."></textarea>
             <p class="text-[10px] text-slate-400 mt-2">
                 <i class="fas fa-info-circle mr-1"></i> Same message will be sent to all selected clients.
             </p>
@@ -212,25 +333,29 @@
     </div>
 
     <div class="p-6 bg-slate-50 border-t border-slate-100">
-        <button id="btnSendBulk" onclick="API.sendBulkSMS()" class="w-full py-4 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 shadow-lg shadow-slate-900/20 flex items-center justify-center gap-2 transition-all">
+        <button id="btnSendBulk" onclick="API.sendBulkSMS()"
+            class="w-full py-4 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 shadow-lg shadow-slate-900/20 flex items-center justify-center gap-2 transition-all">
             <i class="fas fa-mail-bulk"></i> SEND BULK BLAST
         </button>
     </div>
 </div>
 
-<div id="historyDrawer" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white z-50 drawer-panel flex flex-col border-l border-slate-200 shadow-2xl">
+<div id="historyDrawer"
+    class="fixed top-0 right-0 h-full w-full max-w-lg bg-white z-50 drawer-panel flex flex-col border-l border-slate-200 shadow-2xl">
     <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
         <div>
             <h2 class="text-xl font-black text-slate-900 tracking-tight">Comms History</h2>
-            <p id="hClientName" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Loading profile...</p>
+            <p id="hClientName" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Loading
+                profile...</p>
         </div>
-        <button onclick="UI.closeAllDrawers()" class="w-10 h-10 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all flex items-center justify-center">
+        <button onclick="UI.closeAllDrawers()"
+            class="w-10 h-10 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all flex items-center justify-center">
             <i class="fas fa-times text-lg"></i>
         </button>
     </div>
 
     <div id="historyList" class="flex-1 overflow-y-auto custom-scroll p-0 bg-white">
-        </div>
+    </div>
 
     <div class="p-6 border-t border-slate-100 bg-white">
         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">End of History Log</span>
@@ -238,9 +363,9 @@
 </div>
 
 <script>
-    const API_BASE = "/api/hr/dispatch"; 
+    const API_BASE = "/api/hr/dispatch";
     const DATA_ENDPOINT = "/api/subscriptions/dashboard-data";
-    
+
     const State = {
         allData: [],
         filteredData: [],
@@ -257,21 +382,21 @@
 
     function updatePagination() {
         State.totalPages = Math.ceil(State.filteredData.length / State.itemsPerPage);
-        
+
         const startIdx = (State.currentPage - 1) * State.itemsPerPage;
         const endIdx = startIdx + State.itemsPerPage;
-        
+
         State.displayedData = State.filteredData.slice(startIdx, endIdx);
-        
+
         const pageInfo = document.getElementById('pageInfo');
         const btnPrev = document.getElementById('btnPrev');
         const btnNext = document.getElementById('btnNext');
         const paginationContainer = document.getElementById('paginationContainer');
-        
+
         if (State.filteredData.length > State.itemsPerPage) {
             paginationContainer.classList.remove('hidden');
             pageInfo.textContent = `Showing ${startIdx + 1}-${Math.min(endIdx, State.filteredData.length)} of ${State.filteredData.length}`;
-            
+
             btnPrev.disabled = State.currentPage === 1;
             btnNext.disabled = State.currentPage === State.totalPages;
         } else {
@@ -303,27 +428,27 @@
         selectAll: document.getElementById('selectAll'),
         btnBulk: document.getElementById('btnBulkAction'),
         bulkCount: document.getElementById('bulkCount'),
-        
+
         smsDrawer: document.getElementById('smsDrawer'),
         singleBody: document.getElementById('singleSmsBody'),
-        
+
         bulkDrawer: document.getElementById('bulkDrawer'),
         bulkBody: document.getElementById('bulkSmsBody'),
         bulkRecipients: document.getElementById('bulkRecipientList'),
-        
+
         overlay: document.getElementById('drawerOverlay')
     };
 
     async function initData() {
         if (State.isLoading) return;
-        
+
         State.isLoading = true;
         UI.toggleLoading(true);
-        
+
         try {
             // Only fetch subscription data first
             const res = await fetch(DATA_ENDPOINT);
-            if(!res.ok) throw new Error("Failed to load data");
+            if (!res.ok) throw new Error("Failed to load data");
             const raw = await res.json();
 
             const userMap = new Map();
@@ -335,17 +460,17 @@
             State.allData = raw.subscriptions.map(sub => {
                 const now = new Date();
                 const expiryDate = new Date(sub.expiry_date.replace(' ', 'T'));
-                
+
                 const warningDate = new Date(expiryDate);
                 warningDate.setDate(warningDate.getDate() - 5);
-                
+
                 let displayStatus = 'active';
                 let isWarningPeriod = false;
 
                 if (now > expiryDate) {
                     displayStatus = 'expired';
                 } else if (now > warningDate) {
-                    displayStatus = 'overdue'; 
+                    displayStatus = 'overdue';
                     isWarningPeriod = true;
                 } else {
                     displayStatus = 'active';
@@ -360,20 +485,20 @@
                     phone: sub.phone,
                     pkgName: sub.package_name,
                     price: sub.price,
-                    location: location, 
+                    location: location,
                     expiry: expiryDate,
                     warningDate: warningDate,
                     isWarningPeriod: isWarningPeriod,
                     displayStatus: displayStatus,
                     sms_24h_count: 0  // Default to 0, load later
                 };
-            }).sort((a,b) => a.name.localeCompare(b.name));
-            
+            }).sort((a, b) => a.name.localeCompare(b.name));
+
             API.checkBalance();
-            populateLocationFilter();            
+            populateLocationFilter();
             applyFilters();
             loadSmsCountsAsync();
-            
+
         } catch (error) {
             console.error("Init data error:", error);
             Swal.fire("Error", "Could not load data.", "error");
@@ -386,10 +511,10 @@
     async function loadSmsCountsAsync() {
         try {
             const logRes = await fetch('/api/hr/sms/log');
-            if(!logRes.ok) return;
-            
+            if (!logRes.ok) return;
+
             const logData = await logRes.json();
-            
+
             // Update counts in existing data
             State.allData.forEach(client => {
                 const logEntry = logData.subscriptions.find(l => l.id === client.id);
@@ -397,7 +522,7 @@
                     client.sms_24h_count = logEntry.sms_24h_count;
                 }
             });
-            
+
             // Re-render only if user is still on first page
             if (!State.isLoading) {
                 debouncedRender();
@@ -424,15 +549,15 @@
         const term = Els.search.value.toLowerCase().trim();
         const filter = Els.filter.value;
         const locationFilter = document.getElementById('locationFilter').value;
-        
+
         State.filteredData = State.allData.filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(term) || item.phone.includes(term);
             const matchesFilter = !filter || item.displayStatus === filter;
             const matchesLocation = !locationFilter || locationFilter === '' || item.location === locationFilter;
-            
+
             return matchesSearch && matchesFilter && matchesLocation;
         });
-        
+
         // Reset to page 1 when filtering
         State.currentPage = 1;
         UI.updateBulkButton();
@@ -442,7 +567,7 @@
 
     function renderTable() {
         if (State.isLoading) return;
-        
+
         Els.tbody.innerHTML = "";
         Els.tableContainer.classList.remove('hidden');
 
@@ -450,7 +575,7 @@
         State.displayedData.forEach(client => {
             const tr = document.createElement('tr');
             tr.dataset.clientId = client.id;
-            
+
             const isSelected = State.selectedIds.has(client.id);
             const dateStr = client.expiry.toLocaleDateString('en-GB');
             let badgeClass = 'badge-active';
@@ -474,7 +599,7 @@
                 countdownClass = "text-slate-400 font-medium";
                 subLabel = "Service Disconnected";
             } else if (now > client.warningDate) {
-                countdownText = getCountdown(client.expiry); 
+                countdownText = getCountdown(client.expiry);
                 countdownClass = "text-rose-500 font-bold animate-pulse";
                 subLabel = "CRITICAL: PAY SOON";
             } else {
@@ -541,15 +666,15 @@
             `;
             Els.tbody.appendChild(tr);
         });
-        
-        const allCurrentPageSelected = State.displayedData.length > 0 && 
-                                        State.displayedData.every(c => State.selectedIds.has(c.id));
+
+        const allCurrentPageSelected = State.displayedData.length > 0 &&
+            State.displayedData.every(c => State.selectedIds.has(c.id));
         Els.selectAll.checked = allCurrentPageSelected;
     }
 
     function populateLocationFilter() {
         const locationSelect = document.getElementById('locationFilter');
-        
+
         const locationCounts = {};
         State.allData.forEach(item => {
             const loc = item.location;
@@ -557,37 +682,37 @@
                 locationCounts[loc] = (locationCounts[loc] || 0) + 1;
             }
         });
-        
+
         const locations = Object.keys(locationCounts).sort();
-        
+
         const currentSelection = locationSelect.value;
-        
+
         locationSelect.innerHTML = `
             <option value="">All Locations (${State.allData.length})</option>
-            ${locations.map(loc => 
-                `<option value="${loc}">${loc} (${locationCounts[loc]})</option>`
-            ).join('')}
+            ${locations.map(loc =>
+            `<option value="${loc}">${loc} (${locationCounts[loc]})</option>`
+        ).join('')}
         `;
-        
+
         if (currentSelection && locations.includes(currentSelection)) {
             locationSelect.value = currentSelection;
         }
     }
-    
+
     function validatePhoneNumber(phone) {
         // Remove all spaces and special characters
         const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-        
+
         // Check if it's exactly 10 digits and starts with 07 or 01
         const validFormat = /^(07|01)\d{8}$/;
-        
+
         return validFormat.test(cleaned);
     }
 
     function formatPhoneNumber(phone) {
         // Remove all spaces and special characters
         const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-        
+
         // Return as-is if it's already in the correct format
         return cleaned;
     }
@@ -595,9 +720,9 @@
     Els.tbody.addEventListener('click', (e) => {
         const row = e.target.closest('tr');
         if (!row) return;
-        
+
         const clientId = parseInt(row.dataset.clientId);
-        
+
         if (e.target.classList.contains('row-checkbox')) {
             Actions.toggleSelect(clientId);
         } else if (e.target.classList.contains('compose-btn')) {
@@ -613,11 +738,11 @@
             try {
                 const res = await fetch(`${API_BASE}/sms/balance`);
                 const json = await res.json();
-                if(json.success) {
+                if (json.success) {
                     document.getElementById('smsBalanceVal').innerText = `KES ${json.data.balance}`;
                     document.getElementById('balanceBadge').classList.remove('hidden');
                 }
-            } catch(e) { console.warn("Balance check failed"); }
+            } catch (e) { console.warn("Balance check failed"); }
         },
 
         sendSingleSMS: async () => {
@@ -625,7 +750,7 @@
             const originalText = btn.innerHTML;
             const message = Els.singleBody.value;
 
-            if(!message) return Swal.fire("Empty Message", "Please write a message first.", "warning");
+            if (!message) return Swal.fire("Empty Message", "Please write a message first.", "warning");
 
             if (!validatePhoneNumber(State.currentClient.phone)) {
                 return Swal.fire({
@@ -650,12 +775,12 @@
                         phone: State.currentClient.phone,
                         message: message,
                         subscriptionId: State.currentClient.id,  // Add this
-                        messageType: State.currentTemplateType || 'custom' 
+                        messageType: State.currentTemplateType || 'custom'
                     })
                 });
-                
+
                 const result = await res.json();
-                if(res.status === 429) {
+                if (res.status === 429) {
                     return Swal.fire({
                         title: "Rate Limit Exceeded",
                         html: `
@@ -666,7 +791,7 @@
                         confirmButtonText: "Got it"
                     });
                 }
-                if(!res.ok) throw new Error(result.error || "Failed");
+                if (!res.ok) throw new Error(result.error || "Failed");
 
                 Swal.fire({
                     title: "Sent!",
@@ -677,7 +802,7 @@
                 });
                 UI.closeAllDrawers();
                 initData();
-                API.checkBalance(); 
+                API.checkBalance();
 
             } catch (error) {
                 Swal.fire("Failed", error.message, "error");
@@ -692,19 +817,19 @@
             const originalText = btn.innerHTML;
             const message = Els.bulkBody.value;
 
-            if(!message) return Swal.fire("Empty Message", "Please write a message.", "warning");
+            if (!message) return Swal.fire("Empty Message", "Please write a message.", "warning");
 
-            const selectedClients = Array.from(State.selectedIds).map(id => 
+            const selectedClients = Array.from(State.selectedIds).map(id =>
                 State.allData.find(c => c.id === id)
             ).filter(Boolean);
 
             const invalidClients = selectedClients.filter(client => !validatePhoneNumber(client.phone));
-    
+
             if (invalidClients.length > 0) {
-                const invalidList = invalidClients.map(c => 
+                const invalidList = invalidClients.map(c =>
                     `<li class="text-left py-1"><strong>${c.name}</strong>: ${c.phone}</li>`
                 ).join('');
-                
+
                 return Swal.fire({
                     title: "Invalid Phone Numbers Detected",
                     html: `
@@ -738,7 +863,7 @@
                 });
 
                 const result = await res.json();
-                if(!res.ok) throw new Error(result.error || "Failed");
+                if (!res.ok) throw new Error(result.error || "Failed");
 
                 try {
                     await fetch('/api/hr/sms/log/bulk', {
@@ -758,7 +883,7 @@
                 }
 
                 Swal.fire("Batch Sent!", `Successfully queued ${messages.length} messages.`, "success");
-                
+
                 State.selectedIds.clear();
                 UI.updateBulkButton();
                 debouncedRender();
@@ -777,7 +902,7 @@
 
     const Actions = {
         toggleSelect: (id) => {
-            if(State.selectedIds.has(id)) State.selectedIds.delete(id);
+            if (State.selectedIds.has(id)) State.selectedIds.delete(id);
             else State.selectedIds.add(id);
             UI.updateBulkButton();
             renderTable();
@@ -785,19 +910,19 @@
 
         toggleSelectAll: () => {
             const allCurrentPageSelected = State.displayedData.every(c => State.selectedIds.has(c.id));
-            
+
             State.displayedData.forEach(c => {
-                if(allCurrentPageSelected) State.selectedIds.delete(c.id);
+                if (allCurrentPageSelected) State.selectedIds.delete(c.id);
                 else State.selectedIds.add(c.id);
             });
-            
+
             UI.updateBulkButton();
             renderTable();
         },
 
         openSingleDrawer: (id) => {
             const client = State.allData.find(c => c.id === id);
-            if(!client) return;
+            if (!client) return;
             State.currentClient = client;
 
             document.getElementById('dName').innerText = client.name;
@@ -806,17 +931,17 @@
 
             const firstBtn = document.querySelector('#templateToggleContainer button');
             Actions.setTemplate('reminder', firstBtn);
-            
+
             UI.openDrawer('smsDrawer');
         },
 
         openBulkDrawer: () => {
-            if(State.selectedIds.size === 0) return;
-            
+            if (State.selectedIds.size === 0) return;
+
             Els.bulkRecipients.innerHTML = "";
             let count = 0;
             State.selectedIds.forEach(id => {
-                if(count >= 5) return;
+                if (count >= 5) return;
                 const c = State.allData.find(x => x.id === id);
                 const div = document.createElement('div');
                 div.className = "w-8 h-8 rounded-full bg-indigo-100 border border-white shadow-sm flex items-center justify-center text-[10px] font-bold text-indigo-700";
@@ -827,7 +952,7 @@
 
             const remaining = State.selectedIds.size - 5;
             const hiddenCountEl = document.getElementById('bulkHiddenCount');
-            if(remaining > 0) {
+            if (remaining > 0) {
                 hiddenCountEl.innerText = `+ ${remaining} others`;
                 hiddenCountEl.classList.remove('hidden');
             } else {
@@ -841,11 +966,11 @@
         setTemplate: (type, el) => {
             State.currentTemplateType = type;
             const c = State.currentClient;
-            if(!c) return;
+            if (!c) return;
 
             if (el) {
                 const buttons = el.parentElement.querySelectorAll('button');
-                
+
                 buttons.forEach(btn => {
                     btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
                     btn.classList.add('text-slate-500', 'hover:text-slate-700');
@@ -856,35 +981,35 @@
             }
 
             const now = new Date();
-            
+
             const firstName = c.name.split(" ")[0];
             const diffTime = c.expiry - now;
             const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            const nextMonth = new Date(); 
+            const nextMonth = new Date();
             nextMonth.setDate(now.getDate() + 30);
             const dateStr = c.expiry.toLocaleDateString('en-GB');
 
             let text = "";
             if (type === 'reminder') {
                 if (daysLeft <= 0) {
-                    text = `Hello ${c.name.toUpperCase()},\nWe hope you’re doing well! Your DR.NET ${c.pkgName} internet subscription has expired, and the service is currently paused.\nAmount Due: KES ${parseFloat(c.price).toLocaleString('en-KE', {minimumFractionDigits: 2})}\n\nPay easily via M-PESA:\n• Buy Goods & Services\n• Till Number: 5626320\n\nOnce payment is received, your internet will be reconnected automatically — No Delays.\nThank you for choosing DR.NET. We truly appreciate your continued support!\n\nDR.NET Technology Labs`;
+                    text = `Hello ${c.name.toUpperCase()},\nWe hope you’re doing well! Your DR.NET ${c.pkgName} internet subscription has expired, and the service is currently paused.\nAmount Due: KES ${parseFloat(c.price).toLocaleString('en-KE', { minimumFractionDigits: 2 })}\n\nMaking payment is easy:\n\nPay via M-PESA Paybill:\nPaybill No: 4011231\nAccount Number: ${c.phone}\n\nComplete the payment\n\nOnce payment is received, your internet will be reconnected automatically — No Delays.\nThank you for choosing DR.NET. We truly appreciate your continued support!\n\nDR.NET Technology Labs`;
                 } else {
-                    text = `Reminder:\nWe hope you’re enjoying your internet service. Your DR.NET ${c.pkgName} subscription will be due in ${daysLeft} days. To continue enjoying fast and uninterrupted connectivity, please pay KES ${parseFloat(c.price).toLocaleString('en-KE', {minimumFractionDigits: 2})} by ${dateStr}.\n\nMaking payment is easy via M-PESA:\n\nGo to Buy Goods & Services\n\nEnter Till Number: 5626320\n\nComplete the payment\n\nIf you have any questions or need assistance, our support team is always here to help. Thank you for choosing DR.NET Technology – we appreciate having you as our valued customer!`;
+                    text = `Reminder:\nWe hope you’re enjoying your internet service. Your DR.NET ${c.pkgName} subscription will be due in ${daysLeft} days. To continue enjoying fast and uninterrupted connectivity, please pay KES ${parseFloat(c.price).toLocaleString('en-KE', { minimumFractionDigits: 2 })} by ${dateStr}.\n\nMaking payment is easy:\n\nPay via M-PESA Paybill:\nPaybill No: 4011231\nAccount Number: ${c.phone}\n\nComplete the payment\n\nIf you have any questions or need assistance, our support team is always here to help. Thank you for choosing DR.NET Technology – we appreciate having you as our valued customer!`;
                 }
             } else if (type === 'receipt') {
-                text = `Confirmation:\nThank you, ${firstName.toUpperCase()}!\n\nWe’ve received your KES ${parseFloat(c.price).toLocaleString('en-KE', {minimumFractionDigits: 2})} payment for the ${c.pkgName} internet subscription.Your DR.NET Internet Service is now active for the next 30 days, valid until ${nextMonth.toLocaleDateString('en-GB')}.\nWe’re happy to serve you! \n\nQuestions? Call 0701782354\nDR.NET Technology Labs`;
+                text = `Confirmation:\nThank you, ${firstName.toUpperCase()}!\n\nWe’ve received your KES ${parseFloat(c.price).toLocaleString('en-KE', { minimumFractionDigits: 2 })} payment for the ${c.pkgName} internet subscription.Your DR.NET Internet Service is now active for the next 30 days, valid until ${nextMonth.toLocaleDateString('en-GB')}.\nWe’re happy to serve you! \n\nQuestions? Call 0701782354\nDR.NET Technology Labs`;
             } else {
                 text = "";
             }
-            
+
             Els.singleBody.value = text;
         },
 
         viewHistory: async (id, name) => {
             const list = document.getElementById('historyList');
             document.getElementById('hClientName').innerText = name;
-            
+
             list.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-20">
                     <div class="relative">
@@ -892,14 +1017,14 @@
                     </div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-4">Syncing Logs</p>
                 </div>`;
-            
+
             UI.openDrawer('historyDrawer');
 
             try {
                 const res = await fetch(`/api/hr/sms/log/${id}`);
                 const data = await res.json();
-                
-                if(!data.history || data.history.length === 0) {
+
+                if (!data.history || data.history.length === 0) {
                     list.innerHTML = `
                         <div class="py-20 text-center">
                             <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
