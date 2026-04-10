@@ -219,13 +219,29 @@
             opacity: 1;
         }
 
-        @media (max-width: 640px) {
-            h1 { font-size: 1.875rem !important; }
-            h2 { font-size: 1.5rem !important; }
-            h3 { font-size: 1.125rem !important; }
-            p { font-size: 0.875rem; }
+        /* Fluid typography scales the entire UI proportionally */
+        html { font-size: 16px; }
+        
+        @media screen and (max-width: 1280px) {
+            html { font-size: 15px; }
+        }
+        
+        @media screen and (max-width: 1024px) {
+            html { font-size: 14.5px; }
+        }
+
+        @media screen and (max-width: 768px) {
+            html { font-size: 13.5px; }
+        }
+        
+        @media screen and (max-width: 640px) {
+            html { font-size: 12px; }
             .team-card { height: 280px; }
             .gallery-card { height: 300px; }
+        }
+        
+        @media screen and (max-width: 480px) {
+            html { font-size: 11px; }
         }
 
         @media (max-width: 768px) {
@@ -718,33 +734,150 @@
               </p>
           </div>
 
-          <div class="flex flex-col md:flex-row justify-center items-center gap-12 md:gap-24 mb-24">
+          <div class="text-center mb-16" data-aos="fade-up">
+              <h3 class="text-3xl md:text-4xl font-black text-white tracking-tight">Board of Directors</h3>
+              <div class="h-1 w-20 bg-teal-500 mx-auto mt-4 rounded-full"></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-12 md:gap-14 lg:gap-16 mb-24 justify-items-center items-stretch w-full max-w-6xl mx-auto">
               
-              <div x-data="{ open: false }" class="group text-center w-full md:w-auto" data-aos="fade-up">
-                  <div class="relative inline-block p-2 rounded-full border-2 border-dashed border-teal-500/30 group-hover:border-teal-400 transition-all duration-500 cursor-pointer">
-                      <img src="static/images/director.jpeg" alt="Dr. Sam Oyugi" 
-                          class="rounded-full mx-auto shadow-2xl w-48 h-48 md:w-56 md:h-56 object-cover transition-all duration-500 border-4 border-white/10 group-hover:border-teal-500"
-                          :class="open ? 'scale-90 rotate-3' : ''">
-                  </div>
-                  <h3 class="text-2xl font-black text-white mt-6 tracking-tight">Dr. Sam Oyugi</h3>
-                  <p class="text-teal-400 font-black text-[10px] uppercase tracking-widest mb-4">Director & Founder</p>
+              <!-- Dr. Sam Oyugi -->
+              <div x-data="{ expanded: false, hasOverflow: false }" 
+                   x-init="setTimeout(() => { if ($refs.desc) { hasOverflow = ($refs.desc.scrollHeight > $refs.desc.clientHeight + 2); } }, 300)"
+                   class="group flex flex-col items-center text-center w-full h-full max-w-sm lg:max-w-md" data-aos="fade-up">
                   
-                  <div class="max-w-xs mx-auto text-slate-300 text-sm leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 mt-2">
-                      Dr. Sam Oyugi is the visionary behind Dr.Net Technology Labs, he is a highly experienced physician based in the USA, with over 45 years of medical practice. He is also an IT enthusiast embracing tech to improve lives.
+                  <div class="relative flex-shrink-0 p-1.5 rounded-full border border-teal-500/30 transition-all duration-500 z-10 -mb-12 bg-[#061514]">
+                      <img src="static/images/director.jpeg" alt="Dr. Sam Oyugi" 
+                          class="rounded-full mx-auto shadow-2xl w-32 h-32 md:w-36 md:h-36 xl:w-44 xl:h-44 object-cover transition-all duration-500 border-4 border-[#061514] group-hover:border-teal-500 group-hover:scale-105">
+                  </div>
+                  
+                  <div class="flex flex-col flex-grow w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-[2rem] pt-16 px-6 pb-6 transition-all duration-500 hover:bg-white/10 hover:border-teal-500/30">
+                      <h3 class="text-xl md:text-2xl font-black text-white tracking-tight">Dr. Sam Oyugi</h3>
+                      <p class="text-teal-400 font-bold text-[10px] md:text-xs uppercase tracking-widest mt-1 mb-4">Director & Founder</p>
+                      
+                      <div class="w-12 h-1 bg-teal-500/50 mx-auto mb-5 rounded-full"></div>
+                      
+                      <div x-ref="desc"
+                           class="text-slate-300 text-sm md:text-[15px] leading-relaxed text-center transition-all duration-500 overflow-hidden relative w-full"
+                           :class="expanded ? 'line-clamp-none pb-2' : 'line-clamp-4 pt-1'">
+                          Dr. Sam Oyugi is the visionary behind Dr.Net Technology Labs, he is a highly experienced physician based in the USA, with over 45 years of medical practice. He is also an IT enthusiast embracing tech to improve lives.
+                      </div>
+                      
+                      <div class="mt-auto pt-6 flex justify-center w-full">
+                          <button x-show="hasOverflow || expanded" 
+                                  @click="expanded = !expanded" 
+                                  style="display: none;" 
+                                  :style="hasOverflow || expanded ? 'display: flex;' : 'display: none;'"
+                                  class="items-center justify-center gap-2 px-5 py-2 rounded-full bg-teal-500/10 border border-teal-500/20 text-[10px] font-black uppercase tracking-widest text-teal-400 hover:text-white hover:bg-teal-600 hover:border-teal-500 transition-all shadow-lg active:scale-95">
+                              <span x-text="expanded ? 'Show Less' : 'Read Bio'"></span>
+                              <i class="fas transition-transform duration-300" :class="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                          </button>
+                      </div>
                   </div>
               </div>
 
-              <div x-data="{ open: true }" class="group text-center w-full md:w-auto" data-aos="fade-up" data-aos-delay="100">
-                  <div class="relative inline-block p-2 rounded-full border-2 border-dashed border-purple-500/30 group-hover:border-purple-400 transition-all duration-500 cursor-pointer">
-                      <img src="static/images/4.jpg" alt="Julius Ojwang" 
-                          class="rounded-full mx-auto shadow-2xl w-44 h-44 md:w-52 md:h-52 object-cover transition-all duration-500 border-4 border-white/10 group-hover:border-purple-500"
-                          :class="open ? 'scale-90 rotate-3' : ''">
-                  </div>
-                  <h3 class="text-2xl font-black text-white mt-6 tracking-tight">Julius Ojwang</h3>
-                  <p class="text-purple-400 font-black text-[10px] uppercase tracking-widest mb-4">Telecommunications Engineer / CTO</p>
+              <!-- Julius Ojwang -->
+              <div x-data="{ expanded: false, hasOverflow: false }" 
+                   x-init="setTimeout(() => { if ($refs.desc) { hasOverflow = ($refs.desc.scrollHeight > $refs.desc.clientHeight + 2); } }, 300)"
+                   class="group flex flex-col items-center text-center w-full h-full max-w-sm lg:max-w-md" data-aos="fade-up" data-aos-delay="100">
                   
-                  <div x-show="open" x-transition class="max-w-[450px] mx-auto text-slate-300 text-sm leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/10 mt-2">
-                      Julius is a Telecommunications Engineer with expertise in wireless networks, fiber optic infrastructure, network simulation, and remote sensing for telecommunications. His core competencies include network planning and design, RF analysis and optimization, link budget analysis, spectrum management, capacity planning, and the deployment, monitoring, and optimization of reliable communication systems across urban and rural environments.
+                  <div class="relative flex-shrink-0 p-1.5 rounded-full border border-purple-500/30 transition-all duration-500 z-10 -mb-12 bg-[#061514]">
+                      <img src="static/images/4.jpg" alt="Julius Ojwang" 
+                          class="rounded-full mx-auto shadow-2xl w-32 h-32 md:w-36 md:h-36 xl:w-44 xl:h-44 object-cover transition-all duration-500 border-4 border-[#061514] group-hover:border-purple-500 group-hover:scale-105">
+                  </div>
+                  
+                  <div class="flex flex-col flex-grow w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-[2rem] pt-16 px-6 pb-6 transition-all duration-500 hover:bg-white/10 hover:shadow-2xl hover:border-purple-500/30">
+                      <h3 class="text-xl md:text-2xl font-black text-white tracking-tight">Julius Ojwang</h3>
+                      <p class="text-purple-400 font-bold text-[10px] md:text-xs uppercase tracking-widest mt-1 mb-4">Telecommunications Engineer / CTO</p>
+                      
+                      <div class="w-12 h-1 bg-purple-500/50 mx-auto mb-5 rounded-full"></div>
+                      
+                      <div x-ref="desc"
+                           class="text-slate-300 text-sm md:text-[15px] leading-relaxed text-center transition-all duration-500 overflow-hidden relative w-full"
+                           :class="expanded ? 'line-clamp-none pb-2' : 'line-clamp-4 pt-1'">
+                          Julius is a Telecommunications Engineer with expertise in wireless networks, fiber optic infrastructure, network simulation, and remote sensing for telecommunications. His core competencies include network planning and design, RF analysis and optimization, link budget analysis, spectrum management, capacity planning, and the deployment, monitoring, and optimization of reliable communication systems across urban and rural environments.
+                      </div>
+                      
+                      <div class="mt-auto pt-6 flex justify-center w-full">
+                          <button x-show="hasOverflow || expanded" 
+                                  @click="expanded = !expanded" 
+                                  style="display: none;" 
+                                  :style="hasOverflow || expanded ? 'display: flex;' : 'display: none;'"
+                                  class="items-center justify-center gap-2 px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-white hover:bg-purple-600 hover:border-purple-500 transition-all shadow-lg active:scale-95">
+                              <span x-text="expanded ? 'Show Less' : 'Read Bio'"></span>
+                              <i class="fas transition-transform duration-300" :class="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Kevin Otieno -->
+              <div x-data="{ expanded: false, hasOverflow: false }" 
+                   x-init="setTimeout(() => { if ($refs.desc) { hasOverflow = ($refs.desc.scrollHeight > $refs.desc.clientHeight + 2); } }, 300)"
+                   class="group flex flex-col items-center text-center w-full h-full max-w-sm lg:max-w-md" data-aos="fade-up" data-aos-delay="200">
+                  
+                  <div class="relative flex-shrink-0 p-1.5 rounded-full border border-blue-500/30 transition-all duration-500 z-10 -mb-12 bg-[#061514]">
+                      <img src="static/images/kevin-otieno.jpeg" alt="Kevin Otieno" 
+                          class="rounded-full mx-auto shadow-2xl w-32 h-32 md:w-36 md:h-36 xl:w-44 xl:h-44 object-cover transition-all duration-500 border-4 border-[#061514] group-hover:border-blue-500 group-hover:scale-105">
+                  </div>
+                  
+                  <div class="flex flex-col flex-grow w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-[2rem] pt-16 px-6 pb-6 transition-all duration-500 hover:bg-white/10 hover:shadow-2xl hover:border-blue-500/30">
+                      <h3 class="text-xl md:text-2xl font-black text-white tracking-tight">Kevin Otieno</h3>
+                      <p class="text-blue-400 font-bold text-[10px] md:text-xs uppercase tracking-widest mt-1 mb-4">Board Director</p>
+                      
+                      <div class="w-12 h-1 bg-blue-500/50 mx-auto mb-5 rounded-full"></div>
+                      
+                      <div x-ref="desc"
+                           class="text-slate-300 text-sm md:text-[15px] leading-relaxed text-center transition-all duration-500 overflow-hidden relative w-full"
+                           :class="expanded ? 'line-clamp-none pb-2' : 'line-clamp-4 pt-1'">
+                          Kevin Otieno is a Board Director at Dr. Net Technology Labs, providing strategic oversight in operations, corporate strategy, and analytics. He holds an MSc in Finance from the University of Kentucky and specializes in data-driven decision-making, financial analysis, and organizational growth. Kevin is focused on aligning execution with long-term strategy and leveraging data and innovation to drive sustainable impact.
+                      </div>
+                      
+                      <div class="mt-auto pt-6 flex justify-center w-full">
+                          <button x-show="hasOverflow || expanded" 
+                                  @click="expanded = !expanded" 
+                                  style="display: none;" 
+                                  :style="hasOverflow || expanded ? 'display: flex;' : 'display: none;'"
+                                  class="items-center justify-center gap-2 px-5 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all shadow-lg active:scale-95">
+                              <span x-text="expanded ? 'Show Less' : 'Read Bio'"></span>
+                              <i class="fas transition-transform duration-300" :class="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- CPA FA Dr. Daniel Omogi -->
+              <div x-data="{ expanded: false, hasOverflow: false }" 
+                   x-init="setTimeout(() => { if ($refs.desc) { hasOverflow = ($refs.desc.scrollHeight > $refs.desc.clientHeight + 2); } }, 300)"
+                   class="group flex flex-col items-center text-center w-full h-full max-w-sm lg:max-w-md" data-aos="fade-up" data-aos-delay="300">
+                  
+                  <div class="relative flex-shrink-0 p-1.5 rounded-full border border-amber-500/30 transition-all duration-500 z-10 -mb-12 bg-[#061514]">
+                      <img src="static/images/daniel-omogi.jpeg" alt="CPA FA Dr. Daniel Omogi, PhD" 
+                          class="rounded-full mx-auto shadow-2xl w-32 h-32 md:w-36 md:h-36 xl:w-44 xl:h-44 object-cover transition-all duration-500 border-4 border-[#061514] group-hover:border-amber-500 group-hover:scale-105">
+                  </div>
+                  
+                  <div class="flex flex-col flex-grow w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-[2rem] pt-16 px-6 pb-6 transition-all duration-500 hover:bg-white/10 hover:shadow-2xl hover:border-amber-500/30">
+                      <h3 class="text-xl md:text-2xl font-black text-white tracking-tight">CPA FA Dr. Daniel Omogi</h3>
+                      <p class="text-amber-400 font-bold text-[10px] md:text-xs uppercase tracking-widest mt-1 mb-4">Board Director / Finance</p>
+                      
+                      <div class="w-12 h-1 bg-amber-500/50 mx-auto mb-5 rounded-full"></div>
+                      
+                      <div x-ref="desc"
+                           class="text-slate-300 text-sm md:text-[15px] leading-relaxed text-center transition-all duration-500 overflow-hidden relative w-full"
+                           :class="expanded ? 'line-clamp-none pb-2' : 'line-clamp-4 pt-1'">
+                          CPA FA Dr. Daniel Omogi, PhD is a highly accomplished finance professional and academician with over 10 years of progressive experience in financial management, accounting, and strategic leadership, including more than 3 years in university teaching and research. He holds a PhD in Business Administration (Finance), MSc in Commerce, and Bachelors of Commerce. He is a Certified Public Accountant of Kenya (CPAK) and Certified Investment and Financial Analyst (CIFA). He previously served as Assistant Director Finance at the Murang’a County Assembly, Part time lecturer at Murang’a University of Technology, Part time Tutor at Dessa Training College and Partner at Daniel Omogi & Associates.
+                      </div>
+                      
+                      <div class="mt-auto pt-6 flex justify-center w-full">
+                          <button x-show="hasOverflow || expanded" 
+                                  @click="expanded = !expanded" 
+                                  style="display: none;" 
+                                  :style="hasOverflow || expanded ? 'display: flex;' : 'display: none;'"
+                                  class="items-center justify-center gap-2 px-5 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-black uppercase tracking-widest text-amber-400 hover:text-white hover:bg-amber-600 hover:border-amber-500 transition-all shadow-lg active:scale-95">
+                              <span x-text="expanded ? 'Show Less' : 'Read Bio'"></span>
+                              <i class="fas transition-transform duration-300" :class="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                          </button>
+                      </div>
                   </div>
               </div>
           </div>
@@ -1127,11 +1260,10 @@
                       <iframe
                           src="https://www.google.com/maps/d/u/0/embed?mid=12PDe-tiqXQd1H4msu3mBX9R9RWvax1s"
                           width="100%"
-                          height="600"
                           style="border:0; filter: contrast(1.1) brightness(1.02);"
                           allowfullscreen=""
                           loading="lazy"
-                          class="w-full"
+                          class="w-full h-[400px] md:h-[500px] lg:h-[600px]"
                       ></iframe>
                   </div>
               </div>
