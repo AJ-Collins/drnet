@@ -843,7 +843,7 @@
 
         // Thin divider line
         doc.setDrawColor(...BRAND.color);
-        doc.setLineWidth(0.3);
+        doc.setLineWidth(0.1);
         doc.line(0, 14, W, 14);
 
         // Subtitle
@@ -865,7 +865,7 @@
         for (let i = 1; i <= n; i++) {
             doc.setPage(i);
             doc.setDrawColor(180, 180, 180);
-            doc.setLineWidth(0.3);
+            doc.setLineWidth(0.1);
             doc.line(14, H - 11, W - 14, H - 11);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(7);
@@ -910,11 +910,11 @@
             if (y > 242) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
 
             // Heavy rule + caps, no color
-            doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.6);
+            doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.1);
             doc.line(14, y, W - 14, y);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
             doc.text(title.toUpperCase(), 14, y + 5.5);
-            doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.25);
+            doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.1);
             doc.line(14, y + 7, W - 14, y + 7);
             doc.setTextColor(0, 0, 0);
             y += 12;
@@ -933,7 +933,7 @@
 
             // Stat boxes — white fill, hairline border, dark text
             doc.setFillColor(255, 255, 255);
-            doc.setDrawColor(170, 170, 170); doc.setLineWidth(0.4);
+            doc.setDrawColor(170, 170, 170); doc.setLineWidth(0.1);
             doc.rect(14, y, bW - 2, 13, 'FD');
             doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
             doc.text('INSTALLATIONS', 16, y + 5);
@@ -1130,20 +1130,20 @@
         // Header
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(18);
-        doc.setTextColor(30, 41, 59);
+        doc.setTextColor(0, 0, 0);
         doc.text('MONTHLY REPORT', margin, y);
 
         y += 8;
         doc.setFontSize(10);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(0, 0, 0);
         doc.text(BRAND.name.toUpperCase(), margin, y);
 
         doc.setFont('helvetica', 'normal');
         doc.text(`Period: ${meta.period_label}`, W - margin, y, { align: 'right' });
 
         y += 5;
-        doc.setDrawColor(30, 41, 59);
-        doc.setLineWidth(1);
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.1);
         doc.line(margin, y, W - margin, y);
 
         y += 15;
@@ -1151,10 +1151,10 @@
         // Section 1: Revenue
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
-        doc.setTextColor(30, 41, 59);
+        doc.setTextColor(0, 0, 0);
         doc.text('1. REVENUE OVERVIEW', margin, y);
         y += 5;
-        doc.setLineWidth(0.5);
+        doc.setLineWidth(0.1);
         doc.line(margin, y, W - margin, y);
         y += 10;
 
@@ -1168,12 +1168,12 @@
             startY: y,
             body: revenueRows,
             theme: 'plain',
-            styles: { fontSize: 10, cellPadding: 3 },
+            styles: { fontSize: 10, cellPadding: 3, textColor: [0, 0, 0] },
             columnStyles: { 1: { halign: 'right' } },
             didParseCell: function (data) {
                 if (data.row.index === 2) {
                     data.cell.styles.fontStyle = 'bold';
-                    data.cell.styles.fillColor = [241, 245, 249];
+                    data.cell.styles.lineWidth = { bottom: 0.1 };
                 }
             }
         });
@@ -1185,6 +1185,7 @@
         doc.setFontSize(12);
         doc.text('2. EXPENDITURE & DEDUCTIONS', margin, y);
         y += 5;
+        doc.setLineWidth(0.1);
         doc.line(margin, y, W - margin, y);
         y += 10;
 
@@ -1198,13 +1199,12 @@
             startY: y,
             body: expenseRows,
             theme: 'plain',
-            styles: { fontSize: 10, cellPadding: 3 },
+            styles: { fontSize: 10, cellPadding: 3, textColor: [0, 0, 0] },
             columnStyles: { 1: { halign: 'right' } },
             didParseCell: function (data) {
                 if (data.row.index === 2) {
                     data.cell.styles.fontStyle = 'bold';
-                    data.cell.styles.fillColor = [241, 245, 249];
-                    data.cell.styles.textColor = [220, 38, 38];
+                    data.cell.styles.lineWidth = { bottom: 0.1 };
                 }
             }
         });
@@ -1216,24 +1216,24 @@
         doc.setFontSize(12);
         doc.text('3. PROFITABILITY ANALYSIS', margin, y);
         y += 5;
+        doc.setLineWidth(0.1);
         doc.line(margin, y, W - margin, y);
         y += 10;
 
-        doc.setFillColor(financial.net_profit >= 0 ? 240 : 254, financial.net_profit >= 0 ? 253 : 242, financial.net_profit >= 0 ? 244 : 242);
-        doc.rect(margin, y, W - (margin * 2), 25, 'F');
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.1);
+        doc.rect(margin, y, W - (margin * 2), 25, 'D');
 
         doc.setFontSize(10);
-        doc.setTextColor(financial.net_profit >= 0 ? 21 : 153, financial.net_profit >= 0 ? 101 : 27, financial.net_profit >= 0 ? 52 : 27);
+        doc.setTextColor(0, 0, 0);
         doc.text('NET PROFIT / LOSS', margin + 5, y + 10);
 
         doc.setFontSize(18);
         doc.text(`KES ${financial.net_profit < 0 ? '-' : ''}${fmt(Math.abs(financial.net_profit))}`, margin + 5, y + 20);
 
         doc.setFontSize(10);
-        doc.setTextColor(100, 116, 139);
         doc.text('PROFIT MARGIN', W - margin - 5, y + 10, { align: 'right' });
         doc.setFontSize(14);
-        doc.setTextColor(30, 41, 59);
         doc.text(`${financial.profit_margin_pct}%`, W - margin - 5, y + 20, { align: 'right' });
 
         y += 35;
@@ -1243,6 +1243,7 @@
         doc.setFontSize(12);
         doc.text('4. CLIENT ACTIVITY', margin, y);
         y += 5;
+        doc.setLineWidth(0.1);
         doc.line(margin, y, W - margin, y);
         y += 10;
 
@@ -1255,7 +1256,7 @@
             startY: y,
             body: clientStats,
             theme: 'plain',
-            styles: { fontSize: 10, cellPadding: 3 },
+            styles: { fontSize: 10, cellPadding: 3, textColor: [0, 0, 0] },
             columnStyles: { 1: { halign: 'right', fontStyle: 'bold' } }
         });
 
@@ -1266,7 +1267,7 @@
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             doc.setFontSize(8);
-            doc.setTextColor(148, 163, 184);
+            doc.setTextColor(0, 0, 0);
             doc.text('DR.NET TECHNOLOGY LABS - INTERNAL REPORT', margin, doc.internal.pageSize.getHeight() - 10);
             doc.text(`Page ${i} of ${pageCount}`, W - margin, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
         }
