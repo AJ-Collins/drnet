@@ -90,9 +90,8 @@ const AnalyticsReport = {
             [currentSalesRev],
             [monthlyExpenditure],
             [staffSalaries],
-            [newClients],
-            [newlySubscribedClients],
-            [joinedClientsList],
+            [newSubscriptionsCount],
+            [newClientsCount],
         ] = await Promise.all([
 
             db.query(`
@@ -166,8 +165,8 @@ const AnalyticsReport = {
             },
 
             clients: {
-                new_clients_count:      Number(newClients[0]?.count || 0),
-                new_subscriptions_count: Number(newlySubscribedClients[0]?.count || 0),
+                new_clients_count:      Number(newClientsCount[0]?.count || 0),
+                new_subscriptions_count: Number(newSubscriptionsCount[0]?.count || 0),
             }
         };
     },
