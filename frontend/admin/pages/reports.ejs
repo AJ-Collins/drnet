@@ -1,494 +1,541 @@
 <style>
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #f1f5f9; 
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f1f5f9;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .input-area {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+
+    .input-area:focus {
+        background: white;
+        border-color: #25bf93;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        outline: none;
+    }
+
+    .badge-urgent {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+    }
+
+    .badge-normal {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .badge-draft {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .badge-submitted {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .tab-btn {
+        background: white;
+        color: #64748b;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+        color: #111515;
+    }
+
+    .tab-btn.active {
+        color: #111515;
+        border-bottom-color: #111515;
+    }
+
+    .action-btn {
+        transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .report-card {
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .report-card:hover {
+        transform: translateY(-2px);
+        border-color: #94a3b8;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+
+    #previewWrapper.fullscreen {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: white;
+        padding: 20px;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
         }
 
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        .input-area {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
-        
-        .input-area:focus { 
-            background: white; 
-            border-color: #25bf93; 
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1); 
-            outline: none;
-        }
+    }
+</style>
 
-        .badge-urgent { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        .badge-normal { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
-        .badge-draft { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-        .badge-submitted { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed top-5 right-5 z-50 space-y-2"></div>
 
-        .tab-btn {
-            background: white;
-            color: #64748b;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-        }
-        .tab-btn:hover {
-            color: #111515;
-        }
-        .tab-btn.active {
-            color: #111515;
-            border-bottom-color: #111515;
-        }
-
-        .action-btn {
-            transition: all 0.2s;
-        }
-        .action-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .report-card {
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .report-card:hover {
-            transform: translateY(-2px);
-            border-color: #94a3b8;
-        }
-
-        .section-header {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        }
-
-        #previewWrapper.fullscreen {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            background: white;
-            padding: 20px;
-        }
-
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-
-    <!-- Toast Container -->
-    <div id="toastContainer" class="fixed top-5 right-5 z-50 space-y-2"></div>
-
-    <!-- Header -->
-    <nav class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div>
-                <h2 class="font-black text-2xl tracking-wide text-slate-900">Reports Management</h2>
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Manage Generated Reports</p>
-            </div>
-        </div>
-        
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
-                <i class="fas fa-calendar-day text-white text-xs"></i>
-                <span class="text-xs text-white font-bold" id="currentDate">Loading...</span>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Tab Navigation -->
-    <div class="bg-white border-b border-slate-200 px-6">
-        <div class="flex gap-2">
-            <button onclick="switchTab('general')" id="generalTab" class="tab-btn active px-6 py-4 text-sm font-black uppercase">
-                <i class="fas fa-file-alt mr-2"></i>General Reports
-            </button>
-            <button onclick="switchTab('analytics')" id="analyticsTab" class="tab-btn px-6 py-4 text-sm font-black uppercase">
-                <i class="fas fa-chart-line mr-2"></i>Analytics Reports
-            </button>
+<!-- Header -->
+<nav class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 shadow-sm">
+    <div class="flex items-center gap-3">
+        <div>
+            <h2 class="font-black text-2xl tracking-wide text-slate-900">Reports Management</h2>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Manage Generated Reports</p>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="container mx-auto p-6">
+    <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+            <i class="fas fa-calendar-day text-white text-xs"></i>
+            <span class="text-xs text-white font-bold" id="currentDate">Loading...</span>
+        </div>
+    </div>
+</nav>
 
-        <!-- TAB 1: GENERAL REPORTS MANAGEMENT -->
-        <div id="generalReportsTab">
-            
-            <!-- Filters -->
-            <div class="bg-white p-4 border border-slate-200 shadow-sm mb-4">
-                <div class="flex flex-wrap items-center gap-4">
-                    <div class="flex-1 min-w-[250px]">
-                        <input 
-                            type="text" 
-                            id="searchInput" 
-                            placeholder="Search by author, content..." 
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:border-red-500"
-                            oninput="applyFilters()"
-                        >
-                    </div>
+<!-- Tab Navigation -->
+<div class="bg-white border-b border-slate-200 px-6">
+    <div class="flex gap-2">
+        <button onclick="switchTab('general')" id="generalTab"
+            class="tab-btn active px-6 py-4 text-sm font-black uppercase">
+            <i class="fas fa-file-alt mr-2"></i>General Reports
+        </button>
+        <button onclick="switchTab('analytics')" id="analyticsTab"
+            class="tab-btn px-6 py-4 text-sm font-black uppercase">
+            <i class="fas fa-chart-line mr-2"></i>Analytics Reports
+        </button>
+    </div>
+</div>
 
-                    <select id="statusFilter" onchange="applyFilters()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold focus:outline-none focus:border-red-500">
-                        <option value="all">All Status</option>
-                        <option value="submitted">Submitted</option>
-                        <option value="draft">Draft</option>
-                    </select>
+<!-- Main Content -->
+<div class="container mx-auto p-6">
 
-                    <select id="urgencyFilter" onchange="applyFilters()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold focus:outline-none focus:border-red-500">
-                        <option value="all">All Priority</option>
-                        <option value="urgent">Urgent Only</option>
-                        <option value="normal">Normal Only</option>
-                    </select>
+    <!-- TAB 1: GENERAL REPORTS MANAGEMENT -->
+    <div id="generalReportsTab">
 
-                    <input 
-                        type="date" 
-                        id="dateFilter" 
-                        onchange="applyFilters()"
-                        class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold focus:outline-none focus:border-red-500"
-                    >
-
-                    <button onclick="clearFilters()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 uppercase">
-                        <i class="fas fa-times mr-2"></i>Clear
-                    </button>
+        <!-- Filters -->
+        <div class="bg-white p-4 border border-slate-200 shadow-sm mb-4">
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex-1 min-w-[250px]">
+                    <input type="text" id="searchInput" placeholder="Search by author, content..."
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:border-red-500"
+                        oninput="applyFilters()">
                 </div>
-            </div>
 
-            <!-- Reports List -->
-            <div id="reportsContainer" class="space-y-3">
-                <div class="flex flex-col items-center justify-center p-20 text-slate-400 bg-white border border-slate-200">
-                    <i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i>
-                    <p class="text-xs font-bold uppercase">Loading reports...</p>
-                </div>
-            </div>
+                <select id="statusFilter" onchange="applyFilters()"
+                    class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold focus:outline-none focus:border-red-500">
+                    <option value="all">All Status</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="draft">Draft</option>
+                </select>
 
+                <select id="urgencyFilter" onchange="applyFilters()"
+                    class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold focus:outline-none focus:border-red-500">
+                    <option value="all">All Priority</option>
+                    <option value="urgent">Urgent Only</option>
+                    <option value="normal">Normal Only</option>
+                </select>
+
+                <input type="date" id="dateFilter" onchange="applyFilters()"
+                    class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold focus:outline-none focus:border-red-500">
+
+                <button onclick="clearFilters()"
+                    class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 uppercase">
+                    <i class="fas fa-times mr-2"></i>Clear
+                </button>
+            </div>
         </div>
 
-        <!-- TAB 2: ANALYTICS REPORT GENERATOR -->
-        <div id="analyticsReportTab" class="hidden">
-            
-            <div class="grid grid-cols-12 gap-6">
-                
-                <!-- Left: Generator Form -->
-                <div class="col-span-12 lg:col-span-5">
-                    <div class="bg-white border border-slate-200 shadow-sm">
-                        <div class="section-header px-4 py-3">
-                            <h3 class="text-sm font-black text-white uppercase tracking-wide">Generate Analytics Report</h3>
+        <!-- Reports List -->
+        <div id="reportsContainer" class="space-y-3">
+            <div class="flex flex-col items-center justify-center p-20 text-slate-400 bg-white border border-slate-200">
+                <i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i>
+                <p class="text-xs font-bold uppercase">Loading reports...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TAB 2: ANALYTICS REPORT GENERATOR -->
+    <div id="analyticsReportTab" class="hidden">
+
+        <div class="grid grid-cols-12 gap-6">
+
+            <!-- Left: Generator Form -->
+            <div class="col-span-12 lg:col-span-5">
+                <div class="bg-white border border-slate-200 shadow-sm">
+                    <div class="section-header px-4 py-3">
+                        <h3 class="text-sm font-black text-white uppercase tracking-wide">Generate Analytics Report</h3>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+
+
+
+                        <!-- Report Period -->
+                        <div>
+                            <label
+                                class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">Report
+                                Period</label>
+                            <select id="reportPeriod" class="w-full input-area rounded-lg p-3 text-sm font-bold"
+                                onchange="updateDateRange()">
+                                <option value="current">Current Month</option>
+                                <option value="last">Last Month</option>
+                                <option value="custom">Custom Period</option>
+                            </select>
                         </div>
-                        
-                        <div class="p-6 space-y-6">
 
-                            <!-- Report Type -->
+                        <!-- Custom Period Options (hidden until "Custom" selected) -->
+                        <div id="customDateRange"
+                            class="hidden space-y-4 bg-slate-50 p-4 border border-slate-200 rounded-lg">
+
+                            <!-- Toggle: month picker vs date range -->
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">Report Type</label>
-                                <select id="reportType" class="w-full input-area rounded-lg p-3 text-sm font-bold">
-                                    <option value="full">Complete Dashboard Summary</option>
-                                    <option value="financial">Financial Overview Only</option>
-                                    <option value="clients">Client Statistics Only</option>
-                                    <option value="operations">Operations Summary Only</option>
-                                </select>
+                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Custom
+                                    Type</label>
+                                <div class="flex gap-2">
+                                    <label class="flex-1 cursor-pointer">
+                                        <input type="radio" name="customMode" id="modeMonth" value="month" checked
+                                            onchange="toggleCustomMode()" class="peer sr-only">
+                                        <div
+                                            class="border-2 border-slate-200 rounded-lg p-2 text-center peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all">
+                                            <i
+                                                class="fas fa-calendar-alt text-slate-400 peer-checked:text-teal-600 mb-1"></i>
+                                            <p class="font-bold text-[10px] text-slate-700 uppercase">Specific Month</p>
+                                        </div>
+                                    </label>
+                                    <label class="flex-1 cursor-pointer">
+                                        <input type="radio" name="customMode" id="modeRange" value="range"
+                                            onchange="toggleCustomMode()" class="peer sr-only">
+                                        <div
+                                            class="border-2 border-slate-200 rounded-lg p-2 text-center peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all">
+                                            <i
+                                                class="fas fa-calendar-week text-slate-400 peer-checked:text-teal-600 mb-1"></i>
+                                            <p class="font-bold text-[10px] text-slate-700 uppercase">Date Range</p>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
 
-                            <!-- Report Period -->
-                            <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">Report Period</label>
-                                <select id="reportPeriod" class="w-full input-area rounded-lg p-3 text-sm font-bold" onchange="updateDateRange()">
-                                    <option value="current">Current Month</option>
-                                    <option value="last">Last Month</option>
-                                    <option value="custom">Custom Period</option>
-                                </select>
-                            </div>
-
-                            <!-- Custom Period Options (hidden until "Custom" selected) -->
-                            <div id="customDateRange" class="hidden space-y-4 bg-slate-50 p-4 border border-slate-200 rounded-lg">
-
-                                <!-- Toggle: month picker vs date range -->
+                            <!-- Month + Year pickers -->
+                            <div id="monthPickerFields" class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-2 block">Custom Type</label>
-                                    <div class="flex gap-2">
-                                        <label class="flex-1 cursor-pointer">
-                                            <input type="radio" name="customMode" id="modeMonth" value="month" checked
-                                                onchange="toggleCustomMode()" class="peer sr-only">
-                                            <div class="border-2 border-slate-200 rounded-lg p-2 text-center peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all">
-                                                <i class="fas fa-calendar-alt text-slate-400 peer-checked:text-teal-600 mb-1"></i>
-                                                <p class="font-bold text-[10px] text-slate-700 uppercase">Specific Month</p>
-                                            </div>
-                                        </label>
-                                        <label class="flex-1 cursor-pointer">
-                                            <input type="radio" name="customMode" id="modeRange" value="range"
-                                                onchange="toggleCustomMode()" class="peer sr-only">
-                                            <div class="border-2 border-slate-200 rounded-lg p-2 text-center peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all">
-                                                <i class="fas fa-calendar-week text-slate-400 peer-checked:text-teal-600 mb-1"></i>
-                                                <p class="font-bold text-[10px] text-slate-700 uppercase">Date Range</p>
-                                            </div>
-                                        </label>
-                                    </div>
+                                    <label
+                                        class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Month</label>
+                                    <select id="customMonth" class="w-full input-area rounded p-2 text-sm font-bold">
+                                        <option value="1">January</option>
+                                        <option value="2">February</option>
+                                        <option value="3">March</option>
+                                        <option value="4">April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September</option>
+                                        <option value="10">October</option>
+                                        <option value="11">November</option>
+                                        <option value="12">December</option>
+                                    </select>
                                 </div>
-
-                                <!-- Month + Year pickers -->
-                                <div id="monthPickerFields" class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Month</label>
-                                        <select id="customMonth" class="w-full input-area rounded p-2 text-sm font-bold">
-                                            <option value="1">January</option>
-                                            <option value="2">February</option>
-                                            <option value="3">March</option>
-                                            <option value="4">April</option>
-                                            <option value="5">May</option>
-                                            <option value="6">June</option>
-                                            <option value="7">July</option>
-                                            <option value="8">August</option>
-                                            <option value="9">September</option>
-                                            <option value="10">October</option>
-                                            <option value="11">November</option>
-                                            <option value="12">December</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Year</label>
-                                        <select id="customYear" class="w-full input-area rounded p-2 text-sm font-bold">
-                                            <!-- Populated by JS on load -->
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Date range pickers (hidden by default) -->
-                                <div id="dateRangeFields" class="hidden space-y-3">
-                                    <div>
-                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">From Date</label>
-                                        <input type="date" id="dateFrom" class="w-full input-area rounded p-2 text-sm font-bold">
-                                    </div>
-                                    <div>
-                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">To Date</label>
-                                        <input type="date" id="dateTo" class="w-full input-area rounded p-2 text-sm font-bold">
-                                    </div>
+                                <div>
+                                    <label
+                                        class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Year</label>
+                                    <select id="customYear" class="w-full input-area rounded p-2 text-sm font-bold">
+                                        <!-- Populated by JS on load -->
+                                    </select>
                                 </div>
                             </div>
 
-                            <!-- Export Format -->
-                            <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">Export Format</label>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <label class="relative cursor-pointer">
-                                        <input type="radio" name="exportFormat" value="pdf" checked class="peer sr-only">
-                                        <div class="bg-slate-50 border-2 border-slate-200 rounded-lg p-3 peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all text-center">
-                                            <i class="fas fa-file-pdf text-2xl text-slate-400 mb-1"></i>
-                                            <p class="font-bold text-xs text-slate-700">PDF Report</p>
-                                        </div>
-                                    </label>
-                                    <label class="relative cursor-pointer">
-                                        <input type="radio" name="exportFormat" value="view" class="peer sr-only">
-                                        <div class="bg-slate-50 border-2 border-slate-200 rounded-lg p-3 peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all text-center">
-                                            <i class="fas fa-eye text-2xl text-slate-400 mb-1"></i>
-                                            <p class="font-bold text-xs text-slate-700">View Only</p>
-                                        </div>
-                                    </label>
+                            <!-- Date range pickers (hidden by default) -->
+                            <div id="dateRangeFields" class="hidden space-y-3">
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">From
+                                        Date</label>
+                                    <input type="date" id="dateFrom"
+                                        class="w-full input-area rounded p-2 text-sm font-bold">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">To
+                                        Date</label>
+                                    <input type="date" id="dateTo"
+                                        class="w-full input-area rounded p-2 text-sm font-bold">
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Generate Button -->
-                            <button onclick="generateAnalyticsReport()" class="w-full bg-gray-700 text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-800 shadow-lg uppercase">
-                                <i class="fas fa-chart-bar mr-2"></i>Generate Report
+                        <!-- Export Format -->
+                        <div>
+                            <label
+                                class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block">Export
+                                Format</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="exportFormat" value="pdf" checked class="peer sr-only">
+                                    <div
+                                        class="bg-slate-50 border-2 border-slate-200 rounded-lg p-3 peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all text-center">
+                                        <i class="fas fa-file-pdf text-2xl text-slate-400 mb-1"></i>
+                                        <p class="font-bold text-xs text-slate-700">PDF Report</p>
+                                    </div>
+                                </label>
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="exportFormat" value="view" class="peer sr-only">
+                                    <div
+                                        class="bg-slate-50 border-2 border-slate-200 rounded-lg p-3 peer-checked:border-teal-600 peer-checked:bg-teal-50 transition-all text-center">
+                                        <i class="fas fa-eye text-2xl text-slate-400 mb-1"></i>
+                                        <p class="font-bold text-xs text-slate-700">View Only</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Generate Button -->
+                        <button onclick="generateAnalyticsReport()"
+                            class="w-full bg-gray-700 text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-800 shadow-lg uppercase">
+                            <i class="fas fa-chart-bar mr-2"></i>Generate Report
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Preview Area -->
+            <div id="previewWrapper" class="col-span-12 lg:col-span-7">
+                <div class="bg-white border border-slate-200 shadow-sm">
+                    <div class="section-header px-4 py-3 flex items-center justify-between">
+                        <h3 class="text-sm font-black text-white uppercase tracking-wide">
+                            Report Preview
+                        </h3>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="togglePreviewFullscreen()"
+                                class="px-3 py-1 bg-white/10 text-white rounded text-[10px] font-bold hover:bg-white/20 uppercase flex items-center gap-1">
+                                <i class="fas fa-expand" id="fullscreenIcon"></i>
+                                <span class="hidden sm:inline">Full screen</span>
                             </button>
 
+                            <button onclick="downloadCurrentReport()" id="downloadReportBtn"
+                                class="hidden px-3 py-1 bg-white text-slate-800 rounded text-xs font-bold hover:bg-slate-100 uppercase">
+                                <i class="fas fa-download mr-1"></i>Download
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <div id="analyticsPreview" class="p-6 min-h-[900px] overflow-y-auto max-h-[calc(100vh-300px)]">
+                        <div class="flex flex-col items-center justify-center p-20 text-slate-400">
+                            <i class="fas fa-chart-pie text-5xl mb-4"></i>
+                            <p class="text-sm font-bold uppercase">No report generated yet</p>
+                            <p class="text-xs text-slate-400 mt-2">Select options and click "Generate Report"</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- Right: Preview Area -->
-                <div id="previewWrapper" class="col-span-12 lg:col-span-7">
-                    <div class="bg-white border border-slate-200 shadow-sm">
-                        <div class="section-header px-4 py-3 flex items-center justify-between">
-                            <h3 class="text-sm font-black text-white uppercase tracking-wide">
-                                Report Preview
-                            </h3>
-
-                            <div class="flex items-center gap-2">
-                                <button onclick="togglePreviewFullscreen()" 
-                                    class="px-3 py-1 bg-white/10 text-white rounded text-[10px] font-bold hover:bg-white/20 uppercase flex items-center gap-1">
-                                    <i class="fas fa-expand" id="fullscreenIcon"></i>
-                                    <span class="hidden sm:inline">Full screen</span>
-                                </button>
-
-                                <button onclick="downloadCurrentReport()" id="downloadReportBtn" 
-                                    class="hidden px-3 py-1 bg-white text-slate-800 rounded text-xs font-bold hover:bg-slate-100 uppercase">
-                                    <i class="fas fa-download mr-1"></i>Download
-                                </button>
-                            </div>
-
-                        </div>
-                        
-                        <div id="analyticsPreview" class="p-6 min-h-[900px] overflow-y-auto max-h-[calc(100vh-300px)]">
-                            <div class="flex flex-col items-center justify-center p-20 text-slate-400">
-                                <i class="fas fa-chart-pie text-5xl mb-4"></i>
-                                <p class="text-sm font-bold uppercase">No report generated yet</p>
-                                <p class="text-xs text-slate-400 mt-2">Select options and click "Generate Report"</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
         </div>
 
     </div>
 
-    <script>
-        let allReports = [];
-        let filteredReports = [];
-        let currentTab = 'general';
-        let currentAnalyticsData = null;
+</div>
 
-        const BRAND = {
-            name:    'DR.NET Technology Labs',
-            tagline: 'INNOVATIVE CONNECTIONS WITH DOCTORS PRECISION',
-            color:   [240, 23, 122],
-            dark:    [15,  23,  42],
-        };
+<script>
+    let allReports = [];
+    let filteredReports = [];
+    let currentTab = 'general';
+    let currentAnalyticsData = null;
 
-        const CHART = {
-            pink:   '#F0177A',
-            green:  '#16a34a',
-            red:    '#dc2626',
-            blue:   '#2563eb',
-            amber:  '#d97706',
-            purple: '#7c3aed',
-            sky:    '#0284c7',
-            pkg:    ['#F0177A','#2563eb','#16a34a','#d97706','#7c3aed'],
-        };
+    const BRAND = {
+        name: 'DR.NET Technology Labs',
+        tagline: 'INNOVATIVE CONNECTIONS WITH DOCTORS PRECISION',
+        color: [240, 23, 122],
+        dark: [15, 23, 42],
+    };
 
-        // Initialize
-        window.onload = () => {
-            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-            });
-            fetchGeneralReports();
-        };
 
-        // Tab Switching
-        function switchTab(tab) {
-            currentTab = tab;
-            
-            // Update tab buttons
-            document.getElementById('generalTab').classList.toggle('active', tab === 'general');
-            document.getElementById('analyticsTab').classList.toggle('active', tab === 'analytics');
-            
-            // Toggle content
-            document.getElementById('generalReportsTab').classList.toggle('hidden', tab !== 'general');
-            document.getElementById('analyticsReportTab').classList.toggle('hidden', tab !== 'analytics');
-        }
 
-        // GENERAL REPORTS TAB FUNCTIONS
+    // Initialize
+    window.onload = () => {
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        fetchGeneralReports();
+    };
 
-        async function fetchGeneralReports() {
-            try {
-                const response = await fetch('/api/reports/general');
-                const data = await response.json();
-                
-                if (data.success) {
-                    allReports = data.reports;
-                    filteredReports = [...allReports];
-                    renderReportsList();
-                }
-            } catch (error) {
-                console.error('Error fetching reports:', error);
-                showToast('Failed to load reports', 'error');
+    // Tab Switching
+    function switchTab(tab) {
+        currentTab = tab;
+
+        // Update tab buttons
+        document.getElementById('generalTab').classList.toggle('active', tab === 'general');
+        document.getElementById('analyticsTab').classList.toggle('active', tab === 'analytics');
+
+        // Toggle content
+        document.getElementById('generalReportsTab').classList.toggle('hidden', tab !== 'general');
+        document.getElementById('analyticsReportTab').classList.toggle('hidden', tab !== 'analytics');
+    }
+
+    // GENERAL REPORTS TAB FUNCTIONS
+
+    async function fetchGeneralReports() {
+        try {
+            const response = await fetch('/api/reports/general');
+            const data = await response.json();
+
+            if (data.success) {
+                allReports = data.reports;
+                filteredReports = [...allReports];
+                renderReportsList();
             }
+        } catch (error) {
+            console.error('Error fetching reports:', error);
+            showToast('Failed to load reports', 'error');
+        }
+    }
+
+    (function initAnalyticsForm() {
+        const yearSelect = document.getElementById('customYear');
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+
+        // Populate years (current year back to 3 years)
+        for (let y = currentYear; y >= currentYear - 3; y--) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            yearSelect.appendChild(opt);
         }
 
-        (function initAnalyticsForm() {
-            const yearSelect = document.getElementById('customYear');
-            const currentYear = new Date().getFullYear();
-            const currentMonth = new Date().getMonth() + 1;
+        // Pre-select current month
+        document.getElementById('customMonth').value = currentMonth;
+    })();
 
-            // Populate years (current year back to 3 years)
-            for (let y = currentYear; y >= currentYear - 3; y--) {
-                const opt = document.createElement('option');
-                opt.value = y;
-                opt.textContent = y;
-                yearSelect.appendChild(opt);
-            }
+    function toggleCustomMode() {
+        const isRange = document.getElementById('modeRange').checked;
+        document.getElementById('monthPickerFields').classList.toggle('hidden', isRange);
+        document.getElementById('dateRangeFields').classList.toggle('hidden', !isRange);
+    }
 
-            // Pre-select current month
-            document.getElementById('customMonth').value = currentMonth;
-        })();
+    function togglePreviewFullscreen() {
+        const wrapper = document.getElementById('previewWrapper');
+        const icon = document.getElementById('fullscreenIcon');
+        const label = document.getElementById('fullscreenLabel');
+        const isFs = wrapper.classList.toggle('fullscreen');
+        icon.className = isFs ? 'fas fa-compress' : 'fas fa-expand';
+        if (label) label.textContent = isFs ? 'Collapse' : 'Expand';
 
-        function toggleCustomMode() {
-            const isRange = document.getElementById('modeRange').checked;
-            document.getElementById('monthPickerFields').classList.toggle('hidden', isRange);
-            document.getElementById('dateRangeFields').classList.toggle('hidden', !isRange);
+        if (isFs) {
+            const inner = document.getElementById('analyticsPreview');
+            if (inner) inner.scrollTop = 0;
         }
+    }
 
-        function togglePreviewFullscreen() {
-            const wrapper = document.getElementById('previewWrapper');
-            const icon    = document.getElementById('fullscreenIcon');
-            const label   = document.getElementById('fullscreenLabel');
-            const isFs    = wrapper.classList.toggle('fullscreen');
-            icon.className  = isFs ? 'fas fa-compress' : 'fas fa-expand';
-            if (label) label.textContent = isFs ? 'Collapse' : 'Expand';
+    function applyFilters() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+        const urgency = document.getElementById('urgencyFilter').value;
+        const date = document.getElementById('dateFilter').value;
 
-            if (isFs) {
-                const inner = document.getElementById('analyticsPreview');
-                if (inner) inner.scrollTop = 0;
-            }
-        }
+        filteredReports = allReports.filter(report => {
+            const matchSearch = !search ||
+                report.first_name.toLowerCase().includes(search) ||
+                report.second_name.toLowerCase().includes(search) ||
+                (report.ops_summary && report.ops_summary.toLowerCase().includes(search)) ||
+                (report.staff_summary && report.staff_summary.toLowerCase().includes(search)) ||
+                (report.support_summary && report.support_summary.toLowerCase().includes(search));
 
-        function applyFilters() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const status = document.getElementById('statusFilter').value;
-            const urgency = document.getElementById('urgencyFilter').value;
-            const date = document.getElementById('dateFilter').value;
+            const matchStatus = status === 'all' || report.status === status;
 
-            filteredReports = allReports.filter(report => {
-                const matchSearch = !search || 
-                    report.first_name.toLowerCase().includes(search) ||
-                    report.second_name.toLowerCase().includes(search) ||
-                    (report.ops_summary && report.ops_summary.toLowerCase().includes(search)) ||
-                    (report.staff_summary && report.staff_summary.toLowerCase().includes(search)) ||
-                    (report.support_summary && report.support_summary.toLowerCase().includes(search));
+            const matchUrgency = urgency === 'all' ||
+                (urgency === 'urgent' && report.is_urgent) ||
+                (urgency === 'normal' && !report.is_urgent);
 
-                const matchStatus = status === 'all' || report.status === status;
-                
-                const matchUrgency = urgency === 'all' || 
-                    (urgency === 'urgent' && report.is_urgent) ||
-                    (urgency === 'normal' && !report.is_urgent);
+            const matchDate = !date || report.report_date === date;
 
-                const matchDate = !date || report.report_date === date;
+            return matchSearch && matchStatus && matchUrgency && matchDate;
+        });
 
-                return matchSearch && matchStatus && matchUrgency && matchDate;
-            });
+        renderReportsList();
+    }
 
-            renderReportsList();
-        }
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        document.getElementById('urgencyFilter').value = 'all';
+        document.getElementById('dateFilter').value = '';
+        filteredReports = [...allReports];
+        renderReportsList();
+    }
 
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('statusFilter').value = 'all';
-            document.getElementById('urgencyFilter').value = 'all';
-            document.getElementById('dateFilter').value = '';
-            filteredReports = [...allReports];
-            renderReportsList();
-        }
+    function renderReportsList() {
+        const container = document.getElementById('reportsContainer');
 
-        function renderReportsList() {
-            const container = document.getElementById('reportsContainer');
-            
-            if (filteredReports.length === 0) {
-                container.innerHTML = `
+        if (filteredReports.length === 0) {
+            container.innerHTML = `
                     <div class="p-20 text-center bg-white border border-slate-200">
                         <i class="fas fa-inbox text-4xl text-slate-300 mb-3"></i>
                         <p class="text-xs font-bold text-slate-400 uppercase">No reports found</p>
                     </div>
                 `;
-                return;
-            }
+            return;
+        }
 
-            container.innerHTML = filteredReports.map(report => {
-                const statusBadge = report.status === 'submitted' 
-                    ? '<span class="badge-submitted px-2 py-1 rounded text-[9px] font-black uppercase">Submitted</span>'
-                    : '<span class="badge-draft px-2 py-1 rounded text-[9px] font-black uppercase">Draft</span>';
+        container.innerHTML = filteredReports.map(report => {
+            const statusBadge = report.status === 'submitted'
+                ? '<span class="badge-submitted px-2 py-1 rounded text-[9px] font-black uppercase">Submitted</span>'
+                : '<span class="badge-draft px-2 py-1 rounded text-[9px] font-black uppercase">Draft</span>';
 
-                const urgencyBadge = report.is_urgent
-                    ? '<span class="badge-urgent px-2 py-1 rounded text-[9px] font-black uppercase">Urgent</span>'
-                    : '<span class="badge-normal px-2 py-1 rounded text-[9px] font-black uppercase">Normal</span>';
+            const urgencyBadge = report.is_urgent
+                ? '<span class="badge-urgent px-2 py-1 rounded text-[9px] font-black uppercase">Urgent</span>'
+                : '<span class="badge-normal px-2 py-1 rounded text-[9px] font-black uppercase">Normal</span>';
 
-                return `
+            return `
                     <div class="report-card bg-white border border-slate-200 shadow-sm animate-fade-in" onclick="viewGeneralReport(${report.id})">
                         <div class="p-4">
                             <div class="flex items-start justify-between mb-3">
@@ -541,16 +588,16 @@
                         </div>
                     </div>
                 `;
-            }).join('');
-        }
+        }).join('');
+    }
 
-        function viewGeneralReport(id) {
-            const report = allReports.find(r => r.id === id);
-            if (!report) return;
+    function viewGeneralReport(id) {
+        const report = allReports.find(r => r.id === id);
+        if (!report) return;
 
-            // Navigate to view page in same container
-            const container = document.getElementById('reportsContainer');
-            container.innerHTML = `
+        // Navigate to view page in same container
+        const container = document.getElementById('reportsContainer');
+        container.innerHTML = `
                 <div class="bg-white border border-slate-200 shadow-sm animate-fade-in">
                     <div class="section-header px-6 py-4 flex items-center justify-between">
                         <div>
@@ -640,14 +687,14 @@
                     </div>
                 </div>
             `;
-        }
+    }
 
-        function editGeneralReport(id) {
-            const report = allReports.find(r => r.id === id);
-            if (!report) return;
+    function editGeneralReport(id) {
+        const report = allReports.find(r => r.id === id);
+        if (!report) return;
 
-            const container = document.getElementById('reportsContainer');
-            container.innerHTML = `
+        const container = document.getElementById('reportsContainer');
+        container.innerHTML = `
                 <div class="bg-white border border-slate-200 shadow-sm animate-fade-in">
                     <div class="section-header px-6 py-4 flex items-center justify-between">
                         <h3 class="text-lg font-black text-white uppercase">Edit Report #${report.id}</h3>
@@ -720,366 +767,290 @@
                     </div>
                 </div>
             `;
-        }
+    }
 
-        async function saveGeneralReportEdit(id) {
-            const updatedData = {
-                report_date: allReports.find(r => r.id === id).report_date,
-                ops_summary: document.getElementById('edit_ops_summary').value,
-                ops_installs: parseInt(document.getElementById('edit_ops_installs').value) || 0,
-                ops_pending: parseInt(document.getElementById('edit_ops_pending').value) || 0,
-                staff_summary: document.getElementById('edit_staff_summary').value,
-                support_summary: document.getElementById('edit_support_summary').value,
-                is_urgent: document.getElementById('edit_is_urgent').checked ? 1 : 0,
-                conclusion: document.getElementById('edit_conclusion').value,
-                status: document.getElementById('edit_status').value
-            };
+    async function saveGeneralReportEdit(id) {
+        const updatedData = {
+            report_date: allReports.find(r => r.id === id).report_date,
+            ops_summary: document.getElementById('edit_ops_summary').value,
+            ops_installs: parseInt(document.getElementById('edit_ops_installs').value) || 0,
+            ops_pending: parseInt(document.getElementById('edit_ops_pending').value) || 0,
+            staff_summary: document.getElementById('edit_staff_summary').value,
+            support_summary: document.getElementById('edit_support_summary').value,
+            is_urgent: document.getElementById('edit_is_urgent').checked ? 1 : 0,
+            conclusion: document.getElementById('edit_conclusion').value,
+            status: document.getElementById('edit_status').value
+        };
 
-            try {
-                const response = await fetch(`/api/reports/general/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedData)
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showToast('Report updated successfully', 'success');
-                    fetchGeneralReports();
-                } else {
-                    showToast('Failed to update report', 'error');
-                }
-            } catch (error) {
-                console.error('Error updating report:', error);
-                showToast('Failed to update report', 'error');
-            }
-        }
-
-        async function deleteGeneralReport(id) {
-            if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/reports/general/${id}`, {
-                    method: 'DELETE'
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showToast('Report deleted successfully', 'success');
-                    fetchGeneralReports();
-                } else {
-                    showToast('Failed to delete report', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting report:', error);
-                showToast('Failed to delete report', 'error');
-            }
-        }
-
-        function addPdfHeader(doc, subtitle) {
-            const W = doc.internal.pageSize.getWidth();
-
-            // Brand name
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(9.5);
-            doc.setTextColor(...BRAND.color);
-            doc.text(BRAND.name, 14, 10);
-
-            // Tagline
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(5.8);
-            doc.text(BRAND.tagline, W - 14, 10, { align: 'right' });
-
-            // Thin divider line
-            doc.setDrawColor(...BRAND.color);
-            doc.setLineWidth(0.3);
-            doc.line(0, 14, W, 14);
-
-            // Subtitle
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(11);
-            doc.setTextColor(...BRAND.dark);
-            doc.text(subtitle, 14, 22);
-
-            // Reset text color
-            doc.setTextColor(0, 0, 0);
-
-            return 28;
-        }
-
-        function addPdfFooter(doc) {
-            const n = doc.internal.getNumberOfPages();
-            const W = doc.internal.pageSize.getWidth();
-            const H = doc.internal.pageSize.getHeight();
-            for (let i = 1; i <= n; i++) {
-                doc.setPage(i);
-                doc.setDrawColor(180, 180, 180);
-                doc.setLineWidth(0.3);
-                doc.line(14, H - 11, W - 14, H - 11);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(7);
-                doc.setTextColor(140, 140, 140);
-                doc.text(BRAND.name + '  —  Confidential', 14, H - 6);
-                doc.text(`Page ${i} of ${n}`, W - 14, H - 6, { align: 'right' });
-            }
-        }
-
-        function fmt(n)  { return Number(n || 0).toLocaleString(); }
-        function fmtK(n) { const v = Number(n||0); return v >= 1000 ? (v/1000).toFixed(1)+'K' : String(v); }
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        async function downloadGeneralReportPDF(id) {
-            const report = allReports.find(r => r.id === id);
-            if (!report) return;
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const W   = doc.internal.pageSize.getWidth();
-
-            let y = addPdfHeader(doc, 'Daily General Report');
-
-            // Meta
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
-            doc.setTextColor(80, 80, 80);
-            doc.text(`Report #${report.id}   |   Date: ${new Date(report.report_date).toLocaleDateString()}`, 14, y);
-            doc.text(`Prepared by: ${report.first_name} ${report.second_name}  —  ${report.position||''}`, 14, y + 5);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...BRAND.dark);
-            doc.text(`Status: ${(report.status||'').toUpperCase()}     Priority: ${report.is_urgent ? 'URGENT' : 'NORMAL'}`, 14, y + 10);
-            doc.setTextColor(0, 0, 0);
-            y += 17;
-
-            // Section builder
-            function genSection(title, body, extraFn) {
-                if (y > 242) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
-
-                // Heavy rule + caps, no color
-                doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.6);
-                doc.line(14, y, W - 14, y);
-                doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
-                doc.text(title.toUpperCase(), 14, y + 5.5);
-                doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.25);
-                doc.line(14, y + 7, W - 14, y + 7);
-                doc.setTextColor(0, 0, 0);
-                y += 12;
-
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(50, 50, 50);
-                const lines = doc.splitTextToSize(body || 'No summary provided.', W - 28);
-                doc.text(lines, 14, y);
-                y += lines.length * 5 + 4;
-                if (extraFn) extraFn();
-                y += 5;
-            }
-
-            genSection('Operations & Logistics', report.ops_summary, () => {
-                if (y > 250) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
-                const bW = (W - 32) / 2;
-
-                // Stat boxes — white fill, hairline border, dark text
-                doc.setFillColor(255, 255, 255);
-                doc.setDrawColor(170, 170, 170); doc.setLineWidth(0.4);
-                doc.rect(14, y, bW - 2, 13, 'FD');
-                doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
-                doc.text('INSTALLATIONS', 16, y + 5);
-                doc.setFontSize(14); doc.setTextColor(15, 23, 42);
-                doc.text(String(report.ops_installs || 0), 16, y + 11.5);
-
-                doc.rect(14 + bW + 2, y, bW - 2, 13, 'FD');
-                doc.setFontSize(7); doc.setTextColor(100, 100, 100);
-                doc.text('PENDING JOBS', 16 + bW + 2, y + 5);
-                doc.setFontSize(14); doc.setTextColor(15, 23, 42);
-                doc.text(String(report.ops_pending || 0), 16 + bW + 2, y + 11.5);
-
-                doc.setTextColor(0, 0, 0); y += 17;
+        try {
+            const response = await fetch(`/api/reports/general/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
             });
 
-            genSection('Staff & Personnel',         report.staff_summary);
-            genSection('Support & Client Feedback', report.support_summary);
+            const data = await response.json();
 
-            // Conclusion — dark left rule (not brand color)
-            if (y > 232) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
+            if (data.success) {
+                showToast('Report updated successfully', 'success');
+                fetchGeneralReports();
+            } else {
+                showToast('Failed to update report', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating report:', error);
+            showToast('Failed to update report', 'error');
+        }
+    }
+
+    async function deleteGeneralReport(id) {
+        if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/reports/general/${id}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Report deleted successfully', 'success');
+                fetchGeneralReports();
+            } else {
+                showToast('Failed to delete report', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting report:', error);
+            showToast('Failed to delete report', 'error');
+        }
+    }
+
+    function addPdfHeader(doc, subtitle) {
+        const W = doc.internal.pageSize.getWidth();
+
+        // Brand name
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...BRAND.color);
+        doc.text(BRAND.name, 14, 10);
+
+        // Tagline
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(5.8);
+        doc.text(BRAND.tagline, W - 14, 10, { align: 'right' });
+
+        // Thin divider line
+        doc.setDrawColor(...BRAND.color);
+        doc.setLineWidth(0.3);
+        doc.line(0, 14, W, 14);
+
+        // Subtitle
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(...BRAND.dark);
+        doc.text(subtitle, 14, 22);
+
+        // Reset text color
+        doc.setTextColor(0, 0, 0);
+
+        return 28;
+    }
+
+    function addPdfFooter(doc) {
+        const n = doc.internal.getNumberOfPages();
+        const W = doc.internal.pageSize.getWidth();
+        const H = doc.internal.pageSize.getHeight();
+        for (let i = 1; i <= n; i++) {
+            doc.setPage(i);
+            doc.setDrawColor(180, 180, 180);
+            doc.setLineWidth(0.3);
+            doc.line(14, H - 11, W - 14, H - 11);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+            doc.setTextColor(140, 140, 140);
+            doc.text(BRAND.name + '  —  Confidential', 14, H - 6);
+            doc.text(`Page ${i} of ${n}`, W - 14, H - 6, { align: 'right' });
+        }
+    }
+
+    function fmt(n) { return Number(n || 0).toLocaleString(); }
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    async function downloadGeneralReportPDF(id) {
+        const report = allReports.find(r => r.id === id);
+        if (!report) return;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const W = doc.internal.pageSize.getWidth();
+
+        let y = addPdfHeader(doc, 'Daily General Report');
+
+        // Meta
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`Report #${report.id}   |   Date: ${new Date(report.report_date).toLocaleDateString()}`, 14, y);
+        doc.text(`Prepared by: ${report.first_name} ${report.second_name}  —  ${report.position || ''}`, 14, y + 5);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...BRAND.dark);
+        doc.text(`Status: ${(report.status || '').toUpperCase()}     Priority: ${report.is_urgent ? 'URGENT' : 'NORMAL'}`, 14, y + 10);
+        doc.setTextColor(0, 0, 0);
+        y += 17;
+
+        // Section builder
+        function genSection(title, body, extraFn) {
+            if (y > 242) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
+
+            // Heavy rule + caps, no color
             doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.6);
             doc.line(14, y, W - 14, y);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
-            doc.text('CONCLUSION & ACTION ITEMS', 14, y + 5.5);
+            doc.text(title.toUpperCase(), 14, y + 5.5);
             doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.25);
             doc.line(14, y + 7, W - 14, y + 7);
+            doc.setTextColor(0, 0, 0);
             y += 12;
 
-            const cLines = doc.splitTextToSize(report.conclusion || 'No conclusion provided.', W - 34);
-            // Dark left accent rule
-            doc.setFillColor(15, 23, 42);
-            doc.rect(14, y - 2, 2, cLines.length * 5 + 4, 'F');
             doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(50, 50, 50);
-            doc.text(cLines, 20, y);
-
-            addPdfFooter(doc);
-            doc.save(`Report-${report.id}-${report.report_date}.pdf`);
-            showToast('PDF downloaded successfully', 'success');
+            const lines = doc.splitTextToSize(body || 'No summary provided.', W - 28);
+            doc.text(lines, 14, y);
+            y += lines.length * 5 + 4;
+            if (extraFn) extraFn();
+            y += 5;
         }
 
-        // ANALYTICS TAB FUNCTIONS
+        genSection('Operations & Logistics', report.ops_summary, () => {
+            if (y > 250) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
+            const bW = (W - 32) / 2;
 
-        function updateDateRange() {
-            const period = document.getElementById('reportPeriod').value;
-            document.getElementById('customDateRange').classList.toggle('hidden', period !== 'custom');
-        }
+            // Stat boxes — white fill, hairline border, dark text
+            doc.setFillColor(255, 255, 255);
+            doc.setDrawColor(170, 170, 170); doc.setLineWidth(0.4);
+            doc.rect(14, y, bW - 2, 13, 'FD');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+            doc.text('INSTALLATIONS', 16, y + 5);
+            doc.setFontSize(14); doc.setTextColor(15, 23, 42);
+            doc.text(String(report.ops_installs || 0), 16, y + 11.5);
 
-        async function generateAnalyticsReport() {
-            const reportType  = document.getElementById('reportType').value;
-            const period      = document.getElementById('reportPeriod').value;
-            const format      = document.querySelector('input[name="exportFormat"]:checked').value;
-            const dateFrom    = document.getElementById('dateFrom').value;
-            const dateTo      = document.getElementById('dateTo').value;
-            const customYear  = document.getElementById('customYear')?.value;
-            const customMonth = document.getElementById('customMonth')?.value;
+            doc.rect(14 + bW + 2, y, bW - 2, 13, 'FD');
+            doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+            doc.text('PENDING JOBS', 16 + bW + 2, y + 5);
+            doc.setFontSize(14); doc.setTextColor(15, 23, 42);
+            doc.text(String(report.ops_pending || 0), 16 + bW + 2, y + 11.5);
 
-            const params = new URLSearchParams({ period, report_type: reportType });
+            doc.setTextColor(0, 0, 0); y += 17;
+        });
 
-            if (period === 'custom') {
-                const isRange = document.getElementById('modeRange')?.checked;
-                if (isRange && dateFrom && dateTo) {
-                    params.set('date_from', dateFrom);
-                    params.set('date_to', dateTo);
-                } else if (customYear && customMonth) {
-                    params.set('year', customYear);
-                    params.set('month', customMonth);
-                } else {
-                    showToast('Please fill in the custom period fields', 'error');
-                    return;
-                }
+        genSection('Staff & Personnel', report.staff_summary);
+        genSection('Support & Client Feedback', report.support_summary);
+
+        // Conclusion — dark left rule (not brand color)
+        if (y > 232) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
+        doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.6);
+        doc.line(14, y, W - 14, y);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
+        doc.text('CONCLUSION & ACTION ITEMS', 14, y + 5.5);
+        doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.25);
+        doc.line(14, y + 7, W - 14, y + 7);
+        y += 12;
+
+        const cLines = doc.splitTextToSize(report.conclusion || 'No conclusion provided.', W - 34);
+        // Dark left accent rule
+        doc.setFillColor(15, 23, 42);
+        doc.rect(14, y - 2, 2, cLines.length * 5 + 4, 'F');
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(50, 50, 50);
+        doc.text(cLines, 20, y);
+
+        addPdfFooter(doc);
+        doc.save(`Report-${report.id}-${report.report_date}.pdf`);
+        showToast('PDF downloaded successfully', 'success');
+    }
+
+    // ANALYTICS TAB FUNCTIONS
+
+    function updateDateRange() {
+        const period = document.getElementById('reportPeriod').value;
+        document.getElementById('customDateRange').classList.toggle('hidden', period !== 'custom');
+    }
+
+    async function generateAnalyticsReport() {
+        const period = document.getElementById('reportPeriod').value;
+        const format = document.querySelector('input[name="exportFormat"]:checked').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        const customYear = document.getElementById('customYear')?.value;
+        const customMonth = document.getElementById('customMonth')?.value;
+
+        const params = new URLSearchParams({ period });
+
+        if (period === 'custom') {
+            const isRange = document.getElementById('modeRange')?.checked;
+            if (isRange && dateFrom && dateTo) {
+                params.set('date_from', dateFrom);
+                params.set('date_to', dateTo);
+            } else if (customYear && customMonth) {
+                params.set('year', customYear);
+                params.set('month', customMonth);
+            } else {
+                showToast('Please fill in the custom period fields', 'error');
+                return;
             }
+        }
 
-            document.getElementById('analyticsPreview').innerHTML = `
+        document.getElementById('analyticsPreview').innerHTML = `
                 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:#94a3b8">
                     <i class="fas fa-circle-notch fa-spin" style="font-size:2.2rem;margin-bottom:14px;color:#F0177A"></i>
                     <p style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0">Building Report…</p>
                 </div>`;
 
-            try {
-                const res    = await fetch(`/api/reports/analytics?${params.toString()}`);
-                const result = await res.json();
-                if (!result.success) {
-                    showToast(result.message || 'Failed to generate report', 'error');
-                    return;
-                }
-                currentAnalyticsData = result.data;
-                displayAnalyticsPreview(result.data);
-                if (format === 'pdf') generateAnalyticsPDF(result.data);
-                document.getElementById('downloadReportBtn').classList.remove('hidden');
-            } catch (err) {
-                console.error(err);
-                showToast('Failed to generate report', 'error');
+        try {
+            const res = await fetch(`/api/reports/analytics?${params.toString()}`);
+            const result = await res.json();
+            if (!result.success) {
+                showToast(result.message || 'Failed to generate report', 'error');
+                return;
             }
+            currentAnalyticsData = result.data;
+            displayAnalyticsPreview(result.data);
+            if (format === 'pdf') generateAnalyticsPDF(result.data);
+            document.getElementById('downloadReportBtn').classList.remove('hidden');
+        } catch (err) {
+            console.error(err);
+            showToast('Failed to generate report', 'error');
         }
+    }
 
-        function buildBarChart(canvasId, labels, values, color) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const W = canvas.width, H = canvas.height;
-            const P = { t: 12, r: 10, b: 30, l: 52 };
-            const cW = W - P.l - P.r, cH = H - P.t - P.b;
-            ctx.clearRect(0, 0, W, H);
 
-            const max  = Math.max(...values, 1);
-            const barW = Math.max(5, (cW / values.length) - 5);
 
-            // Grid lines
-            [0.25, 0.5, 0.75, 1].forEach(f => {
-                const y = P.t + cH * (1 - f);
-                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.8;
-                ctx.setLineDash([3, 3]);
-                ctx.beginPath(); ctx.moveTo(P.l, y); ctx.lineTo(W - P.r, y); ctx.stroke();
-                ctx.setLineDash([]);
-                ctx.fillStyle = '#94a3b8'; ctx.font = '9px system-ui';
-                ctx.textAlign = 'right';
-                ctx.fillText(fmtK(max * f), P.l - 4, y + 3);
-            });
+    function displayAnalyticsPreview(data) {
+        const preview = document.getElementById('analyticsPreview');
+        const { meta, financial, clients } = data;
 
-            // Baseline
-            ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.moveTo(P.l, P.t + cH); ctx.lineTo(W - P.r, P.t + cH);
-            ctx.stroke();
-
-            // Bars
-            values.forEach((v, i) => {
-                const x  = P.l + i * (cW / values.length) + (cW / values.length - barW) / 2;
-                const bH = (v / max) * cH;
-                const y  = P.t + cH - bH;
-                const g  = ctx.createLinearGradient(x, y, x, y + bH);
-                g.addColorStop(0, color);
-                g.addColorStop(1, color + '44');
-                ctx.fillStyle = g;
-                ctx.beginPath();
-                if (ctx.roundRect) ctx.roundRect(x, y, barW, bH, [3, 3, 0, 0]);
-                else ctx.rect(x, y, barW, bH);
-                ctx.fill();
-                if (labels[i]) {
-                    ctx.fillStyle = '#64748b'; ctx.font = '8px system-ui';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(labels[i].slice(0, 5), x + barW / 2, H - 8);
-                }
-            });
-        }
-
-        function buildDonut(canvasId, labels, values, colors) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const W = canvas.width, H = canvas.height;
-            const cx = W / 2, cy = H / 2;
-            const outer = Math.min(W, H) / 2 - 6;
-            const inner = outer * 0.56;
-            const total = values.reduce((a, b) => a + b, 0) || 1;
-            ctx.clearRect(0, 0, W, H);
-            let a = -Math.PI / 2;
-            values.forEach((v, i) => {
-                const sw = (v / total) * 2 * Math.PI;
-                ctx.beginPath(); ctx.moveTo(cx, cy);
-                ctx.arc(cx, cy, outer, a, a + sw);
-                ctx.closePath(); ctx.fillStyle = colors[i % colors.length]; ctx.fill();
-                a += sw;
-            });
-            ctx.beginPath(); ctx.arc(cx, cy, inner, 0, 2 * Math.PI);
-            ctx.fillStyle = '#fff'; ctx.fill();
-            ctx.fillStyle = '#1e293b'; ctx.font = 'bold 10px system-ui';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(values.length + ' pkgs', cx, cy);
-        }
-
-        function displayAnalyticsPreview(data) {
-            const preview = document.getElementById('analyticsPreview');
-            const { meta, financial, clients, operations, charts } = data;
-
-            const sectionHeader = (title) => `
+        const sectionHeader = (title) => `
                 <div style="border-bottom: 2px solid #334155; margin: 30px 0 15px 0; padding-bottom: 5px;">
                     <h3 style="margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #1e293b; letter-spacing: 0.05em;">${title}</h3>
                 </div>`;
 
-            const financialRow = (label, value, isTotal = false, isNegative = false) => `
+        const financialRow = (label, value, isTotal = false, isNegative = false) => `
                 <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; ${isTotal ? 'font-weight: 800; border-top: 2px solid #334155; margin-top: 5px;' : ''}">
                     <span style="font-size: 12px; color: ${isTotal ? '#1e293b' : '#64748b'};">${label}</span>
                     <span style="font-size: 13px; color: ${isNegative ? '#dc2626' : '#1e293b'};">${value}</span>
                 </div>`;
 
-            let html = `
+        let html = `
             <div style="font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 0 auto; background: #fff; color: #1e293b;">
                 <!-- Report Header -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px;">
                     <div>
-                        <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #1e293b;">MONTHLY PERFORMANCE REPORT</h1>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #1e293b;">MONTHLY REPORT</h1>
                         <p style="margin: 5px 0 0 0; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">${BRAND.name}</p>
                     </div>
                     <div style="text-align: right;">
@@ -1127,54 +1098,13 @@
                 <!-- 4. Client Activity -->
                 ${sectionHeader('4. Client Activity')}
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <!-- Joined this month -->
-                    <div>
-                        <h4 style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 10px;">Clients Joined This Month (${clients.joined_clients_list.length})</h4>
-                        <div style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px;">
-                            ${clients.joined_clients_list.length > 0 ? `
-                                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                                    <thead style="background: #f1f5f9; position: sticky; top: 0;">
-                                        <tr>
-                                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #e2e8f0;">Name</th>
-                                            <th style="padding: 8px; text-align: right; border-bottom: 1px solid #e2e8f0;">Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${clients.joined_clients_list.map(u => `
-                                            <tr>
-                                                <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(u.first_name)} ${escapeHtml(u.second_name)}</td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #94a3b8;">${new Date(u.created_at).toLocaleDateString()}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            ` : '<p style="padding: 20px; text-align: center; color: #94a3b8; font-style: italic;">No new clients found.</p>'}
-                        </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Clients Joined</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${clients.new_clients_count}</h3>
                     </div>
-
-                    <!-- Subscribed this month -->
-                    <div>
-                        <h4 style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 10px;">New Subscriptions (${clients.newly_subscribed_list.length})</h4>
-                        <div style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px;">
-                            ${clients.newly_subscribed_list.length > 0 ? `
-                                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                                    <thead style="background: #f1f5f9; position: sticky; top: 0;">
-                                        <tr>
-                                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #e2e8f0;">Name</th>
-                                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #e2e8f0;">Package</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${clients.newly_subscribed_list.map(u => `
-                                            <tr>
-                                                <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(u.first_name)} ${escapeHtml(u.second_name)}</td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; color: #0284c7;">${escapeHtml(u.package_name)}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            ` : '<p style="padding: 20px; text-align: center; color: #94a3b8; font-style: italic;">No new subscriptions.</p>'}
-                        </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">New Subscriptions</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${clients.new_subscriptions_count}</h3>
                     </div>
                 </div>
 
@@ -1184,208 +1114,188 @@
                 </div>
             </div>`;
 
-            preview.innerHTML = html;
-        }
+        preview.innerHTML = html;
+    }
 
-        function generateAnalyticsPDF(data) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const { meta, financial, clients } = data;
-            const W = doc.internal.pageSize.getWidth();
-            const margin = 15;
+    function generateAnalyticsPDF(data) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const { meta, financial, clients } = data;
+        const W = doc.internal.pageSize.getWidth();
+        const margin = 15;
 
-            // Helper for lines
-            let y = 15;
+        // Helper for lines
+        let y = 15;
 
-            // Header
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(18);
-            doc.setTextColor(30, 41, 59);
-            doc.text('MONTHLY PERFORMANCE REPORT', margin, y);
-            
-            y += 8;
-            doc.setFontSize(10);
-            doc.setTextColor(100, 116, 139);
-            doc.text(BRAND.name.toUpperCase(), margin, y);
+        // Header
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.setTextColor(30, 41, 59);
+        doc.text('MONTHLY REPORT', margin, y);
 
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Period: ${meta.period_label}`, W - margin, y, { align: 'right' });
+        y += 8;
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139);
+        doc.text(BRAND.name.toUpperCase(), margin, y);
 
-            y += 5;
-            doc.setDrawColor(30, 41, 59);
-            doc.setLineWidth(1);
-            doc.line(margin, y, W - margin, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Period: ${meta.period_label}`, W - margin, y, { align: 'right' });
 
-            y += 15;
+        y += 5;
+        doc.setDrawColor(30, 41, 59);
+        doc.setLineWidth(1);
+        doc.line(margin, y, W - margin, y);
 
-            // Section 1: Revenue
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.setTextColor(30, 41, 59);
-            doc.text('1. REVENUE OVERVIEW', margin, y);
-            y += 5;
-            doc.setLineWidth(0.5);
-            doc.line(margin, y, W - margin, y);
-            y += 10;
+        y += 15;
 
-            const revenueRows = [
-                ['Subscription Revenue', `KES ${fmt(financial.subscription_revenue)}`],
-                ['Sales Revenue', `KES ${fmt(financial.sales_revenue)}`],
-                ['TOTAL REVENUE', `KES ${fmt(financial.total_revenue)}`]
-            ];
+        // Section 1: Revenue
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(30, 41, 59);
+        doc.text('1. REVENUE OVERVIEW', margin, y);
+        y += 5;
+        doc.setLineWidth(0.5);
+        doc.line(margin, y, W - margin, y);
+        y += 10;
 
-            doc.autoTable({
-                startY: y,
-                body: revenueRows,
-                theme: 'plain',
-                styles: { fontSize: 10, cellPadding: 3 },
-                columnStyles: { 1: { halign: 'right' } },
-                didParseCell: function(data) {
-                    if (data.row.index === 2) {
-                        data.cell.styles.fontStyle = 'bold';
-                        data.cell.styles.fillColor = [241, 245, 249];
-                    }
+        const revenueRows = [
+            ['Subscription Revenue', `KES ${fmt(financial.subscription_revenue)}`],
+            ['Sales Revenue', `KES ${fmt(financial.sales_revenue)}`],
+            ['TOTAL REVENUE', `KES ${fmt(financial.total_revenue)}`]
+        ];
+
+        doc.autoTable({
+            startY: y,
+            body: revenueRows,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 3 },
+            columnStyles: { 1: { halign: 'right' } },
+            didParseCell: function (data) {
+                if (data.row.index === 2) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [241, 245, 249];
                 }
-            });
-
-            y = doc.lastAutoTable.finalY + 15;
-
-            // Section 2: Expenditure
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.text('2. EXPENDITURE & DEDUCTIONS', margin, y);
-            y += 5;
-            doc.line(margin, y, W - margin, y);
-            y += 10;
-
-            const expenseRows = [
-                ['Staff Salaries', `KES ${fmt(financial.staff_salaries_payable)}`],
-                ['General Expenditure', `KES ${fmt(financial.monthly_expenditure)}`],
-                ['TOTAL EXPENDITURE', `KES ${fmt(financial.total_expenditure)}`]
-            ];
-
-            doc.autoTable({
-                startY: y,
-                body: expenseRows,
-                theme: 'plain',
-                styles: { fontSize: 10, cellPadding: 3 },
-                columnStyles: { 1: { halign: 'right' } },
-                didParseCell: function(data) {
-                    if (data.row.index === 2) {
-                        data.cell.styles.fontStyle = 'bold';
-                        data.cell.styles.fillColor = [241, 245, 249];
-                        data.cell.styles.textColor = [220, 38, 38];
-                    }
-                }
-            });
-
-            y = doc.lastAutoTable.finalY + 15;
-
-            // Section 3: Net Profit
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.text('3. PROFITABILITY ANALYSIS', margin, y);
-            y += 5;
-            doc.line(margin, y, W - margin, y);
-            y += 10;
-
-            doc.setFillColor(financial.net_profit >= 0 ? 240 : 254, financial.net_profit >= 0 ? 253 : 242, financial.net_profit >= 0 ? 244 : 242);
-            doc.rect(margin, y, W - (margin * 2), 25, 'F');
-            
-            doc.setFontSize(10);
-            doc.setTextColor(financial.net_profit >= 0 ? 21 : 153, financial.net_profit >= 0 ? 101 : 27, financial.net_profit >= 0 ? 52 : 27);
-            doc.text('NET PROFIT / LOSS', margin + 5, y + 10);
-            
-            doc.setFontSize(18);
-            doc.text(`KES ${financial.net_profit < 0 ? '-' : ''}${fmt(Math.abs(financial.net_profit))}`, margin + 5, y + 20);
-
-            doc.setFontSize(10);
-            doc.setTextColor(100, 116, 139);
-            doc.text('PROFIT MARGIN', W - margin - 5, y + 10, { align: 'right' });
-            doc.setFontSize(14);
-            doc.setTextColor(30, 41, 59);
-            doc.text(`${financial.profit_margin_pct}%`, W - margin - 5, y + 20, { align: 'right' });
-
-            y += 35;
-
-            // Section 4: Client Activity
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.text('4. CLIENT ACTIVITY', margin, y);
-            y += 5;
-            doc.line(margin, y, W - margin, y);
-            y += 10;
-
-            // Two columns for clients
-            const joinedData = clients.joined_clients_list.map(u => [`${u.first_name} ${u.second_name}`, new Date(u.created_at).toLocaleDateString()]);
-            const subscribedData = clients.newly_subscribed_list.map(u => [`${u.first_name} ${u.second_name}`, u.package_name]);
-
-            doc.setFontSize(10);
-            doc.text(`Clients Joined (${clients.joined_clients_list.length})`, margin, y);
-            doc.text(`New Subscriptions (${clients.newly_subscribed_list.length})`, (W/2) + 5, y);
-            y += 5;
-
-            doc.autoTable({
-                startY: y,
-                head: [['Name', 'Date']],
-                body: joinedData.length > 0 ? joinedData : [['No data', '']],
-                theme: 'grid',
-                margin: { right: (W/2) + 2 },
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [51, 65, 85] }
-            });
-
-            const joinedTableY = doc.lastAutoTable.finalY;
-
-            doc.autoTable({
-                startY: y,
-                head: [['Name', 'Package']],
-                body: subscribedData.length > 0 ? subscribedData : [['No data', '']],
-                theme: 'grid',
-                margin: { left: (W/2) + 5 },
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [51, 65, 85] }
-            });
-
-            const subscribedTableY = doc.lastAutoTable.finalY;
-            y = Math.max(joinedTableY, subscribedTableY) + 20;
-
-            // Footer
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(148, 163, 184);
-                doc.text('DR.NET TECHNOLOGY LABS - INTERNAL PERFORMANCE REPORT', margin, doc.internal.pageSize.getHeight() - 10);
-                doc.text(`Page ${i} of ${pageCount}`, W - margin, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
             }
+        });
 
-            doc.save(`DR.NET-Performance-Report-${meta.period_label.replace(/ /g, '-')}.pdf`);
-            showToast('PDF downloaded successfully', 'success');
+        y = doc.lastAutoTable.finalY + 15;
+
+        // Section 2: Expenditure
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('2. EXPENDITURE & DEDUCTIONS', margin, y);
+        y += 5;
+        doc.line(margin, y, W - margin, y);
+        y += 10;
+
+        const expenseRows = [
+            ['Staff Salaries', `KES ${fmt(financial.staff_salaries_payable)}`],
+            ['General Expenditure', `KES ${fmt(financial.monthly_expenditure)}`],
+            ['TOTAL EXPENDITURE', `KES ${fmt(financial.total_expenditure)}`]
+        ];
+
+        doc.autoTable({
+            startY: y,
+            body: expenseRows,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 3 },
+            columnStyles: { 1: { halign: 'right' } },
+            didParseCell: function (data) {
+                if (data.row.index === 2) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [241, 245, 249];
+                    data.cell.styles.textColor = [220, 38, 38];
+                }
+            }
+        });
+
+        y = doc.lastAutoTable.finalY + 15;
+
+        // Section 3: Net Profit
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('3. PROFITABILITY ANALYSIS', margin, y);
+        y += 5;
+        doc.line(margin, y, W - margin, y);
+        y += 10;
+
+        doc.setFillColor(financial.net_profit >= 0 ? 240 : 254, financial.net_profit >= 0 ? 253 : 242, financial.net_profit >= 0 ? 244 : 242);
+        doc.rect(margin, y, W - (margin * 2), 25, 'F');
+
+        doc.setFontSize(10);
+        doc.setTextColor(financial.net_profit >= 0 ? 21 : 153, financial.net_profit >= 0 ? 101 : 27, financial.net_profit >= 0 ? 52 : 27);
+        doc.text('NET PROFIT / LOSS', margin + 5, y + 10);
+
+        doc.setFontSize(18);
+        doc.text(`KES ${financial.net_profit < 0 ? '-' : ''}${fmt(Math.abs(financial.net_profit))}`, margin + 5, y + 20);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139);
+        doc.text('PROFIT MARGIN', W - margin - 5, y + 10, { align: 'right' });
+        doc.setFontSize(14);
+        doc.setTextColor(30, 41, 59);
+        doc.text(`${financial.profit_margin_pct}%`, W - margin - 5, y + 20, { align: 'right' });
+
+        y += 35;
+
+        // Section 4: Client Activity
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('4. CLIENT ACTIVITY', margin, y);
+        y += 5;
+        doc.line(margin, y, W - margin, y);
+        y += 10;
+
+        const clientStats = [
+            ['Total Clients Joined', String(clients.new_clients_count)],
+            ['Total New Subscriptions', String(clients.new_subscriptions_count)]
+        ];
+
+        doc.autoTable({
+            startY: y,
+            body: clientStats,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 3 },
+            columnStyles: { 1: { halign: 'right', fontStyle: 'bold' } }
+        });
+
+        y = doc.lastAutoTable.finalY + 20;
+
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text('DR.NET TECHNOLOGY LABS - INTERNAL REPORT', margin, doc.internal.pageSize.getHeight() - 10);
+            doc.text(`Page ${i} of ${pageCount}`, W - margin, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
         }
 
-        function downloadCurrentReport() {
-            if (!currentAnalyticsData) { showToast('No report to download', 'error'); return; }
-            generateAnalyticsPDF(currentAnalyticsData);
-        }
+        doc.save(`DR.NET-Report-${meta.period_label.replace(/ /g, '-')}.pdf`);
+        showToast('PDF downloaded successfully', 'success');
+    }
 
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `px-6 py-3 rounded-lg shadow-lg text-white text-sm font-bold animate-fade-in ${
-                type === 'success' ? 'bg-emerald-600' : 
-                type === 'error' ? 'bg-red-600' : 
+    function downloadCurrentReport() {
+        if (!currentAnalyticsData) { showToast('No report to download', 'error'); return; }
+        generateAnalyticsPDF(currentAnalyticsData);
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `px-6 py-3 rounded-lg shadow-lg text-white text-sm font-bold animate-fade-in ${type === 'success' ? 'bg-emerald-600' :
+            type === 'error' ? 'bg-red-600' :
                 'bg-blue-600'
             }`;
-            toast.innerHTML = `
+        toast.innerHTML = `
                 <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
                 ${message}
             `;
-            
-            document.getElementById('toastContainer').appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }        
-    </script>
+
+        document.getElementById('toastContainer').appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }        
+</script>
