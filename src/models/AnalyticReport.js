@@ -119,6 +119,8 @@ const AnalyticsReport = {
             [recentInvoices],
             [topExpenseCategories],
             [salesBreakdown],
+            [newlySubscribedClients],
+            [joinedClientsList],
         ] = await Promise.all([
 
             db.query(`
@@ -241,7 +243,12 @@ const AnalyticsReport = {
             db.query(`SELECT COUNT(*) AS count FROM items WHERE status = 'out-stock'`),
 
 
-            db.query(`SELECT COALESCE(SUM(basic_salary), 0) AS total FROM staff_salaries`),
+            db.query(`
+                SELECT COALESCE(SUM(ss.basic_salary), 0) AS total 
+                FROM staff_salaries ss
+                JOIN staff s ON ss.staff_id = s.id
+                WHERE ss.effective_to IS NULL AND s.is_active = TRUE
+            `),
 
             db.query(`
                 SELECT COUNT(DISTINCT staff_id) AS count
@@ -339,6 +346,23 @@ const AnalyticsReport = {
                 ORDER BY total_revenue DESC
                 LIMIT 8
             `, [periodStart, periodEnd]),
+
+            db.query(`
+                SELECT u.first_name, u.second_name, p.name AS package_name, us.created_at
+                FROM user_subscriptions us
+                JOIN users u ON us.user_id = u.id
+                JOIN packages p ON us.package_id = p.id
+                WHERE us.created_at BETWEEN ? AND ?
+                ORDER BY us.created_at DESC
+            `, [periodStart, periodEnd]),
+
+            db.query(`
+                SELECT first_name, second_name, created_at
+                FROM users
+                WHERE created_at BETWEEN ? AND ?
+                  AND is_active = TRUE
+                ORDER BY created_at DESC
+            `, [periodStart, periodEnd]),
         ]);
 
         const subRevTotal   = Number(currentSubRev[0]?.total   || 0);
@@ -354,8 +378,10 @@ const AnalyticsReport = {
             revenueTrend = 100;
         }
 
-        const expenses     = Number(monthlyExpenditure[0]?.total || 0);
-        const netProfit    = totalRevenue - expenses;
+        const hrexpenses   = Number(monthlyExpenditure[0]?.total || 0);
+        const salaries     = Number(staffSalaries[0]?.total || 0);
+        const totalExpenditure = hrexpenses + salaries;
+        const netProfit    = totalRevenue - totalExpenditure;
         const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
         return {
@@ -373,10 +399,11 @@ const AnalyticsReport = {
                 sales_revenue:           salesRevTotal,
                 prev_period_revenue:     prevRevTotal,
                 revenue_trend_pct:       parseFloat(revenueTrend.toFixed(1)),
-                monthly_expenditure:     expenses,
+                monthly_expenditure:     hrexpenses,
+                staff_salaries_payable:  salaries,
+                total_expenditure:       totalExpenditure,
                 net_profit:              netProfit,
                 profit_margin_pct:       parseFloat(profitMargin.toFixed(1)),
-                staff_salaries_payable:  Number(staffSalaries[0]?.total || 0),
                 expense_breakdown:       topExpenseCategories,
             } : undefined,
 
@@ -389,6 +416,8 @@ const AnalyticsReport = {
                 new_clients_period:   Number(newClients[0]?.count          || 0),
                 package_popularity:   packagePopularity,
                 recent_invoices:      recentInvoices,
+                newly_subscribed_list: newlySubscribedClients,
+                joined_clients_list:   joinedClientsList,
             } : undefined,
 
             operations: (report_type === "full" || report_type === "operations") ? {

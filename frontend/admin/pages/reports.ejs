@@ -1063,421 +1063,304 @@
             const preview = document.getElementById('analyticsPreview');
             const { meta, financial, clients, operations, charts } = data;
 
-            const sec = (num, title) => `
-                <div style="border-top:2px solid #111827;padding:7px 0 5px;margin:${num > 1 ? '24px' : '0'} 0 12px">
-                    <p style="margin:0;font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:#111827">
-                        ${num}. ${title}
-                    </p>
+            const sectionHeader = (title) => `
+                <div style="border-bottom: 2px solid #334155; margin: 30px 0 15px 0; padding-bottom: 5px;">
+                    <h3 style="margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #1e293b; letter-spacing: 0.05em;">${title}</h3>
                 </div>`;
 
-            const mrow = (label, value, note) => `
-                <tr>
-                    <td style="padding:5px 8px 5px 0;font-size:11px;color:#374151;border-bottom:1px solid #f3f4f6">${label}</td>
-                    <td style="padding:5px 0;font-size:11px;font-weight:700;color:#111827;border-bottom:1px solid #f3f4f6;text-align:right;white-space:nowrap">${value}</td>
-                    ${note !== undefined ? `<td style="padding:5px 0 5px 12px;font-size:10px;color:#6b7280;border-bottom:1px solid #f3f4f6;text-align:right">${note}</td>` : ''}
-                </tr>`;
-
-            const factGrid = (items) => `
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #d1d5db;margin-bottom:16px">
-                    ${items.map(([lbl, val]) => `
-                    <div style="padding:10px 12px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb">
-                        <p style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 3px">${lbl}</p>
-                        <p style="font-size:17px;font-weight:800;color:#111827;margin:0;line-height:1.1">${val}</p>
-                    </div>`).join('')}
-                </div>`;
-
-            const barRow = (label, note, pct, color) => `
-                <div style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:11px;gap:8px">
-                    <span style="font-weight:500;color:#374151;width:130px;flex-shrink:0">${label}</span>
-                    ${note ? `<span style="font-size:9px;color:#9ca3af;white-space:nowrap">${note}</span>` : ''}
-                    <div style="flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden">
-                        <div style="height:100%;width:${pct}%;background:${color};border-radius:2px"></div>
-                    </div>
-                    <span style="font-weight:700;color:#111827;white-space:nowrap;min-width:80px;text-align:right"></span>
-                </div>`;
-
-            const perfRow = (dot, label, value) => `
-                <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:11px">
-                    <div style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0"></div>
-                    <span style="font-weight:500;color:#374151;flex:1">${label}</span>
-                    <span style="font-weight:700;color:#111827">${value}</span>
+            const financialRow = (label, value, isTotal = false, isNegative = false) => `
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; ${isTotal ? 'font-weight: 800; border-top: 2px solid #334155; margin-top: 5px;' : ''}">
+                    <span style="font-size: 12px; color: ${isTotal ? '#1e293b' : '#64748b'};">${label}</span>
+                    <span style="font-size: 13px; color: ${isNegative ? '#dc2626' : '#1e293b'};">${value}</span>
                 </div>`;
 
             let html = `
-            <style>
-                .isp { font-family:'Plus Jakarta Sans',sans-serif;color:#111827;line-height:1.4 }
-                .isp table { width:100%;border-collapse:collapse }
-                .isp canvas { display:block;width:100%!important }
-                .isp-two { display:grid;grid-template-columns:1fr 1fr;gap:14px }
-                .isp-chart { border:1px solid #e5e7eb;padding:12px }
-                .isp-chart-lbl { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 8px }
-            </style>
-            <div class="isp">
-
-            <div style="padding-bottom:10px;margin-bottom:18px">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end">
+            <div style="font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 0 auto; background: #fff; color: #1e293b;">
+                <!-- Report Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px;">
                     <div>
-                        <p style="font-size:17px;font-weight:900;letter-spacing:0.02em;color:#111827;margin:0 0 2px;text-transform:uppercase">DR.NET Technology Labs</p>
-                        <p style="font-size:9px;font-weight:600;letter-spacing:0.09em;color:#6b7280;text-transform:uppercase;margin:0">Innovative Connections With Doctors Precision</p>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #1e293b;">MONTHLY PERFORMANCE REPORT</h1>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">${BRAND.name}</p>
                     </div>
-                    <div style="text-align:right">
-                        <p style="font-size:12px;font-weight:800;color:#111827;margin:0">Performance Report</p>
-                        <p style="font-size:9px;color:#6b7280;margin:3px 0 0">${meta.period_label}</p>
+                    <div style="text-align: right;">
+                        <p style="margin: 0; font-size: 14px; font-weight: 700;">${meta.period_label}</p>
+                        <p style="margin: 5px 0 0 0; font-size: 10px; color: #94a3b8;">Generated on ${new Date(meta.generated_at).toLocaleString()}</p>
                     </div>
                 </div>
-                <div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:8px;padding-top:7px;border-top:1px solid #e5e7eb">
-                    <span style="font-size:9px;color:#6b7280"><b style="color:#111827">Period:</b> ${meta.period_start} – ${meta.period_end}</span>
-                    <span style="font-size:9px;color:#6b7280"><b style="color:#111827">Generated:</b> ${new Date(meta.generated_at).toLocaleString()}</span>
-                    <span style="font-size:9px;color:#6b7280"><b style="color:#111827">Report Type:</b> ${meta.report_type.toUpperCase()}</span>
+
+                <!-- 1. Revenue Summary -->
+                ${sectionHeader('1. Revenue Overview')}
+                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    ${financialRow('Subscription Revenue', 'KES ' + fmt(financial.subscription_revenue))}
+                    ${financialRow('Sales Revenue', 'KES ' + fmt(financial.sales_revenue))}
+                    ${financialRow('TOTAL REVENUE', 'KES ' + fmt(financial.total_revenue), true)}
+                </div>
+
+                <!-- 2. Expenditure & Deductions -->
+                ${sectionHeader('2. Expenditure & Deductions')}
+                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    ${financialRow('Staff Salaries', 'KES ' + fmt(financial.staff_salaries_payable))}
+                    ${financialRow('General Expenditure', 'KES ' + fmt(financial.monthly_expenditure))}
+                    ${financialRow('TOTAL EXPENDITURE', 'KES ' + fmt(financial.total_expenditure), true, true)}
+                </div>
+
+                <!-- 3. Net Profit / Loss -->
+                ${sectionHeader('3. Profitability Analysis')}
+                <div style="background: ${financial.net_profit >= 0 ? '#f0fdf4' : '#fef2f2'}; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid ${financial.net_profit >= 0 ? '#bbf7d0' : '#fecaca'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="margin: 0; font-size: 10px; font-weight: 700; color: ${financial.net_profit >= 0 ? '#166534' : '#991b1b'}; text-transform: uppercase;">Net Profit / Loss</p>
+                            <h2 style="margin: 5px 0 0 0; font-size: 28px; font-weight: 900; color: ${financial.net_profit >= 0 ? '#15803d' : '#dc2626'};">
+                                KES ${financial.net_profit < 0 ? '-' : ''}${fmt(Math.abs(financial.net_profit))}
+                            </h2>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Profit Margin</p>
+                            <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: 800; color: #1e293b;">${financial.profit_margin_pct}%</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #cbd5e1; font-size: 11px; color: #64748b;">
+                        * This amount is the remaining balance after deducting all expenditures (including salaries) from total revenue.
+                    </div>
+                </div>
+
+                <!-- 4. Client Activity -->
+                ${sectionHeader('4. Client Activity')}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Joined this month -->
+                    <div>
+                        <h4 style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 10px;">Clients Joined This Month (${clients.joined_clients_list.length})</h4>
+                        <div style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px;">
+                            ${clients.joined_clients_list.length > 0 ? `
+                                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                                    <thead style="background: #f1f5f9; position: sticky; top: 0;">
+                                        <tr>
+                                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #e2e8f0;">Name</th>
+                                            <th style="padding: 8px; text-align: right; border-bottom: 1px solid #e2e8f0;">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${clients.joined_clients_list.map(u => `
+                                            <tr>
+                                                <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(u.first_name)} ${escapeHtml(u.second_name)}</td>
+                                                <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #94a3b8;">${new Date(u.created_at).toLocaleDateString()}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            ` : '<p style="padding: 20px; text-align: center; color: #94a3b8; font-style: italic;">No new clients found.</p>'}
+                        </div>
+                    </div>
+
+                    <!-- Subscribed this month -->
+                    <div>
+                        <h4 style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 10px;">New Subscriptions (${clients.newly_subscribed_list.length})</h4>
+                        <div style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px;">
+                            ${clients.newly_subscribed_list.length > 0 ? `
+                                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                                    <thead style="background: #f1f5f9; position: sticky; top: 0;">
+                                        <tr>
+                                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #e2e8f0;">Name</th>
+                                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #e2e8f0;">Package</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${clients.newly_subscribed_list.map(u => `
+                                            <tr>
+                                                <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${escapeHtml(u.first_name)} ${escapeHtml(u.second_name)}</td>
+                                                <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; color: #0284c7;">${escapeHtml(u.package_name)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            ` : '<p style="padding: 20px; text-align: center; color: #94a3b8; font-style: italic;">No new subscriptions.</p>'}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+                    <span>DR.NET TECHNOLOGY LABS - INTERNAL REPORT</span>
+                    <span>Page 1 of 1</span>
                 </div>
             </div>`;
 
-            if (financial) {
-                const trend      = financial.revenue_trend_pct;
-                const trendColor = trend >= 0 ? CHART.green : CHART.red;
-                const trendArrow = trend >= 0 ? '▲' : '▼';
-                const dailyVals  = (charts?.daily_revenue || []).map(d => Number(d.total_revenue));
-
-                html += sec(1, 'Financial Performance');
-
-                html += factGrid([
-                    ['Total Revenue',      'KES ' + fmt(financial.total_revenue)],
-                    ['Net Profit',         'KES ' + fmt(financial.net_profit)],
-                    ['Profit Margin',      financial.profit_margin_pct + '%'],
-                    ['Subscription Rev.',  'KES ' + fmt(financial.subscription_revenue)],
-                    ['Sales Revenue',      'KES ' + fmt(financial.sales_revenue)],
-                    ['Expenditure',        'KES ' + fmt(financial.monthly_expenditure)],
-                    ['Staff Salaries',     'KES ' + fmt(financial.staff_salaries_payable)],
-                    ['Previous Period',    'KES ' + fmt(financial.prev_period_revenue)],
-                    ['Revenue Trend',      `<span style="color:${trendColor};font-weight:800">${trendArrow} ${Math.abs(trend)}%</span>`],
-                ]);
-
-                if (dailyVals.length) {
-                    html += `
-                    <div class="isp-chart" style="margin-bottom:14px">
-                        <p class="isp-chart-lbl">Daily Revenue Trend — ${meta.period_label} (KES)</p>
-                        <canvas id="chartRevDaily" height="120"></canvas>
-                    </div>`;
-                }
-
-                if (financial.expense_breakdown?.length) {
-                    html += `<div style="margin-bottom:14px">
-                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 8px">Expenditure by Category</p>`;
-                    const maxE = Math.max(...financial.expense_breakdown.map(e => Number(e.total_amount)));
-                    financial.expense_breakdown.forEach(e => {
-                        const pct = Math.round((Number(e.total_amount)/maxE)*100);
-                        html += `
-                        <div style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:11px;gap:8px">
-                            <span style="font-weight:500;color:#374151;width:130px;flex-shrink:0">${escapeHtml(e.category||'Other')}</span>
-                            <div style="flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden">
-                                <div style="height:100%;width:${pct}%;background:${CHART.red};border-radius:2px"></div>
-                            </div>
-                            <span style="font-weight:700;color:#111827;white-space:nowrap;min-width:90px;text-align:right">KES ${fmt(e.total_amount)}</span>
-                        </div>`;
-                    });
-                    html += `</div>`;
-                }
-            }
-
-            if (clients) {
-                const total       = clients.total_users || 1;
-                const activePct   = Math.round((clients.active_subscriptions / total) * 100);
-                const expiredPct  = Math.round((clients.expired_users        / total) * 100);
-                const inactivePct = Math.round((clients.inactive_users       / total) * 100);
-
-                html += sec(2, 'Client Overview');
-
-                html += factGrid([
-                    ['Total Users',       clients.total_users],
-                    ['Active Subs',       clients.active_subscriptions],
-                    ['New (Period)',       clients.new_clients_period],
-                    ['Expired',           clients.expired_users],
-                    ['Expiring ≤5 Days',  clients.overdue_users],
-                    ['No Subscription',   clients.inactive_users],
-                ]);
-
-                html += `
-                <div style="margin-bottom:14px">
-                    <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 5px">Subscription Health</p>
-                    <div style="display:flex;height:7px;border-radius:3px;overflow:hidden;border:1px solid #e5e7eb">
-                        <div style="width:${activePct}%;background:${CHART.green}"></div>
-                        <div style="width:${expiredPct}%;background:${CHART.red}"></div>
-                        <div style="width:${inactivePct}%;background:#d1d5db"></div>
-                    </div>
-                    <div style="display:flex;gap:16px;margin-top:5px">
-                        <span style="font-size:9px;font-weight:600;color:${CHART.green}">● Active ${activePct}%</span>
-                        <span style="font-size:9px;font-weight:600;color:${CHART.red}">● Expired ${expiredPct}%</span>
-                        <span style="font-size:9px;font-weight:600;color:#9ca3af">● No Sub ${inactivePct}%</span>
-                    </div>
-                </div>`;
-
-                if (clients.package_popularity?.length) {
-                    html += `
-                    <div class="isp-two" style="margin-bottom:14px">
-                        <div class="isp-chart">
-                            <p class="isp-chart-lbl">Top Packages — Active Subscriptions</p>
-                            <canvas id="chartPkgBar" height="110"></canvas>
-                        </div>
-                        <div class="isp-chart">
-                            <p class="isp-chart-lbl">Package Distribution</p>
-                            <canvas id="chartPkgDonut" height="90"></canvas>
-                            <div style="margin-top:8px">
-                                ${clients.package_popularity.slice(0,5).map((p,i) => `
-                                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-                                    <div style="width:8px;height:8px;border-radius:2px;background:${CHART.pkg[i]};flex-shrink:0"></div>
-                                    <span style="font-size:9px;color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(p.package_name)}</span>
-                                    <span style="font-size:9px;font-weight:700;color:#111827">${p.subscription_count}</span>
-                                </div>`).join('')}
-                            </div>
-                        </div>
-                    </div>`;
-                }
-            }
-
-            if (operations) {
-                const bookPct = operations.bookings_in_period > 0
-                    ? Math.round((operations.bookings_completed / operations.bookings_in_period) * 100) : 0;
-
-                html += sec(3, 'Operations & Field Activity');
-
-                html += factGrid([
-                    ['Bookings (Period)',  operations.bookings_in_period],
-                    ['Completed',         operations.bookings_completed],
-                    ['Pending Bookings',  operations.pending_bookings],
-                    ['Open Tickets',      operations.pending_tickets],
-                    ['Resolved (Period)', operations.resolved_tickets_period],
-                    ['Pending Tasks',     operations.pending_tasks],
-                    ['Tasks Done',        operations.completed_tasks_period],
-                    ['Staff on Duty',     operations.staff_on_duty_today],
-                    ['Inventory Value',   'KES ' + fmt(operations.inventory_value)],
-                ]);
-
-                html += `
-                <div style="margin-bottom:14px">
-                    <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 5px">Booking Completion Rate</p>
-                    <div style="height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;border:1px solid #e5e7eb">
-                        <div style="height:100%;width:${bookPct}%;background:${CHART.green};border-radius:3px"></div>
-                    </div>
-                    <p style="font-size:9px;color:#6b7280;margin:4px 0 0">${bookPct}% completed (${operations.bookings_completed} of ${operations.bookings_in_period} bookings)</p>
-                </div>`;
-
-                html += `
-                <div class="isp-two" style="margin-bottom:14px">
-                    <div>
-                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 6px">Inventory Status</p>
-                        ${perfRow(CHART.green,  'In Stock',      operations.in_stock_items + ' items')}
-                        ${perfRow(CHART.red,    'Out of Stock',  operations.out_of_stock_items + ' items')}
-                        ${perfRow(CHART.purple, 'Total Value',   'KES ' + fmt(operations.inventory_value))}
-                    </div>
-                    <div>
-                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 6px">Support & Staff</p>
-                        ${perfRow(CHART.red,   'Open Tickets',   operations.pending_tickets)}
-                        ${perfRow(CHART.green, 'Resolved',       operations.resolved_tickets_period)}
-                        ${perfRow('#9ca3af',   'Staff on Duty',  operations.staff_on_duty_today + ' today')}
-                    </div>
-                </div>`;
-
-                if (operations.sales_by_category?.length) {
-                    html += `<div style="margin-bottom:14px">
-                        <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#6b7280;margin:0 0 6px">Sales by Product Category</p>`;
-                    const maxS = Math.max(...operations.sales_by_category.map(s => Number(s.total_revenue)));
-                    operations.sales_by_category.forEach(s => {
-                        const pct = Math.round((Number(s.total_revenue)/maxS)*100);
-                        html += `
-                        <div style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:11px;gap:8px">
-                            <span style="font-weight:500;color:#374151;width:130px;flex-shrink:0">${escapeHtml(s.category||'Other')}</span>
-                            <span style="font-size:9px;color:#9ca3af;white-space:nowrap">${s.sales_count} sales</span>
-                            <div style="flex:1;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden">
-                                <div style="height:100%;width:${pct}%;background:${CHART.blue};border-radius:2px"></div>
-                            </div>
-                            <span style="font-weight:700;color:#111827;white-space:nowrap;min-width:90px;text-align:right">KES ${fmt(s.total_revenue)}</span>
-                        </div>`;
-                    });
-                    html += `</div>`;
-                }
-            }
-
-            html += `
-                <div style="border-top:1px solid #d1d5db;margin-top:24px;padding-top:8px;display:flex;justify-content:space-between">
-                    <span style="font-size:9px;color:#9ca3af">${BRAND.name}</span>
-                    <span style="font-size:9px;color:#9ca3af">Confidential — Internal Use Only</span>
-                </div>
-            </div>`; // .isp
-
             preview.innerHTML = html;
-
-            requestAnimationFrame(() => {
-                ['chartRevDaily','chartPkgBar','chartPkgDonut'].forEach(id => {
-                    const c = document.getElementById(id);
-                    if (c) c.width = c.offsetWidth || 300;
-                });
-                if (charts?.daily_revenue?.length) {
-                    buildBarChart('chartRevDaily',
-                        charts.daily_revenue.map(d => d.day_label),
-                        charts.daily_revenue.map(d => Number(d.total_revenue)),
-                        CHART.pink
-                    );
-                }
-                if (clients?.package_popularity?.length) {
-                    const pkgs = clients.package_popularity;
-                    buildBarChart('chartPkgBar',  pkgs.map(p=>p.package_name), pkgs.map(p=>p.subscription_count), CHART.pink);
-                    buildDonut('chartPkgDonut',   pkgs.map(p=>p.package_name), pkgs.map(p=>p.subscription_count), CHART.pkg);
-                }
-            });
         }
 
         function generateAnalyticsPDF(data) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const { meta, financial, clients, operations } = data;
+            const { meta, financial, clients } = data;
             const W = doc.internal.pageSize.getWidth();
+            const margin = 15;
 
-            let y = addPdfHeader(doc, 'Analytics Report');
+            // Helper for lines
+            let y = 15;
 
-            // Report meta — plain text
+            // Header
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.setTextColor(30, 41, 59);
+            doc.text('MONTHLY PERFORMANCE REPORT', margin, y);
+            
+            y += 8;
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139);
+            doc.text(BRAND.name.toUpperCase(), margin, y);
+
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
-            doc.setTextColor(80, 80, 80);
-            doc.text(`Period:      ${meta.period_label}  (${meta.period_start})`, 14, y);
-            doc.text(`Generated:   ${new Date(meta.generated_at).toLocaleString()}`, 14, y + 5);
-            doc.text(`Report Type: ${meta.report_type.toUpperCase()}`, 14, y + 10);
-            y += 17;
+            doc.text(`Period: ${meta.period_label}`, W - margin, y, { align: 'right' });
 
-            function pdfSection(title) {
-                if (y > 245) { doc.addPage(); y = addPdfHeader(doc, 'Performance Report (cont.)') + 4; }
-                doc.setDrawColor(15, 23, 42);
-                doc.setLineWidth(0.6);
-                doc.line(14, y, W - 14, y);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(8.5);
-                doc.setTextColor(15, 23, 42);
-                doc.text(title.toUpperCase(), 14, y + 5.5);
-                doc.setDrawColor(200, 200, 200);
-                doc.setLineWidth(0.25);
-                doc.line(14, y + 7, W - 14, y + 7);
-                doc.setTextColor(0, 0, 0);
-                y += 12;
-            }
+            y += 5;
+            doc.setDrawColor(30, 41, 59);
+            doc.setLineWidth(1);
+            doc.line(margin, y, W - margin, y);
 
-            function pdfTable(head, rows, colStyles) {
-                if (y > 238) { doc.addPage(); y = addPdfHeader(doc, 'Performance Report (cont.)') + 4; }
-                doc.autoTable({
-                    startY: y,
-                    head: [head],
-                    body: rows,
-                    theme: 'grid',
-                    headStyles: {
-                        fillColor:   [15, 23, 42],
-                        textColor:   [255, 255, 255],
-                        fontSize:    8,
-                        fontStyle:   'bold',
-                        cellPadding: 3,
-                    },
-                    bodyStyles: {
-                        fillColor:   [255, 255, 255],   // pure white — no color
-                        textColor:   [30, 30, 30],
-                        fontSize:    8.5,
-                        cellPadding: 3,
-                    },
-                    alternateRowStyles: {
-                        fillColor: [250, 250, 250],     // barely-off-white
-                    },
-                    columnStyles: colStyles || {},
-                    margin: { left: 14, right: 14 },
-                    tableLineColor: [200, 200, 200],
-                    tableLineWidth: 0.2,
-                });
-                y = doc.lastAutoTable.finalY + 8;
-            }
+            y += 15;
 
-            if (financial) {
-                pdfSection('1. Financial Performance');
-                pdfTable(
-                    ['Metric', 'This Period', 'Prev Period', 'Change'],
-                    [
-                        ['Total Revenue',          'KES '+fmt(financial.total_revenue),         'KES '+fmt(financial.prev_period_revenue), (financial.revenue_trend_pct>=0?'+':'')+financial.revenue_trend_pct+'%'],
-                        ['Subscription Revenue',   'KES '+fmt(financial.subscription_revenue),  '—', '—'],
-                        ['Sales Revenue',          'KES '+fmt(financial.sales_revenue),          '—', '—'],
-                        ['Total Expenditure',      'KES '+fmt(financial.monthly_expenditure),    '—', '—'],
-                        ['Net Profit',             'KES '+fmt(financial.net_profit),             '—', financial.profit_margin_pct+'% margin'],
-                        ['Staff Salaries Payable', 'KES '+fmt(financial.staff_salaries_payable), '—', '—'],
-                    ],
-                    { 0:{cellWidth:58}, 3:{cellWidth:26} }
-                );
+            // Section 1: Revenue
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.setTextColor(30, 41, 59);
+            doc.text('1. REVENUE OVERVIEW', margin, y);
+            y += 5;
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, W - margin, y);
+            y += 10;
 
-                if (financial.expense_breakdown?.length) {
-                    pdfSection('Expenditure Breakdown');
-                    pdfTable(
-                        ['Category', 'Transactions', 'Amount (KES)'],
-                        financial.expense_breakdown.map(e => [
-                            e.category||'Other', e.transaction_count, fmt(e.total_amount)
-                        ]),
-                        { 0:{cellWidth:85}, 2:{cellWidth:44} }
-                    );
+            const revenueRows = [
+                ['Subscription Revenue', `KES ${fmt(financial.subscription_revenue)}`],
+                ['Sales Revenue', `KES ${fmt(financial.sales_revenue)}`],
+                ['TOTAL REVENUE', `KES ${fmt(financial.total_revenue)}`]
+            ];
+
+            doc.autoTable({
+                startY: y,
+                body: revenueRows,
+                theme: 'plain',
+                styles: { fontSize: 10, cellPadding: 3 },
+                columnStyles: { 1: { halign: 'right' } },
+                didParseCell: function(data) {
+                    if (data.row.index === 2) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fillColor = [241, 245, 249];
+                    }
                 }
-            }
+            });
 
-            if (clients) {
-                pdfSection('2. Client Overview');
-                const total = clients.total_users || 1;
-                pdfTable(
-                    ['Metric', 'Count', '% of Users'],
-                    [
-                        ['Total Registered Users',  clients.total_users,         '100%'],
-                        ['Active Subscriptions',    clients.active_subscriptions, Math.round(clients.active_subscriptions/total*100)+'%'],
-                        ['New Clients (Period)',     clients.new_clients_period,   '—'],
-                        ['Expired Subscriptions',   clients.expired_users,        Math.round(clients.expired_users/total*100)+'%'],
-                        ['Expiring in ≤5 Days',     clients.overdue_users,        '—'],
-                        ['No Subscription',         clients.inactive_users,       Math.round(clients.inactive_users/total*100)+'%'],
-                    ],
-                    { 0:{cellWidth:85}, 2:{cellWidth:30} }
-                );
+            y = doc.lastAutoTable.finalY + 15;
 
-                if (clients.package_popularity?.length) {
-                    pdfSection('Active Subscription Packages');
-                    pdfTable(
-                        ['Package Name', 'Speed', 'Price (KES)', 'Active Subs'],
-                        clients.package_popularity.map(p => [
-                            p.package_name, p.speed||'—', fmt(p.price), p.subscription_count
-                        ]),
-                        { 0:{cellWidth:65} }
-                    );
+            // Section 2: Expenditure
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('2. EXPENDITURE & DEDUCTIONS', margin, y);
+            y += 5;
+            doc.line(margin, y, W - margin, y);
+            y += 10;
+
+            const expenseRows = [
+                ['Staff Salaries', `KES ${fmt(financial.staff_salaries_payable)}`],
+                ['General Expenditure', `KES ${fmt(financial.monthly_expenditure)}`],
+                ['TOTAL EXPENDITURE', `KES ${fmt(financial.total_expenditure)}`]
+            ];
+
+            doc.autoTable({
+                startY: y,
+                body: expenseRows,
+                theme: 'plain',
+                styles: { fontSize: 10, cellPadding: 3 },
+                columnStyles: { 1: { halign: 'right' } },
+                didParseCell: function(data) {
+                    if (data.row.index === 2) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fillColor = [241, 245, 249];
+                        data.cell.styles.textColor = [220, 38, 38];
+                    }
                 }
+            });
+
+            y = doc.lastAutoTable.finalY + 15;
+
+            // Section 3: Net Profit
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('3. PROFITABILITY ANALYSIS', margin, y);
+            y += 5;
+            doc.line(margin, y, W - margin, y);
+            y += 10;
+
+            doc.setFillColor(financial.net_profit >= 0 ? 240 : 254, financial.net_profit >= 0 ? 253 : 242, financial.net_profit >= 0 ? 244 : 242);
+            doc.rect(margin, y, W - (margin * 2), 25, 'F');
+            
+            doc.setFontSize(10);
+            doc.setTextColor(financial.net_profit >= 0 ? 21 : 153, financial.net_profit >= 0 ? 101 : 27, financial.net_profit >= 0 ? 52 : 27);
+            doc.text('NET PROFIT / LOSS', margin + 5, y + 10);
+            
+            doc.setFontSize(18);
+            doc.text(`KES ${financial.net_profit < 0 ? '-' : ''}${fmt(Math.abs(financial.net_profit))}`, margin + 5, y + 20);
+
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139);
+            doc.text('PROFIT MARGIN', W - margin - 5, y + 10, { align: 'right' });
+            doc.setFontSize(14);
+            doc.setTextColor(30, 41, 59);
+            doc.text(`${financial.profit_margin_pct}%`, W - margin - 5, y + 20, { align: 'right' });
+
+            y += 35;
+
+            // Section 4: Client Activity
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('4. CLIENT ACTIVITY', margin, y);
+            y += 5;
+            doc.line(margin, y, W - margin, y);
+            y += 10;
+
+            // Two columns for clients
+            const joinedData = clients.joined_clients_list.map(u => [`${u.first_name} ${u.second_name}`, new Date(u.created_at).toLocaleDateString()]);
+            const subscribedData = clients.newly_subscribed_list.map(u => [`${u.first_name} ${u.second_name}`, u.package_name]);
+
+            doc.setFontSize(10);
+            doc.text(`Clients Joined (${clients.joined_clients_list.length})`, margin, y);
+            doc.text(`New Subscriptions (${clients.newly_subscribed_list.length})`, (W/2) + 5, y);
+            y += 5;
+
+            doc.autoTable({
+                startY: y,
+                head: [['Name', 'Date']],
+                body: joinedData.length > 0 ? joinedData : [['No data', '']],
+                theme: 'grid',
+                margin: { right: (W/2) + 2 },
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [51, 65, 85] }
+            });
+
+            const joinedTableY = doc.lastAutoTable.finalY;
+
+            doc.autoTable({
+                startY: y,
+                head: [['Name', 'Package']],
+                body: subscribedData.length > 0 ? subscribedData : [['No data', '']],
+                theme: 'grid',
+                margin: { left: (W/2) + 5 },
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [51, 65, 85] }
+            });
+
+            const subscribedTableY = doc.lastAutoTable.finalY;
+            y = Math.max(joinedTableY, subscribedTableY) + 20;
+
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(148, 163, 184);
+                doc.text('DR.NET TECHNOLOGY LABS - INTERNAL PERFORMANCE REPORT', margin, doc.internal.pageSize.getHeight() - 10);
+                doc.text(`Page ${i} of ${pageCount}`, W - margin, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
             }
 
-            if (operations) {
-                pdfSection('3. Operations Summary');
-                const bookPct = operations.bookings_in_period > 0
-                    ? Math.round(operations.bookings_completed/operations.bookings_in_period*100) : 0;
-                pdfTable(
-                    ['Metric', 'Value', 'Notes'],
-                    [
-                        ['Bookings in Period',         operations.bookings_in_period,      bookPct+'% completed'],
-                        ['Pending Bookings',           operations.pending_bookings,        'Requires action'],
-                        ['Open Support Tickets',       operations.pending_tickets,         'In queue'],
-                        ['Tickets Resolved (Period)',  operations.resolved_tickets_period, '—'],
-                        ['Pending Staff Tasks',        operations.pending_tasks,           'Active assignments'],
-                        ['Tasks Completed (Period)',   operations.completed_tasks_period,  '—'],
-                        ['Inventory Value',            'KES '+fmt(operations.inventory_value), operations.in_stock_items+' in / '+operations.out_of_stock_items+' out'],
-                        ['Staff On Duty Today',        operations.staff_on_duty_today,     '—'],
-                    ],
-                    { 0:{cellWidth:68}, 2:{cellWidth:46} }
-                );
-
-                if (operations.sales_by_category?.length) {
-                    pdfSection('Sales by Product Category');
-                    pdfTable(
-                        ['Category', 'Sales Count', 'Revenue (KES)'],
-                        operations.sales_by_category.map(s => [
-                            s.category||'Other', s.sales_count, fmt(s.total_revenue)
-                        ]),
-                        { 0:{cellWidth:85}, 2:{cellWidth:44} }
-                    );
-                }
-            }
-
-            addPdfFooter(doc);
-            doc.save(`DR.NET-Performance-Report-${meta.period_start}-to-${meta.period_end}.pdf`);
+            doc.save(`DR.NET-Performance-Report-${meta.period_label.replace(/ /g, '-')}.pdf`);
             showToast('PDF downloaded successfully', 'success');
         }
 
