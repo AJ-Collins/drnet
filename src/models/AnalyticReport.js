@@ -115,11 +115,20 @@ const AnalyticsReport = {
             `, [periodStart, periodEnd]),
 
             db.query(`
-                SELECT COALESCE(SUM(ss.basic_salary), 0) AS total 
-                FROM staff_salaries ss
+                WITH RECURSIVE months AS (
+                    SELECT DATE(?) AS month_start
+                    UNION ALL
+                    SELECT DATE_ADD(month_start, INTERVAL 1 MONTH)
+                    FROM months
+                    WHERE DATE_ADD(month_start, INTERVAL 1 MONTH) <= DATE(?)
+                )
+                SELECT COALESCE(SUM(ss.net_salary), 0) AS total
+                FROM months m
+                JOIN staff_salaries ss
+                ON ss.effective_from <= LAST_DAY(m.month_start)
+                AND (ss.effective_to IS NULL OR ss.effective_to >= m.month_start)
                 JOIN staff s ON ss.staff_id = s.id
-                WHERE ss.effective_to IS NULL AND s.is_active = TRUE
-            `),
+            `, [start.format("YYYY-MM-01"), end.format("YYYY-MM-01")]),
 
             db.query(`
                 SELECT COUNT(*) AS count
