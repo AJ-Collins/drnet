@@ -264,7 +264,7 @@
           <!-- Footer -->
           <footer class="bg-gray-700 text-white py-4">
             <div class="container mx-auto px-4 text-center text-sm">
-              <p>&copy; 2025 Dr.Net Technology Labs. All rights reserved.</p>
+              <p>&copy; <span id="currentYear"></span> Dr.Net Technology Labs. All rights reserved.</p>
             </div>
           </footer>
         </div>
@@ -273,6 +273,7 @@
 
     <!-- Scripts -->
     <script>
+      document.getElementById("currentYear").textContent = new Date().getFullYear();
       // Initialize sidebar state
       function initSidebar() {
         const sidebar = document.getElementById("sidebar");

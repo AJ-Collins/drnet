@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../config/db');
 const Report = require('../models/ReportModel');
 const AnalyticsReport = require("../models/AnalyticReport");
 const MonthlyAnalytics = require("../models/MonthlyAnalytics");
@@ -204,6 +205,22 @@ router.get("/analytics", async (req, res) => {
 });
 
 /**
+ * GET /api/reports/analytics/monthly
+ * Fetch all stored monthly analytics rows.
+ */
+router.get("/analytics/monthly", async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT * FROM monthly_analytics ORDER BY year DESC, month DESC`
+        );
+        return res.json({ success: true, data: rows });
+    } catch (err) {
+        console.error("Monthly analytics GET all error:", err);
+        return res.status(400).json({ success: false, message: err.message });
+    }
+});
+
+/**
  * GET /api/reports/analytics/monthly/:year/:month
  * Fetch the stored monthly analytics row (creates it with system-computed
  * values and zero adjustments on first access if it doesn't exist yet).
@@ -261,6 +278,26 @@ router.post("/analytics/monthly/:year/:month/recompute", async (req, res) => {
         return res.json({ success: true, data: row });
     } catch (err) {
         console.error("Monthly analytics recompute error:", err);
+        return res.status(400).json({ success: false, message: err.message });
+    }
+});
+
+/**
+ * DELETE /api/reports/analytics/monthly/:year/:month
+ * Remove a monthly analytics row entirely.
+ */
+router.delete("/analytics/monthly/:year/:month", async (req, res) => {
+    try {
+        const [result] = await db.query(
+            `DELETE FROM monthly_analytics WHERE year = ? AND month = ?`,
+            [Number(req.params.year), Number(req.params.month)]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: "Row not found" });
+        }
+        return res.json({ success: true, message: "Row deleted successfully" });
+    } catch (err) {
+        console.error("Monthly analytics DELETE error:", err);
         return res.status(400).json({ success: false, message: err.message });
     }
 });

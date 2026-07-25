@@ -148,9 +148,13 @@
             class="tab-btn active px-6 py-4 text-sm font-black uppercase">
             <i class="fas fa-file-alt mr-2"></i>General Reports
         </button>
-        <button onclick="switchTab('analytics')" id="analyticsTab"
+        <button onclick="switchTab('analytics')" id="analyticsTabBtn"
             class="tab-btn px-6 py-4 text-sm font-black uppercase">
             <i class="fas fa-chart-line mr-2"></i>Analytics Reports
+        </button>
+        <button onclick="switchTab('monthly_data')" id="monthlyDataTabBtn"
+            class="tab-btn px-6 py-4 text-sm font-black uppercase">
+            <i class="fas fa-database mr-2"></i>Monthly Database
         </button>
     </div>
 </div>
@@ -345,73 +349,6 @@
                     </div>
                 </div>
 
-                <!-- Admin Editor for Monthly Analytics -->
-                <div class="bg-white border border-slate-200 shadow-sm mt-6">
-                    <div class="section-header px-4 py-3 flex justify-between items-center">
-                        <h3 class="text-sm font-black text-white uppercase tracking-wide">Edit Month Data</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Month</label>
-                                <select id="editDataMonth" class="w-full input-area rounded p-2 text-sm font-bold">
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Year</label>
-                                <select id="editDataYear" class="w-full input-area rounded p-2 text-sm font-bold">
-                                </select>
-                            </div>
-                        </div>
-                        <button onclick="loadMonthData()" class="w-full bg-slate-200 text-slate-800 py-2 rounded-lg font-bold text-xs hover:bg-slate-300 uppercase">
-                            <i class="fas fa-sync-alt mr-1"></i> Load Data
-                        </button>
-
-                        <div id="editDataForm" class="hidden space-y-4 pt-4 border-t border-slate-200">
-                            <div>
-                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Subscription Revenue Adjustment (KES)</label>
-                                <input type="number" step="0.01" id="adj_sub_rev" class="w-full input-area rounded p-2 text-sm font-bold">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Sales Revenue Adjustment (KES)</label>
-                                <input type="number" step="0.01" id="adj_sales_rev" class="w-full input-area rounded p-2 text-sm font-bold">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Hotspot Revenue (KES)</label>
-                                <input type="number" step="0.01" id="val_hotspot_rev" class="w-full input-area rounded p-2 text-sm font-bold">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Hotspot Subscriptions</label>
-                                <input type="number" id="val_hotspot_subs" class="w-full input-area rounded p-2 text-sm font-bold">
-                            </div>
-                            <button onclick="saveMonthData()" class="w-full bg-teal-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-teal-700 uppercase">
-                                <i class="fas fa-save mr-1"></i> Save Adjustments
-                            </button>
-                            <button onclick="recomputeMonthData()" class="w-full bg-slate-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-slate-700 uppercase">
-                                <i class="fas fa-calculator mr-1"></i> Re-Pull System Data
-                            </button>
-                        </div>
-
-                        <div class="pt-4 border-t border-slate-200 mt-4">
-                            <button onclick="runGlobalBackfill()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-indigo-700 uppercase shadow-sm">
-                                <i class="fas fa-database mr-1"></i> Run Global Backfill
-                            </button>
-                            <p class="text-[9px] text-slate-400 mt-2 text-center font-bold">Safely backfills historical system data.</p>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Right: Preview Area -->
@@ -448,7 +385,85 @@
             </div>
 
         </div>
+    </div>
 
+    <!-- TAB 3: MONTHLY DATABASE -->
+    <div id="monthlyDataTab" class="hidden">
+
+        <style>
+            .editable-cell input[type="number"] {
+                width: 100%; min-width: 90px;
+                padding: 4px 7px;
+                border: 1px solid #e2e8f0;
+                border-radius: 5px;
+                font-size: 11px; font-weight: 700;
+                background: #f8fafc; color: #1e293b;
+                text-align: right; transition: all 0.15s;
+            }
+            .editable-cell input[type="number"]:focus {
+                outline: none; border-color: #6366f1;
+                background: #fff;
+                box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+            }
+            .monthly-row.saving { opacity: 0.55; pointer-events: none; }
+            .monthly-row { transition: background 0.15s; }
+            .monthly-row:hover { background: #f8fafc; }
+        </style>
+
+        <div class="bg-white border border-slate-200 shadow-sm mb-6">
+            <div class="section-header px-4 py-3 flex justify-between items-center">
+                <div>
+                    <h3 class="text-sm font-black text-white uppercase tracking-wide">Monthly Analytics Data</h3>
+                    <p class="text-[10px] text-slate-300 mt-0.5">Edit adjustment & hotspot fields directly in the table — save per row.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="loadAllMonthlyData()" class="px-3 py-2 bg-white/10 text-white rounded text-[10px] font-bold hover:bg-white/20 uppercase">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                    <button onclick="runGlobalBackfill()" class="px-4 py-2 bg-indigo-500 text-white rounded text-[10px] font-bold hover:bg-indigo-400 uppercase shadow-sm">
+                        <i class="fas fa-database mr-1"></i> Global Backfill
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-4">
+                <div class="flex flex-wrap gap-4 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold uppercase text-slate-500">
+                    <span><span class="inline-block w-2 h-2 rounded-full bg-slate-400 mr-1"></span>Grey columns = System-computed (read-only)</span>
+                    <span><span class="inline-block w-2 h-2 rounded-full bg-indigo-400 mr-1"></span>Indigo columns = Adjustment override (editable)</span>
+                    <span><span class="inline-block w-2 h-2 rounded-full bg-teal-400 mr-1"></span>Teal columns = Hotspot manual entry (editable)</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" style="min-width:1100px">
+                        <thead class="bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider">
+                            <tr>
+                                <th class="px-3 py-3 sticky left-0 bg-slate-800 z-10">Month</th>
+                                <th class="px-3 py-3 text-right text-slate-400">Computed Sub Rev</th>
+                                <th class="px-3 py-3 text-right text-indigo-300">Adj Sub Rev ✎</th>
+                                <th class="px-3 py-3 text-right text-slate-400">Computed Sales</th>
+                                <th class="px-3 py-3 text-right text-indigo-300">Adj Sales ✎</th>
+                                <th class="px-3 py-3 text-right text-slate-400">Computed Exp</th>
+                                <th class="px-3 py-3 text-right text-indigo-300">Adj Exp ✎</th>
+                                <th class="px-3 py-3 text-right text-slate-400">Computed Salaries</th>
+                                <th class="px-3 py-3 text-right text-indigo-300">Adj Salaries ✎</th>
+                                <th class="px-3 py-3 text-right text-teal-300">Hotspot Rev ✎</th>
+                                <th class="px-3 py-3 text-right text-teal-300">Hotspot Subs ✎</th>
+                                <th class="px-3 py-3 text-center text-slate-400">Last Computed</th>
+                                <th class="px-3 py-3 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyDataTableBody" class="divide-y divide-slate-100 text-xs">
+                            <tr>
+                                <td colspan="13" class="px-4 py-10 text-center text-slate-400">
+                                    <i class="fas fa-circle-notch fa-spin text-2xl mb-2 block"></i>
+                                    <p class="text-[10px] font-bold uppercase">Loading data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -482,11 +497,17 @@
 
         // Update tab buttons
         document.getElementById('generalTab').classList.toggle('active', tab === 'general');
-        document.getElementById('analyticsTab').classList.toggle('active', tab === 'analytics');
+        document.getElementById('analyticsTabBtn').classList.toggle('active', tab === 'analytics');
+        document.getElementById('monthlyDataTabBtn').classList.toggle('active', tab === 'monthly_data');
 
         // Toggle content
         document.getElementById('generalReportsTab').classList.toggle('hidden', tab !== 'general');
         document.getElementById('analyticsReportTab').classList.toggle('hidden', tab !== 'analytics');
+        document.getElementById('monthlyDataTab').classList.toggle('hidden', tab !== 'monthly_data');
+
+        if (tab === 'monthly_data') {
+            loadAllMonthlyData();
+        }
     }
 
     // GENERAL REPORTS TAB FUNCTIONS
@@ -509,7 +530,6 @@
 
     (function initAnalyticsForm() {
         const yearSelect = document.getElementById('customYear');
-        const editYearSelect = document.getElementById('editDataYear');
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth() + 1;
 
@@ -519,16 +539,10 @@
             opt.value = y;
             opt.textContent = y;
             yearSelect.appendChild(opt);
-
-            const editOpt = document.createElement('option');
-            editOpt.value = y;
-            editOpt.textContent = y;
-            editYearSelect.appendChild(editOpt);
         }
 
         // Pre-select current month
         document.getElementById('customMonth').value = currentMonth;
-        document.getElementById('editDataMonth').value = currentMonth;
     })();
 
     function toggleCustomMode() {
@@ -593,175 +607,249 @@
 
         if (filteredReports.length === 0) {
             container.innerHTML = `
-                    <div class="p-20 text-center bg-white border border-slate-200">
-                        <i class="fas fa-inbox text-4xl text-slate-300 mb-3"></i>
-                        <p class="text-xs font-bold text-slate-400 uppercase">No reports found</p>
+                <div class="flex flex-col items-center justify-center p-20 text-center bg-white border border-slate-200 rounded-xl shadow-sm">
+                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                        <i class="fas fa-inbox text-3xl text-slate-300"></i>
                     </div>
-                `;
+                    <h3 class="text-slate-800 font-bold text-lg mb-1">No reports found</h3>
+                    <p class="text-sm text-slate-400">Try adjusting your search or filters.</p>
+                </div>
+            `;
             return;
         }
 
-        container.innerHTML = filteredReports.map(report => {
-            const statusBadge = report.status === 'submitted'
-                ? '<span class="badge-submitted px-2 py-1 rounded text-[9px] font-black uppercase">Submitted</span>'
-                : '<span class="badge-draft px-2 py-1 rounded text-[9px] font-black uppercase">Draft</span>';
-
+        // Add a grid container for the premium cards
+        container.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">' + filteredReports.map(report => {
+            const isSubmitted = report.status === 'submitted';
+            const statusColor = isSubmitted ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200';
+            const statusIcon = isSubmitted ? 'fa-check-circle' : 'fa-edit';
+            
             const urgencyBadge = report.is_urgent
-                ? '<span class="badge-urgent px-2 py-1 rounded text-[9px] font-black uppercase">Urgent</span>'
-                : '<span class="badge-normal px-2 py-1 rounded text-[9px] font-black uppercase">Normal</span>';
+                ? '<div class="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded text-[10px] font-bold uppercase tracking-wide"><i class="fas fa-bolt text-[9px]"></i>Urgent</div>'
+                : '<div class="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded text-[10px] font-bold uppercase tracking-wide"><i class="fas fa-info-circle text-[9px]"></i>Normal</div>';
+
+            const summary = report.ops_summary 
+                ? (report.ops_summary.length > 90 ? escapeHtml(report.ops_summary.substring(0, 90)) + '...' : escapeHtml(report.ops_summary))
+                : '<span class="text-slate-300 italic">No summary provided...</span>';
 
             return `
-                    <div class="report-card bg-white border border-slate-200 shadow-sm animate-fade-in" onclick="viewGeneralReport(${report.id})">
-                        <div class="p-4">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h3 class="text-sm font-black text-slate-900 uppercase">Report #${report.id}</h3>
-                                        ${statusBadge}
-                                        ${urgencyBadge}
-                                    </div>
-                                    <p class="text-xs text-slate-500 font-medium">
-                                        <i class="far fa-calendar mr-1"></i>${new Date(report.report_date).toLocaleDateString()}
-                                        <span class="mx-2">|</span>
-                                        <i class="far fa-user mr-1"></i>${escapeHtml(report.first_name)} ${escapeHtml(report.second_name)}
-                                    </p>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="viewGeneralReport(${report.id}); event.stopPropagation();" class="px-3 py-1 bg-blue-600 text-white rounded text-[10px] font-bold hover:bg-blue-700 action-btn uppercase">
-                                        <i class="fas fa-eye mr-1"></i>View
-                                    </button>
-                                    <button onclick="editGeneralReport(${report.id}); event.stopPropagation();" class="px-3 py-1 bg-amber-600 text-white rounded text-[10px] font-bold hover:bg-amber-700 action-btn uppercase">
-                                        <i class="fas fa-edit mr-1"></i>Edit
-                                    </button>
-                                    <button onclick="deleteGeneralReport(${report.id}); event.stopPropagation();" class="px-3 py-1 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 action-btn uppercase">
-                                        <i class="fas fa-trash mr-1"></i>Delete
-                                    </button>
-                                    <button onclick="downloadGeneralReportPDF(${report.id}); event.stopPropagation();" class="px-3 py-1 bg-slate-600 text-white rounded text-[10px] font-bold hover:bg-slate-700 action-btn uppercase">
-                                        <i class="fas fa-file-pdf mr-1"></i>PDF
-                                    </button>
-                                </div>
+                <div class="group bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer" onclick="viewGeneralReport(${report.id})">
+                    <!-- Card Header -->
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50 group-hover:bg-slate-50 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <h3 class="text-base font-black text-slate-800 mb-1 flex items-center gap-2">
+                                    Report #${report.id}
+                                </h3>
+                                <p class="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                                    <i class="far fa-calendar text-slate-400"></i> ${new Date(report.report_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}
+                                </p>
                             </div>
-                            
-                            <div class="grid grid-cols-4 gap-3 pt-3 border-t border-slate-100">
-                                <div class="text-center">
-                                    <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Installations</p>
-                                    <p class="text-lg font-black text-teal-600">${report.ops_installs || 0}</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Pending</p>
-                                    <p class="text-lg font-black text-amber-600">${report.ops_pending || 0}</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Created</p>
-                                    <p class="text-[10px] font-bold text-slate-700">${new Date(report.created_at).toLocaleDateString()}</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Updated</p>
-                                    <p class="text-[10px] font-bold text-slate-700">${new Date(report.updated_at).toLocaleDateString()}</p>
-                                </div>
+                            <div class="flex flex-col items-end gap-1.5">
+                                <span class="px-2.5 py-1 rounded border text-[10px] font-bold uppercase tracking-wide flex items-center gap-1.5 ${statusColor}">
+                                    <i class="fas ${statusIcon} text-[11px]"></i> ${report.status}
+                                </span>
+                                ${urgencyBadge}
+                            </div>
+                        </div>
+                        
+                        <!-- Author -->
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                                ${escapeHtml(report.first_name.charAt(0))}${escapeHtml(report.second_name.charAt(0))}
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-700 leading-tight">${escapeHtml(report.first_name)} ${escapeHtml(report.second_name)}</p>
+                                <p class="text-[10px] text-slate-400 font-medium">${escapeHtml(report.position || 'Staff')}</p>
                             </div>
                         </div>
                     </div>
-                `;
-        }).join('');
+                    
+                    <!-- Card Body -->
+                    <div class="p-5 flex-1 flex flex-col">
+                        <p class="text-xs text-slate-600 leading-relaxed mb-4 flex-1 line-clamp-3">
+                            ${summary}
+                        </p>
+                        
+                        <!-- Key Stats -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Installs</p>
+                                <p class="text-lg font-black text-teal-600">${report.ops_installs || 0}</p>
+                            </div>
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Pending</p>
+                                <p class="text-lg font-black text-amber-600">${report.ops_pending || 0}</p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
+                            <button onclick="downloadGeneralReportPDF(${report.id}); event.stopPropagation();" class="text-slate-400 hover:text-slate-700 transition-colors p-1" title="Download PDF">
+                                <i class="fas fa-file-pdf text-lg"></i>
+                            </button>
+                            <div class="flex items-center gap-2">
+                                <button onclick="editGeneralReport(${report.id}); event.stopPropagation();" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded text-xs font-bold hover:bg-slate-200 transition-colors">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </button>
+                                <button onclick="viewGeneralReport(${report.id}); event.stopPropagation();" class="px-3 py-1.5 bg-slate-800 text-white rounded text-xs font-bold hover:bg-slate-700 transition-colors shadow-sm">
+                                    Open <i class="fas fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('') + '</div>';
     }
 
     function viewGeneralReport(id) {
         const report = allReports.find(r => r.id === id);
         if (!report) return;
 
-        // Navigate to view page in same container
+        const isSubmitted = report.status === 'submitted';
+        const statusBadge = isSubmitted 
+            ? '<span class="bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><i class="fas fa-check-circle"></i> Submitted</span>'
+            : '<span class="bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><i class="fas fa-edit"></i> Draft</span>';
+
+        const urgencyBadge = report.is_urgent
+            ? '<span class="bg-red-50 text-red-600 border border-red-100 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><i class="fas fa-bolt"></i> Urgent</span>'
+            : '<span class="bg-blue-50 text-blue-600 border border-blue-100 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><i class="fas fa-info-circle"></i> Normal</span>';
+
         const container = document.getElementById('reportsContainer');
         container.innerHTML = `
-                <div class="bg-white border border-slate-200 shadow-sm animate-fade-in">
-                    <div class="section-header px-6 py-4 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-black text-white uppercase">Report #${report.id}</h3>
-                            <p class="text-xs text-slate-300 mt-1">${new Date(report.report_date).toLocaleDateString()}</p>
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm animate-fade-in overflow-hidden">
+                <!-- Header -->
+                <div class="bg-slate-800 px-8 py-6 text-white flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-2xl font-black tracking-tight">Report #${report.id}</h3>
+                            <div class="flex gap-2">
+                                ${statusBadge}
+                                ${urgencyBadge}
+                            </div>
                         </div>
-                        <button onclick="fetchGeneralReports()" class="px-4 py-2 bg-white text-slate-800 rounded-lg text-xs font-bold hover:bg-slate-100 uppercase">
-                            <i class="fas fa-arrow-left mr-2"></i>Back to List
+                        <p class="text-slate-400 font-medium text-sm flex items-center gap-2">
+                            <i class="far fa-calendar-alt"></i> ${new Date(report.report_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="downloadGeneralReportPDF(${report.id})" class="px-4 py-2 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20 transition-colors flex items-center gap-2">
+                            <i class="fas fa-file-pdf"></i> Download
+                        </button>
+                        <button onclick="editGeneralReport(${report.id})" class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-xs font-bold hover:bg-indigo-600 transition-colors flex items-center gap-2 shadow-sm">
+                            <i class="fas fa-edit"></i> Edit Report
+                        </button>
+                        <button onclick="fetchGeneralReports()" class="px-4 py-2 bg-white text-slate-800 rounded-lg text-xs font-bold hover:bg-slate-100 transition-colors flex items-center gap-2 shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Back
                         </button>
                     </div>
-                    
-                    <div class="p-6 space-y-6">
-                        <!-- Report Info -->
-                        <div class="grid grid-cols-4 gap-4 pb-4 border-b border-slate-200">
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Created By</p>
-                                <p class="text-sm font-bold text-slate-900">${escapeHtml(report.first_name)} ${escapeHtml(report.second_name)}</p>
-                                <p class="text-[10px] text-slate-500 font-medium">${escapeHtml(report.position)}</p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Status</p>
-                                <span class="${report.status === 'submitted' ? 'badge-submitted' : 'badge-draft'} px-2 py-1 rounded text-[9px] font-black uppercase inline-block">
-                                    ${report.status}
-                                </span>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Priority</p>
-                                <span class="${report.is_urgent ? 'badge-urgent' : 'badge-normal'} px-2 py-1 rounded text-[9px] font-black uppercase inline-block">
-                                    ${report.is_urgent ? 'Urgent' : 'Normal'}
-                                </span>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Report Date</p>
-                                <p class="text-sm font-bold text-slate-900">${new Date(report.report_date).toLocaleDateString()}</p>
-                            </div>
-                        </div>
-
-                        <!-- Operations -->
-                        <div>
-                            <h4 class="text-xs font-black text-slate-700 uppercase mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
-                                <i class="fas fa-network-wired text-teal-600"></i>Operations & Logistics
+                </div>
+                
+                <!-- Main Content -->
+                <div class="p-8 grid grid-cols-12 gap-8">
+                    <!-- Left Column: Summaries -->
+                    <div class="col-span-12 lg:col-span-8 space-y-8">
+                        
+                        <!-- Operations Section -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 pb-3 border-b border-slate-200">
+                                <div class="w-6 h-6 rounded bg-teal-100 text-teal-600 flex items-center justify-center text-sm"><i class="fas fa-network-wired"></i></div>
+                                Operations & Logistics
                             </h4>
-                            <div class="bg-slate-50 p-4 border border-slate-200">
-                                <p class="text-sm text-slate-700 leading-relaxed mb-4">${escapeHtml(report.ops_summary || 'No summary provided')}</p>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="bg-white p-3 border border-slate-200">
-                                        <p class="text-[10px] font-black text-slate-400 uppercase">Installations</p>
-                                        <p class="text-3xl font-black text-teal-600">${report.ops_installs || 0}</p>
+                            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${escapeHtml(report.ops_summary || 'No summary provided')}</p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-6">
+                                <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Installations</p>
+                                        <p class="text-2xl font-black text-slate-800">${report.ops_installs || 0}</p>
                                     </div>
-                                    <div class="bg-white p-3 border border-slate-200">
-                                        <p class="text-[10px] font-black text-slate-400 uppercase">Pending Jobs</p>
-                                        <p class="text-3xl font-black text-amber-600">${report.ops_pending || 0}</p>
+                                    <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-500">
+                                        <i class="fas fa-tools text-lg"></i>
+                                    </div>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pending Jobs</p>
+                                        <p class="text-2xl font-black text-slate-800">${report.ops_pending || 0}</p>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+                                        <i class="fas fa-clock text-lg"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Staff -->
-                        <div>
-                            <h4 class="text-xs font-black text-slate-700 uppercase mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
-                                <i class="fas fa-users text-blue-600"></i>Staff & Personnel
+                        <!-- Staff Section -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 pb-3 border-b border-slate-200">
+                                <div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-users"></i></div>
+                                Staff & Personnel
                             </h4>
-                            <div class="bg-slate-50 p-4 border border-slate-200">
-                                <p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(report.staff_summary || 'No summary provided')}</p>
-                            </div>
+                            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${escapeHtml(report.staff_summary || 'No summary provided')}</p>
                         </div>
 
-                        <!-- Support -->
-                        <div>
-                            <h4 class="text-xs font-black text-slate-700 uppercase mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
-                                <i class="fas fa-headset text-indigo-600"></i>Support & Client Feedback
+                        <!-- Support Section -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 pb-3 border-b border-slate-200">
+                                <div class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm"><i class="fas fa-headset"></i></div>
+                                Support & Client Feedback
                             </h4>
-                            <div class="bg-slate-50 p-4 border border-slate-200">
-                                <p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(report.support_summary || 'No summary provided')}</p>
-                            </div>
+                            <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${escapeHtml(report.support_summary || 'No summary provided')}</p>
                         </div>
-
+                        
                         <!-- Conclusion -->
-                        <div>
-                            <h4 class="text-xs font-black text-slate-700 uppercase mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
-                                <i class="fas fa-clipboard-check text-slate-600"></i>Conclusion & Action Items
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6 relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500"></div>
+                            <h4 class="text-xs font-black text-indigo-900 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <i class="fas fa-clipboard-check text-indigo-500"></i> Conclusion & Action Items
                             </h4>
-                            <div class="bg-slate-50 p-4 border border-slate-200 border-l-4 border-l-slate-800">
-                                <p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(report.conclusion || 'No conclusion provided')}</p>
+                            <p class="text-sm text-indigo-900/80 leading-relaxed whitespace-pre-wrap font-medium">${escapeHtml(report.conclusion || 'No conclusion provided')}</p>
+                        </div>
+
+                    </div>
+                    
+                    <!-- Right Column: Meta Info -->
+                    <div class="col-span-12 lg:col-span-4 space-y-6">
+                        
+                        <!-- Author Card -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4">Prepared By</p>
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-slate-800 text-white flex items-center justify-center text-lg font-black shadow-md">
+                                    ${escapeHtml(report.first_name.charAt(0))}${escapeHtml(report.second_name.charAt(0))}
+                                </div>
+                                <div>
+                                    <p class="text-base font-bold text-slate-900 leading-tight">${escapeHtml(report.first_name)} ${escapeHtml(report.second_name)}</p>
+                                    <p class="text-xs text-slate-500 font-medium mt-0.5">${escapeHtml(report.position || 'Staff Member')}</p>
+                                </div>
                             </div>
+                        </div>
+
+                        <!-- Timestamps -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Created On</p>
+                                <p class="text-sm font-medium text-slate-700"><i class="far fa-clock mr-1.5 text-slate-400"></i>${new Date(report.created_at).toLocaleString()}</p>
+                            </div>
+                            <div class="pt-4 border-t border-slate-200">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Updated</p>
+                                <p class="text-sm font-medium text-slate-700"><i class="fas fa-history mr-1.5 text-slate-400"></i>${new Date(report.updated_at).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Danger Zone -->
+                        <div class="border border-red-200 rounded-xl p-5 bg-red-50/50 mt-8">
+                            <p class="text-[10px] font-black text-red-500 uppercase tracking-wider mb-3"><i class="fas fa-exclamation-triangle mr-1"></i> Danger Zone</p>
+                            <button onclick="deleteGeneralReport(${report.id})" class="w-full px-4 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg text-xs font-bold hover:bg-red-50 hover:border-red-300 transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-trash"></i> Delete Report
+                            </button>
                         </div>
                     </div>
                 </div>
-            `;
+            </div>
+        `;
     }
 
     function editGeneralReport(id) {
@@ -770,78 +858,99 @@
 
         const container = document.getElementById('reportsContainer');
         container.innerHTML = `
-                <div class="bg-white border border-slate-200 shadow-sm animate-fade-in">
-                    <div class="section-header px-6 py-4 flex items-center justify-between">
-                        <h3 class="text-lg font-black text-white uppercase">Edit Report #${report.id}</h3>
-                        <button onclick="fetchGeneralReports()" class="px-4 py-2 bg-white text-slate-800 rounded-lg text-xs font-bold hover:bg-slate-100 uppercase">
-                            <i class="fas fa-times mr-2"></i>Cancel
-                        </button>
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm animate-fade-in overflow-hidden">
+                <!-- Header -->
+                <div class="bg-slate-800 px-8 py-5 text-white flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-black tracking-tight mb-1 flex items-center gap-2">
+                            <i class="fas fa-edit text-slate-400"></i> Edit Report #${report.id}
+                        </h3>
+                        <p class="text-xs text-slate-400 font-medium">Updating report for ${new Date(report.report_date).toLocaleDateString()}</p>
                     </div>
-                    
-                    <div class="p-6">
-                        <form id="editReportForm" class="space-y-6">
-                            <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block">
-                                    <i class="fas fa-network-wired text-teal-600 mr-1"></i>Operations Summary
+                    <button onclick="viewGeneralReport(${report.id})" class="px-4 py-2 bg-slate-700 text-white rounded-lg text-xs font-bold hover:bg-slate-600 transition-colors flex items-center gap-2">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+                
+                <div class="p-8">
+                    <form id="editReportForm" class="space-y-8 max-w-4xl">
+                        
+                        <!-- Main Summaries Grid -->
+                        <div class="grid grid-cols-1 gap-8">
+                            
+                            <!-- Operations -->
+                            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                <label class="text-xs font-black text-slate-800 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded bg-teal-100 text-teal-600 flex items-center justify-center text-sm"><i class="fas fa-network-wired"></i></div>
+                                    Operations Summary
                                 </label>
-                                <textarea id="edit_ops_summary" rows="4" class="w-full input-area rounded-lg p-3 text-sm font-medium">${escapeHtml(report.ops_summary || '')}</textarea>
-                                <div class="grid grid-cols-2 gap-4 mt-3">
-                                    <div>
-                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Installations</label>
-                                        <input type="number" id="edit_ops_installs" value="${report.ops_installs || 0}" class="w-full input-area rounded p-2 text-sm font-bold">
+                                <textarea id="edit_ops_summary" rows="4" class="w-full bg-white border border-slate-200 rounded-lg p-3 text-sm font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all shadow-sm">${escapeHtml(report.ops_summary || '')}</textarea>
+                                
+                                <div class="grid grid-cols-2 gap-4 mt-4">
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200">
+                                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block">Installations Completed</label>
+                                        <input type="number" id="edit_ops_installs" value="${report.ops_installs || 0}" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-sm font-bold text-slate-800 focus:border-indigo-500 focus:bg-white outline-none">
                                     </div>
-                                    <div>
-                                        <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Pending Jobs</label>
-                                        <input type="number" id="edit_ops_pending" value="${report.ops_pending || 0}" class="w-full input-area rounded p-2 text-sm font-bold">
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200">
+                                        <label class="text-[10px] font-bold uppercase text-slate-500 mb-1 block">Pending Jobs</label>
+                                        <input type="number" id="edit_ops_pending" value="${report.ops_pending || 0}" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-sm font-bold text-slate-800 focus:border-indigo-500 focus:bg-white outline-none">
                                     </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block">
-                                    <i class="fas fa-users text-blue-600 mr-1"></i>Staff Summary
-                                </label>
-                                <textarea id="edit_staff_summary" rows="3" class="w-full input-area rounded-lg p-3 text-sm font-medium">${escapeHtml(report.staff_summary || '')}</textarea>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <!-- Staff -->
+                                <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                    <label class="text-xs font-black text-slate-800 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-sm"><i class="fas fa-users"></i></div>
+                                        Staff Summary
+                                    </label>
+                                    <textarea id="edit_staff_summary" rows="4" class="w-full bg-white border border-slate-200 rounded-lg p-3 text-sm font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all shadow-sm">${escapeHtml(report.staff_summary || '')}</textarea>
+                                </div>
+
+                                <!-- Support -->
+                                <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                    <label class="text-xs font-black text-slate-800 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm"><i class="fas fa-headset"></i></div>
+                                        Support Summary
+                                    </label>
+                                    <textarea id="edit_support_summary" rows="4" class="w-full bg-white border border-slate-200 rounded-lg p-3 text-sm font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all shadow-sm">${escapeHtml(report.support_summary || '')}</textarea>
+                                </div>
                             </div>
 
-                            <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block">
-                                    <i class="fas fa-headset text-indigo-600 mr-1"></i>Support Summary
+                            <!-- Conclusion -->
+                            <div class="bg-indigo-50 rounded-xl p-5 border border-indigo-100 relative">
+                                <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 rounded-l-xl"></div>
+                                <label class="text-xs font-black text-indigo-900 uppercase tracking-widest mb-3 flex items-center gap-2 pl-2">
+                                    <i class="fas fa-clipboard-check text-indigo-500"></i> Conclusion
                                 </label>
-                                <textarea id="edit_support_summary" rows="3" class="w-full input-area rounded-lg p-3 text-sm font-medium">${escapeHtml(report.support_summary || '')}</textarea>
-                                <label class="flex items-center gap-2 cursor-pointer mt-3">
-                                    <input type="checkbox" id="edit_is_urgent" ${report.is_urgent ? 'checked' : ''} class="w-4 h-4 text-red-600 rounded">
-                                    <span class="text-xs font-bold text-slate-600">Flag as Urgent</span>
-                                </label>
+                                <textarea id="edit_conclusion" rows="3" class="w-full bg-white border border-indigo-200 rounded-lg p-3 text-sm font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all shadow-sm ml-2" style="width: calc(100% - 8px);">${escapeHtml(report.conclusion || '')}</textarea>
                             </div>
+                        </div>
 
-                            <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block">
-                                    <i class="fas fa-clipboard-check text-slate-600 mr-1"></i>Conclusion
-                                </label>
-                                <textarea id="edit_conclusion" rows="3" class="w-full input-area rounded-lg p-3 text-sm font-medium border-l-4 border-l-slate-800">${escapeHtml(report.conclusion || '')}</textarea>
-                            </div>
-
-                            <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block">Status</label>
-                                <select id="edit_status" class="w-full input-area rounded-lg p-3 text-sm font-bold">
+                        <!-- Settings & Submit -->
+                        <div class="flex items-end gap-6 pt-6 border-t border-slate-200">
+                            <div class="flex-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Report Status</label>
+                                <select id="edit_status" class="w-full max-w-[200px] bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm font-bold text-slate-800 focus:border-indigo-500 outline-none shadow-sm cursor-pointer">
                                     <option value="draft" ${report.status === 'draft' ? 'selected' : ''}>Draft</option>
                                     <option value="submitted" ${report.status === 'submitted' ? 'selected' : ''}>Submitted</option>
                                 </select>
                             </div>
+                            
+                            <label class="flex items-center gap-2 cursor-pointer bg-red-50 px-4 py-2.5 border border-red-100 rounded-lg select-none">
+                                <input type="checkbox" id="edit_is_urgent" ${report.is_urgent ? 'checked' : ''} class="w-4 h-4 text-red-600 rounded cursor-pointer accent-red-600">
+                                <span class="text-xs font-black text-red-600 uppercase tracking-wide"><i class="fas fa-bolt mr-1"></i> Flag as Urgent</span>
+                            </label>
 
-                            <div class="flex gap-4 pt-4 border-t border-slate-200">
-                                <button type="button" onclick="fetchGeneralReports()" class="px-6 py-3 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 uppercase">
-                                    Cancel
-                                </button>
-                                <button type="button" onclick="saveGeneralReportEdit(${report.id})" class="flex-1 bg-gray-500 text-white py-3 rounded-lg text-sm font-bold hover:bg-gray-700 uppercase">
-                                    <i class="fas fa-save mr-2"></i>Save Changes
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            <button type="button" onclick="saveGeneralReportEdit(${report.id})" class="px-8 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors shadow-md flex items-center gap-2 ml-auto">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            `;
+            </div>
+        `;
     }
 
     async function saveGeneralReportEdit(id) {
@@ -1105,67 +1214,160 @@
 
 
 
-    async function loadMonthData() {
-        const y = document.getElementById('editDataYear').value;
-        const m = document.getElementById('editDataMonth').value;
+    // ─── MONTHLY DATABASE INLINE-EDIT FUNCTIONS ──────────────────────────────
+
+    async function loadAllMonthlyData() {
+        const tbody = document.getElementById('monthlyDataTableBody');
+        tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-10 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-2 block"></i><p class="text-[10px] font-bold uppercase">Loading...</p></td></tr>`;
         try {
-            const res = await fetch(`/api/reports/analytics/monthly/${y}/${m}`);
+            const res = await fetch('/api/reports/analytics/monthly');
             const result = await res.json();
-            if (result.success) {
-                document.getElementById('editDataForm').classList.remove('hidden');
-                document.getElementById('adj_sub_rev').value = result.data.adjustment_subscription_revenue || 0;
-                document.getElementById('adj_sales_rev').value = result.data.adjustment_sales_revenue || 0;
-                document.getElementById('val_hotspot_rev').value = result.data.hotspot_revenue || 0;
-                document.getElementById('val_hotspot_subs').value = result.data.hotspot_subscriptions_count || 0;
-                showToast('Month data loaded', 'success');
+
+            if (result.success && result.data.length > 0) {
+                tbody.innerHTML = result.data.map(row => renderMonthRow(row)).join('');
             } else {
-                showToast(result.message || 'Failed to load', 'error');
+                tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found. Run Global Backfill to populate.</td></tr>`;
             }
         } catch(e) {
             console.error(e);
-            showToast('Error loading month data', 'error');
+            showToast('Failed to load monthly database', 'error');
         }
     }
 
-    async function saveMonthData() {
-        const y = document.getElementById('editDataYear').value;
-        const m = document.getElementById('editDataMonth').value;
+    function renderMonthRow(row) {
+        const monthName = new Date(row.year, row.month - 1).toLocaleString('default', { month: 'long' });
+        const lastComp = row.last_computed_at ? new Date(row.last_computed_at).toLocaleString() : '—';
+        const id = `${row.year}_${row.month}`;
+
+        const readCell = (val, color='text-slate-700') =>
+            `<td class="px-3 py-2.5 text-right font-bold ${color}">KES ${fmt(val)}</td>`;
+
+        const editCell = (field, val, step='0.01') =>
+            `<td class="px-2 py-1.5 editable-cell">
+                <input type="number" step="${step}" id="${id}_${field}" value="${Number(val||0)}" onkeydown="if(event.key==='Enter')saveMonthRow('${row.year}','${row.month}')">
+            </td>`;
+
+        return `
+        <tr class="monthly-row" data-year="${row.year}" data-month="${row.month}">
+            <td class="px-3 py-2.5 font-black text-slate-800 whitespace-nowrap sticky left-0 bg-white border-r border-slate-100">${monthName} ${row.year}</td>
+            ${readCell(row.computed_subscription_revenue)}
+            ${editCell('adj_sub_rev', row.adjustment_subscription_revenue)}
+            ${readCell(row.computed_sales_revenue)}
+            ${editCell('adj_sales_rev', row.adjustment_sales_revenue)}
+            ${readCell(row.computed_hrexpenses)}
+            ${editCell('adj_hrexp', row.adjustment_hrexpenses)}
+            ${readCell(row.computed_staff_salaries)}
+            ${editCell('adj_salaries', row.adjustment_staff_salaries)}
+            ${editCell('hotspot_rev', row.hotspot_revenue)}
+            ${editCell('hotspot_subs', row.hotspot_subscriptions_count, '1')}
+            <td class="px-3 py-2.5 text-center text-[10px] text-slate-400 whitespace-nowrap">${lastComp}</td>
+            <td class="px-3 py-2.5 text-center">
+                <div class="flex items-center justify-center gap-1">
+                    <button onclick="saveMonthRow('${row.year}','${row.month}')" title="Save" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700 uppercase">
+                        <i class="fas fa-save"></i>
+                    </button>
+                    <button onclick="recomputeMonthRow('${row.year}','${row.month}')" title="Re-pull system data" class="px-2.5 py-1.5 bg-slate-600 text-white rounded text-[10px] font-bold hover:bg-slate-700 uppercase">
+                        <i class="fas fa-calculator"></i>
+                    </button>
+                    <button onclick="deleteMonthRow('${row.year}','${row.month}')" title="Delete row" class="px-2.5 py-1.5 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 uppercase">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }
+
+    async function saveMonthRow(year, month) {
+        const id = `${year}_${month}`;
+        const tr = document.querySelector(`tr[data-year="${year}"][data-month="${month}"]`);
+        if (tr) tr.classList.add('saving');
+
         const body = {
             adjustments: {
-                subscription_revenue: document.getElementById('adj_sub_rev').value || 0,
-                sales_revenue: document.getElementById('adj_sales_rev').value || 0
+                subscription_revenue: parseFloat(document.getElementById(`${id}_adj_sub_rev`)?.value) || 0,
+                sales_revenue:        parseFloat(document.getElementById(`${id}_adj_sales_rev`)?.value) || 0,
+                hrexpenses:           parseFloat(document.getElementById(`${id}_adj_hrexp`)?.value) || 0,
+                staff_salaries:       parseFloat(document.getElementById(`${id}_adj_salaries`)?.value) || 0,
             },
-            hotspot_revenue: document.getElementById('val_hotspot_rev').value || 0,
-            hotspot_subscriptions_count: document.getElementById('val_hotspot_subs').value || 0
+            hotspot_revenue:             parseFloat(document.getElementById(`${id}_hotspot_rev`)?.value) || 0,
+            hotspot_subscriptions_count: parseInt(document.getElementById(`${id}_hotspot_subs`)?.value) || 0,
         };
+
         try {
-            const res = await fetch(`/api/reports/analytics/monthly/${y}/${m}`, {
+            const res = await fetch(`/api/reports/analytics/monthly/${year}/${month}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
             const result = await res.json();
-            if (result.success) showToast('Adjustments saved', 'success');
-            else showToast(result.message || 'Failed to save', 'error');
+            if (result.success) {
+                showToast(`${new Date(year, month-1).toLocaleString('default',{month:'long'})} ${year} saved`, 'success');
+                // Re-render just this row with fresh data
+                if (tr) tr.outerHTML = renderMonthRow(result.data);
+            } else {
+                showToast(result.message || 'Save failed', 'error');
+            }
         } catch(e) {
             console.error(e);
-            showToast('Error saving month data', 'error');
+            showToast('Error saving row', 'error');
+        } finally {
+            const updatedTr = document.querySelector(`tr[data-year="${year}"][data-month="${month}"]`);
+            if (updatedTr) updatedTr.classList.remove('saving');
         }
     }
 
-    async function recomputeMonthData() {
-        const y = document.getElementById('editDataYear').value;
-        const m = document.getElementById('editDataMonth').value;
+    async function recomputeMonthRow(year, month) {
+        const tr = document.querySelector(`tr[data-year="${year}"][data-month="${month}"]`);
+        if (tr) tr.classList.add('saving');
         try {
-            const res = await fetch(`/api/reports/analytics/monthly/${y}/${m}/recompute`, { method: 'POST' });
+            const res = await fetch(`/api/reports/analytics/monthly/${year}/${month}/recompute`, { method: 'POST' });
             const result = await res.json();
-            if (result.success) showToast('System data re-pulled', 'success');
-            else showToast(result.message || 'Failed to recompute', 'error');
+            if (result.success) {
+                showToast('System data re-pulled', 'success');
+                if (tr) tr.outerHTML = renderMonthRow(result.data);
+            } else {
+                showToast(result.message || 'Recompute failed', 'error');
+            }
         } catch(e) {
             console.error(e);
             showToast('Error recomputing', 'error');
+        } finally {
+            const updatedTr = document.querySelector(`tr[data-year="${year}"][data-month="${month}"]`);
+            if (updatedTr) updatedTr.classList.remove('saving');
         }
     }
+
+    async function deleteMonthRow(year, month) {
+        const monthName = new Date(year, month-1).toLocaleString('default', { month: 'long' });
+        if (!confirm(`Delete the ${monthName} ${year} analytics row? This cannot be undone.`)) return;
+        const tr = document.querySelector(`tr[data-year="${year}"][data-month="${month}"]`);
+        if (tr) tr.classList.add('saving');
+        try {
+            const res = await fetch(`/api/reports/analytics/monthly/${year}/${month}`, { method: 'DELETE' });
+            const result = await res.json();
+            if (result.success) {
+                showToast(`${monthName} ${year} row deleted`, 'success');
+                if (tr) tr.remove();
+                // Show empty state if no rows left
+                const tbody = document.getElementById('monthlyDataTableBody');
+                if (tbody && !tbody.querySelector('tr[data-year]')) {
+                    tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found.</td></tr>`;
+                }
+            } else {
+                showToast(result.message || 'Delete failed', 'error');
+                if (tr) tr.classList.remove('saving');
+            }
+        } catch(e) {
+            console.error(e);
+            showToast('Error deleting row', 'error');
+            if (tr) tr.classList.remove('saving');
+        }
+    }
+
+    // saveMonthData / recomputeMonthData removed — use inline row buttons in Monthly Database tab
+    async function loadMonthData() { showToast('Use the Monthly Database tab to edit data inline', 'info'); }
+    async function saveMonthData() { showToast('Use the Save button on each row in the Monthly Database tab', 'info'); }
+    async function recomputeMonthData() { showToast('Use the Recompute button on each row in the Monthly Database tab', 'info'); }
 
     async function runGlobalBackfill() {
         if (!confirm('Run a full backfill of historical analytics data? This will scan all past records but will not overwrite your manual adjustments.')) return;
@@ -1189,6 +1391,8 @@
             showToast('Error running backfill', 'error');
         }
     }
+
+    // loadAllMonthlyData is now defined above in the inline-edit section
 
     function displayAnalyticsPreview(data) {
         const preview = document.getElementById('analyticsPreview');
