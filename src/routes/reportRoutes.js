@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Report = require('../models/ReportModel');
 const AnalyticsReport = require("../models/AnalyticReport");
+const MonthlyAnalytics = require("../models/MonthlyAnalytics");
 const apiSessionAuth = require("../middleware/apiSessionAuth");
 
 router.use(apiSessionAuth);
@@ -199,6 +200,81 @@ router.get("/analytics", async (req, res) => {
         return res.json({ success: true, data });
     } catch (err) {
         return res.status(400).json({message: err.message});
+    }
+});
+
+/**
+ * GET /api/reports/analytics/monthly/:year/:month
+ * Fetch the stored monthly analytics row (creates it with system-computed
+ * values and zero adjustments on first access if it doesn't exist yet).
+ */
+router.get("/analytics/monthly/:year/:month", async (req, res) => {
+    try {
+        const row = await MonthlyAnalytics.getOrCreateForMonth(
+            Number(req.params.year),
+            Number(req.params.month)
+        );
+        return res.json({ success: true, data: row });
+    } catch (err) {
+        console.error("Monthly analytics GET error:", err);
+        return res.status(400).json({ success: false, message: err.message });
+    }
+});
+
+/**
+ * PUT /api/reports/analytics/monthly/:year/:month
+ * Admin edits: adjustments (deltas for computed fields), hotspot fields, notes, lock.
+ * Body shape:
+ *   {
+ *     adjustments: { subscription_revenue, sales_revenue, hrexpenses,
+ *                    staff_salaries, new_clients_count, new_subscriptions_count },
+ *     hotspot_revenue, hotspot_subscriptions_count,
+ *     notes, is_locked
+ *   }
+ */
+router.put("/analytics/monthly/:year/:month", async (req, res) => {
+    try {
+        const updatedBy = req.session?.admin?.id || req.session?.user?.id || null;
+        const row = await MonthlyAnalytics.updateAdjustments(
+            Number(req.params.year),
+            Number(req.params.month),
+            { ...req.body, updated_by: updatedBy }
+        );
+        return res.json({ success: true, data: row });
+    } catch (err) {
+        console.error("Monthly analytics PUT error:", err);
+        return res.status(400).json({ success: false, message: err.message });
+    }
+});
+
+/**
+ * POST /api/reports/analytics/monthly/:year/:month/recompute
+ * Re-pull system figures from live tables for a past month without
+ * wiping admin adjustments.
+ */
+router.post("/analytics/monthly/:year/:month/recompute", async (req, res) => {
+    try {
+        const row = await MonthlyAnalytics.recompute(
+            Number(req.params.year),
+            Number(req.params.month)
+        );
+        return res.json({ success: true, data: row });
+    } catch (err) {
+        console.error("Monthly analytics recompute error:", err);
+        return res.status(400).json({ success: false, message: err.message });
+    }
+});
+
+router.post("/analytics/monthly/backfill", async (req, res) => {
+    try {
+        const { start_year, start_month, end_year, end_month } = req.body;
+        const result = await MonthlyAnalytics.backfillAll({
+            startYear: start_year, startMonth: start_month,
+            endYear: end_year, endMonth: end_month,
+        });
+        return res.json({ success: true, ...result });
+    } catch (err) {
+        return res.status(400).json({ success: false, message: err.message });
     }
 });
 

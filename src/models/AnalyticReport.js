@@ -1,7 +1,6 @@
 const db = require("../config/db");
 const dayjs = require("dayjs");
-
-const toSqlDatetime = (date) => dayjs(date).format("YYYY-MM-DD HH:mm:ss");
+const MonthlyAnalytics = require("./MonthlyAnalytics");
 
 /**
  * Resolve period boundaries from query params.
@@ -65,10 +64,11 @@ function resolvePeriod({ period = "current", year, month, date_from, date_to }) 
 const AnalyticsReport = {
 
     /**
-     * Generate analytics report data for the requested period and type.
-     *
-    /**
      * Generate analytics report data for the requested period.
+     *
+     * Data is sourced from monthly_analytics rows (computed + adjustments),
+     * so admin corrections persist across reloads and live table changes
+     * only affect the computed_ columns (via recompute).
      *
      * @param {object} params
      * @param {string} params.period       - "current" | "last" | "custom"
@@ -82,101 +82,87 @@ const AnalyticsReport = {
     generate: async (params = {}) => {
         const { start, end, label } = resolvePeriod(params);
 
-        const periodStart = toSqlDatetime(start.toDate());
-        const periodEnd   = toSqlDatetime(end.toDate());
-        
-        const [
-            [currentSubRev],
-            [currentSalesRev],
-            [monthlyExpenditure],
-            [staffSalaries],
-            [newSubscriptionsCount],
-            [newClientsCount],
-        ] = await Promise.all([
+        // Collect every calendar month touched by the requested period
+        const monthsSpanned = [];
+        let cursor = start.startOf("month");
+        const lastMonth = end.startOf("month");
+        while (cursor.isBefore(lastMonth) || cursor.isSame(lastMonth, "month")) {
+            monthsSpanned.push({ year: cursor.year(), month: cursor.month() + 1 });
+            cursor = cursor.add(1, "month");
+        }
 
-            db.query(`
-                SELECT COALESCE(SUM(p.price), 0) AS total
-                FROM user_subscriptions us
-                JOIN packages p ON us.package_id = p.id
-                WHERE us.created_at BETWEEN ? AND ?
-            `, [periodStart, periodEnd]),
+        // Fetch (or create) the stored analytics row for each month.
+        // getOrCreateForMonth seeds missing rows with live system data automatically.
+        const rows = await Promise.all(
+            monthsSpanned.map(({ year, month }) =>
+                MonthlyAnalytics.getOrCreateForMonth(year, month)
+            )
+        );
 
-            db.query(`
-                SELECT COALESCE(SUM(total_amount), 0) AS total
-                FROM sales
-                WHERE sold_date BETWEEN ? AND ?
-                  AND payment_status IN ('paid', 'partial')
-            `, [periodStart, periodEnd]),
+        // Helper: sum computed + adjustment across all rows for a pair of columns
+        const sumField = (computedCol, adjustmentCol) =>
+            rows.reduce(
+                (acc, r) => acc + Number(r[computedCol] || 0) + Number(r[adjustmentCol] || 0),
+                0
+            );
 
-            db.query(`
-                SELECT COALESCE(SUM(amount), 0) AS total
-                FROM hrexpenses
-                WHERE expense_date BETWEEN DATE(?) AND DATE(?)
-            `, [periodStart, periodEnd]),
+        const subRevTotal    = sumField("computed_subscription_revenue", "adjustment_subscription_revenue");
+        const salesRevTotal  = sumField("computed_sales_revenue",        "adjustment_sales_revenue");
+        const hotspotRevenue = rows.reduce((acc, r) => acc + Number(r.hotspot_revenue || 0), 0);
+        const totalRevenue   = subRevTotal + salesRevTotal + hotspotRevenue;
 
-            db.query(`
-                WITH RECURSIVE months AS (
-                    SELECT DATE(?) AS month_start
-                    UNION ALL
-                    SELECT DATE_ADD(month_start, INTERVAL 1 MONTH)
-                    FROM months
-                    WHERE DATE_ADD(month_start, INTERVAL 1 MONTH) <= DATE(?)
-                )
-                SELECT COALESCE(SUM(ss.net_salary), 0) AS total
-                FROM months m
-                JOIN staff_salaries ss
-                ON ss.effective_from <= LAST_DAY(m.month_start)
-                AND (ss.effective_to IS NULL OR ss.effective_to >= m.month_start)
-                JOIN staff s ON ss.staff_id = s.id
-            `, [start.format("YYYY-MM-01"), end.format("YYYY-MM-01")]),
-
-            db.query(`
-                SELECT COUNT(*) AS count
-                FROM user_subscriptions
-                WHERE created_at BETWEEN ? AND ?
-            `, [periodStart, periodEnd]),
-
-            db.query(`
-                SELECT COUNT(*) AS count
-                FROM users
-                WHERE created_at BETWEEN ? AND ?
-                  AND is_active = TRUE
-            `, [periodStart, periodEnd]),
-        ]);
-
-        const subRevTotal   = Number(currentSubRev[0]?.total   || 0);
-        const salesRevTotal = Number(currentSalesRev[0]?.total || 0);
-        const totalRevenue  = subRevTotal + salesRevTotal;
-
-        const hrexpenses   = Number(monthlyExpenditure[0]?.total || 0);
-        const salaries     = Number(staffSalaries[0]?.total || 0);
+        const hrexpenses       = sumField("computed_hrexpenses",    "adjustment_hrexpenses");
+        const salaries         = sumField("computed_staff_salaries", "adjustment_staff_salaries");
         const totalExpenditure = hrexpenses + salaries;
+
         const netProfit    = totalRevenue - totalExpenditure;
         const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
+        const newClientsCount = rows.reduce(
+            (acc, r) =>
+                acc + Number(r.computed_new_clients_count || 0) + Number(r.adjustment_new_clients_count || 0),
+            0
+        );
+        const newSubscriptionsCount = rows.reduce(
+            (acc, r) =>
+                acc +
+                Number(r.computed_new_subscriptions_count || 0) +
+                Number(r.adjustment_new_subscriptions_count || 0),
+            0
+        );
+        const hotspotSubscriptionsCount = rows.reduce(
+            (acc, r) => acc + Number(r.hotspot_subscriptions_count || 0),
+            0
+        );
+
         return {
             meta: {
-                period_label:  label,
-                period_start:  start.format("YYYY-MM-DD"),
-                period_end:    end.format("YYYY-MM-DD"),
-                generated_at:  dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                period_label:     label,
+                period_start:     start.format("YYYY-MM-DD"),
+                period_end:       end.format("YYYY-MM-DD"),
+                generated_at:     dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                months_included:  monthsSpanned.map(
+                    (m) => `${m.year}-${String(m.month).padStart(2, "0")}`
+                ),
             },
 
             financial: {
-                total_revenue:           totalRevenue,
-                subscription_revenue:    subRevTotal,
-                sales_revenue:           salesRevTotal,
-                monthly_expenditure:     hrexpenses,
-                staff_salaries_payable:  salaries,
-                total_expenditure:       totalExpenditure,
-                net_profit:              netProfit,
-                profit_margin_pct:       parseFloat(profitMargin.toFixed(1)),
+                total_revenue:          totalRevenue,
+                subscription_revenue:   subRevTotal,
+                sales_revenue:          salesRevTotal,
+                hotspot_revenue:        hotspotRevenue,
+                monthly_expenditure:    hrexpenses,
+                staff_salaries_payable: salaries,
+                total_expenditure:      totalExpenditure,
+                net_profit:             netProfit,
+                profit_margin_pct:      parseFloat(profitMargin.toFixed(1)),
             },
 
             clients: {
-                new_clients_count:      Number(newClientsCount[0]?.count || 0),
-                new_subscriptions_count: Number(newSubscriptionsCount[0]?.count || 0),
-            }
+                new_clients_count:           newClientsCount,
+                new_subscriptions_count:     newSubscriptionsCount,
+                hotspot_subscriptions_count: hotspotSubscriptionsCount,
+            },
         };
     },
 };

@@ -1,4 +1,5 @@
 const createRolesTable = require("./roles");
+const createMonthlyAnalyticsTable = require("./monthly_analytics");
 const createPermissionsTable = require("./permissions");
 const createRolePermissionsTable = require("./role_permissions");
 
@@ -131,6 +132,9 @@ async function runMigrations() {
   // Clients onboard
   await createClientOnboardTable();
   await clientsOnboardCommissionTable();
+
+  // Monthly analytics (stores computed + admin adjustments per calendar month)
+  await createMonthlyAnalyticsTable();
 
   console.log("All migrations completed. Running seeders...");
 

@@ -156,7 +156,7 @@
 </div>
 
 <!-- Main Content -->
-<div class="container mx-auto p-6">
+<div class="w-full p-6">
 
     <!-- TAB 1: GENERAL REPORTS MANAGEMENT -->
     <div id="generalReportsTab">
@@ -210,7 +210,7 @@
         <div class="grid grid-cols-12 gap-6">
 
             <!-- Left: Generator Form -->
-            <div class="col-span-12 lg:col-span-5">
+            <div class="col-span-12 lg:col-span-4 xl:col-span-3">
                 <div class="bg-white border border-slate-200 shadow-sm">
                     <div class="section-header px-4 py-3">
                         <h3 class="text-sm font-black text-white uppercase tracking-wide">Generate Analytics Report</h3>
@@ -344,10 +344,78 @@
 
                     </div>
                 </div>
+
+                <!-- Admin Editor for Monthly Analytics -->
+                <div class="bg-white border border-slate-200 shadow-sm mt-6">
+                    <div class="section-header px-4 py-3 flex justify-between items-center">
+                        <h3 class="text-sm font-black text-white uppercase tracking-wide">Edit Month Data</h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Month</label>
+                                <select id="editDataMonth" class="w-full input-area rounded p-2 text-sm font-bold">
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Year</label>
+                                <select id="editDataYear" class="w-full input-area rounded p-2 text-sm font-bold">
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="loadMonthData()" class="w-full bg-slate-200 text-slate-800 py-2 rounded-lg font-bold text-xs hover:bg-slate-300 uppercase">
+                            <i class="fas fa-sync-alt mr-1"></i> Load Data
+                        </button>
+
+                        <div id="editDataForm" class="hidden space-y-4 pt-4 border-t border-slate-200">
+                            <div>
+                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Subscription Revenue Adjustment (KES)</label>
+                                <input type="number" step="0.01" id="adj_sub_rev" class="w-full input-area rounded p-2 text-sm font-bold">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Sales Revenue Adjustment (KES)</label>
+                                <input type="number" step="0.01" id="adj_sales_rev" class="w-full input-area rounded p-2 text-sm font-bold">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Hotspot Revenue (KES)</label>
+                                <input type="number" step="0.01" id="val_hotspot_rev" class="w-full input-area rounded p-2 text-sm font-bold">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Hotspot Subscriptions</label>
+                                <input type="number" id="val_hotspot_subs" class="w-full input-area rounded p-2 text-sm font-bold">
+                            </div>
+                            <button onclick="saveMonthData()" class="w-full bg-teal-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-teal-700 uppercase">
+                                <i class="fas fa-save mr-1"></i> Save Adjustments
+                            </button>
+                            <button onclick="recomputeMonthData()" class="w-full bg-slate-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-slate-700 uppercase">
+                                <i class="fas fa-calculator mr-1"></i> Re-Pull System Data
+                            </button>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-200 mt-4">
+                            <button onclick="runGlobalBackfill()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-indigo-700 uppercase shadow-sm">
+                                <i class="fas fa-database mr-1"></i> Run Global Backfill
+                            </button>
+                            <p class="text-[9px] text-slate-400 mt-2 text-center font-bold">Safely backfills historical system data.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Right: Preview Area -->
-            <div id="previewWrapper" class="col-span-12 lg:col-span-7">
+            <div id="previewWrapper" class="col-span-12 lg:col-span-8 xl:col-span-9">
                 <div class="bg-white border border-slate-200 shadow-sm">
                     <div class="section-header px-4 py-3 flex items-center justify-between">
                         <h3 class="text-sm font-black text-white uppercase tracking-wide">
@@ -441,6 +509,7 @@
 
     (function initAnalyticsForm() {
         const yearSelect = document.getElementById('customYear');
+        const editYearSelect = document.getElementById('editDataYear');
         const currentYear = new Date().getFullYear();
         const currentMonth = new Date().getMonth() + 1;
 
@@ -450,10 +519,16 @@
             opt.value = y;
             opt.textContent = y;
             yearSelect.appendChild(opt);
+
+            const editOpt = document.createElement('option');
+            editOpt.value = y;
+            editOpt.textContent = y;
+            editYearSelect.appendChild(editOpt);
         }
 
         // Pre-select current month
         document.getElementById('customMonth').value = currentMonth;
+        document.getElementById('editDataMonth').value = currentMonth;
     })();
 
     function toggleCustomMode() {
@@ -1030,6 +1105,91 @@
 
 
 
+    async function loadMonthData() {
+        const y = document.getElementById('editDataYear').value;
+        const m = document.getElementById('editDataMonth').value;
+        try {
+            const res = await fetch(`/api/reports/analytics/monthly/${y}/${m}`);
+            const result = await res.json();
+            if (result.success) {
+                document.getElementById('editDataForm').classList.remove('hidden');
+                document.getElementById('adj_sub_rev').value = result.data.adjustment_subscription_revenue || 0;
+                document.getElementById('adj_sales_rev').value = result.data.adjustment_sales_revenue || 0;
+                document.getElementById('val_hotspot_rev').value = result.data.hotspot_revenue || 0;
+                document.getElementById('val_hotspot_subs').value = result.data.hotspot_subscriptions_count || 0;
+                showToast('Month data loaded', 'success');
+            } else {
+                showToast(result.message || 'Failed to load', 'error');
+            }
+        } catch(e) {
+            console.error(e);
+            showToast('Error loading month data', 'error');
+        }
+    }
+
+    async function saveMonthData() {
+        const y = document.getElementById('editDataYear').value;
+        const m = document.getElementById('editDataMonth').value;
+        const body = {
+            adjustments: {
+                subscription_revenue: document.getElementById('adj_sub_rev').value || 0,
+                sales_revenue: document.getElementById('adj_sales_rev').value || 0
+            },
+            hotspot_revenue: document.getElementById('val_hotspot_rev').value || 0,
+            hotspot_subscriptions_count: document.getElementById('val_hotspot_subs').value || 0
+        };
+        try {
+            const res = await fetch(`/api/reports/analytics/monthly/${y}/${m}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const result = await res.json();
+            if (result.success) showToast('Adjustments saved', 'success');
+            else showToast(result.message || 'Failed to save', 'error');
+        } catch(e) {
+            console.error(e);
+            showToast('Error saving month data', 'error');
+        }
+    }
+
+    async function recomputeMonthData() {
+        const y = document.getElementById('editDataYear').value;
+        const m = document.getElementById('editDataMonth').value;
+        try {
+            const res = await fetch(`/api/reports/analytics/monthly/${y}/${m}/recompute`, { method: 'POST' });
+            const result = await res.json();
+            if (result.success) showToast('System data re-pulled', 'success');
+            else showToast(result.message || 'Failed to recompute', 'error');
+        } catch(e) {
+            console.error(e);
+            showToast('Error recomputing', 'error');
+        }
+    }
+
+    async function runGlobalBackfill() {
+        if (!confirm('Run a full backfill of historical analytics data? This will scan all past records but will not overwrite your manual adjustments.')) return;
+        
+        try {
+            showToast('Starting backfill... this may take a moment', 'info');
+            const res = await fetch('/api/reports/analytics/monthly/backfill', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const result = await res.json();
+            
+            if (result.success) {
+                showToast(`Backfill complete: ${result.created} months processed.`, 'success');
+            } else {
+                showToast(result.message || 'Failed to complete backfill', 'error');
+            }
+        } catch(e) {
+            console.error(e);
+            showToast('Error running backfill', 'error');
+        }
+    }
+
     function displayAnalyticsPreview(data) {
         const preview = document.getElementById('analyticsPreview');
         const { meta, financial, clients } = data;
@@ -1046,7 +1206,7 @@
                 </div>`;
 
         let html = `
-            <div style="font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 0 auto; background: #fff; color: #1e293b;">
+            <div style="font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1000px; margin: 0 auto; background: #fff; color: #1e293b;">
                 <!-- Report Header -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px;">
                     <div>
@@ -1064,6 +1224,7 @@
                 <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                     ${financialRow('Subscription Revenue', 'KES ' + fmt(financial.subscription_revenue))}
                     ${financialRow('Sales Revenue', 'KES ' + fmt(financial.sales_revenue))}
+                    ${financialRow('Hotspot Revenue', 'KES ' + fmt(financial.hotspot_revenue))}
                     ${financialRow('TOTAL REVENUE', 'KES ' + fmt(financial.total_revenue), true)}
                 </div>
 
@@ -1105,6 +1266,13 @@
                     <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
                         <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">New Subscriptions</p>
                         <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${clients.new_subscriptions_count}</h3>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Hotspot Subscriptions</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${clients.hotspot_subscriptions_count}</h3>
                     </div>
                 </div>
 
@@ -1161,6 +1329,7 @@
         const revenueRows = [
             ['Subscription Revenue', `KES ${fmt(financial.subscription_revenue)}`],
             ['Sales Revenue', `KES ${fmt(financial.sales_revenue)}`],
+            ['Hotspot Revenue', `KES ${fmt(financial.hotspot_revenue)}`],
             ['TOTAL REVENUE', `KES ${fmt(financial.total_revenue)}`]
         ];
 
@@ -1249,7 +1418,8 @@
 
         const clientStats = [
             ['Total Clients Joined', String(clients.new_clients_count)],
-            ['Total New Subscriptions', String(clients.new_subscriptions_count)]
+            ['Total New Subscriptions', String(clients.new_subscriptions_count)],
+            ['Hotspot Subscriptions', String(clients.hotspot_subscriptions_count)]
         ];
 
         doc.autoTable({

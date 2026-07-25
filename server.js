@@ -606,6 +606,9 @@ async function startServer() {
     console.log("Starting Dr.Net Server...");
     await runMigrations();
     console.log("Migrations complete.");
+    
+    // Start cron jobs
+    require("./src/cron/monthlyAnalyticsSync");
 
     const PORT = process.env.PORT || 5000;
 
