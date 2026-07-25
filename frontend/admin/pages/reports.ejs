@@ -392,45 +392,68 @@
 
         <style>
             .editable-cell input[type="number"] {
-                width: 100%; min-width: 90px;
+                width: 100%;
+                min-width: 90px;
                 padding: 4px 7px;
                 border: 1px solid #e2e8f0;
                 border-radius: 5px;
-                font-size: 11px; font-weight: 700;
-                background: #f8fafc; color: #1e293b;
-                text-align: right; transition: all 0.15s;
+                font-size: 11px;
+                font-weight: 700;
+                background: #f8fafc;
+                color: #1e293b;
+                text-align: right;
+                transition: all 0.15s;
             }
+
             .editable-cell input[type="number"]:focus {
-                outline: none; border-color: #6366f1;
+                outline: none;
+                border-color: #6366f1;
                 background: #fff;
-                box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+                box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
             }
-            .monthly-row.saving { opacity: 0.55; pointer-events: none; }
-            .monthly-row { transition: background 0.15s; }
-            .monthly-row:hover { background: #f8fafc; }
+
+            .monthly-row.saving {
+                opacity: 0.55;
+                pointer-events: none;
+            }
+
+            .monthly-row {
+                transition: background 0.15s;
+            }
+
+            .monthly-row:hover {
+                background: #f8fafc;
+            }
         </style>
 
         <div class="bg-white border border-slate-200 shadow-sm mb-6">
             <div class="section-header px-4 py-3 flex justify-between items-center">
                 <div>
                     <h3 class="text-sm font-black text-white uppercase tracking-wide">Monthly Analytics Data</h3>
-                    <p class="text-[10px] text-slate-300 mt-0.5">Edit adjustment & hotspot fields directly in the table — save per row.</p>
+                    <p class="text-[10px] text-slate-300 mt-0.5">Edit adjustment & hotspot fields directly in the table
+                        — save per row.</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="loadAllMonthlyData()" class="px-3 py-2 bg-white/10 text-white rounded text-[10px] font-bold hover:bg-white/20 uppercase">
+                    <button onclick="loadAllMonthlyData()"
+                        class="px-3 py-2 bg-white/10 text-white rounded text-[10px] font-bold hover:bg-white/20 uppercase">
                         <i class="fas fa-sync-alt mr-1"></i> Refresh
                     </button>
-                    <button onclick="runGlobalBackfill()" class="px-4 py-2 bg-indigo-500 text-white rounded text-[10px] font-bold hover:bg-indigo-400 uppercase shadow-sm">
+                    <button onclick="runGlobalBackfill()"
+                        class="px-4 py-2 bg-indigo-500 text-white rounded text-[10px] font-bold hover:bg-indigo-400 uppercase shadow-sm">
                         <i class="fas fa-database mr-1"></i> Global Backfill
                     </button>
                 </div>
             </div>
 
             <div class="p-4">
-                <div class="flex flex-wrap gap-4 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold uppercase text-slate-500">
-                    <span><span class="inline-block w-2 h-2 rounded-full bg-slate-400 mr-1"></span>Grey columns = System-computed (read-only)</span>
-                    <span><span class="inline-block w-2 h-2 rounded-full bg-indigo-400 mr-1"></span>Indigo columns = Adjustment override (editable)</span>
-                    <span><span class="inline-block w-2 h-2 rounded-full bg-teal-400 mr-1"></span>Teal columns = Hotspot manual entry (editable)</span>
+                <div
+                    class="flex flex-wrap gap-4 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold uppercase text-slate-500">
+                    <span><span class="inline-block w-2 h-2 rounded-full bg-slate-400 mr-1"></span>Grey columns =
+                        System-computed (read-only)</span>
+                    <span><span class="inline-block w-2 h-2 rounded-full bg-indigo-400 mr-1"></span>Indigo columns =
+                        Adjustment override (editable)</span>
+                    <span><span class="inline-block w-2 h-2 rounded-full bg-teal-400 mr-1"></span>Teal columns = Hotspot
+                        manual entry (editable)</span>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -623,12 +646,12 @@
             const isSubmitted = report.status === 'submitted';
             const statusColor = isSubmitted ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200';
             const statusIcon = isSubmitted ? 'fa-check-circle' : 'fa-edit';
-            
+
             const urgencyBadge = report.is_urgent
                 ? '<div class="flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded text-[10px] font-bold uppercase tracking-wide"><i class="fas fa-bolt text-[9px]"></i>Urgent</div>'
                 : '<div class="flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded text-[10px] font-bold uppercase tracking-wide"><i class="fas fa-info-circle text-[9px]"></i>Normal</div>';
 
-            const summary = report.ops_summary 
+            const summary = report.ops_summary
                 ? (report.ops_summary.length > 90 ? escapeHtml(report.ops_summary.substring(0, 90)) + '...' : escapeHtml(report.ops_summary))
                 : '<span class="text-slate-300 italic">No summary provided...</span>';
 
@@ -642,7 +665,7 @@
                                     Report #${report.id}
                                 </h3>
                                 <p class="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                                    <i class="far fa-calendar text-slate-400"></i> ${new Date(report.report_date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}
+                                    <i class="far fa-calendar text-slate-400"></i> ${new Date(report.report_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                 </p>
                             </div>
                             <div class="flex flex-col items-end gap-1.5">
@@ -708,7 +731,7 @@
         if (!report) return;
 
         const isSubmitted = report.status === 'submitted';
-        const statusBadge = isSubmitted 
+        const statusBadge = isSubmitted
             ? '<span class="bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><i class="fas fa-check-circle"></i> Submitted</span>'
             : '<span class="bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"><i class="fas fa-edit"></i> Draft</span>';
 
@@ -1220,61 +1243,84 @@
         const tbody = document.getElementById('monthlyDataTableBody');
         tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-10 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-2 block"></i><p class="text-[10px] font-bold uppercase">Loading...</p></td></tr>`;
         try {
+            console.log('Fetching monthly analytics data...');
             const res = await fetch('/api/reports/analytics/monthly');
             const result = await res.json();
+            console.log('Monthly data response:', result);
 
-            if (result.success && result.data.length > 0) {
-                tbody.innerHTML = result.data.map(row => renderMonthRow(row)).join('');
+            if (result.success && result.data && result.data.length > 0) {
+                console.log('Rendering', result.data.length, 'rows');
+                
+                // Explicitly sort by year DESC and month DESC
+                result.data.sort((a, b) => {
+                    if (b.year !== a.year) return b.year - a.year;
+                    return b.month - a.month;
+                });
+                
+                let html = '';
+                for (let i = 0; i < result.data.length; i++) {
+                    html += renderMonthRow(result.data[i]);
+                }
+                tbody.innerHTML = html;
+                console.log('Table HTML updated successfully.');
             } else {
                 tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found. Run Global Backfill to populate.</td></tr>`;
             }
         } catch(e) {
-            console.error(e);
+            console.error('Error loading monthly data:', e);
             showToast('Failed to load monthly database', 'error');
         }
     }
 
+    function getReadCell(val, color) {
+        return `<td class="px-3 py-2.5 text-right font-bold ${color}">KES ${fmt(val)}</td>`;
+    }
+
+    function getEditCell(id, field, val, rowYear, rowMonth, step) {
+        const numVal = Number(val || 0);
+        return `<td class="px-2 py-1.5 editable-cell">
+            <input type="number" step="${step}" id="${id}_${field}" value="${numVal}" onkeydown="if(event.key==='Enter')saveMonthRow('${rowYear}','${rowMonth}')">
+        </td>`;
+    }
+
     function renderMonthRow(row) {
-        const monthName = new Date(row.year, row.month - 1).toLocaleString('default', { month: 'long' });
-        const lastComp = row.last_computed_at ? new Date(row.last_computed_at).toLocaleString() : '—';
-        const id = `${row.year}_${row.month}`;
+        try {
+            const monthName = new Date(row.year, row.month - 1).toLocaleString('default', { month: 'long' });
+            const lastComp = row.last_computed_at ? new Date(row.last_computed_at).toLocaleString() : '—';
+            const id = `${row.year}_${row.month}`;
 
-        const readCell = (val, color='text-slate-700') =>
-            `<td class="px-3 py-2.5 text-right font-bold ${color}">KES ${fmt(val)}</td>`;
-
-        const editCell = (field, val, step='0.01') =>
-            `<td class="px-2 py-1.5 editable-cell">
-                <input type="number" step="${step}" id="${id}_${field}" value="${Number(val||0)}" onkeydown="if(event.key==='Enter')saveMonthRow('${row.year}','${row.month}')">
-            </td>`;
-
-        return `
-        <tr class="monthly-row" data-year="${row.year}" data-month="${row.month}">
-            <td class="px-3 py-2.5 font-black text-slate-800 whitespace-nowrap sticky left-0 bg-white border-r border-slate-100">${monthName} ${row.year}</td>
-            ${readCell(row.computed_subscription_revenue)}
-            ${editCell('adj_sub_rev', row.adjustment_subscription_revenue)}
-            ${readCell(row.computed_sales_revenue)}
-            ${editCell('adj_sales_rev', row.adjustment_sales_revenue)}
-            ${readCell(row.computed_hrexpenses)}
-            ${editCell('adj_hrexp', row.adjustment_hrexpenses)}
-            ${readCell(row.computed_staff_salaries)}
-            ${editCell('adj_salaries', row.adjustment_staff_salaries)}
-            ${editCell('hotspot_rev', row.hotspot_revenue)}
-            ${editCell('hotspot_subs', row.hotspot_subscriptions_count, '1')}
-            <td class="px-3 py-2.5 text-center text-[10px] text-slate-400 whitespace-nowrap">${lastComp}</td>
-            <td class="px-3 py-2.5 text-center">
-                <div class="flex items-center justify-center gap-1">
-                    <button onclick="saveMonthRow('${row.year}','${row.month}')" title="Save" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700 uppercase">
-                        <i class="fas fa-save"></i>
-                    </button>
-                    <button onclick="recomputeMonthRow('${row.year}','${row.month}')" title="Re-pull system data" class="px-2.5 py-1.5 bg-slate-600 text-white rounded text-[10px] font-bold hover:bg-slate-700 uppercase">
-                        <i class="fas fa-calculator"></i>
-                    </button>
-                    <button onclick="deleteMonthRow('${row.year}','${row.month}')" title="Delete row" class="px-2.5 py-1.5 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 uppercase">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>`;
+            return `
+            <tr class="monthly-row" data-year="${row.year}" data-month="${row.month}">
+                <td class="px-3 py-2.5 font-black text-slate-800 whitespace-nowrap sticky left-0 bg-white border-r border-slate-100">${monthName} ${row.year}</td>
+                ${getReadCell(row.computed_subscription_revenue, 'text-slate-700')}
+                ${getEditCell(id, 'adj_sub_rev', row.adjustment_subscription_revenue, row.year, row.month, '0.01')}
+                ${getReadCell(row.computed_sales_revenue, 'text-slate-700')}
+                ${getEditCell(id, 'adj_sales_rev', row.adjustment_sales_revenue, row.year, row.month, '0.01')}
+                ${getReadCell(row.computed_hrexpenses, 'text-slate-700')}
+                ${getEditCell(id, 'adj_hrexp', row.adjustment_hrexpenses, row.year, row.month, '0.01')}
+                ${getReadCell(row.computed_staff_salaries, 'text-slate-700')}
+                ${getEditCell(id, 'adj_salaries', row.adjustment_staff_salaries, row.year, row.month, '0.01')}
+                ${getEditCell(id, 'hotspot_rev', row.hotspot_revenue, row.year, row.month, '0.01')}
+                ${getEditCell(id, 'hotspot_subs', row.hotspot_subscriptions_count, row.year, row.month, '1')}
+                <td class="px-3 py-2.5 text-center text-[10px] text-slate-400 whitespace-nowrap">${lastComp}</td>
+                <td class="px-3 py-2.5 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                        <button onclick="saveMonthRow('${row.year}','${row.month}')" title="Save" class="px-2.5 py-1.5 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700 uppercase">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button onclick="recomputeMonthRow('${row.year}','${row.month}')" title="Re-pull system data" class="px-2.5 py-1.5 bg-slate-600 text-white rounded text-[10px] font-bold hover:bg-slate-700 uppercase">
+                            <i class="fas fa-calculator"></i>
+                        </button>
+                        <button onclick="deleteMonthRow('${row.year}','${row.month}')" title="Delete row" class="px-2.5 py-1.5 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 uppercase">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+        } catch (e) {
+            console.error('Error rendering row:', row, e);
+            return `<tr><td colspan="13" class="text-red-500 text-center py-4">Error rendering row for ${row.year}-${row.month}</td></tr>`;
+        }
     }
 
     async function saveMonthRow(year, month) {
@@ -1285,11 +1331,11 @@
         const body = {
             adjustments: {
                 subscription_revenue: parseFloat(document.getElementById(`${id}_adj_sub_rev`)?.value) || 0,
-                sales_revenue:        parseFloat(document.getElementById(`${id}_adj_sales_rev`)?.value) || 0,
-                hrexpenses:           parseFloat(document.getElementById(`${id}_adj_hrexp`)?.value) || 0,
-                staff_salaries:       parseFloat(document.getElementById(`${id}_adj_salaries`)?.value) || 0,
+                sales_revenue: parseFloat(document.getElementById(`${id}_adj_sales_rev`)?.value) || 0,
+                hrexpenses: parseFloat(document.getElementById(`${id}_adj_hrexp`)?.value) || 0,
+                staff_salaries: parseFloat(document.getElementById(`${id}_adj_salaries`)?.value) || 0,
             },
-            hotspot_revenue:             parseFloat(document.getElementById(`${id}_hotspot_rev`)?.value) || 0,
+            hotspot_revenue: parseFloat(document.getElementById(`${id}_hotspot_rev`)?.value) || 0,
             hotspot_subscriptions_count: parseInt(document.getElementById(`${id}_hotspot_subs`)?.value) || 0,
         };
 
@@ -1301,13 +1347,13 @@
             });
             const result = await res.json();
             if (result.success) {
-                showToast(`${new Date(year, month-1).toLocaleString('default',{month:'long'})} ${year} saved`, 'success');
+                showToast(`${new Date(year, month - 1).toLocaleString('default', { month: 'long' })} ${year} saved`, 'success');
                 // Re-render just this row with fresh data
                 if (tr) tr.outerHTML = renderMonthRow(result.data);
             } else {
                 showToast(result.message || 'Save failed', 'error');
             }
-        } catch(e) {
+        } catch (e) {
             console.error(e);
             showToast('Error saving row', 'error');
         } finally {
@@ -1328,7 +1374,7 @@
             } else {
                 showToast(result.message || 'Recompute failed', 'error');
             }
-        } catch(e) {
+        } catch (e) {
             console.error(e);
             showToast('Error recomputing', 'error');
         } finally {
@@ -1338,7 +1384,7 @@
     }
 
     async function deleteMonthRow(year, month) {
-        const monthName = new Date(year, month-1).toLocaleString('default', { month: 'long' });
+        const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
         if (!confirm(`Delete the ${monthName} ${year} analytics row? This cannot be undone.`)) return;
         const tr = document.querySelector(`tr[data-year="${year}"][data-month="${month}"]`);
         if (tr) tr.classList.add('saving');
@@ -1357,7 +1403,7 @@
                 showToast(result.message || 'Delete failed', 'error');
                 if (tr) tr.classList.remove('saving');
             }
-        } catch(e) {
+        } catch (e) {
             console.error(e);
             showToast('Error deleting row', 'error');
             if (tr) tr.classList.remove('saving');
@@ -1371,22 +1417,22 @@
 
     async function runGlobalBackfill() {
         if (!confirm('Run a full backfill of historical analytics data? This will scan all past records but will not overwrite your manual adjustments.')) return;
-        
+
         try {
             showToast('Starting backfill... this may take a moment', 'info');
-            const res = await fetch('/api/reports/analytics/monthly/backfill', { 
+            const res = await fetch('/api/reports/analytics/monthly/backfill', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
             });
             const result = await res.json();
-            
+
             if (result.success) {
                 showToast(`Backfill complete: ${result.created} months processed.`, 'success');
             } else {
                 showToast(result.message || 'Failed to complete backfill', 'error');
             }
-        } catch(e) {
+        } catch (e) {
             console.error(e);
             showToast('Error running backfill', 'error');
         }
