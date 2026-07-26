@@ -154,6 +154,7 @@ const MonthlyAnalytics = {
         adjustments = {},
         hotspot_revenue,
         hotspot_subscriptions_count,
+        revenue_injection,
         notes,
         updated_by,
         is_locked,
@@ -185,6 +186,10 @@ const MonthlyAnalytics = {
         if (hotspot_subscriptions_count !== undefined) {
             setClauses.push("hotspot_subscriptions_count = ?");
             values.push(hotspot_subscriptions_count);
+        }
+        if (revenue_injection !== undefined) {
+            setClauses.push("revenue_injection = ?");
+            values.push(revenue_injection);
         }
         if (notes !== undefined) {
             setClauses.push("notes = ?");

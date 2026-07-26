@@ -134,6 +134,10 @@ const AnalyticsReport = {
             (acc, r) => acc + Number(r.hotspot_subscriptions_count || 0),
             0
         );
+        const revenueInjection = rows.reduce(
+            (acc, r) => acc + Number(r.revenue_injection || 0),
+            0
+        );
 
         return {
             meta: {
@@ -156,6 +160,7 @@ const AnalyticsReport = {
                 total_expenditure:      totalExpenditure,
                 net_profit:             netProfit,
                 profit_margin_pct:      parseFloat(profitMargin.toFixed(1)),
+                revenue_injection:      revenueInjection,
             },
 
             clients: {

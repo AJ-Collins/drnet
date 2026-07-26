@@ -454,6 +454,9 @@
                         Adjustment override (editable)</span>
                     <span><span class="inline-block w-2 h-2 rounded-full bg-teal-400 mr-1"></span>Teal columns = Hotspot
                         manual entry (editable)</span>
+                    <span><span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1"></span>Emerald column =
+                        Revenue
+                        Injection (editable)</span>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -471,13 +474,14 @@
                                 <th class="px-3 py-3 text-right text-indigo-300">Adj Salaries ✎</th>
                                 <th class="px-3 py-3 text-right text-teal-300">Hotspot Rev ✎</th>
                                 <th class="px-3 py-3 text-right text-teal-300">Hotspot Subs ✎</th>
+                                <th class="px-3 py-3 text-right text-emerald-300">Revenue Injection ✎</th>
                                 <th class="px-3 py-3 text-center text-slate-400">Last Computed</th>
                                 <th class="px-3 py-3 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="monthlyDataTableBody" class="divide-y divide-slate-100 text-xs">
                             <tr>
-                                <td colspan="13" class="px-4 py-10 text-center text-slate-400">
+                                <td colspan="14" class="px-4 py-10 text-center text-slate-400">
                                     <i class="fas fa-circle-notch fa-spin text-2xl mb-2 block"></i>
                                     <p class="text-[10px] font-bold uppercase">Loading data...</p>
                                 </td>
@@ -1039,28 +1043,20 @@
 
         // Brand name
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.5);
-        doc.setTextColor(...BRAND.color);
-        doc.text(BRAND.name, 14, 10);
-
-        // Tagline
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(5.8);
-        doc.text(BRAND.tagline, W - 14, 10, { align: 'right' });
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(BRAND.name.toUpperCase(), 14, 10);
 
         // Thin divider line
-        doc.setDrawColor(...BRAND.color);
-        doc.setLineWidth(0.1);
-        doc.line(0, 14, W, 14);
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.2);
+        doc.line(14, 14, W - 14, 14);
 
         // Subtitle
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
-        doc.setTextColor(...BRAND.dark);
-        doc.text(subtitle, 14, 22);
-
-        // Reset text color
         doc.setTextColor(0, 0, 0);
+        doc.text(subtitle.toUpperCase(), 14, 22);
 
         return 28;
     }
@@ -1071,13 +1067,13 @@
         const H = doc.internal.pageSize.getHeight();
         for (let i = 1; i <= n; i++) {
             doc.setPage(i);
-            doc.setDrawColor(180, 180, 180);
-            doc.setLineWidth(0.1);
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.2);
             doc.line(14, H - 11, W - 14, H - 11);
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(7);
-            doc.setTextColor(140, 140, 140);
-            doc.text(BRAND.name + '  —  Confidential', 14, H - 6);
+            doc.setFontSize(7.5);
+            doc.setTextColor(0, 0, 0);
+            doc.text('DR.NET TECHNOLOGY LABS  —  CONFIDENTIAL', 14, H - 6);
             doc.text(`Page ${i} of ${n}`, W - 14, H - 6, { align: 'right' });
         }
     }
@@ -1098,35 +1094,29 @@
         const doc = new jsPDF();
         const W = doc.internal.pageSize.getWidth();
 
-        let y = addPdfHeader(doc, 'Daily General Report');
+        let y = addPdfHeader(doc, 'DAILY GENERAL REPORT');
 
         // Meta
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8.5);
-        doc.setTextColor(80, 80, 80);
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
         doc.text(`Report #${report.id}   |   Date: ${new Date(report.report_date).toLocaleDateString()}`, 14, y);
         doc.text(`Prepared by: ${report.first_name} ${report.second_name}  —  ${report.position || ''}`, 14, y + 5);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...BRAND.dark);
         doc.text(`Status: ${(report.status || '').toUpperCase()}     Priority: ${report.is_urgent ? 'URGENT' : 'NORMAL'}`, 14, y + 10);
-        doc.setTextColor(0, 0, 0);
         y += 17;
 
         // Section builder
         function genSection(title, body, extraFn) {
-            if (y > 242) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
+            if (y > 242) { doc.addPage(); y = addPdfHeader(doc, 'DAILY GENERAL REPORT (CONT.)') + 4; }
 
-            // Heavy rule + caps, no color
-            doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.1);
-            doc.line(14, y, W - 14, y);
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
-            doc.text(title.toUpperCase(), 14, y + 5.5);
-            doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.1);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
+            doc.text(title.toUpperCase(), 14, y + 5);
+            doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.2);
             doc.line(14, y + 7, W - 14, y + 7);
-            doc.setTextColor(0, 0, 0);
             y += 12;
 
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(50, 50, 50);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
             const lines = doc.splitTextToSize(body || 'No summary provided.', W - 28);
             doc.text(lines, 14, y);
             y += lines.length * 5 + 4;
@@ -1134,50 +1124,39 @@
             y += 5;
         }
 
-        genSection('Operations & Logistics', report.ops_summary, () => {
-            if (y > 250) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
-            const bW = (W - 32) / 2;
+        genSection('1.  OPERATIONS & LOGISTICS', report.ops_summary, () => {
+            if (y > 250) { doc.addPage(); y = addPdfHeader(doc, 'DAILY GENERAL REPORT (CONT.)') + 4; }
 
-            // Stat boxes — white fill, hairline border, dark text
-            doc.setFillColor(255, 255, 255);
-            doc.setDrawColor(170, 170, 170); doc.setLineWidth(0.1);
-            doc.rect(14, y, bW - 2, 13, 'FD');
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
-            doc.text('INSTALLATIONS', 16, y + 5);
-            doc.setFontSize(14); doc.setTextColor(15, 23, 42);
-            doc.text(String(report.ops_installs || 0), 16, y + 11.5);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+            doc.text('INSTALLATIONS:', 14, y + 5);
+            doc.setFont('helvetica', 'normal');
+            doc.text(String(report.ops_installs || 0), 45, y + 5);
 
-            doc.rect(14 + bW + 2, y, bW - 2, 13, 'FD');
-            doc.setFontSize(7); doc.setTextColor(100, 100, 100);
-            doc.text('PENDING JOBS', 16 + bW + 2, y + 5);
-            doc.setFontSize(14); doc.setTextColor(15, 23, 42);
-            doc.text(String(report.ops_pending || 0), 16 + bW + 2, y + 11.5);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PENDING JOBS:', 80, y + 5);
+            doc.setFont('helvetica', 'normal');
+            doc.text(String(report.ops_pending || 0), 110, y + 5);
 
-            doc.setTextColor(0, 0, 0); y += 17;
+            y += 10;
         });
 
-        genSection('Staff & Personnel', report.staff_summary);
-        genSection('Support & Client Feedback', report.support_summary);
+        genSection('2.  STAFF & PERSONNEL', report.staff_summary);
+        genSection('3.  SUPPORT & CLIENT FEEDBACK', report.support_summary);
 
-        // Conclusion — dark left rule (not brand color)
-        if (y > 232) { doc.addPage(); y = addPdfHeader(doc, 'Daily General Report (cont.)') + 4; }
-        doc.setDrawColor(15, 23, 42); doc.setLineWidth(0.6);
-        doc.line(14, y, W - 14, y);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
-        doc.text('CONCLUSION & ACTION ITEMS', 14, y + 5.5);
-        doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.25);
+        if (y > 232) { doc.addPage(); y = addPdfHeader(doc, 'DAILY GENERAL REPORT (CONT.)') + 4; }
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
+        doc.text('4.  CONCLUSION & ACTION ITEMS', 14, y + 5);
+        doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.2);
         doc.line(14, y + 7, W - 14, y + 7);
         y += 12;
 
-        const cLines = doc.splitTextToSize(report.conclusion || 'No conclusion provided.', W - 34);
-        // Dark left accent rule
-        doc.setFillColor(15, 23, 42);
-        doc.rect(14, y - 2, 2, cLines.length * 5 + 4, 'F');
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(50, 50, 50);
-        doc.text(cLines, 20, y);
+        const cLines = doc.splitTextToSize(report.conclusion || 'No conclusion provided.', W - 28);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+        doc.text(cLines, 14, y);
+        y += cLines.length * 5;
 
         addPdfFooter(doc);
-        doc.save(`Report-${report.id}-${report.report_date}.pdf`);
+        doc.save(`DR.NET-General-Report-${report.id}.pdf`);
         showToast('PDF downloaded successfully', 'success');
     }
 
@@ -1241,7 +1220,7 @@
 
     async function loadAllMonthlyData() {
         const tbody = document.getElementById('monthlyDataTableBody');
-        tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-10 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-2 block"></i><p class="text-[10px] font-bold uppercase">Loading...</p></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="14" class="px-4 py-10 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-2 block"></i><p class="text-[10px] font-bold uppercase">Loading...</p></td></tr>`;
         try {
             console.log('Fetching monthly analytics data...');
             const res = await fetch('/api/reports/analytics/monthly');
@@ -1250,13 +1229,13 @@
 
             if (result.success && result.data && result.data.length > 0) {
                 console.log('Rendering', result.data.length, 'rows');
-                
+
                 // Explicitly sort by year DESC and month DESC
                 result.data.sort((a, b) => {
                     if (b.year !== a.year) return b.year - a.year;
                     return b.month - a.month;
                 });
-                
+
                 let html = '';
                 for (let i = 0; i < result.data.length; i++) {
                     html += renderMonthRow(result.data[i]);
@@ -1264,9 +1243,9 @@
                 tbody.innerHTML = html;
                 console.log('Table HTML updated successfully.');
             } else {
-                tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found. Run Global Backfill to populate.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found. Run Global Backfill to populate.</td></tr>`;
             }
-        } catch(e) {
+        } catch (e) {
             console.error('Error loading monthly data:', e);
             showToast('Failed to load monthly database', 'error');
         }
@@ -1302,6 +1281,7 @@
                 ${getEditCell(id, 'adj_salaries', row.adjustment_staff_salaries, row.year, row.month, '0.01')}
                 ${getEditCell(id, 'hotspot_rev', row.hotspot_revenue, row.year, row.month, '0.01')}
                 ${getEditCell(id, 'hotspot_subs', row.hotspot_subscriptions_count, row.year, row.month, '1')}
+                ${getEditCell(id, 'revenue_injection', row.revenue_injection, row.year, row.month, '0.01')}
                 <td class="px-3 py-2.5 text-center text-[10px] text-slate-400 whitespace-nowrap">${lastComp}</td>
                 <td class="px-3 py-2.5 text-center">
                     <div class="flex items-center justify-center gap-1">
@@ -1319,7 +1299,7 @@
             </tr>`;
         } catch (e) {
             console.error('Error rendering row:', row, e);
-            return `<tr><td colspan="13" class="text-red-500 text-center py-4">Error rendering row for ${row.year}-${row.month}</td></tr>`;
+            return `<tr><td colspan="14" class="text-red-500 text-center py-4">Error rendering row for ${row.year}-${row.month}</td></tr>`;
         }
     }
 
@@ -1337,6 +1317,7 @@
             },
             hotspot_revenue: parseFloat(document.getElementById(`${id}_hotspot_rev`)?.value) || 0,
             hotspot_subscriptions_count: parseInt(document.getElementById(`${id}_hotspot_subs`)?.value) || 0,
+            revenue_injection: parseFloat(document.getElementById(`${id}_revenue_injection`)?.value) || 0,
         };
 
         try {
@@ -1397,7 +1378,7 @@
                 // Show empty state if no rows left
                 const tbody = document.getElementById('monthlyDataTableBody');
                 if (tbody && !tbody.querySelector('tr[data-year]')) {
-                    tbody.innerHTML = `<tr><td colspan="13" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found.</td></tr>`;
                 }
             } else {
                 showToast(result.message || 'Delete failed', 'error');
@@ -1460,7 +1441,7 @@
                 <!-- Report Header -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px;">
                     <div>
-                        <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #1e293b;">MONTHLY REPORT</h1>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #1e293b;">ANALYTICS REPORT</h1>
                         <p style="margin: 5px 0 0 0; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">${BRAND.name}</p>
                     </div>
                     <div style="text-align: right;">
@@ -1486,8 +1467,20 @@
                     ${financialRow('TOTAL EXPENDITURE', 'KES ' + fmt(financial.total_expenditure), true, true)}
                 </div>
 
+                <!-- 2b. Revenue Injection -->
+                ${sectionHeader('3. Revenue Injection')}
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bbf7d0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: #166534; font-weight: 700;">Revenue Injection</span>
+                        <span style="font-size: 15px; font-weight: 900; color: #15803d;">KES ${fmt(financial.revenue_injection || 0)}</span>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #86efac; font-size: 11px; color: #4ade80; color: #166534;">
+                        * Revenue Injection is an independently recorded value and does not affect Total Revenue, Expenditure, or Net Profit calculations.
+                    </div>
+                </div>
+
                 <!-- 3. Net Profit / Loss -->
-                ${sectionHeader('3. Profitability Analysis')}
+                ${sectionHeader('4. Profitability Analysis')}
                 <div style="background: ${financial.net_profit >= 0 ? '#f0fdf4' : '#fef2f2'}; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid ${financial.net_profit >= 0 ? '#bbf7d0' : '#fecaca'};">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
@@ -1507,7 +1500,7 @@
                 </div>
 
                 <!-- 4. Client Activity -->
-                ${sectionHeader('4. Client Activity')}
+                ${sectionHeader('5. Client Activity')}
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
                         <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Clients Joined</p>
@@ -1542,154 +1535,150 @@
         const W = doc.internal.pageSize.getWidth();
         const margin = 15;
 
-        // Helper for lines
-        let y = 15;
+        // ── thin line helper ────────────────────────────────────────────────
+        const thinLine = (yPos) => {
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.2);
+            doc.line(margin, yPos, W - margin, yPos);
+        };
 
-        // Header
+        // ── section heading helper ──────────────────────────────────────────
+        // Prints bold uppercase title, then a thin rule beneath it.
+        // Returns new y after the rule + gap.
+        const sectionTitle = (title, yPos) => {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(title, margin, yPos);
+            thinLine(yPos + 2);
+            return yPos + 9;
+        };
+
+        // ── data row helper ─────────────────────────────────────────────────
+        // Prints a label-value pair on one line, optionally bold (for totals).
+        const dataRow = (label, value, yPos, isBold = false) => {
+            doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(label, margin, yPos);
+            doc.text(value, W - margin, yPos, { align: 'right' });
+            return yPos + 7;
+        };
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DOCUMENT HEADER
+        // ═══════════════════════════════════════════════════════════════════
+        let y = 16;
+
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(18);
         doc.setTextColor(0, 0, 0);
-        doc.text('MONTHLY REPORT', margin, y);
-
-        y += 8;
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(BRAND.name.toUpperCase(), margin, y);
+        doc.text('ANALYTICS REPORT', margin, y);
 
         doc.setFont('helvetica', 'normal');
-        doc.text(`Period: ${meta.period_label}`, W - margin, y, { align: 'right' });
+        doc.setFontSize(9);
+        doc.text(meta.period_label, W - margin, y, { align: 'right' });
 
         y += 5;
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.1);
-        doc.line(margin, y, W - margin, y);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text(BRAND.name.toUpperCase(), margin, y);
+        doc.text(`Generated: ${new Date(meta.generated_at).toLocaleString()}`, W - margin, y, { align: 'right' });
 
-        y += 15;
+        y += 3;
+        thinLine(y);
+        y += 12;
 
-        // Section 1: Revenue
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
+        // ═══════════════════════════════════════════════════════════════════
+        // 1. REVENUE OVERVIEW
+        // ═══════════════════════════════════════════════════════════════════
+        y = sectionTitle('1.  REVENUE OVERVIEW', y);
+        y = dataRow('Subscription Revenue', `KES ${fmt(financial.subscription_revenue)}`, y);
+        y = dataRow('Sales Revenue', `KES ${fmt(financial.sales_revenue)}`, y);
+        y = dataRow('Hotspot Revenue', `KES ${fmt(financial.hotspot_revenue)}`, y);
+        y = dataRow('TOTAL REVENUE', `KES ${fmt(financial.total_revenue)}`, y, true);
+        y += 10;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // 2. EXPENDITURE & DEDUCTIONS
+        // ═══════════════════════════════════════════════════════════════════
+        y = sectionTitle('2.  EXPENDITURE & DEDUCTIONS', y);
+        y = dataRow('Staff Salaries', `KES ${fmt(financial.staff_salaries_payable)}`, y);
+        y = dataRow('General Expenditure', `KES ${fmt(financial.monthly_expenditure)}`, y);
+        y = dataRow('TOTAL EXPENDITURE', `KES ${fmt(financial.total_expenditure)}`, y, true);
+        y += 10;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // 3. REVENUE INJECTION
+        // ═══════════════════════════════════════════════════════════════════
+        y = sectionTitle('3.  REVENUE INJECTION', y);
+        y = dataRow('Revenue Injection', `KES ${fmt(financial.revenue_injection || 0)}`, y, true);
+        y += 3;
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7.5);
         doc.setTextColor(0, 0, 0);
-        doc.text('1. REVENUE OVERVIEW', margin, y);
-        y += 5;
-        doc.setLineWidth(0.1);
-        doc.line(margin, y, W - margin, y);
-        y += 10;
+        const injNote = doc.splitTextToSize(
+            '* Revenue Injection is an independently recorded value and does not affect Total Revenue, Expenditure, or Net Profit.',
+            W - margin * 2
+        );
+        doc.text(injNote, margin, y);
+        y += injNote.length * 4 + 10;
 
-        const revenueRows = [
-            ['Subscription Revenue', `KES ${fmt(financial.subscription_revenue)}`],
-            ['Sales Revenue', `KES ${fmt(financial.sales_revenue)}`],
-            ['Hotspot Revenue', `KES ${fmt(financial.hotspot_revenue)}`],
-            ['TOTAL REVENUE', `KES ${fmt(financial.total_revenue)}`]
-        ];
+        // ═══════════════════════════════════════════════════════════════════
+        // 4. PROFITABILITY ANALYSIS
+        // ═══════════════════════════════════════════════════════════════════
+        y = sectionTitle('4.  PROFITABILITY ANALYSIS', y);
 
-        doc.autoTable({
-            startY: y,
-            body: revenueRows,
-            theme: 'plain',
-            styles: { fontSize: 10, cellPadding: 3, textColor: [0, 0, 0] },
-            columnStyles: { 1: { halign: 'right' } },
-            didParseCell: function (data) {
-                if (data.row.index === 2) {
-                    data.cell.styles.fontStyle = 'bold';
-                    data.cell.styles.lineWidth = { bottom: 0.1 };
-                }
-            }
-        });
-
-        y = doc.lastAutoTable.finalY + 15;
-
-        // Section 2: Expenditure
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
-        doc.text('2. EXPENDITURE & DEDUCTIONS', margin, y);
-        y += 5;
-        doc.setLineWidth(0.1);
-        doc.line(margin, y, W - margin, y);
-        y += 10;
-
-        const expenseRows = [
-            ['Staff Salaries', `KES ${fmt(financial.staff_salaries_payable)}`],
-            ['General Expenditure', `KES ${fmt(financial.monthly_expenditure)}`],
-            ['TOTAL EXPENDITURE', `KES ${fmt(financial.total_expenditure)}`]
-        ];
-
-        doc.autoTable({
-            startY: y,
-            body: expenseRows,
-            theme: 'plain',
-            styles: { fontSize: 10, cellPadding: 3, textColor: [0, 0, 0] },
-            columnStyles: { 1: { halign: 'right' } },
-            didParseCell: function (data) {
-                if (data.row.index === 2) {
-                    data.cell.styles.fontStyle = 'bold';
-                    data.cell.styles.lineWidth = { bottom: 0.1 };
-                }
-            }
-        });
-
-        y = doc.lastAutoTable.finalY + 15;
-
-        // Section 3: Net Profit
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
-        doc.text('3. PROFITABILITY ANALYSIS', margin, y);
-        y += 5;
-        doc.setLineWidth(0.1);
-        doc.line(margin, y, W - margin, y);
-        y += 10;
-
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.1);
-        doc.rect(margin, y, W - (margin * 2), 25, 'D');
-
-        doc.setFontSize(10);
+        // Net Profit / Loss — large text, two-column layout
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
         doc.setTextColor(0, 0, 0);
-        doc.text('NET PROFIT / LOSS', margin + 5, y + 10);
+        doc.text('NET PROFIT / LOSS', margin, y);
+        doc.text('PROFIT MARGIN', W - margin, y, { align: 'right' });
+        y += 8;
 
-        doc.setFontSize(18);
-        doc.text(`KES ${financial.net_profit < 0 ? '-' : ''}${fmt(Math.abs(financial.net_profit))}`, margin + 5, y + 20);
-
-        doc.setFontSize(10);
-        doc.text('PROFIT MARGIN', W - margin - 5, y + 10, { align: 'right' });
-        doc.setFontSize(14);
-        doc.text(`${financial.profit_margin_pct}%`, W - margin - 5, y + 20, { align: 'right' });
-
-        y += 35;
-
-        // Section 4: Client Activity
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
-        doc.text('4. CLIENT ACTIVITY', margin, y);
-        y += 5;
-        doc.setLineWidth(0.1);
-        doc.line(margin, y, W - margin, y);
+        doc.setFontSize(16);
+        doc.text(
+            `KES ${financial.net_profit < 0 ? '-' : ''}${fmt(Math.abs(financial.net_profit))}`,
+            margin, y
+        );
+        doc.setFontSize(16);
+        doc.text(`${financial.profit_margin_pct}%`, W - margin, y, { align: 'right' });
         y += 10;
 
-        const clientStats = [
-            ['Total Clients Joined', String(clients.new_clients_count)],
-            ['Total New Subscriptions', String(clients.new_subscriptions_count)],
-            ['Hotspot Subscriptions', String(clients.hotspot_subscriptions_count)]
-        ];
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7.5);
+        doc.setTextColor(0, 0, 0);
+        const profNote = doc.splitTextToSize(
+            '* Net Profit is the remaining balance after deducting all expenditures (including salaries) from total revenue.',
+            W - margin * 2
+        );
+        doc.text(profNote, margin, y);
+        y += profNote.length * 4 + 12;
 
-        doc.autoTable({
-            startY: y,
-            body: clientStats,
-            theme: 'plain',
-            styles: { fontSize: 10, cellPadding: 3, textColor: [0, 0, 0] },
-            columnStyles: { 1: { halign: 'right', fontStyle: 'bold' } }
-        });
+        // ═══════════════════════════════════════════════════════════════════
+        // 5. CLIENT ACTIVITY
+        // ═══════════════════════════════════════════════════════════════════
+        y = sectionTitle('5.  CLIENT ACTIVITY', y);
+        y = dataRow('Total Clients Joined', String(clients.new_clients_count), y);
+        y = dataRow('Total New Subscriptions', String(clients.new_subscriptions_count), y);
+        y = dataRow('Hotspot Subscriptions', String(clients.hotspot_subscriptions_count), y);
+        y += 5;
 
-        y = doc.lastAutoTable.finalY + 20;
-
-        // Footer
+        // ═══════════════════════════════════════════════════════════════════
+        // FOOTER
+        // ═══════════════════════════════════════════════════════════════════
         const pageCount = doc.internal.getNumberOfPages();
+        const H = doc.internal.pageSize.getHeight();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            doc.setFontSize(8);
+            thinLine(H - 12);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7.5);
             doc.setTextColor(0, 0, 0);
-            doc.text('DR.NET TECHNOLOGY LABS - INTERNAL REPORT', margin, doc.internal.pageSize.getHeight() - 10);
-            doc.text(`Page ${i} of ${pageCount}`, W - margin, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+            doc.text('DR.NET TECHNOLOGY LABS  —  CONFIDENTIAL', margin, H - 7);
+            doc.text(`Page ${i} of ${pageCount}`, W - margin, H - 7, { align: 'right' });
         }
 
         doc.save(`DR.NET-Report-${meta.period_label.replace(/ /g, '-')}.pdf`);

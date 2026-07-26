@@ -1,5 +1,6 @@
 const createRolesTable = require("./roles");
 const createMonthlyAnalyticsTable = require("./monthly_analytics");
+const addRevenueInjectionColumn = require("./add_revenue_injection");
 const createPermissionsTable = require("./permissions");
 const createRolePermissionsTable = require("./role_permissions");
 
@@ -135,6 +136,7 @@ async function runMigrations() {
 
   // Monthly analytics (stores computed + admin adjustments per calendar month)
   await createMonthlyAnalyticsTable();
+  await addRevenueInjectionColumn();
 
   console.log("All migrations completed. Running seeders...");
 
