@@ -342,8 +342,13 @@
 
                         <!-- Generate Button -->
                         <button onclick="generateAnalyticsReport()"
-                            class="w-full bg-gray-700 text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-800 shadow-lg uppercase">
+                            class="w-full bg-gray-700 text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-800 shadow-lg uppercase mb-3">
                             <i class="fas fa-chart-bar mr-2"></i>Generate Report
+                        </button>
+
+                        <button onclick="generateDashboardReport()"
+                            class="w-full bg-gray-400 text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-500 shadow-lg uppercase">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Generate Stats Report
                         </button>
 
                     </div>
@@ -489,6 +494,10 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination -->
+                <div id="monthlyPaginationContainer"
+                    class="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+                </div>
             </div>
         </div>
     </div>
@@ -500,6 +509,11 @@
     let filteredReports = [];
     let currentTab = 'general';
     let currentAnalyticsData = null;
+    let currentDashboardData = null;
+    let currentActiveReportType = null;
+    let monthlyData = [];
+    let monthlyCurrentPage = 1;
+    const monthlyRowsPerPage = 10;
 
     const BRAND = {
         name: 'DR.NET Technology Labs',
@@ -1204,6 +1218,7 @@
                 return;
             }
             currentAnalyticsData = result.data;
+            currentActiveReportType = 'analytics';
             displayAnalyticsPreview(result.data);
             if (format === 'pdf') generateAnalyticsPDF(result.data);
             document.getElementById('downloadReportBtn').classList.remove('hidden');
@@ -1235,19 +1250,78 @@
                     return b.month - a.month;
                 });
 
-                let html = '';
-                for (let i = 0; i < result.data.length; i++) {
-                    html += renderMonthRow(result.data[i]);
-                }
-                tbody.innerHTML = html;
+                monthlyData = result.data;
+                monthlyCurrentPage = 1;
+                renderMonthlyTablePage();
                 console.log('Table HTML updated successfully.');
             } else {
-                tbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found. Run Global Backfill to populate.</td></tr>`;
+                monthlyData = [];
+                renderMonthlyTablePage();
             }
         } catch (e) {
             console.error('Error loading monthly data:', e);
             showToast('Failed to load monthly database', 'error');
         }
+    }
+
+    function renderMonthlyTablePage() {
+        const tbody = document.getElementById('monthlyDataTableBody');
+        if (!monthlyData || monthlyData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found. Run Global Backfill to populate.</td></tr>`;
+            document.getElementById('monthlyPaginationContainer').innerHTML = '';
+            return;
+        }
+
+        const startIndex = (monthlyCurrentPage - 1) * monthlyRowsPerPage;
+        const endIndex = startIndex + monthlyRowsPerPage;
+        const pageData = monthlyData.slice(startIndex, endIndex);
+
+        let html = '';
+        for (let i = 0; i < pageData.length; i++) {
+            html += renderMonthRow(pageData[i]);
+        }
+        tbody.innerHTML = html;
+
+        renderMonthlyPagination();
+    }
+
+    function renderMonthlyPagination() {
+        const totalPages = Math.ceil(monthlyData.length / monthlyRowsPerPage);
+        let paginationContainer = document.getElementById('monthlyPaginationContainer');
+
+        if (totalPages <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let html = `
+            <span class="text-xs text-slate-500 font-bold">
+                Showing ${(monthlyCurrentPage - 1) * monthlyRowsPerPage + 1} to ${Math.min(monthlyCurrentPage * monthlyRowsPerPage, monthlyData.length)} of ${monthlyData.length} entries
+            </span>
+            <div class="flex gap-1">
+                <button onclick="changeMonthlyPage(${monthlyCurrentPage - 1})" class="px-3 py-1.5 rounded border border-slate-200 text-xs font-bold ${monthlyCurrentPage === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}" ${monthlyCurrentPage === 1 ? 'disabled' : ''}>Prev</button>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= monthlyCurrentPage - 1 && i <= monthlyCurrentPage + 1)) {
+                html += `<button onclick="changeMonthlyPage(${i})" class="px-3 py-1.5 rounded border border-slate-200 text-xs font-bold ${i === monthlyCurrentPage ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 hover:bg-slate-50'}">${i}</button>`;
+            } else if (i === monthlyCurrentPage - 2 || i === monthlyCurrentPage + 2) {
+                html += `<span class="px-2 py-1.5 text-slate-400">...</span>`;
+            }
+        }
+
+        html += `
+                <button onclick="changeMonthlyPage(${monthlyCurrentPage + 1})" class="px-3 py-1.5 rounded border border-slate-200 text-xs font-bold ${monthlyCurrentPage === totalPages ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}" ${monthlyCurrentPage === totalPages ? 'disabled' : ''}>Next</button>
+            </div>
+        `;
+        paginationContainer.innerHTML = html;
+    }
+
+    function changeMonthlyPage(page) {
+        const totalPages = Math.ceil(monthlyData.length / monthlyRowsPerPage);
+        if (page < 1 || page > totalPages) return;
+        monthlyCurrentPage = page;
+        renderMonthlyTablePage();
     }
 
     function getReadCell(val, color) {
@@ -1328,6 +1402,10 @@
             const result = await res.json();
             if (result.success) {
                 showToast(`${new Date(year, month - 1).toLocaleString('default', { month: 'long' })} ${year} saved`, 'success');
+
+                const dataIndex = monthlyData.findIndex(r => r.year === Number(year) && r.month === Number(month));
+                if (dataIndex !== -1) monthlyData[dataIndex] = result.data;
+
                 // Re-render just this row with fresh data
                 if (tr) tr.outerHTML = renderMonthRow(result.data);
             } else {
@@ -1350,6 +1428,10 @@
             const result = await res.json();
             if (result.success) {
                 showToast('System data re-pulled', 'success');
+
+                const dataIndex = monthlyData.findIndex(r => r.year === Number(year) && r.month === Number(month));
+                if (dataIndex !== -1) monthlyData[dataIndex] = result.data;
+
                 if (tr) tr.outerHTML = renderMonthRow(result.data);
             } else {
                 showToast(result.message || 'Recompute failed', 'error');
@@ -1373,12 +1455,9 @@
             const result = await res.json();
             if (result.success) {
                 showToast(`${monthName} ${year} row deleted`, 'success');
-                if (tr) tr.remove();
-                // Show empty state if no rows left
-                const tbody = document.getElementById('monthlyDataTableBody');
-                if (tbody && !tbody.querySelector('tr[data-year]')) {
-                    tbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-xs font-bold text-slate-400 uppercase">No monthly data found.</td></tr>`;
-                }
+
+                monthlyData = monthlyData.filter(r => !(r.year === Number(year) && r.month === Number(month)));
+                renderMonthlyTablePage();
             } else {
                 showToast(result.message || 'Delete failed', 'error');
                 if (tr) tr.classList.remove('saving');
@@ -1684,9 +1763,293 @@
         showToast('PDF downloaded successfully', 'success');
     }
 
+    async function generateDashboardReport() {
+        const format = document.querySelector('input[name="exportFormat"]:checked').value;
+        const period = document.getElementById('reportPeriod').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        const customYear = document.getElementById('customYear')?.value;
+        const customMonth = document.getElementById('customMonth')?.value;
+
+        const params = new URLSearchParams({ period });
+
+        if (period === 'custom') {
+            const isRange = document.getElementById('modeRange')?.checked;
+            if (isRange && dateFrom && dateTo) {
+                params.set('date_from', dateFrom);
+                params.set('date_to', dateTo);
+            } else if (customYear && customMonth) {
+                params.set('year', customYear);
+                params.set('month', customMonth);
+            } else {
+                showToast('Please fill in the custom period fields', 'error');
+                return;
+            }
+        }
+
+        document.getElementById('analyticsPreview').innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:#94a3b8">
+                    <i class="fas fa-circle-notch fa-spin" style="font-size:2.2rem;margin-bottom:14px;color:#6366f1"></i>
+                    <p style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0">Building Stats Report…</p>
+                </div>`;
+
+        try {
+            const res = await fetch(`/api/reports/dashboard_report?${params.toString()}`);
+            const result = await res.json();
+            if (!result.success) {
+                showToast(result.message || 'Failed to generate report', 'error');
+                return;
+            }
+            currentActiveReportType = 'dashboard';
+            currentDashboardData = result.data;
+            displayDashboardPreview(result.data);
+            if (format === 'pdf') generateDashboardPDF(result.data);
+            document.getElementById('downloadReportBtn').classList.remove('hidden');
+        } catch (err) {
+            console.error(err);
+            showToast('Failed to generate dashboard report', 'error');
+        }
+    }
+
+    function displayDashboardPreview(data) {
+        const preview = document.getElementById('analyticsPreview');
+        const { meta, financial, metrics, inventory } = data;
+
+        const sectionHeader = (title) => `
+                <div style="border-bottom: 2px solid #334155; margin: 30px 0 15px 0; padding-bottom: 5px;">
+                    <h3 style="margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #1e293b; letter-spacing: 0.05em;">${title}</h3>
+                </div>`;
+
+        const financialRow = (label, value, isTotal = false, isNegative = false) => `
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; ${isTotal ? 'font-weight: 800; border-top: 2px solid #334155; margin-top: 5px;' : ''}">
+                    <span style="font-size: 12px; color: ${isTotal ? '#1e293b' : '#64748b'};">${label}</span>
+                    <span style="font-size: 13px; color: ${isNegative ? '#dc2626' : '#1e293b'};">${value}</span>
+                </div>`;
+
+        const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+        let html = `
+            <div style="font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1000px; margin: 0 auto; background: #fff; color: #1e293b;">
+                <!-- Report Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #1e293b;">STATS REPORT</h1>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">${BRAND.name}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin: 0; font-size: 16px; font-weight: 900; color: #1e293b;">${meta.period_label}</p>
+                        ${meta.period_start ? `<p style="margin: 3px 0 0 0; font-size: 10px; font-weight: 700; color: #64748b;">${fmtDate(meta.period_start)} &mdash; ${fmtDate(meta.period_end)}</p>` : ''}
+                        <p style="margin: 4px 0 0 0; font-size: 10px; color: #94a3b8;">Generated on ${new Date(meta.generated_at).toLocaleString()}</p>
+                    </div>
+                </div>
+
+                <!-- 1. Revenue Overview -->
+                ${sectionHeader('1. Revenue Overview')}
+                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    ${financialRow('Monthly Subscription Revenue', 'KES ' + fmt(financial.monthly_subscription_revenue))}
+                    ${financialRow('Monthly Sales Revenue', 'KES ' + fmt(financial.monthly_sales_revenue))}
+                    ${financialRow('TOTAL MONTHLY REVENUE', 'KES ' + fmt(financial.monthly_revenue), true)}
+                    ${financialRow('Projected Revenue (Next Month)', 'KES ' + fmt(financial.projected_revenue))}
+                </div>
+
+                <!-- 2. Expenditure -->
+                ${sectionHeader('2. Expenditure Overview')}
+                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    ${financialRow('Monthly Expenditure', 'KES ' + fmt(financial.monthly_expenditure))}
+                    ${financialRow('Staff Salaries Payable', 'KES ' + fmt(financial.staff_salaries_payable))}
+                    ${financialRow('Total Monthly Expenses (Metrics)', 'KES ' + fmt(metrics.monthly_expenses), true)}
+                </div>
+
+                <!-- 3. Client & Subscription Metrics -->
+                ${sectionHeader('3. Client & Subscription Metrics')}
+                <div style="background:#f0fdf4;padding:12px 16px;border-radius:8px;border:1px solid #bbf7d0;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:12px;font-weight:700;color:#166534;">New Clients Acquired This Period</span>
+                    <span style="font-size:20px;font-weight:900;color:#15803d;">${financial.new_clients_period}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Users</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${financial.total_users}</h3>
+                    </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Active Subscriptions</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${financial.active_subscriptions}</h3>
+                    </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Overdue Users</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${financial.overdue_users}</h3>
+                    </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Renewals Due (7 Days)</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${metrics.renewals_due}</h3>
+                    </div>
+                </div>
+
+                <!-- 4. Operational Metrics -->
+                ${sectionHeader('4. Operational Metrics')}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Pending Bookings</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${financial.pending_bookings}</h3>
+                    </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Pending Support Tickets</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${financial.pending_tickets}</h3>
+                    </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Pending Tasks</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${financial.pending_tasks}</h3>
+                    </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                        <p style="margin: 0; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Staff on Duty</p>
+                        <h3 style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; color: #1e293b;">${financial.staff_on_duty}</h3>
+                    </div>
+                </div>
+
+                <!-- 5. Inventory Status -->
+                ${sectionHeader('5. Inventory Status')}
+                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    ${financialRow('Total Items', fmt(inventory.total_items))}
+                    ${financialRow('In Stock', fmt(financial.in_stock_count))}
+                    ${financialRow('Out of Stock', fmt(inventory.out_of_stock))}
+                    ${financialRow('Low Stock', fmt(inventory.low_stock))}
+                    ${financialRow('Inventory Value', 'KES ' + fmt(inventory.inventory_value), true)}
+                </div>
+
+                <div style="margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+                    <span>DR.NET TECHNOLOGY LABS - DASHBOARD REPORT</span>
+                    <span>Page 1 of 1</span>
+                </div>
+            </div>`;
+
+        preview.innerHTML = html;
+    }
+
+    function generateDashboardPDF(data) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const { meta, financial, metrics, inventory } = data;
+        const W = doc.internal.pageSize.getWidth();
+        const margin = 15;
+
+        const thinLine = (yPos) => {
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.2);
+            doc.line(margin, yPos, W - margin, yPos);
+        };
+
+        const sectionTitle = (title, yPos) => {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(title, margin, yPos);
+            thinLine(yPos + 2);
+            return yPos + 9;
+        };
+
+        const dataRow = (label, value, yPos, isBold = false) => {
+            doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(label, margin, yPos);
+            doc.text(value, W - margin, yPos, { align: 'right' });
+            return yPos + 7;
+        };
+
+        let y = 16;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.text('STATS REPORT', margin, y);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text(meta.period_label, W - margin, y, { align: 'right' });
+
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text(BRAND.name.toUpperCase(), margin, y);
+        if (meta.period_start && meta.period_end) {
+            const fmtD = (d) => new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            doc.text(`${fmtD(meta.period_start)} – ${fmtD(meta.period_end)}`, W - margin, y, { align: 'right' });
+        }
+
+        y += 5;
+        doc.setFontSize(7.5);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`Generated: ${new Date(meta.generated_at).toLocaleString()}`, margin, y);
+        doc.setTextColor(0, 0, 0);
+
+        y += 3;
+        thinLine(y);
+        y += 12;
+
+        y = sectionTitle('1.  REVENUE OVERVIEW', y);
+        y = dataRow('Monthly Subscription Revenue', `KES ${fmt(financial.monthly_subscription_revenue)}`, y);
+        y = dataRow('Monthly Sales Revenue', `KES ${fmt(financial.monthly_sales_revenue)}`, y);
+        y = dataRow('TOTAL MONTHLY REVENUE', `KES ${fmt(financial.monthly_revenue)}`, y, true);
+        y = dataRow('Projected Revenue (Next Month)', `KES ${fmt(financial.projected_revenue)}`, y);
+        y += 10;
+
+        y = sectionTitle('2.  EXPENDITURE OVERVIEW', y);
+        y = dataRow('Monthly Expenditure', `KES ${fmt(financial.monthly_expenditure)}`, y);
+        y = dataRow('Staff Salaries Payable', `KES ${fmt(financial.staff_salaries_payable)}`, y);
+        y = dataRow('Total Monthly Expenses (Metrics)', `KES ${fmt(metrics.monthly_expenses)}`, y, true);
+        y += 10;
+
+        y = sectionTitle('3.  CLIENT & SUBSCRIPTION METRICS', y);
+        y = dataRow('New Clients Acquired This Period', String(financial.new_clients_period), y, true);
+        y = dataRow('Total Users (Live)', String(financial.total_users), y);
+        y = dataRow('Active Subscriptions (Live)', String(financial.active_subscriptions), y);
+        y = dataRow('Overdue Users (Live)', String(financial.overdue_users), y);
+        y = dataRow('Renewals Due (Next 7 Days)', String(metrics.renewals_due), y);
+        y += 10;
+
+        y = sectionTitle('4.  OPERATIONAL METRICS', y);
+        y = dataRow('Pending Bookings', String(financial.pending_bookings), y);
+        y = dataRow('Pending Support Tickets', String(financial.pending_tickets), y);
+        y = dataRow('Pending Tasks', String(financial.pending_tasks), y);
+        y = dataRow('Staff on Duty', String(financial.staff_on_duty), y);
+        y += 10;
+        
+        if (y > 230) {
+            doc.addPage();
+            y = 20;
+        }
+
+        y = sectionTitle('5.  INVENTORY STATUS', y);
+        y = dataRow('Total Items', String(inventory.total_items), y);
+        y = dataRow('In Stock', String(financial.in_stock_count), y);
+        y = dataRow('Out of Stock', String(inventory.out_of_stock), y);
+        y = dataRow('Low Stock', String(inventory.low_stock), y);
+        y = dataRow('Inventory Value', `KES ${fmt(inventory.inventory_value)}`, y, true);
+        y += 10;
+
+        const pageCount = doc.internal.getNumberOfPages();
+        const H = doc.internal.pageSize.getHeight();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            thinLine(H - 12);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7.5);
+            doc.setTextColor(0, 0, 0);
+            doc.text('DR.NET TECHNOLOGY LABS  —  DASHBOARD REPORT', margin, H - 7);
+            doc.text(`Page ${i} of ${pageCount}`, W - margin, H - 7, { align: 'right' });
+        }
+
+        doc.save(`DR.NET-DashboardReport-${meta.period_label.replace(/ /g, '-')}.pdf`);
+        showToast('PDF downloaded successfully', 'success');
+    }
+
     function downloadCurrentReport() {
-        if (!currentAnalyticsData) { showToast('No report to download', 'error'); return; }
-        generateAnalyticsPDF(currentAnalyticsData);
+        if (currentActiveReportType === 'dashboard' && currentDashboardData) {
+            generateDashboardPDF(currentDashboardData);
+        } else if (currentActiveReportType === 'analytics' && currentAnalyticsData) {
+            generateAnalyticsPDF(currentAnalyticsData);
+        } else {
+            showToast('No report to download', 'error');
+        }
     }
 
     function showToast(message, type = 'info') {
@@ -1706,5 +2069,5 @@
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
-    }        
+    }
 </script>

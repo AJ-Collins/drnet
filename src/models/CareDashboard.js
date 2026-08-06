@@ -15,36 +15,18 @@ const DashboardCare = {
     getTicketsData: async () => {
         try {
             const now = new Date();
-            const todayStart = toSqlDatetime(dayjs().startOf('day').toDate());
             
-            // Total active tickets (not archived)
-            const [totalTickets] = await db.query(`
-                SELECT COUNT(*) as total
-                FROM support_tickets 
-                WHERE is_archived = FALSE
-            `);
+            const query = `
+                SELECT 
+                    (SELECT COUNT(*) FROM support_tickets WHERE is_archived = FALSE) as total,
+                    (SELECT COUNT(*) FROM support_tickets WHERE status = 'resolved' AND DATE(updated_at) = DATE(?) AND is_archived = FALSE) as resolved,
+                    (SELECT COUNT(*) FROM support_tickets WHERE status IN ('open', 'pending') AND is_archived = FALSE) as open
+            `;
+            const [[rows]] = await db.query(query, [now]);
             
-            // Resolved tickets today
-            const [resolvedToday] = await db.query(`
-                SELECT COUNT(*) as resolved
-                FROM support_tickets 
-                WHERE status = 'resolved'
-                AND DATE(updated_at) = DATE(?)
-                AND is_archived = FALSE
-            `, [now]);
-            
-            // Open/awaiting action tickets
-            const [openTickets] = await db.query(`
-                SELECT COUNT(*) as open
-                FROM support_tickets 
-                WHERE status IN ('open', 'pending')
-                AND is_archived = FALSE
-            `);
-            
-            // Calculate resolution rate
-            const total = totalTickets[0]?.total || 0;
-            const resolved = resolvedToday[0]?.resolved || 0;
-            const open = openTickets[0]?.open || 0;
+            const total = rows.total || 0;
+            const resolved = rows.resolved || 0;
+            const open = rows.open || 0;
             const resolutionRate = total > 0 ? Math.round(((total - open) / total) * 100) : 0;
             
             return {
@@ -65,49 +47,23 @@ const DashboardCare = {
             const now = new Date();
             const nowTimestamp = toSqlDatetime(now);
             
-            // Total clients (users)
-            const [totalClients] = await db.query(`
-                SELECT COUNT(*) as total
-                FROM users
-            `);
-            
-            // Active clients (with valid subscription)
-            const [activeClients] = await db.query(`
-                SELECT COUNT(DISTINCT user_id) as active
-                FROM user_subscriptions
-                WHERE expiry_date > ?
-            `, [nowTimestamp]);
-            
-            // Overdue clients (expiring in next 5 days)
-            const [overdueClients] = await db.query(`
-                SELECT COUNT(DISTINCT user_id) as overdue
-                FROM user_subscriptions
-                WHERE expiry_date > ?
-                AND TIMESTAMPDIFF(DAY, ?, expiry_date) <= 5
-            `, [nowTimestamp, nowTimestamp]);
-            
-            // Expired clients
-            const [expiredClients] = await db.query(`
-                SELECT COUNT(DISTINCT user_id) as expired
-                FROM user_subscriptions
-                WHERE expiry_date <= ?
-            `, [nowTimestamp]);
-            
-            // Inactive clients (no active subscription)
-            const [inactiveClients] = await db.query(`
-                SELECT COUNT(u.id) as inactive
-                FROM users u
-                LEFT JOIN user_subscriptions s ON u.id = s.user_id 
-                    AND s.expiry_date > ?
-                WHERE s.id IS NULL
-            `, [nowTimestamp]);
+            const query = `
+                SELECT 
+                    (SELECT COUNT(*) FROM users) as total,
+                    (SELECT COUNT(DISTINCT user_id) FROM user_subscriptions WHERE expiry_date > ?) as active,
+                    (SELECT COUNT(DISTINCT user_id) FROM user_subscriptions WHERE expiry_date > ? AND TIMESTAMPDIFF(DAY, ?, expiry_date) <= 5) as overdue,
+                    (SELECT COUNT(DISTINCT user_id) FROM user_subscriptions WHERE expiry_date <= ?) as expired,
+                    (SELECT COUNT(u.id) FROM users u LEFT JOIN user_subscriptions s ON u.id = s.user_id AND s.expiry_date > ? WHERE s.id IS NULL) as inactive
+            `;
+            const params = [nowTimestamp, nowTimestamp, nowTimestamp, nowTimestamp, nowTimestamp];
+            const [[rows]] = await db.query(query, params);
             
             return {
-                total: totalClients[0]?.total || 0,
-                active: activeClients[0]?.active || 0,
-                overdue: overdueClients[0]?.overdue || 0,
-                expired: expiredClients[0]?.expired || 0,
-                inactive: inactiveClients[0]?.inactive || 0
+                total: rows.total || 0,
+                active: rows.active || 0,
+                overdue: rows.overdue || 0,
+                expired: rows.expired || 0,
+                inactive: rows.inactive || 0
             };
         } catch (error) {
             console.error("Clients data error:", error);
@@ -118,33 +74,26 @@ const DashboardCare = {
     // 3. TASKS DATA (Assignments)
     getTasksData: async (staffId = null) => {
         try {
-            let assignmentsTotalQuery = `SELECT COUNT(*) as total FROM assignments`;
-            let assignmentsCompletedQuery = `SELECT COUNT(*) as completed FROM assignments WHERE status = 'completed'`;
-            
-            let ticketAssignmentsTotalQuery = `SELECT COUNT(*) as total FROM ticket_assignments`;
-            let ticketAssignmentsCompletedQuery = `SELECT COUNT(*) as completed FROM ticket_assignments WHERE status = 'completed'`;
-            
+            let params = [];
+            let whereClause = "";
+            let andClause = "";
             if (staffId) {
-                assignmentsTotalQuery += ` WHERE staff_id = ?`;
-                assignmentsCompletedQuery += ` AND staff_id = ?`;
-                ticketAssignmentsTotalQuery += ` WHERE staff_id = ?`;
-                ticketAssignmentsCompletedQuery += ` AND staff_id = ?`;
+                whereClause = " WHERE staff_id = ?";
+                andClause = " AND staff_id = ?";
+                params = [staffId, staffId, staffId, staffId];
             }
             
-            const [
-                [assignmentsTotal],
-                [assignmentsCompleted],
-                [ticketAssignmentsTotal],
-                [ticketAssignmentsCompleted]
-            ] = await Promise.all([
-                db.query(assignmentsTotalQuery, staffId ? [staffId] : []),
-                db.query(assignmentsCompletedQuery, staffId ? [staffId] : []),
-                db.query(ticketAssignmentsTotalQuery, staffId ? [staffId] : []),
-                db.query(ticketAssignmentsCompletedQuery, staffId ? [staffId] : [])
-            ]);
+            const query = `
+                SELECT
+                    (SELECT COUNT(*) FROM assignments${whereClause}) as assignments_total,
+                    (SELECT COUNT(*) FROM assignments WHERE status = 'completed'${andClause}) as assignments_completed,
+                    (SELECT COUNT(*) FROM ticket_assignments${whereClause}) as ticket_assignments_total,
+                    (SELECT COUNT(*) FROM ticket_assignments WHERE status = 'completed'${andClause}) as ticket_assignments_completed
+            `;
+            const [[rows]] = await db.query(query, params);
             
-            const total = (assignmentsTotal[0]?.total || 0) + (ticketAssignmentsTotal[0]?.total || 0);
-            const completed = (assignmentsCompleted[0]?.completed || 0) + (ticketAssignmentsCompleted[0]?.completed || 0);
+            const total = (rows.assignments_total || 0) + (rows.ticket_assignments_total || 0);
+            const completed = (rows.assignments_completed || 0) + (rows.ticket_assignments_completed || 0);
             const pending = total - completed;
             const efficiency = total > 0 ? Math.round((completed / total) * 100) : 0;
             
@@ -155,14 +104,14 @@ const DashboardCare = {
                 efficiency: efficiency,
                 breakdown: {
                     general_tasks: {
-                        total: assignmentsTotal[0]?.total || 0,
-                        completed: assignmentsCompleted[0]?.completed || 0,
-                        pending: (assignmentsTotal[0]?.total || 0) - (assignmentsCompleted[0]?.completed || 0)
+                        total: rows.assignments_total || 0,
+                        completed: rows.assignments_completed || 0,
+                        pending: (rows.assignments_total || 0) - (rows.assignments_completed || 0)
                     },
                     ticket_assignments: {
-                        total: ticketAssignmentsTotal[0]?.total || 0,
-                        completed: ticketAssignmentsCompleted[0]?.completed || 0,
-                        pending: (ticketAssignmentsTotal[0]?.total || 0) - (ticketAssignmentsCompleted[0]?.completed || 0)
+                        total: rows.ticket_assignments_total || 0,
+                        completed: rows.ticket_assignments_completed || 0,
+                        pending: (rows.ticket_assignments_total || 0) - (rows.ticket_assignments_completed || 0)
                     }
                 }
             };

@@ -4,6 +4,7 @@ const db = require('../config/db');
 const Report = require('../models/ReportModel');
 const AnalyticsReport = require("../models/AnalyticReport");
 const MonthlyAnalytics = require("../models/MonthlyAnalytics");
+const DashboardReport = require("../models/DashboardReport");
 const apiSessionAuth = require("../middleware/apiSessionAuth");
 
 router.use(apiSessionAuth);
@@ -198,6 +199,18 @@ router.delete('/general/:id', async (req, res) => {
 router.get("/analytics", async (req, res) => {
     try {
         const data = await AnalyticsReport.generate(req.query);
+        return res.json({ success: true, data });
+    } catch (err) {
+        return res.status(400).json({message: err.message});
+    }
+});
+
+/**
+ * GET /api/reports/dashboard_report
+ */
+router.get("/dashboard_report", async (req, res) => {
+    try {
+        const data = await DashboardReport.generate(req.query);
         return res.json({ success: true, data });
     } catch (err) {
         return res.status(400).json({message: err.message});

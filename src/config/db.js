@@ -6,12 +6,14 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASS || "",
   database: process.env.DB_NAME || "drnet",
-  connectionLimit: 10,
+  connectionLimit: 5,
   dateStrings: true,
   timezone: '+00:00',
   multipleStatements: true,
   waitForConnections: true,
-  queueLimit: 0
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0
 });
 
 // Warm up pool on startup
