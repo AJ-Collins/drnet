@@ -418,13 +418,18 @@
             const tbody = document.getElementById('directoryTable');
             
             if (!filteredData || !Array.isArray(filteredData) || filteredData.length === 0) {
+
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="4" class="px-6 py-20 text-center">
-                            <i class="fas fa-folder-open text-slate-200 text-5xl mb-4 block"></i>
-                            <p class="text-slate-400 font-bold tracking-tight">No records found</p>
+                            <i class="fas fa-folder-open text-slate-200 text-5xl mb-4 block mx-auto"></i>
+                            <p class="text-slate-400 font-bold tracking-tight">
+                                No records found
+                            </p>
                         </td>
-                    </tr>`;
+                    </tr>
+                `;
+
                 return;
             }
 

@@ -113,7 +113,7 @@ const AnalyticsReport = {
 
         const hrexpenses       = sumField("computed_hrexpenses",    "adjustment_hrexpenses");
         const salaries         = sumField("computed_staff_salaries", "adjustment_staff_salaries");
-        const totalExpenditure = hrexpenses + salaries;
+        const totalExpenditure = hrexpenses;
 
         const netProfit    = totalRevenue - totalExpenditure;
         const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;

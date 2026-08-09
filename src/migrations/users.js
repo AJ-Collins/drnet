@@ -11,6 +11,7 @@ async function createUsersTable() {
       id_number VARCHAR(20) NULL,
       address TEXT NULL,
       password TEXT NULL,
+      location VARCHAR(255) DEFAULT NULL,
       image MEDIUMTEXT DEFAULT NULL,
       is_active BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

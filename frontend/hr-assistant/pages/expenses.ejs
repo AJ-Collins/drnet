@@ -108,7 +108,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
         <div class="lg:col-span-8 order-2 lg:order-1 animate-fade-up" style="animation-delay: 0.1s;">
-            <div class="glass-panel rounded-xl p-6 min-h-[720px] flex flex-col">
+            <div class="glass-panel rounded-xl p-6 min-h-[calc(100vh-120px)] flex flex-col">
                 
                 <div class="flex flex-col gap-6 mb-8">
                     <div class="flex justify-between items-start">
@@ -354,9 +354,18 @@
             );
         }
 
+        const now = new Date();
+        const currentMonthTotal = expenses.reduce((sum, e) => {
+            const d = new Date(e.expense_date);
+            if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+                return sum + (Number(e.amount) || 0);
+            }
+            return sum;
+        }, 0);
+        $('grandTotal').textContent = `KES ${currentMonthTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
         if (filtered.length === 0) {
             container.innerHTML = `<div class="text-center py-20 text-slate-300 font-bold text-sm">No records found.</div>`;
-            $('grandTotal').textContent = 'KES 0.00';
             return;
         }
 
@@ -413,9 +422,7 @@
                     </div>                        
                 </div>
             </div>`;
-        }).join('');        
-
-        $('grandTotal').textContent = `KES ${Number(total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }).join('');
     }
 
     function resetForm() {

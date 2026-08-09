@@ -82,6 +82,10 @@
                 <option value="overdue">Overdue (Warning)</option>
                 <option value="expired">Expired (Disconnected)</option>
             </select>
+            
+            <select id="locationFilter" class="px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold uppercase text-slate-600 outline-none hover:bg-white cursor-pointer">
+                <option value="">All Locations</option>
+            </select>
 
             <button onclick="initData()" class="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
                 <i class="fas fa-sync-alt text-xs"></i>
@@ -103,6 +107,7 @@
                             <input type="checkbox" id="selectAll" class="custom-checkbox" onchange="Actions.toggleSelectAll()">
                         </th>
                         <th>Client Identity</th>
+                        <th>Location</th>
                         <th>Package Plan</th>
                         <th>Amount</th>
                         <th>Status</th>
@@ -224,6 +229,13 @@
             if(!res.ok) throw new Error("Failed to load data");
             const raw = await res.json();
 
+            const userMap = new Map();
+            if (raw.users) {
+                raw.users.forEach(user => {
+                    userMap.set(user.id, user);
+                });
+            }
+
             // Process subscriptions WITHOUT SMS counts initially
             State.allData = raw.subscriptions.map(sub => {
                 const now = new Date();
@@ -243,6 +255,9 @@
                 } else {
                     displayStatus = 'active';
                 }
+                
+                const userData = userMap.get(sub.user_id);
+                const location = userData?.location || 'Not Set';
 
                 return {
                     id: sub.id,
@@ -250,6 +265,7 @@
                     phone: sub.phone,
                     pkgName: sub.package_name,
                     price: sub.price,
+                    location: location,
                     expiry: expiryDate,
                     warningDate: warningDate,
                     isWarningPeriod: isWarningPeriod,
@@ -258,6 +274,7 @@
                 };
             }).sort((a,b) => a.name.localeCompare(b.name));
             
+            populateLocationFilter();
             applyFilters();
             
             // Load SMS counts in background (non-blocking)
@@ -309,14 +326,44 @@
         return `${days}d ${hours}h ${mins}m left`;
     }
 
+    function populateLocationFilter() {
+        const locationSelect = document.getElementById('locationFilter');
+        if (!locationSelect) return;
+
+        const locationCounts = {};
+        State.allData.forEach(item => {
+            const loc = item.location;
+            if (loc && loc.trim() !== '' && loc !== 'Not Set') {
+                locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+            }
+        });
+
+        const locations = Object.keys(locationCounts).sort();
+
+        const currentSelection = locationSelect.value;
+
+        locationSelect.innerHTML = `
+            <option value="">All Locations (${State.allData.length})</option>
+            ${locations.map(loc =>
+            `<option value="${loc}">${loc} (${locationCounts[loc]})</option>`
+        ).join('')}
+        `;
+
+        if (currentSelection && locations.includes(currentSelection)) {
+            locationSelect.value = currentSelection;
+        }
+    }
+
     function applyFilters() {
         const term = Els.search.value.toLowerCase().trim();
         const filter = Els.filter.value;
+        const locationFilter = document.getElementById('locationFilter') ? document.getElementById('locationFilter').value : '';
 
         State.filteredData = State.allData.filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(term) || item.phone.includes(term);
             const matchesFilter = !filter || item.displayStatus === filter;
-            return matchesSearch && matchesFilter;
+            const matchesLocation = !locationFilter || locationFilter === '' || item.location === locationFilter;
+            return matchesSearch && matchesFilter && matchesLocation;
         });
 
         // Reset to page 1 when filtering
@@ -390,6 +437,12 @@
                             <h2 class="font-bold text-slate-800 leading-tight">${client.name}</h2>
                             <p class="text-[10px] font-mono text-slate-400">${client.phone}</p>
                         </div>
+                    </div>
+                </td>
+                <td class="text-xs font-medium text-slate-600">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-map-marker-alt text-teal-500 opacity-60"></i>
+                        ${client.location}
                     </div>
                 </td>
                 <td class="font-medium text-slate-600 text-xs">${client.pkgName}</td>
@@ -569,6 +622,10 @@
         }, 300);
     });
     Els.filter.addEventListener('change', applyFilters);
+    const locationFilterEl = document.getElementById('locationFilter');
+    if (locationFilterEl) {
+        locationFilterEl.addEventListener('change', applyFilters);
+    }
     document.addEventListener('DOMContentLoaded', initData);
 
 </script>

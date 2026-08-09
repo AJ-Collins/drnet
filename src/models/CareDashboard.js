@@ -165,7 +165,7 @@ const DashboardCare = {
             
             const totalTasks = efficiencyData[0]?.total_tasks || 0;
             const completedTasks = efficiencyData[0]?.completed_tasks || 0;
-            const taskEfficiency = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100;
+            const taskEfficiency = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
             
             // Determine performance status based on both attendance and efficiency
             let status = 'Good';
@@ -173,7 +173,7 @@ const DashboardCare = {
             // Calculate attendance score
             const totalDays = attendance[0]?.total_days || 0;
             const presentDays = attendance[0]?.present_days || 0;
-            const attendanceRate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 100;
+            const attendanceRate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
             
             // Combined score (60% task efficiency, 40% attendance)
             const combinedScore = (taskEfficiency * 0.6) + (attendanceRate * 0.4);

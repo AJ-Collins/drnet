@@ -8,7 +8,7 @@ async function createUserSubscriptionsTable() {
         package_id INT NULL,
         start_date DATETIME NULL,
         expiry_date DATETIME NULL,
-        status VARCHAR(255) DEFAULT 'inactive',
+        status VARCHAR(255) DEFAULT 'inactive',        
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL
