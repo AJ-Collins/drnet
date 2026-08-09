@@ -179,9 +179,6 @@ const DashboardReport = {
             const [[invLowRow]]      = await db.query(`SELECT COUNT(*) AS count FROM items WHERE status = 'low-stock'`);
             const [[invOutRow]]      = await db.query(`SELECT COUNT(*) AS count FROM items WHERE status = 'out-stock'`);
 
-            // ── monthly_expenses from expenses table (period-scoped) ────────
-            const monthlyExpenses = Number(expRow.total || 0);
-
             // ── Derived ────────────────────────────────────────────────────
             const subRev   = Number(subRevRow.total  || 0);
             const salesRev = Number(salesRevRow.total || 0);
@@ -214,7 +211,7 @@ const DashboardReport = {
                     in_stock_count:               invInStockRow.count,
                 },
                 metrics: {
-                    monthly_expenses: monthlyExpenses,
+                    monthly_expenses: hrExp,
                     renewals_due:     renewalsRow.count,
                 },
                 inventory: {
