@@ -6,9 +6,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "migrate": "node -e \"require('./src/migrations/index')().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })\"",
-    "job:analytics": "node src/jobs/monthlyAnalytics.js",
-    "job:reminders": "node src/jobs/reminders.js",
-    "job:alerts": "node src/jobs/projectAlerts.js"
+    "job:analytics": "node src/jobs/monthlyAnalytics.js"
   },
   "keywords": [],
   "author": "",
