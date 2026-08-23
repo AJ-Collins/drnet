@@ -126,23 +126,46 @@ const recordIPAttempt = (ip, success) => {
   });
 };
 
+// Periodic cleanup of rate-limit Maps — prevents unbounded memory growth
+// Runs every 10 minutes (60s was unnecessarily aggressive)
 setInterval(() => {
   const now = Date.now();
+  let userCleaned = 0;
+  let ipCleaned = 0;
   
-  // Clean user attempts
+  // Clean expired user attempts
   for (const [key, value] of loginAttempts.entries()) {
-    if (now - value.lastAttempt > ATTEMPT_WINDOW) {
+    const age = now - value.lastAttempt;
+    // Remove if older than the attempt window OR if locked out and lockout has expired
+    if (age > ATTEMPT_WINDOW || (value.count >= MAX_LOGIN_ATTEMPTS && age > LOCKOUT_DURATION)) {
       loginAttempts.delete(key);
+      userCleaned++;
     }
   }
   
-  // Clean IP attempts
+  // Clean expired IP attempts
   for (const [key, value] of ipAttempts.entries()) {
-    if (now - value.lastAttempt > ATTEMPT_WINDOW) {
+    const age = now - value.lastAttempt;
+    if (age > ATTEMPT_WINDOW || (value.count >= IP_MAX_ATTEMPTS && age > IP_LOCKOUT_DURATION)) {
       ipAttempts.delete(key);
+      ipCleaned++;
     }
   }
-}, 60000); // Clean up every minute
+
+  // Log a warning if Maps are growing unexpectedly large (possible attack)
+  if (loginAttempts.size > 500 || ipAttempts.size > 200) {
+    console.warn(
+      `[Rate Limit] Large Maps detected — loginAttempts: ${loginAttempts.size}, ipAttempts: ${ipAttempts.size}`
+    );
+  }
+
+  if (userCleaned > 0 || ipCleaned > 0) {
+    console.log(
+      `[Rate Limit Cleanup] Removed ${userCleaned} user entries, ${ipCleaned} IP entries. ` +
+      `Remaining: users=${loginAttempts.size}, IPs=${ipAttempts.size}`
+    );
+  }
+}, 10 * 60 * 1000); // Every 10 minutes
 
 
 // Client Registration

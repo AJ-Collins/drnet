@@ -2,10 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
-const session = require("express-session");
 const fs = require("fs");
 const http = require("http");
 const { Server } = require("socket.io");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const compression = require("compression");
+const { createSessionMiddleware } = require("./src/config/sessionStore");
 const app = express();
 const runMigrations = require("./src/migrations/index");
 const authRoutes = require("./src/routes/authRoutes");
@@ -76,27 +79,58 @@ const clientRoutes = require('./src/routes/clientRoutes');
 const staffRoutes = require('./src/routes/staffRoutes');
 const staffSalary = require('./src/routes/staffSalary');
 
-// Session Configuration
-app.use(
-  session({
-    secret:
-      process.env.SESSION_SECRET || "drnet-session-secret-change-in-production",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: false, // false for development (http), set to true for production (https)
-      maxAge: 24 * 60 * 60 * 1000,
-      sameSite: "lax",
-    },
-    name: "drnet.sid",
-  })
-);
+// Session Configuration — MySQL-backed store (replaces default MemoryStore)
+app.use(createSessionMiddleware());
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Compression
+app.use(compression());
+
+// Security headers with Helmet
+// Disabling contentSecurityPolicy temporarily as it might break existing frontend assets
+// if they load inline scripts or external resources not explicitly allowed.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// Request body size limits — prevents large payload attacks
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Global API rate limiting — 100 requests per 15 minutes per IP
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: "Too many requests, please try again later.",
+  },
+});
+
+// Stricter rate limit for auth endpoints — 20 requests per 15 minutes per IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: "Too many authentication attempts, please try again later.",
+  },
+});
+
+// Apply rate limiters
+app.use("/api/login", authLimiter);
+app.use("/api/register", authLimiter);
+app.use("/api/forgot", authLimiter);
+app.use("/api", apiLimiter);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -177,7 +211,7 @@ function requireSupervisorAuth(req, res, next) {
   return res.redirect("/login");
 }
 
-function requireCustomerCareAuth(req, res, next){
+function requireCustomerCareAuth(req, res, next) {
   console.log("Customer Care Auth check:", req.session?.user);
 
   if (req.session?.user?.role_name === "customer-care") {
@@ -238,7 +272,7 @@ function requireClientAuth(req, res, next) {
   return res.redirect("/login");
 }
 
-function requireHrAssistantAuth(req, res, next){
+function requireHrAssistantAuth(req, res, next) {
   console.log("HR Assistant Auth Check:", req.session?.user);
   if (req.session?.user?.role_name === "hr-assistant") {
     console.log("Hr Assistant Auth passed");
@@ -291,9 +325,9 @@ app.use("/api/reports", reports);
 // Admin dahsboard
 app.use("/api/dashboard", admindashboard);
 //Client
-app.use('/api/manage/clients',clientRoutes);
+app.use('/api/manage/clients', clientRoutes);
 //Staff
-app.use('/api/manage/staff',staffRoutes);
+app.use('/api/manage/staff', staffRoutes);
 app.use('/api/finance', staffSalary);
 //Subsriptions
 app.use("/api/subscriptions", subscriptionRoutes);
@@ -588,16 +622,31 @@ app.get("/client", requireClientAuth, (req, res) => {
   res.redirect("/client/dashboard");
 });
 
-// ERROR HANDLING
+// GLOBAL EXPRESS ERROR HANDLER
+// Prevents standard HTML error pages that can leak stack traces
+app.use((err, req, res, next) => {
+  console.error("Express Error Handler:", err);
+  if (req.path.startsWith("/api/")) {
+    return res.status(err.status || 500).json({
+      success: false,
+      error: process.env.NODE_ENV === "production" ? "Internal Server Error" : err.message,
+    });
+  }
+  res.status(err.status || 500).send("Internal Server Error");
+});
+
+// ERROR HANDLING — log but don't crash on every unhandled rejection
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
+  // Exit on truly fatal errors — the hosting env will restart the process
   process.exit(1);
 });
 
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection:", err);
-  process.exit(1);
+process.on("unhandledRejection", (reason, promise) => {
+  // Log but do NOT exit — crashing on every unhandled rejection kills the
+  // entire server for a single failed DB query or API call
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
 // SERVER STARTUP
@@ -606,13 +655,18 @@ async function startServer() {
     console.log("Starting Dr.Net Server...");
     await runMigrations();
     console.log("Migrations complete.");
-    
+
     // Start cron jobs
     require("./src/cron/monthlyAnalyticsSync");
 
     const PORT = process.env.PORT || 5000;
 
     const httpServer = http.createServer(app);
+
+    // Request timeouts — prevents hung connections from holding resources
+    httpServer.requestTimeout = 30_000;    // 30 seconds max for entire request
+    httpServer.headersTimeout = 35_000;    // 35 seconds to receive headers
+    httpServer.keepAliveTimeout = 5_000;   // 5 seconds idle before closing
 
     const io = new Server(httpServer, {
       cors: {
@@ -628,9 +682,9 @@ async function startServer() {
 
       socket.on("joinTicket", (ticketId) => {
         socket.rooms.forEach(room => {
-            if(room !== socket.id) socket.leave(room);
+          if (room !== socket.id) socket.leave(room);
         });
-        
+
         socket.join(`ticket_${ticketId}`);
         console.log(`User ${socket.id} joined ticket room: ticket_${ticketId}`);
       });
@@ -642,15 +696,47 @@ async function startServer() {
 
     httpServer.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log(`Heap limit: ${process.env.npm_config_max_old_space_size || "default"} MB`);
     });
 
-    process.on("SIGINT", () => {
-      console.log("\nShutting down...");
+    // Memory monitoring — log every 60 seconds
+    setInterval(() => {
+      const mem = process.memoryUsage();
+      const rssMB = Math.round(mem.rss / 1024 / 1024);
+      const heapUsedMB = Math.round(mem.heapUsed / 1024 / 1024);
+      const heapTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
+      const externalMB = Math.round(mem.external / 1024 / 1024);
+
+      console.log(
+        `[Memory] RSS: ${rssMB} MB | Heap: ${heapUsedMB}/${heapTotalMB} MB | External: ${externalMB} MB`
+      );
+
+      // Warn if memory is getting high
+      if (rssMB > 400) {
+        console.warn(
+          `[Memory WARNING] RSS is ${rssMB} MB — approaching heap limit. Investigate for leaks.`
+        );
+      }
+    }, 60_000);
+
+    // Graceful shutdown on SIGINT and SIGTERM
+    const gracefulShutdown = (signal) => {
+      console.log(`\n${signal} received. Shutting down gracefully...`);
       httpServer.close(() => {
         console.log("Server closed");
         process.exit(0);
       });
-    });
+
+      // Force exit if graceful shutdown takes too long
+      setTimeout(() => {
+        console.error("Forced shutdown after timeout");
+        process.exit(1);
+      }, 10_000);
+    };
+
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 
   } catch (err) {
     console.error("Failed to start server:", err);
