@@ -79,6 +79,7 @@ const staffRoutes = require('./src/routes/staffRoutes');
 const staffSalary = require('./src/routes/staffSalary');
 
 // Session Configuration — MySQL-backed store (replaces default MemoryStore)
+app.set("trust proxy", 1); // Trust first proxy (cPanel Passenger) to allow Secure cookies over reverse proxy
 app.use(createSessionMiddleware());
 
 // Middleware
