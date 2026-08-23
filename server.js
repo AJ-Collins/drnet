@@ -653,8 +653,7 @@ async function startServer() {
   try {
     console.log("Starting Dr.Net Server...");
 
-    // Start cron jobs
-    require("./src/cron/monthlyAnalyticsSync");
+
 
     const PORT = process.env.PORT || 5000;
 
