@@ -6,7 +6,7 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASS || "",
   database: process.env.DB_NAME || "drnet",
-  connectionLimit: 5,
+  connectionLimit: 2,
   dateStrings: true,
   timezone: '+00:00',
   multipleStatements: true,
@@ -16,15 +16,6 @@ const pool = mysql.createPool({
   keepAliveInitialDelay: 0
 });
 
-// Warm up pool on startup
-(async () => {
-    try {
-        const conn = await pool.getConnection();
-        console.log('MySQL pool warmed up');
-        conn.release();
-    } catch (err) {
-        console.error('MySQL warmup failed:', err.message);
-    }
-})();
+
 
 module.exports = pool;

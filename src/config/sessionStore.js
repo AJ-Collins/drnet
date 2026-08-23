@@ -35,7 +35,7 @@ const sessionStoreOptions = {
   expiration: 24 * 60 * 60 * 1000,
 
   // Connection pool settings — keep small so it doesn't compete with app pool
-  connectionLimit: 2,
+  connectionLimit: 1,
   endConnectionOnClose: true,
 };
 
