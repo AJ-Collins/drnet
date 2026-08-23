@@ -1,3 +1,4 @@
+const db = require("../config/db");
 const createRolesTable = require("./roles");
 const createMonthlyAnalyticsTable = require("./monthly_analytics");
 const addRevenueInjectionColumn = require("./add_revenue_injection");
@@ -145,6 +146,9 @@ async function runMigrations() {
   await seedRolePermissions();
   await seedAdmin();
   console.log("Seeding complete!");
+
+  // Close the database pool so the process can exit cleanly
+  await db.end();
 }
 
 module.exports = runMigrations;

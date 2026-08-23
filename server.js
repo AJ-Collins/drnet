@@ -10,7 +10,6 @@ const helmet = require("helmet");
 const compression = require("compression");
 const { createSessionMiddleware } = require("./src/config/sessionStore");
 const app = express();
-const runMigrations = require("./src/migrations/index");
 const authRoutes = require("./src/routes/authRoutes");
 const admin = require("./src/routes/admin");
 const inventory = require("./src/routes/inventory");
@@ -653,8 +652,6 @@ process.on("unhandledRejection", (reason, promise) => {
 async function startServer() {
   try {
     console.log("Starting Dr.Net Server...");
-    await runMigrations();
-    console.log("Migrations complete.");
 
     // Start cron jobs
     require("./src/cron/monthlyAnalyticsSync");

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node --max-old-space-size=512 server.js",
+    "start": "node server.js",
     "dev": "nodemon server.js",
     "migrate": "node -e \"require('./src/migrations/index')().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })\""
   },
