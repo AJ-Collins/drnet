@@ -12,7 +12,7 @@ async function syncMonthlyAnalytics() {
         // Acquire advisory lock to prevent concurrent executions from overlapping
         connection = await db.getConnection();
         const [lockResult] = await connection.query("SELECT GET_LOCK('drnet_monthly_analytics', 0) AS lock_acquired");
-        
+
         if (!lockResult[0].lock_acquired) {
             console.log("Monthly analytics sync already running. Skipping this execution.");
             return;
