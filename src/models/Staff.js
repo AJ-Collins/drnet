@@ -7,31 +7,35 @@ const Staff = {
     checkExisting: async (data) => {
         const email = data.email ? data.email.toLowerCase().trim() : null;
         const employee_id = data.employee_id ? data.employee_id.trim() : null;
+        const phone = data.phone ? String(data.phone).replace(/\s/g, '') : null;
 
-        if (!email && !employee_id) return null;
+        if (!email && !employee_id && !phone) return null;
 
-        // Cross-table check: employee_id vs id_number
+        // Cross-table check: employee_id vs id_number (plus phone)
         const query = `
-            SELECT email, employee_id AS ident, 'staff' AS source FROM staff 
-            WHERE (LOWER(TRIM(email)) = ? OR TRIM(employee_id) = ?)
+            SELECT email, phone, employee_id AS ident, 'staff' AS source FROM staff
+            WHERE (LOWER(TRIM(email)) = ? OR TRIM(employee_id) = ? OR REPLACE(TRIM(phone), ' ', '') = ?)
             UNION
-            SELECT email, id_number AS ident, 'user' AS source FROM users 
-            WHERE (LOWER(TRIM(email)) = ? OR TRIM(id_number) = ?)
+            SELECT email, phone, id_number AS ident, 'user' AS source FROM users
+            WHERE (LOWER(TRIM(email)) = ? OR TRIM(id_number) = ? OR REPLACE(TRIM(phone), ' ', '') = ?)
             LIMIT 1
         `;
 
-        const params = [email, employee_id, email, employee_id];
+        const params = [email, employee_id, phone, email, employee_id, phone];
         const [rows] = await db.query(query, params);
 
         if (rows.length > 0) {
             const conflict = rows[0];
             const tableLabel = conflict.source === 'staff' ? "an existing staff member" : "a registered client (User)";
 
-            if (email && conflict.email?.toLowerCase() === email) {
+            if (email && conflict.email?.toLowerCase().trim() === email) {
                 return `Email already exists as ${tableLabel}`;
             }
-            if (employee_id && conflict.ident === employee_id) {
+            if (employee_id && conflict.ident?.trim() === employee_id) {
                 return `Employee ID / National ID already exists as ${tableLabel}`;
+            }
+            if (phone && conflict.phone?.replace(/\s/g, '') === phone) {
+                return `Phone number already exists as ${tableLabel}`;
             }
         }
 
@@ -145,14 +149,51 @@ const Staff = {
 
             if (duplicate.length > 0) {
                 const dup = duplicate[0];
-                if (data.email && dup.email?.toLowerCase() === data.email.toLowerCase()) {
+                if (data.email && dup.email?.toLowerCase().trim() === data.email.toLowerCase().trim()) {
                     throw new Error("Email already exists");
                 }
                 if (data.phone && dup.phone?.replace(/\s/g, '') === data.phone.replace(/\s/g, '')) {
                     throw new Error("Phone number already exists");
                 }
-                if (data.employee_id && dup.employee_id === data.employee_id) {
+                if (data.employee_id && dup.employee_id?.trim() === data.employee_id.trim()) {
                     throw new Error("Employee ID already exists");
+                }
+            }
+
+            // Cross-table check against clients (users) — mirrors Staff.create.
+            // Any match here is a conflict since excludeId only applies to staff.
+            const userChecks = [];
+            const userParams = [];
+
+            if (data.email) {
+                userChecks.push("LOWER(TRIM(email)) = ?");
+                userParams.push(data.email.toLowerCase().trim());
+            }
+            if (data.phone) {
+                userChecks.push("REPLACE(TRIM(phone), ' ', '') = ?");
+                userParams.push(data.phone.replace(/\s/g, ''));
+            }
+            if (data.employee_id && data.employee_id.trim() !== "") {
+                userChecks.push("TRIM(id_number) = ?");
+                userParams.push(data.employee_id.trim());
+            }
+
+            if (userChecks.length > 0) {
+                const [userDup] = await db.query(
+                    `SELECT id, email, phone, id_number FROM users WHERE (${userChecks.join(" OR ")}) LIMIT 1`,
+                    userParams
+                );
+                if (userDup.length > 0) {
+                    const dup = userDup[0];
+                    if (data.email && dup.email?.toLowerCase().trim() === data.email.toLowerCase().trim()) {
+                        throw new Error("Email already exists as a registered client (User)");
+                    }
+                    if (data.phone && dup.phone?.replace(/\s/g, '') === data.phone.replace(/\s/g, '')) {
+                        throw new Error("Phone number already exists as a registered client (User)");
+                    }
+                    if (data.employee_id && dup.id_number?.trim() === data.employee_id.trim()) {
+                        throw new Error("Employee ID / National ID already exists as a registered client (User)");
+                    }
                 }
             }
         }
